@@ -1,5 +1,7 @@
 # Visual Studio 2015 user specific files
 .vs/
+.vscode/
+.idea/
 
 # Compiled Object files
 *.slo
@@ -72,3 +74,40 @@ Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+
+
+# Visual Studio specific
+.vscode/
+.vs/
+*.code-workspace
+
+# Visual Studio build files
+*.obj
+*.pdb
+*.exe
+*.log
+*.lib
+*.dll
+*.pyc
+*.dir
+
+# User-specific files
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+
+# JetBrains Rider specific
+.idea/
+.idea_modules/
+*.iml
+*.ipr
+
+# JetBrains Rider logs
+*.rider/
+
+# Generated files
+*.iws
