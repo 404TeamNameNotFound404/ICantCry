@@ -11,6 +11,7 @@
 #include "ICantCry/ICC/Input/ICC_EnhancedInputCmp.h"
 #include "ICantCry/ICC/Input/ICC_PlayerController.h"
 #include "ICantCry/ICC/Input/Tags/ICC_InputTags.h"
+#include "ICantCry/ICC/Debug/DebugHelper.h"
 
 
 // Sets default values
@@ -47,6 +48,7 @@ void AICC_Player::BeginPlay()
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	GetCapsuleComponent()->SetCapsuleRadius(90.0f);
 	GetCapsuleComponent()->SetCapsuleSize(90.0f, 200.0f);
+	OldSpeed = GetCharacterMovement()->MaxWalkSpeed;
 }
 
 // Called every frame
@@ -65,6 +67,8 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	SubSystem->AddMappingContext(InputDataAsset->DefaultMappingContext, 0);
 	UICC_EnhancedInputCmp* LastChecked = CastChecked<UICC_EnhancedInputCmp>(PlayerInputComponent);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Run, ETriggerEvent::Triggered, this, &ThisClass::Input_Run);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Interact, ETriggerEvent::Triggered, this, &ThisClass::Input_Interact);
 }
 
 void AICC_Player::Input_Move(const FInputActionValue& InputActionValue)
@@ -72,6 +76,7 @@ void AICC_Player::Input_Move(const FInputActionValue& InputActionValue)
 	const FVector2d Direction = InputActionValue.Get<FVector2d>();
 	DirectionMovement = FVector::ZeroVector;
 	const FRotator Rotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
+	GetCharacterMovement()->MaxWalkSpeed = OldSpeed;
 	if (Direction.Y != 0.f)
 	{
 		const FVector ForwardDirection = Rotation.RotateVector(FVector::ForwardVector);
@@ -88,3 +93,18 @@ void AICC_Player::Input_Move(const FInputActionValue& InputActionValue)
 
 }
 
+void AICC_Player::Input_Run(const FInputActionValue& InputActionValue)
+{
+	const bool Pressed = InputActionValue.Get<bool>();
+	
+	if (Pressed)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+	}
+}
+
+
+void AICC_Player::Input_Interact(const FInputActionValue& InputActionValue)
+{
+	DebugHelper::LogSuccess("Interacting with something");
+}

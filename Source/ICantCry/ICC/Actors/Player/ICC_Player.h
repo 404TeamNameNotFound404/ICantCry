@@ -1,4 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+/*
+ *                                  I Can't Cry Project
+ *                  Authors: BPA98 - Graaced
+ *                  
+ */ 
 
 #pragma once
 
@@ -36,7 +40,13 @@ private:
 	float WalkSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Movement")
+	float RunSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Movement")
 	float MouseSensibility;
+
+	UPROPERTY()
+	float OldSpeed;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	FVector DirectionMovement;
@@ -52,5 +62,6 @@ private:
 
 
 	void Input_Move(const FInputActionValue& InputActionValue);
-
+	void Input_Interact(const FInputActionValue& InputActionValue);
+	void Input_Run(const FInputActionValue& InputActionValue);
 };
