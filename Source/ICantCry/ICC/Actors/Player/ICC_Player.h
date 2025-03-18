@@ -10,9 +10,8 @@
 #include "ICantCry/ICC/Actors/ICC_Actor.h"
 #include "ICantCry/ICC/Input/DataAssets/ICC_InputDataAsset.h"
 #include "Camera/CameraComponent.h"
-#include "Components/CapsuleComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "ICantCry/ICC/Actors/Player/Camera/WorldCamera.h"
 #include "ICC_Player.generated.h"
 
 UCLASS()
@@ -35,6 +34,21 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	/**
+	 * READ BELOW BEFORE USE!
+	 * @note This is the Static World Camera Reference not the Internal Player camera!
+	 *  to get the player camera you may want to call GetCamera
+	 * @return World Static Camera
+	 */
+	AWorldCamera* GetWorldCamera() const;
+
+	/**
+	 * Get the Camera Component
+	 * @return Player Camera
+	 */
+	UCameraComponent* GetCamera() const;
+	
+
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Movement")
 	float WalkSpeed;
@@ -51,15 +65,17 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	FVector DirectionMovement;
 
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	AWorldCamera* WorldCamera;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, category = "Body", meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
-
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Body", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* Camera;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Body", meta = (AllowPrivateAccess = "true"))
 	UICC_InputDataAsset* InputDataAsset;
-
 
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Interact(const FInputActionValue& InputActionValue);

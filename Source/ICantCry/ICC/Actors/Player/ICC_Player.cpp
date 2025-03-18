@@ -3,6 +3,7 @@
 
 #include "ICC_Player.h"
 
+#include "EngineUtils.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -31,7 +32,8 @@ AICC_Player::AICC_Player()
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(GetRootComponent());
 	CameraBoom->TargetArmLength = 200.0f;
-	CameraBoom->SocketOffset = FVector(0.0f, 55.0f, 0.0f);
+	CameraBoom->SocketOffset = FVector(0.0f, 0.0f, 0.0f);
+	
 	CameraBoom->bUsePawnControlRotation = true;
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
@@ -39,6 +41,7 @@ AICC_Player::AICC_Player()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 190.0f, 0.0f);
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.0f;
+	
 }
 
 // Called when the game starts or when spawned
@@ -49,6 +52,16 @@ void AICC_Player::BeginPlay()
 	GetCapsuleComponent()->SetCapsuleRadius(90.0f);
 	GetCapsuleComponent()->SetCapsuleSize(90.0f, 200.0f);
 	OldSpeed = GetCharacterMovement()->MaxWalkSpeed;
+
+	if (!WorldCamera)
+	{
+		for (TActorIterator<AWorldCamera> It(GetWorld()); It; ++It)
+		{
+			WorldCamera = *It;
+			DebugHelper::LogMessage(3, FColor::Green, "WorldCamera found: " + WorldCamera->GetName());
+			break;
+		}
+	}
 }
 
 // Called every frame
@@ -71,27 +84,40 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Interact, ETriggerEvent::Triggered, this, &ThisClass::Input_Interact);
 }
 
+AWorldCamera* AICC_Player::GetWorldCamera() const
+{
+	return WorldCamera;
+}
+
+UCameraComponent* AICC_Player::GetCamera() const
+{
+	return Camera;
+}
+
+
 void AICC_Player::Input_Move(const FInputActionValue& InputActionValue)
 {
 	const FVector2d Direction = InputActionValue.Get<FVector2d>();
 	DirectionMovement = FVector::ZeroVector;
 	const FRotator Rotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
 	GetCharacterMovement()->MaxWalkSpeed = OldSpeed;
+	
 	if (Direction.Y != 0.f)
 	{
 		const FVector ForwardDirection = Rotation.RotateVector(FVector::ForwardVector);
 		AddMovementInput(ForwardDirection, Direction.Y);
 		DirectionMovement.Y = Direction.Y;
 	}
-
+	
 	if (Direction.X != 0.f)
 	{
 		const FVector RightDirection = Rotation.RotateVector(FVector::RightVector);
 		AddMovementInput(RightDirection, Direction.X);
 		DirectionMovement.X = Direction.X;
 	}
-
 }
+
+
 
 void AICC_Player::Input_Run(const FInputActionValue& InputActionValue)
 {
