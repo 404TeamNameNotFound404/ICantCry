@@ -40,11 +40,6 @@ void ACameraTraveler::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 		Player->GetWorldCamera()->MoveToNextWaypoint();
 		DebugHelper::LogSuccess("Move to waypoint");
 	}
-
-	if (bIsOneShot)
-	{
-		BoxComponents->Deactivate();
-	}
 	
 }
 
@@ -61,10 +56,7 @@ void ACameraTraveler::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AAc
 	
 }
 
-void ACameraTraveler::SetIsOneShot(const bool& Value)
-{
-	bIsOneShot = Value;
-}
+
 
 
 

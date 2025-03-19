@@ -22,4 +22,5 @@ struct FTurn
 
 	FTurn();
 	void PopulateQueue(UWorld* World);
+	void AssignFirstTurn();
 };

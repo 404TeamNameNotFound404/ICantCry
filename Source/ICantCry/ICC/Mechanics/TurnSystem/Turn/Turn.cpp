@@ -26,6 +26,20 @@ void FTurn::PopulateQueue(UWorld* World)
 		
 		Queue.Add(*It);
 	}
+}
+
+void FTurn::AssignFirstTurn()
+{
+	if (Queue.IsEmpty())
+	{
+		DebugHelper::LogError("Queue is empty can't assign first turn");
+		return;
+	}
 	
-	DebugHelper::LogSuccess("Populate queue " + FString::FromInt(Queue.Num()));
+	const int Aleatory =  FMath::RandRange(0, Queue.Num() - 1);
+	CurrentTurn = Aleatory;
+	NextTurn = (Aleatory + 1) % (Queue.Num());
+
+	DebugHelper::LogSuccess(Queue[CurrentTurn]->GetName() + " will start");
+	DebugHelper::LogMessage(3, FColor::Blue, Queue[NextTurn]->GetName() + " will play next");
 }

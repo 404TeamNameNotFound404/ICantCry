@@ -4,6 +4,7 @@
 #include "../Turn/Turn.h"
 #include "TurnBasedSystem.generated.h"
 
+class AICC_Player;
 /**
  * Manage and handle The combat
  */
@@ -17,14 +18,15 @@ public:
 	
 	void Start(UWorld* World);
 	void Update(UWorld* World);
-	void End();
+	void StartNextTurn();
+	void EndTurn();
 
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Turn", meta=(AllowPrivateAccess=true))
 	FTurn Turn;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Turn", meta=(AllowPrivateAccess=true))
-	float Variations;
+	float Variations = 2.0f;
 
 	/**How much time AI has to play its turn*/
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Turn", meta=(AllowPrivateAccess=true))
@@ -35,7 +37,13 @@ private:
 
 	UPROPERTY()
 	bool bIsPlayerTurn;
+
+	UPROPERTY()
+	AICC_Player* CurrentPlayer;
+
+	/**
+	 * Check win condition or player death condition at runtime
+	 */
+	void Flow();
 	
-	void AssignFirstTurn();
-	void PopulateQueue(UWorld* World);
 };

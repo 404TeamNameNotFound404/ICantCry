@@ -5,20 +5,19 @@
 #include "EngineUtils.h"
 #include "ICantCry/ICC/Actors/AI/Mob.h"
 
-UTurnBasedSystem::UTurnBasedSystem() : Variations(2.0f) , MaxAITurnTime(10.0f), bIsAiTurn(false), bIsPlayerTurn(false)
+UTurnBasedSystem::UTurnBasedSystem() : MaxAITurnTime(10.0f), bIsAiTurn(false), bIsPlayerTurn(false)
 {
 	Turn.Timer = 0.0f;
 	Turn.CurrentTurn = -1;
 	Turn.NextTurn = -1;
 	Turn.Queue.Empty();
-
-	DebugHelper::LogSuccess(FString::FromInt(Turn.CurrentTurn));
 }
 
 void UTurnBasedSystem::Start(UWorld* World)
 {
-	PopulateQueue(World);
-	AssignFirstTurn();
+	Turn.PopulateQueue(World);
+	Turn.AssignFirstTurn();
+	
 	if (Turn.Queue.IsValidIndex(Turn.CurrentTurn))
 	{
 		AICC_Actor* Who = Turn.Queue[Turn.CurrentTurn];
@@ -28,7 +27,7 @@ void UTurnBasedSystem::Start(UWorld* World)
 			AMob* Mob = Cast<AMob>(Who);
 			bIsAiTurn = true;
 			bIsPlayerTurn = false;
-			// Mob->PlayTurn(); //TODO ADD MOB PLAY TURN
+			// Mob->PlayTurn(); //TODO ADD MOB PLAY TURN (Define the ai class)
 		}
 		//otherwise is player playing
 		else
@@ -36,6 +35,7 @@ void UTurnBasedSystem::Start(UWorld* World)
 			bIsAiTurn = false;
 			bIsPlayerTurn = true;
 			AICC_Player* Player = Cast<AICC_Player>(Who);
+			CurrentPlayer = Player;
 			// Player->PlayTurn(); // TODO ADD PLAYER PLAY TURN
 		}
 	}
@@ -43,54 +43,107 @@ void UTurnBasedSystem::Start(UWorld* World)
 
 void UTurnBasedSystem::Update(UWorld* World)
 {
+	if (!World)
+	{
+		DebugHelper::LogError("World is null! at UTurnBasedSystem::Update");
+		return;
+	}
+	
 	if (bIsAiTurn)
 	{
-		Turn.Timer += GetWorld()->GetDeltaSeconds() * Variations;
+		Turn.Timer += World->GetDeltaSeconds() * Variations;
+		
 		if (Turn.Timer >= MaxAITurnTime)
 		{
 			Turn.Timer = 0;
-			End();
-			Start(World);
+			DebugHelper::LogError(Turn.Queue[Turn.CurrentTurn]->GetName() + " ended it's turn");
+			EndTurn();
+			StartNextTurn();
 		}
 	}
 
 	if (bIsPlayerTurn)
 	{
-		/* if(Player->TurnDone()
+		// Waiting for the actual implementation for now the player will skip the turn
+		Turn.Timer += World->GetDeltaSeconds() * Variations;
+		if (Turn.Timer >= MaxAITurnTime)
+		{
+			Turn.Timer = 0;
+			EndTurn();
+			StartNextTurn();
+		}
+		// the code above must be deleted once the real implementation is done
+		/* CODE PROTOTYPE BELOW
+		 *
+		 * Player->PlayTurn();
+		 * 
+		 * if(Player->TurnDone()
 		 * {
 		 *    End();
 		 *    Start();
 		 * } */
 	}
+	
+	Flow();
 }
 
-void UTurnBasedSystem::End()
+void UTurnBasedSystem::StartNextTurn()
+{
+	DebugHelper::LogWarning("Next turn is started");
+	
+	if (Turn.Queue.IsValidIndex(Turn.CurrentTurn))
+	{
+		AICC_Actor* Who = Turn.Queue[Turn.CurrentTurn];
+		// if first to play is Emotion / AI
+		if (Who->IsA(AMob::StaticClass()))
+		{
+			AMob* Mob = Cast<AMob>(Who);
+			bIsAiTurn = true;
+			bIsPlayerTurn = false;
+			// Mob->PlayTurn(); //TODO ADD MOB PLAY TURN (Define the ai class)
+		}
+		//otherwise is player playing
+		else
+		{
+			bIsAiTurn = false;
+			bIsPlayerTurn = true;
+			AICC_Player* Player = Cast<AICC_Player>(Who);
+			CurrentPlayer = Player;
+			// Player->PlayTurn(); // TODO ADD PLAYER PLAY TURN
+		}
+	}
+}
+
+void UTurnBasedSystem::EndTurn()
 {
 	Turn.CurrentTurn = Turn.NextTurn;
 	Turn.NextTurn = (Turn.NextTurn + 1) % Turn.Queue.Num();
+	DebugHelper::LogWarning("Ai turn ended, " + Turn.Queue[Turn.CurrentTurn]->GetName() + " will now play");
 }
 
-void UTurnBasedSystem::AssignFirstTurn()
+void UTurnBasedSystem::Flow()
 {
-	if (Turn.Queue.IsEmpty())
+	/*
+	* In case of AI death
+	* Remove its index from the array and if array is empty victory condition is achieved
+	*/
+
+	if (Turn.Queue.Num() <= 1 && Turn.Queue[0] == CurrentPlayer) // 
 	{
-		DebugHelper::LogError("Queue is empty can't assign first turn");
-		return;
+		/*
+		 * Victory
+		 * TODO IMPLEMENT VICTORY
+		 */
 	}
-	
-	const int Aleatory =  FMath::RandRange(0, Turn.Queue.Num() - 1);
-	Turn.CurrentTurn = Aleatory;
-	Turn.NextTurn = (Aleatory + 1) % (Turn.Queue.Num());
-
-	DebugHelper::LogSuccess(Turn.Queue[Turn.CurrentTurn]->GetName() + " will start");
-	DebugHelper::LogMessage(3, FColor::Blue, Turn.Queue[Turn.NextTurn]->GetName() + " will play next");
-	
+/*
+	else if (CurrentPlayer->Death())
+	{
+		GameOver!
+		TODO ADD GAME OVER
+	}
+*/
 }
 
-void UTurnBasedSystem::PopulateQueue(UWorld* World)
-{
-	Turn.PopulateQueue(World);
-}
 
 
 

@@ -26,6 +26,6 @@ void ABattleHandler::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	//TurnBasedSystem->Update();
+	TurnBasedSystem->Update(GetWorld());
 }
 
