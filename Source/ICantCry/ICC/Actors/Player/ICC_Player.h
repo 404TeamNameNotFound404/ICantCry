@@ -48,6 +48,14 @@ public:
 	 */
 	UCameraComponent* GetCamera() const;
 	
+	/**
+ * Deny the player movement during the fight (will be controller later with Battle Action)
+ * @note Change back EditAnywhere to EditDefaultsOnlye and BlueprintReadWrite to BlueprintReadOnly. This is just
+ * for debugging stage
+ */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Battle System", Blueprintable)
+	bool bIsInFight = false;
+	
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Movement")

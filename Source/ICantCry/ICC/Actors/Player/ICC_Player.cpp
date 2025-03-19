@@ -21,6 +21,7 @@ AICC_Player::AICC_Player()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+	
 	WalkSpeed = 500.0f;
 	MouseSensibility = 0.2f;
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -97,6 +98,11 @@ UCameraComponent* AICC_Player::GetCamera() const
 
 void AICC_Player::Input_Move(const FInputActionValue& InputActionValue)
 {
+	if (bIsInFight) // if player is in fight don't move freely
+	{
+		return;
+	}
+	
 	const FVector2d Direction = InputActionValue.Get<FVector2d>();
 	DirectionMovement = FVector::ZeroVector;
 	const FRotator Rotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
@@ -121,6 +127,11 @@ void AICC_Player::Input_Move(const FInputActionValue& InputActionValue)
 
 void AICC_Player::Input_Run(const FInputActionValue& InputActionValue)
 {
+	if (bIsInFight)
+	{
+		return;
+	}
+	
 	const bool Pressed = InputActionValue.Get<bool>();
 	
 	if (Pressed)
@@ -132,5 +143,10 @@ void AICC_Player::Input_Run(const FInputActionValue& InputActionValue)
 
 void AICC_Player::Input_Interact(const FInputActionValue& InputActionValue)
 {
+	if (bIsInFight)
+	{
+		return;
+	}
+	
 	DebugHelper::LogSuccess("Interacting with something");
 }

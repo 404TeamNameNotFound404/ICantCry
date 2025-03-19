@@ -1,5 +1,4 @@
 #pragma once
-
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
 #include "../Turn/Turn.h"
@@ -16,8 +15,8 @@ class ICANTCRY_API UTurnBasedSystem : public UObject
 public:
 	UTurnBasedSystem();
 	
-	void Start();
-	void Update();
+	void Start(UWorld* World);
+	void Update(UWorld* World);
 	void End();
 
 private:
@@ -38,4 +37,5 @@ private:
 	bool bIsPlayerTurn;
 	
 	void AssignFirstTurn();
+	void PopulateQueue(UWorld* World);
 };

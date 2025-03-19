@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "WorldCamera.h"
 #include "EngineUtils.h"
+#include "MaterialHLSLTree.h"
 #include "Camera/CameraComponent.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
@@ -23,13 +24,18 @@ AWorldCamera::AWorldCamera()
 void AWorldCamera::BeginPlay()
 {
 	Super::BeginPlay();
-	bDefaultCamera = true;
+
+	if (!bDefaultCamera)
+	{
+		return;
+	}
 
 	for (TActorIterator<ACameraWaypoint> It(GetWorld()); It; ++It)
 	{
 		Waypoints.Add(*It);
 		DebugHelper::LogMessage(3, FColor::White, "Added: " + It->GetName());
 	}
+	if (Waypoints.IsEmpty()) return;
 	
 	SetActorLocation(Waypoints[WaypointIndex]->GetActorLocation());
 	SetActorRotation(Waypoints[WaypointIndex]->GetActorRotation());
@@ -103,22 +109,45 @@ AActor* AWorldCamera::FindClosestWaypoint()
 	return ClosestWaypoint;
 }
 
-
-
 // Called every frame
 void AWorldCamera::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (bLerpStarted && CurrentWaypoint)
+	{
+		const FVector CurrentLocation = GetActorLocation();
+		const FVector TargetLocation = CurrentWaypoint->GetActorLocation();
+		
+		const FVector InterpLocation = FMath::VInterpTo(CurrentLocation, TargetLocation, DeltaTime, 6.0f);
+		SetActorLocation(InterpLocation);
+		SetActorRotation(CurrentWaypoint->GetActorRotation());
+		
+		if (FVector::Dist(InterpLocation, TargetLocation) < 1.0f)
+		{
+			bLerpStarted = false;
+		}
+	}
 }
 
 void AWorldCamera::MoveToNextWaypoint()
 {
-	if (AActor* ClosestWaypoint = FindClosestWaypoint())
+	if (bEnableSmoothMovement)
 	{
-		CurrentWaypoint = ClosestWaypoint;
-		SetActorLocation(CurrentWaypoint->GetActorLocation());
-		SetActorRotation(CurrentWaypoint->GetActorRotation()); 
+		if (AActor* ClosestWaypoint = FindClosestWaypoint())
+		{
+			CurrentWaypoint = ClosestWaypoint;
+			bLerpStarted = true;
+		}
+	}
+	else
+	{
+		if (AActor* ClosestWaypoint = FindClosestWaypoint())
+		{
+			CurrentWaypoint = ClosestWaypoint;
+			SetActorLocation(CurrentWaypoint->GetActorLocation());
+			SetActorRotation(CurrentWaypoint->GetActorRotation());
+		}
 	}
 }
 

@@ -2,17 +2,23 @@
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "ICantCry/ICC/Actors/ICC_Actor.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
+#include "EngineUtils.h"
 #include "ICantCry/ICC/Actors/AI/Mob.h"
 
 UTurnBasedSystem::UTurnBasedSystem() : Variations(2.0f) , MaxAITurnTime(10.0f), bIsAiTurn(false), bIsPlayerTurn(false)
 {
-	
+	Turn.Timer = 0.0f;
+	Turn.CurrentTurn = -1;
+	Turn.NextTurn = -1;
+	Turn.Queue.Empty();
+
+	DebugHelper::LogSuccess(FString::FromInt(Turn.CurrentTurn));
 }
 
-void UTurnBasedSystem::Start()
+void UTurnBasedSystem::Start(UWorld* World)
 {
+	PopulateQueue(World);
 	AssignFirstTurn();
-
 	if (Turn.Queue.IsValidIndex(Turn.CurrentTurn))
 	{
 		AICC_Actor* Who = Turn.Queue[Turn.CurrentTurn];
@@ -35,7 +41,7 @@ void UTurnBasedSystem::Start()
 	}
 }
 
-void UTurnBasedSystem::Update()
+void UTurnBasedSystem::Update(UWorld* World)
 {
 	if (bIsAiTurn)
 	{
@@ -44,7 +50,7 @@ void UTurnBasedSystem::Update()
 		{
 			Turn.Timer = 0;
 			End();
-			Start();
+			Start(World);
 		}
 	}
 
@@ -72,12 +78,18 @@ void UTurnBasedSystem::AssignFirstTurn()
 		return;
 	}
 	
-	const int Aleatory =  FMath::RandRange(0, Turn.Queue.Num());
+	const int Aleatory =  FMath::RandRange(0, Turn.Queue.Num() - 1);
 	Turn.CurrentTurn = Aleatory;
-	Turn.NextTurn = (Aleatory + 1) % (Turn.Queue.Num() + 1);
+	Turn.NextTurn = (Aleatory + 1) % (Turn.Queue.Num());
 
-	DebugHelper::LogMessage(5, FColor::White, "Current Turn " + FString::FromInt(Turn.CurrentTurn));
-	DebugHelper::LogWarning("Next Turn " + FString::FromInt(Turn.NextTurn));
+	DebugHelper::LogSuccess(Turn.Queue[Turn.CurrentTurn]->GetName() + " will start");
+	DebugHelper::LogMessage(3, FColor::Blue, Turn.Queue[Turn.NextTurn]->GetName() + " will play next");
+	
+}
+
+void UTurnBasedSystem::PopulateQueue(UWorld* World)
+{
+	Turn.PopulateQueue(World);
 }
 
 

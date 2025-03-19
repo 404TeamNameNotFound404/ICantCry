@@ -1,8 +1,7 @@
 #pragma once
-#include "ICantCry/ICC/Actors/ICC_Actor.h"
 #include "CoreMinimal.h"
+#include "ICantCry/ICC/Actors/ICC_Actor.h"
 #include "Turn.generated.h"
-
 
 USTRUCT(BlueprintType)
 struct FTurn
@@ -22,4 +21,5 @@ struct FTurn
 	TArray<AICC_Actor*> Queue;
 
 	FTurn();
+	void PopulateQueue(UWorld* World);
 };
