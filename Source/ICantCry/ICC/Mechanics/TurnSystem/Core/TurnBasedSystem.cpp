@@ -5,7 +5,8 @@
 #include "EngineUtils.h"
 #include "ICantCry/ICC/Actors/AI/Mob.h"
 
-UTurnBasedSystem::UTurnBasedSystem() : MaxAITurnTime(10.0f), bIsAiTurn(false), bIsPlayerTurn(false)
+UTurnBasedSystem::UTurnBasedSystem() : MaxAITurnTime(10.0f), bIsAiTurn(false), bIsPlayerTurn(false),
+                                       CurrentPlayer(nullptr)
 {
 	Turn.Timer = 0.0f;
 	Turn.CurrentTurn = -1;
@@ -79,8 +80,8 @@ void UTurnBasedSystem::Update(UWorld* World)
 		 * 
 		 * if(Player->TurnDone()
 		 * {
-		 *    End();
-		 *    Start();
+		 *    EndTurn();
+		 *    StartNextTurn();
 		 * } */
 	}
 	

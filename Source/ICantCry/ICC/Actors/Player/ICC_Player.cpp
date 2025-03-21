@@ -1,6 +1,4 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "ICC_Player.h"
 
 #include "EngineUtils.h"
@@ -13,6 +11,8 @@
 #include "ICantCry/ICC/Input/ICC_PlayerController.h"
 #include "ICantCry/ICC/Input/Tags/ICC_InputTags.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
+#include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
+#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values
@@ -63,6 +63,12 @@ void AICC_Player::BeginPlay()
 			break;
 		}
 	}
+
+	UGameInstance* GameInstance = UGameplayStatics::GetGameInstance(GetWorld());
+	UICantCryGameInstance* DontDestroyOnLoad = Cast<UICantCryGameInstance>(GameInstance);
+	checkf(DontDestroyOnLoad, TEXT("Dontdestroyonload is invalid at player begin play"));
+
+	DontDestroyOnLoad->StorePlayerData(GetActorLocation(), GetActorRotation());
 }
 
 // Called every frame
