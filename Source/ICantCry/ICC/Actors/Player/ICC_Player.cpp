@@ -11,7 +11,7 @@
 #include "ICantCry/ICC/Input/ICC_EnhancedInputCmp.h"
 #include "ICantCry/ICC/Input/ICC_PlayerController.h"
 #include "ICantCry/ICC/Input/Tags/ICC_InputTags.h"
-#include "ICantCry/ICC/Debug/DebugHelper.h"
+#include "../Source/ICantCry/ICC/Managers/EncounterManager.h"
 
 
 // Sets default values
@@ -48,13 +48,26 @@ void AICC_Player::BeginPlay()
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	GetCapsuleComponent()->SetCapsuleRadius(90.0f);
 	GetCapsuleComponent()->SetCapsuleSize(90.0f, 200.0f);
-	OldSpeed = GetCharacterMovement()->MaxWalkSpeed;
+
+    if (EncounterManager)
+    {
+        EncounterManager->Initialize();
+    }
+
+	StepCounter = 0;
 }
 
 // Called every frame
 void AICC_Player::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	CurrentSpeed = GetVelocity().Size();
+
+	bWasMoving = bIsMoving;
+    bIsMoving = CurrentSpeed > 0.1f;
+
+	HandleMovement();
 }
 
 // Called to bind functionality to input
@@ -67,8 +80,11 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	SubSystem->AddMappingContext(InputDataAsset->DefaultMappingContext, 0);
 	UICC_EnhancedInputCmp* LastChecked = CastChecked<UICC_EnhancedInputCmp>(PlayerInputComponent);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
-	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Run, ETriggerEvent::Triggered, this, &ThisClass::Input_Run);
-	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Interact, ETriggerEvent::Triggered, this, &ThisClass::Input_Interact);
+
+	// Sprint 
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Sprint, ETriggerEvent::Started, this, &ThisClass::StartSprint);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Sprint, ETriggerEvent::Completed, this, &ThisClass::StopSprint);
+
 }
 
 void AICC_Player::Input_Move(const FInputActionValue& InputActionValue)
@@ -76,7 +92,10 @@ void AICC_Player::Input_Move(const FInputActionValue& InputActionValue)
 	const FVector2d Direction = InputActionValue.Get<FVector2d>();
 	DirectionMovement = FVector::ZeroVector;
 	const FRotator Rotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
-	GetCharacterMovement()->MaxWalkSpeed = OldSpeed;
+
+	bIsMoving = (Direction.X != 0.f || Direction.Y != 0.f);
+
+
 	if (Direction.Y != 0.f)
 	{
 		const FVector ForwardDirection = Rotation.RotateVector(FVector::ForwardVector);
@@ -93,18 +112,47 @@ void AICC_Player::Input_Move(const FInputActionValue& InputActionValue)
 
 }
 
-void AICC_Player::Input_Run(const FInputActionValue& InputActionValue)
+void AICC_Player::HandleMovement()
 {
-	const bool Pressed = InputActionValue.Get<bool>();
-	
-	if (Pressed)
-	{
-		GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
-	}
+	if (bIsMoving)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("The player is walking"));
+
+        if (bIsSprinting)
+        {
+            StepCounter += 2; 
+            UE_LOG(LogTemp, Warning, TEXT("The player is Sprinting!"));
+        }
+        else
+        {
+            StepCounter += 1; 
+        }
+
+        UE_LOG(LogTemp, Warning, TEXT("StepCounter: %d"), StepCounter);
+
+        if (EncounterManager) 
+        {
+            EncounterManager->UpdateThreshold();
+        }
+    }
 }
 
 
-void AICC_Player::Input_Interact(const FInputActionValue& InputActionValue)
+void AICC_Player::StartSprint()
 {
-	DebugHelper::LogSuccess("Interacting with something");
+    bIsSprinting = true;
+
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed * SprintMultiplier;
+
 }
+
+void AICC_Player::StopSprint()
+{
+    bIsSprinting = false;
+
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+}
+
+
+
+

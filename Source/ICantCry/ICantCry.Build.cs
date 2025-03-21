@@ -7,7 +7,7 @@ public class ICantCry : ModuleRules
 	public ICantCry(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-	
+
 		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
 			PublicDefinitions.Add("USE_LINUX_SPECIFIC_CODE=1");
@@ -16,8 +16,8 @@ public class ICantCry : ModuleRules
 		{
 			PublicDefinitions.Add("USE_WINDOWS_SPECIFIC_CODE=1");
 		}
-		
-		
+
+
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" , "GameplayTags"});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
