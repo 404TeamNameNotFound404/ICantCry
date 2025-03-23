@@ -68,7 +68,7 @@ void AICC_Player::BeginPlay()
 	UICantCryGameInstance* DontDestroyOnLoad = Cast<UICantCryGameInstance>(GameInstance);
 	checkf(DontDestroyOnLoad, TEXT("Dontdestroyonload is invalid at player begin play"));
 
-	DontDestroyOnLoad->StorePlayerData(GetActorLocation(), GetActorRotation());
+	DontDestroyOnLoad->StoreBeginPlayerTransform(GetActorLocation(), GetActorRotation());
 }
 
 // Called every frame

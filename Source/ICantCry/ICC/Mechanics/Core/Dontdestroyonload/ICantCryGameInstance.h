@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "PersistentData.h"
 #include "ICantCryGameInstance.generated.h"
 
 /**
@@ -18,25 +19,12 @@ public:
 	virtual void Shutdown() override;
 
 	void RecreatePlayer(UWorld* World,FVector& PreviousPosition, FRotator& PreviousRotation, float& CurrentHp, float& CurrentAp) const;
-	void StorePlayerData(const FVector& BeginPosition, const FRotator& BeginOrientation);
+	void StoreBeginPlayerTransform(const FVector& BeginPosition, const FRotator& BeginOrientation);
+	void SavePlayerTransform(const FVector& LastPosition, const FRotator& LastOrientation);
 	
 private:
-	// First of hall I think it can be good to store Position, Rotation and data such as AP, HP
-	
-	UPROPERTY(VisibleInstanceOnly,BlueprintReadOnly,Category="DontDestroyOnLoad",meta=(allowPrivateAccess=true))
-	FVector PlayerPosition;
-
-	UPROPERTY(VisibleInstanceOnly,BlueprintReadOnly,Category="DontDestroyOnLoad",meta=(allowPrivateAccess=true))
-	FRotator PlayerOrientation;
-
-	UPROPERTY(VisibleInstanceOnly,BlueprintReadOnly,Category="DontDestroyOnLoad",meta=(allowPrivateAccess=true))
-	float PlayerHp;
-
-	UPROPERTY(VisibleInstanceOnly,BlueprintReadOnly,Category="DontDestroyOnLoad",meta=(allowPrivateAccess=true))
-	float AbilityPoints;
-
-	// Reward sections to keep them 
-	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))
+	UPersistentData* PersistentData;
 	UWorld* TryGetWorld() const;
 	
 };

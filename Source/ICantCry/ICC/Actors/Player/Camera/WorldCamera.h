@@ -60,6 +60,9 @@ private:
 	UPROPERTY()
 	bool bLerpStarted = false;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	float CameraSmoothBlending = 6.0f;
+
 	UPROPERTY()
 	AActor* PreviousWaypoint;
 

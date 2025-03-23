@@ -119,7 +119,7 @@ void AWorldCamera::Tick(float DeltaTime)
 		const FVector CurrentLocation = GetActorLocation();
 		const FVector TargetLocation = CurrentWaypoint->GetActorLocation();
 		
-		const FVector InterpLocation = FMath::VInterpTo(CurrentLocation, TargetLocation, DeltaTime, 6.0f);
+		const FVector InterpLocation = FMath::VInterpTo(CurrentLocation, TargetLocation, DeltaTime, CameraSmoothBlending);
 		SetActorLocation(InterpLocation);
 		SetActorRotation(CurrentWaypoint->GetActorRotation());
 		
