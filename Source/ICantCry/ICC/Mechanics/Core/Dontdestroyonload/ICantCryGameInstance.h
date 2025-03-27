@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
-#include "PersistentData.h"
+#include "ICantCry/ICC/Mechanics/Core/Data/PersistentData.h"
 #include "ICantCryGameInstance.generated.h"
 
 /**
@@ -19,8 +19,14 @@ public:
 	virtual void Shutdown() override;
 
 	void RecreatePlayer(UWorld* World,FVector& PreviousPosition, FRotator& PreviousRotation, float& CurrentHp, float& CurrentAp) const;
-	void StoreBeginPlayerTransform(const FVector& BeginPosition, const FRotator& BeginOrientation);
-	void SavePlayerTransform(const FVector& LastPosition, const FRotator& LastOrientation);
+	void StoreBeginPlayerTransform(const FVector& BeginPosition, const FRotator& BeginOrientation) const;
+	void SavePlayerTransform(const FVector& LastPosition, const FRotator& LastOrientation) const;
+
+	/**
+	 * Load the previous position before loading something else
+	 */
+	UFUNCTION(BlueprintCallable)
+	void LoadLastPlayerTransform();
 	
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))

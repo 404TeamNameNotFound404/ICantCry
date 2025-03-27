@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "ICC_Player.h"
-
 #include "EngineUtils.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -42,7 +41,8 @@ AICC_Player::AICC_Player()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 190.0f, 0.0f);
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.0f;
-	
+
+	MinigameHandler = nullptr;
 }
 
 // Called when the game starts or when spawned
@@ -69,6 +69,15 @@ void AICC_Player::BeginPlay()
 	checkf(DontDestroyOnLoad, TEXT("Dontdestroyonload is invalid at player begin play"));
 
 	DontDestroyOnLoad->StoreBeginPlayerTransform(GetActorLocation(), GetActorRotation());
+
+	// detect if battle handler are in the scene
+
+	for (TActorIterator<AMinigameHandler> It(GetWorld()); It; ++It)
+	{
+		MinigameHandler = *It;
+		DebugHelper::LogSuccess("Minigame Handler found!");
+		break;
+	}
 }
 
 // Called every frame
@@ -89,6 +98,7 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Run, ETriggerEvent::Triggered, this, &ThisClass::Input_Run);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Interact, ETriggerEvent::Triggered, this, &ThisClass::Input_Interact);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_MinigameItr, ETriggerEvent::Triggered, this, &ThisClass::Input_MinigameInteract);
 }
 
 AWorldCamera* AICC_Player::GetWorldCamera() const
@@ -156,3 +166,15 @@ void AICC_Player::Input_Interact(const FInputActionValue& InputActionValue)
 	
 	DebugHelper::LogSuccess("Interacting with something");
 }
+
+void AICC_Player::Input_MinigameInteract(const FInputActionValue& InputActionValue)
+{
+	if (!MinigameHandler)
+	{
+		DebugHelper::LogError("Minigame is null");
+		return;
+	}
+	MinigameHandler->StartMinigame(true);
+	DebugHelper::LogSuccess("Minigame started!");
+}
+

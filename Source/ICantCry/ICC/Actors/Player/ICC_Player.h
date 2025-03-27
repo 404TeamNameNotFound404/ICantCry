@@ -12,6 +12,7 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "ICantCry/ICC/Actors/Player/Camera/WorldCamera.h"
+#include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
 #include "ICC_Player.generated.h"
 
 UCLASS()
@@ -85,7 +86,11 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Body", meta = (AllowPrivateAccess = "true"))
 	UICC_InputDataAsset* InputDataAsset;
 
+	UPROPERTY()
+	AMinigameHandler* MinigameHandler;
+
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Interact(const FInputActionValue& InputActionValue);
 	void Input_Run(const FInputActionValue& InputActionValue);
+	void Input_MinigameInteract(const FInputActionValue& InputActionValue);
 };

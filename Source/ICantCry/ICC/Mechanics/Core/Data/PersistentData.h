@@ -1,14 +1,13 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
-
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "RewardsData.h"
 #include "PersistentData.generated.h"
 
 /**
  * Data container used to store player's data across levels in order to recreate player during scene
  * transitions.
+ * @note All this class within "Data" folder are READ-ONLY!
  */
 UCLASS(Blueprintable)
 class ICANTCRY_API UPersistentData : public UDataAsset
@@ -30,8 +29,7 @@ public:
 	UPROPERTY(VisibleInstanceOnly,BlueprintReadOnly,Category="Player Data")
 	float AbilityPoints;
 
-	/*
-	   UPROPERTY(VisibleInstanceOnly,BlueprintReadOnly,Category="Rewards")
-	   RewardData* data probably
-	*/
+	// Storing the Rewards Data Container independently to be as clean as possible 
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category="Rewards")
+	URewardsData* Rewards;
 };
