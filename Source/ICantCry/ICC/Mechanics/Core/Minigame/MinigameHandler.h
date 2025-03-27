@@ -30,6 +30,8 @@ public:
 	 * Enable the ui input automatically
 	 * When the player attack the minigame will always show the attack minigame (true by default)
 	 * When AI will attack will always be false so it must be set in the AI move to false.
+	 * For the player it must be connected once the Attack button is pressed
+	 * For the enemy once ai start to attack
 	 * @param EnableAttack by default is set to true which means that it will displays the Attack minigame
 	 */
 	void StartMinigame(const bool& EnableAttack = true);

@@ -98,7 +98,6 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Run, ETriggerEvent::Triggered, this, &ThisClass::Input_Run);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Interact, ETriggerEvent::Triggered, this, &ThisClass::Input_Interact);
-	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_MinigameItr, ETriggerEvent::Triggered, this, &ThisClass::Input_MinigameInteract);
 }
 
 AWorldCamera* AICC_Player::GetWorldCamera() const
@@ -167,14 +166,5 @@ void AICC_Player::Input_Interact(const FInputActionValue& InputActionValue)
 	DebugHelper::LogSuccess("Interacting with something");
 }
 
-void AICC_Player::Input_MinigameInteract(const FInputActionValue& InputActionValue)
-{
-	if (!MinigameHandler)
-	{
-		DebugHelper::LogError("Minigame is null");
-		return;
-	}
-	MinigameHandler->StartMinigame(true);
-	DebugHelper::LogSuccess("Minigame started!");
-}
+
 

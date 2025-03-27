@@ -92,5 +92,4 @@ private:
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Interact(const FInputActionValue& InputActionValue);
 	void Input_Run(const FInputActionValue& InputActionValue);
-	void Input_MinigameInteract(const FInputActionValue& InputActionValue);
 };
