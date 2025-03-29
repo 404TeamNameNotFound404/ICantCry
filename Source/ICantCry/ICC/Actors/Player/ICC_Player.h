@@ -5,7 +5,6 @@
  */ 
 
 #pragma once
-
 #include "CoreMinimal.h"
 #include "ICantCry/ICC/Actors/ICC_Actor.h"
 #include "ICantCry/ICC/Input/DataAssets/ICC_InputDataAsset.h"
@@ -13,6 +12,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "ICantCry/ICC/Actors/Player/Camera/WorldCamera.h"
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
+#include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameUserWidget.h"
 #include "ICC_Player.generated.h"
 
 UCLASS()
@@ -56,6 +56,10 @@ public:
  */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Battle System", Blueprintable)
 	bool bIsInFight = false;
+
+	void EnableMinigameInput(const bool& Enable);
+
+	void SetActiveMinigameUserWidget(UMinigameUserWidget* Minigame);
 	
 
 private:
@@ -89,7 +93,14 @@ private:
 	UPROPERTY()
 	AMinigameHandler* MinigameHandler;
 
+	UPROPERTY()
+	bool bEnableInputToMinigame = false;
+
+	UPROPERTY()
+	UMinigameUserWidget* CurrentMinigameDisplayed = nullptr;
+
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Interact(const FInputActionValue& InputActionValue);
 	void Input_Run(const FInputActionValue& InputActionValue);
+	void Input_Minigame(const FInputActionValue& InputActionValue);
 };

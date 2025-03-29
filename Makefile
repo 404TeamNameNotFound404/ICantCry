@@ -2,9 +2,15 @@
 # *DO NOT EDIT*
 
 UNREALROOTPATH = /home/bruno/Documents/Engine/C++/Linux_Unreal_Engine_5.4.4
-GAMEPROJECTFILE =/home/bruno/Documents/Unreal Projects/ICantCry/ICantCry.uproject
+GAMEPROJECTFILE =/home/bruno/Documents/GitHub/ICantCry/ICantCry.uproject
 
 TARGETS = \
+	DotNetPerforceLib-Linux-DebugGame  \
+	DotNetPerforceLib-Linux-Shipping  \
+	DotNetPerforceLib \
+	EventLoopUnitTests-Linux-DebugGame  \
+	EventLoopUnitTests-Linux-Shipping  \
+	EventLoopUnitTests \
 	UnrealEditor-Linux-DebugGame  \
 	UnrealEditor-Linux-Shipping  \
 	UnrealEditor \
@@ -30,6 +36,24 @@ StandardSet: RequiredTools UnrealFrontend ICantCryEditor UnrealInsights
 
 DebugSet: RequiredTools UnrealFrontend-Linux-Debug ICantCryEditor-Linux-Debug
 
+
+DotNetPerforceLib-Linux-DebugGame:
+	 $(BUILD) DotNetPerforceLib Linux DebugGame  $(ARGS)
+
+DotNetPerforceLib-Linux-Shipping:
+	 $(BUILD) DotNetPerforceLib Linux Shipping  $(ARGS)
+
+DotNetPerforceLib:
+	 $(BUILD) DotNetPerforceLib Linux Development  $(ARGS)
+
+EventLoopUnitTests-Linux-DebugGame:
+	 $(BUILD) EventLoopUnitTests Linux DebugGame  $(ARGS)
+
+EventLoopUnitTests-Linux-Shipping:
+	 $(BUILD) EventLoopUnitTests Linux Shipping  $(ARGS)
+
+EventLoopUnitTests:
+	 $(BUILD) EventLoopUnitTests Linux Development  $(ARGS)
 
 UnrealEditor-Linux-DebugGame:
 	 $(BUILD) UnrealEditor Linux DebugGame  $(ARGS)
