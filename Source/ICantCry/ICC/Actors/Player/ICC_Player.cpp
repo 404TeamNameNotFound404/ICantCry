@@ -178,7 +178,8 @@ void AICC_Player::Input_Minigame(const FInputActionValue& InputActionValue)
 	{
 		DebugHelper::LogSuccess("Minigame input enabled and i pressed P");
 		CurrentMinigameDisplayed->SetStopSlider(true);
-		CurrentMinigameDisplayed->CheckBar();
+		CurrentMinigameDisplayed->Flow();
+		
 		MinigameHandler->EndMinigame();
 	}
 	else

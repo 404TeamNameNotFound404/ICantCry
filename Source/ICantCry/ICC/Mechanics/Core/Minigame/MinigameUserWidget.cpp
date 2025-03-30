@@ -12,3 +12,13 @@ EMinigameThreshold UMinigameUserWidget::CheckBar()
 {
 	return EMinigameThreshold::Miss;
 }
+
+void UMinigameUserWidget::HandleScore()
+{
+}
+
+void UMinigameUserWidget::Flow()
+{
+	CheckBar();
+	HandleScore();
+}

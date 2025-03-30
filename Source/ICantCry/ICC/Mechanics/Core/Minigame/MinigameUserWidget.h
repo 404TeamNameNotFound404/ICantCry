@@ -26,6 +26,8 @@ class ICANTCRY_API UMinigameUserWidget : public UUserWidget
 public:
 	void SetStopSlider(const bool& Stop);
 	virtual EMinigameThreshold  CheckBar();
+	virtual void HandleScore();
+	virtual void Flow();
 	
 protected:
 	UPROPERTY()

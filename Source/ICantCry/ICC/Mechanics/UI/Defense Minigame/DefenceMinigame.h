@@ -36,7 +36,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void MoveSlider(const FVector2D& Position);
-
 	virtual EMinigameThreshold CheckBar() override;
 	
 
@@ -63,7 +62,13 @@ private:
 	FVector2D GoodDefence;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Minigame", meta = (AllowPrivateAccess = "true"))
 	FVector2D PerfectParry;
-	
 
-	void HandleScore();
+	UPROPERTY(meta = (BindWidget))
+	UImage* WorseScore;
+	UPROPERTY(meta = (BindWidget))
+	UImage* MediumScore;
+	UPROPERTY(meta = (BindWidget))
+	UImage* PerfectScore;
+	
+	virtual void HandleScore() override;
 };

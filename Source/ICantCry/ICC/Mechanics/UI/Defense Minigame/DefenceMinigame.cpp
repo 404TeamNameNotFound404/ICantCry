@@ -9,28 +9,24 @@ void UDefenceMinigame::NativeConstruct()
 
 EMinigameThreshold UDefenceMinigame::CheckBar()
 {
-	const float DistanceToFirst = FVector2D::Distance(Slider->GetRenderTransform().Translation, BadDefence);
-	const float DistanceToSecond = FVector2D::Distance(Slider->GetRenderTransform().Translation, GoodDefence);
-	const float DistanceToParry = FVector2D::Distance(Slider->GetRenderTransform().Translation, PerfectParry);
+	const float DistanceToFirst = FVector2D::Distance(Slider->GetRenderTransform().Translation, WorseScore->GetRenderTransform().Translation);
+	const float DistanceToSecond = FVector2D::Distance(Slider->GetRenderTransform().Translation, MediumScore->GetRenderTransform().Translation);
+	const float DistanceToParry = FVector2D::Distance(Slider->GetRenderTransform().Translation, PerfectScore->GetRenderTransform().Translation);
 
-	DebugHelper::LogMessage(3, FColor::Cyan , "Hello Checkbar");
-
-	if (DistanceToFirst <= BadThreshold)
+	if (DistanceToParry >= PerfectThreshold)
+	{
+		DebugHelper::LogMessage(3, FColor::FromHex("FFAB5B"), "Perfect threshold hit");
+		return EMinigameThreshold::Perfect;
+	}
+	if (DistanceToSecond >= GoodThreshold)
+	{
+		DebugHelper::LogMessage(3, FColor::FromHex("4F1C51"), "Good threshold hit");
+		return EMinigameThreshold::Good;
+	}
+	if (DistanceToFirst >= BadThreshold)
 	{
 		DebugHelper::LogMessage(3, FColor::FromHex("88304E"), "Bad threshold hit");
 		return EMinigameThreshold::Bad;
-	}
-		
-	else if (DistanceToSecond <= GoodThreshold)
-	{
-		DebugHelper::LogMessage(3, FColor::FromHex("4F1C51"), "Bad threshold hit");
-		return EMinigameThreshold::Good;
-	}
-		
-	else if (DistanceToParry <= PerfectThreshold)
-	{
-		DebugHelper::LogMessage(3, FColor::FromHex("FFAB5B"), "Bad threshold hit");
-		return EMinigameThreshold::Perfect;
 	}
 	
 	return EMinigameThreshold::Miss; 
@@ -38,21 +34,21 @@ EMinigameThreshold UDefenceMinigame::CheckBar()
 
 void UDefenceMinigame::HandleScore()
 {
-	EMinigameThreshold Result = CheckBar();
+	const EMinigameThreshold Result = CheckBar();
 
 	switch (Result)
 	{
 	case EMinigameThreshold::Bad:
-			DebugHelper::LogSuccess("33% damage reduction");
+			DebugHelper::LogMessage(3, FColor::FromHex("640D5F"),"33% damage reduction");
 			break;
 		case EMinigameThreshold::Good:
-			DebugHelper::LogSuccess("66% reduction");
+			DebugHelper::LogMessage(3, FColor::FromHex("D91656"), "66% reduction");
 			break;
 		case EMinigameThreshold::Perfect:
-			DebugHelper::LogSuccess("Perfect parry");
+			DebugHelper::LogMessage(3, FColor::FromHex("EB5B00"),"Perfect parry");
 		break;
 		default:
-			DebugHelper::LogSuccess("You suck! miss");
+			DebugHelper::LogError("You suck! miss");
 			break;
 	}
 }
