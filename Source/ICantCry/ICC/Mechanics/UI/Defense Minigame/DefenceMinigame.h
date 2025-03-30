@@ -33,9 +33,7 @@ protected:
 	UImage* LeftSeparator;
 	
 public:
-
-	UFUNCTION(BlueprintCallable)
-	void MoveSlider(const FVector2D& Position);
+	virtual void MoveSlider(const FVector2D& Position) override;
 	virtual EMinigameThreshold CheckBar() override;
 	
 

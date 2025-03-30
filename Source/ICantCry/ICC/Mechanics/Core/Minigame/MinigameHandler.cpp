@@ -5,6 +5,7 @@
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "Blueprint/UserWidget.h"
 #include "ICantCry/ICC/Mechanics/UI/Defense Minigame/DefenceMinigame.h"
+#include "ICantCry/ICC/Mechanics/UI/AttackMinigame/AttackMinigame.h"
 
 
 // Sets default values
@@ -37,7 +38,7 @@ void AMinigameHandler::StartMinigame(const bool& EnableAttack)
 	{
 		// start attack minigame by default
 		CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, AttackMinigame);
-		//CastedWidget = Cast<UAttackMinigame>(CurrentMinigameDisplayed);
+		UAttackMinigame* CastedWidget = Cast<UAttackMinigame>(CurrentMinigameDisplayed);
 
 		if (!CurrentMinigameDisplayed)
 		{
@@ -47,6 +48,7 @@ void AMinigameHandler::StartMinigame(const bool& EnableAttack)
 		
 		CurrentMinigameDisplayed->AddToViewport();
 		Player->EnableMinigameInput(true);
+		Player->SetActiveMinigameUserWidget(CastedWidget);
 		CurrentMinigameDisplayed->SetKeyboardFocus();
 	}
 

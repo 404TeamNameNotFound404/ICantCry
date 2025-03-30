@@ -28,6 +28,9 @@ public:
 	virtual EMinigameThreshold  CheckBar();
 	virtual void HandleScore();
 	virtual void Flow();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void MoveSlider(const FVector2D& Position);
 	
 protected:
 	UPROPERTY()
