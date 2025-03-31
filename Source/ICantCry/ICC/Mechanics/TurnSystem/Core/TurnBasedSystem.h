@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
 #include "../Turn/Turn.h"
+#include "../../../Managers/EnemySpawnManager.h"
 #include "TurnBasedSystem.generated.h"
 
 class AICC_Player;
@@ -45,5 +46,8 @@ private:
 	 * Check win condition or player death condition at runtime
 	 */
 	void Flow();
+
+	UPROPERTY()
+	AEnemySpawnManager* EnemySpawnManager;
 	
 };

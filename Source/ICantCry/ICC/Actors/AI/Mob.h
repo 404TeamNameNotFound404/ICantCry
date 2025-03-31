@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ICantCry/ICC/Actors/ICC_Actor.h"
+#include "../Mechanics/Core/Data/EnemyDatas.h"
 #include "Mob.generated.h"
 
 UCLASS(Blueprintable)
@@ -23,6 +24,14 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	// Get EnemyData
+	UEnemyDatas* GetData() const;
+
+private:
+
+	// Reference to Enemy Data Asset
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data",  meta = (AllowPrivateAccess = "true"))
+	UEnemyDatas* EnemyData;
+
+
 };

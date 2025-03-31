@@ -24,9 +24,7 @@ void AMob::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-// Called to bind functionality to input
-void AMob::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+UEnemyDatas *AMob::GetData() const
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+    return EnemyData;
 }
-

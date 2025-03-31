@@ -26,6 +26,8 @@ void FTurn::PopulateQueue(UWorld* World)
 		
 		Queue.Add(*It);
 	}
+
+	
 }
 
 void FTurn::AssignFirstTurn()
