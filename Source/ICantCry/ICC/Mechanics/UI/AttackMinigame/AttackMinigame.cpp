@@ -30,36 +30,37 @@ void UAttackMinigame::MoveSlider(const FVector2D& Position)
 
 EMinigameThreshold UAttackMinigame::CheckBar()
 {
-	DebugHelper::LogWarning("Slider Position " + Slider->GetRenderTransform().Translation.ToString());
-	const FVector2D CurrentPosition = Slider->GetRenderTransform().Translation;
-
-	if (CurrentPosition.X >= 496.0f || CurrentPosition.X >= 500.0f)
-	{
-		return EMinigameThreshold::Perfect;
-	}
-
-	if ((CurrentPosition.X >= 400 && CurrentPosition.X < 496.0f))
-	{
-		return EMinigameThreshold::Good;
-	}
-
-	if (CurrentPosition.X > 503.0f)
-	{
-		return EMinigameThreshold::Good; 
-	}
-
-	if (CurrentPosition.X >= 10.0f && CurrentPosition.X <= 400.0f)
-	{
-		return EMinigameThreshold::Bad;
-	}
+    const FVector2D CurrentPosition = Slider->GetCachedGeometry().GetAbsolutePosition();
+    
+    const float X = CurrentPosition.X;
+    
+    const float LeftDangerX = DangerBorderLeft->GetCachedGeometry().GetAbsolutePosition().X;
+    const float LeftSafeX = SafeAreaLeft->GetCachedGeometry().GetAbsolutePosition().X;
+    const float PerfectLeftX = PerfectAreaLeft->GetCachedGeometry().GetAbsolutePosition().X;
+    const float PerfectRightX = PerfectAreaRight->GetCachedGeometry().GetAbsolutePosition().X;
+    const float RightSafeX = SafeAreaRight->GetCachedGeometry().GetAbsolutePosition().X;
+    const float RightDangerX = DangerBorderRight->GetCachedGeometry().GetAbsolutePosition().X;
 	
-	if (CurrentPosition.X > 580.0f)
-	{
-		return EMinigameThreshold::Bad;
-	}
 	
-	return EMinigameThreshold::Miss;
+    if (X >= PerfectLeftX && X <= PerfectRightX)
+    {
+        return EMinigameThreshold::Perfect;
+    }
+	
+    if ((X >= LeftSafeX && X < PerfectLeftX) || (X > PerfectRightX && X <= RightSafeX))
+    {
+        return EMinigameThreshold::Good;
+    }
+	
+    if ((X >= LeftDangerX && X < LeftSafeX) || (X > RightSafeX && X <= RightDangerX))
+    {
+        return EMinigameThreshold::Bad;
+    }
+	
+    return EMinigameThreshold::Miss;
 }
+
+
 
 void UAttackMinigame::HandleScore()
 {

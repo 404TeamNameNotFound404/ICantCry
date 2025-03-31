@@ -42,17 +42,17 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Minigame", meta = (AllowPrivateAccess = "true"))
 	float Speed = 1.f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Minigame", meta = (AllowPrivateAccess = "true"))
-	float DistanceThreshold = 1.0f;
+	UPROPERTY()
+	float DistanceThreshold = 660.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Minigame", meta = (AllowPrivateAccess = "true"))
-	float BadThreshold = 400;
+	UPROPERTY()
+	float BadThreshold = 600;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Minigame", meta = (AllowPrivateAccess = "true"))
-	float GoodThreshold = 500;
+	UPROPERTY()
+	float GoodThreshold = 620;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Minigame", meta = (AllowPrivateAccess = "true"))
-	float PerfectThreshold = 600;
+	UPROPERTY()
+	float PerfectThreshold = 640;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Minigame", meta = (AllowPrivateAccess = "true"))
 	FVector2D BadDefence;
