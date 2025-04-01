@@ -12,6 +12,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "ICantCry/ICC/Actors/Player/Camera/WorldCamera.h"
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
+#include "ICantCry/ICC/Mechanics/Core/Data/PlayerStats.h"
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameUserWidget.h"
 #include "ICC_Player.generated.h"
 
@@ -89,6 +90,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Body", meta = (AllowPrivateAccess = "true"))
 	UICC_InputDataAsset* InputDataAsset;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Body", meta = (AllowPrivateAccess = "true"))
+	UPlayerStats* Stats;
 
 	UPROPERTY()
 	AMinigameHandler* MinigameHandler;
