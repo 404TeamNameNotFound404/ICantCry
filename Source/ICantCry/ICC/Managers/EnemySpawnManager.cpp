@@ -49,15 +49,15 @@ void AEnemySpawnManager::SpawnRandomEnemy()
 	//
 	CounterEnemyIndex = FMath::RandRange(1,3);
 
-	switch(CounterEnemyIndex)
-	{
-		case 1: 
-			SpawnOneEnemy(SelectedEnemyClass, SpawnLocation, SpawnRotation);
-			break;
+	// switch(CounterEnemyIndex)
+	// {
+	// 	case 1: 
+	// 		SpawnOneEnemy(SelectedEnemyClass, SpawnLocation, SpawnRotation);
+	// 		break;
 
-		case 2:
 		
-	}
+		
+	// }
 
 	
 }
@@ -126,8 +126,8 @@ void AEnemySpawnManager::SpawnOneEnemy(TSubclassOf<AMob> Mob, FVector Position, 
 
 void AEnemySpawnManager::SpawnTwoEnemy(TSubclassOf<AMob> Mob, FVector Position,  FVector Position2, FRotator Rotation, FRotator Rotation2)
 {
-	AMob* SpawnedEnemy = GetWorld()->SpawnActor<AMob>(Mob, Position, Rotation);
-	AMob* SpawnedEnemy = GetWorld()->SpawnActor<AMob>(Mob, Position2,  Rotation2);
+	// AMob* SpawnedEnemy = GetWorld()->SpawnActor<AMob>(Mob, Position, Rotation);
+	// AMob* SpawnedEnemy = GetWorld()->SpawnActor<AMob>(Mob, Position2,  Rotation2);
 }
 
 void AEnemySpawnManager::SpawnThreeEnemy(TSubclassOf<AMob> Mob, FVector Position,  FVector Position2, FVector Position3, FRotator Rotation, FRotator Rotation2, FRotator Rotation3 )

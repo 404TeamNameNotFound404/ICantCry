@@ -21,6 +21,7 @@ public:
 	void Update(UWorld* World);
 	void StartNextTurn();
 	void EndTurn();
+	FTurn GetTurn() const;
 
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Turn", meta=(AllowPrivateAccess=true))

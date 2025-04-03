@@ -133,6 +133,11 @@ void UTurnBasedSystem::EndTurn()
 	DebugHelper::LogWarning("Ai turn ended, " + Turn.Queue[Turn.CurrentTurn]->GetName() + " will now play");
 }
 
+FTurn UTurnBasedSystem::GetTurn() const
+{
+    return Turn;
+}
+
 void UTurnBasedSystem::Flow()
 {
 	/*
