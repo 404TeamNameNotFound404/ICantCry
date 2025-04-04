@@ -29,3 +29,7 @@ void ABattleHandler::Tick(float DeltaTime)
 	TurnBasedSystem->Update(GetWorld());
 }
 
+UTurnBasedSystem *ABattleHandler::GetTurnBasedSystem() const
+{
+    return TurnBasedSystem;
+}

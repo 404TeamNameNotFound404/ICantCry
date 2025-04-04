@@ -16,6 +16,17 @@ UTurnBasedSystem::UTurnBasedSystem() : MaxAITurnTime(10.0f), bIsAiTurn(false), b
 
 void UTurnBasedSystem::Start(UWorld* World)
 {
+
+	for (TActorIterator<AEnemySpawnManager> It(World); It; ++It)
+	{
+		EnemySpawnManager = *It;
+		DebugHelper::LogSuccess("EnemySpawnManager FOUND");
+		break;
+
+	}
+
+	EnemySpawnManager->SpawnRandomEnemy();
+
 	Turn.PopulateQueue(World);
 	Turn.AssignFirstTurn();
 	
@@ -120,6 +131,11 @@ void UTurnBasedSystem::EndTurn()
 	Turn.CurrentTurn = Turn.NextTurn;
 	Turn.NextTurn = (Turn.NextTurn + 1) % Turn.Queue.Num();
 	DebugHelper::LogWarning("Ai turn ended, " + Turn.Queue[Turn.CurrentTurn]->GetName() + " will now play");
+}
+
+FTurn UTurnBasedSystem::GetTurn() const
+{
+    return Turn;
 }
 
 void UTurnBasedSystem::Flow()

@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
 #include "../Turn/Turn.h"
+#include "../../../Managers/EnemySpawnManager.h"
 #include "TurnBasedSystem.generated.h"
 
 class AICC_Player;
@@ -20,6 +21,7 @@ public:
 	void Update(UWorld* World);
 	void StartNextTurn();
 	void EndTurn();
+	FTurn GetTurn() const;
 
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Turn", meta=(AllowPrivateAccess=true))
@@ -45,5 +47,8 @@ private:
 	 * Check win condition or player death condition at runtime
 	 */
 	void Flow();
+
+	UPROPERTY()
+	AEnemySpawnManager* EnemySpawnManager;
 	
 };
