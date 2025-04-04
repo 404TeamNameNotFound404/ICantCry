@@ -8,6 +8,9 @@
  * Basic knowledge: It will contain both attack / defence blueprints, and it will
  * load it at runtime when needed.
  */
+
+class AICC_Player;
+
 UCLASS(Blueprintable)
 class ICANTCRY_API AMinigameHandler : public AActor
 {
@@ -22,9 +25,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 	/**
 	 * Instantiate the minigame and add it to the viewport.
 	 * Enable the ui input automatically
@@ -34,6 +34,7 @@ public:
 	 * For the enemy once ai start to attack
 	 * @param EnableAttack by default is set to true which means that it will displays the Attack minigame
 	 */
+	UFUNCTION(BlueprintCallable)
 	void StartMinigame(const bool& EnableAttack = true);
 
 	/**
@@ -56,4 +57,7 @@ private:
 	 */
 	UPROPERTY()
 	UUserWidget* CurrentMinigameDisplayed;
+
+	UPROPERTY()
+	AICC_Player* Player = nullptr;
 };

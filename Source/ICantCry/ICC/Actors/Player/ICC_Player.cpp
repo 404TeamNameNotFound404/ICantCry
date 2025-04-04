@@ -98,6 +98,7 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Run, ETriggerEvent::Triggered, this, &ThisClass::Input_Run);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Interact, ETriggerEvent::Triggered, this, &ThisClass::Input_Interact);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Minigame, ETriggerEvent::Triggered, this, &ThisClass::Input_Minigame);
 }
 
 AWorldCamera* AICC_Player::GetWorldCamera() const
@@ -108,6 +109,17 @@ AWorldCamera* AICC_Player::GetWorldCamera() const
 UCameraComponent* AICC_Player::GetCamera() const
 {
 	return Camera;
+}
+
+void AICC_Player::EnableMinigameInput(const bool& Enable)
+{
+	bEnableInputToMinigame = Enable;
+	DebugHelper::LogMessage(3, FColor::Orange, "EnableMinigameInput: " + FString::FromInt(Enable));
+}
+
+void AICC_Player::SetActiveMinigameUserWidget(UMinigameUserWidget* Minigame)
+{
+	CurrentMinigameDisplayed = Minigame;
 }
 
 
@@ -152,6 +164,27 @@ void AICC_Player::Input_Run(const FInputActionValue& InputActionValue)
 	if (Pressed)
 	{
 		GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+	}
+}
+
+void AICC_Player::Input_Minigame(const FInputActionValue& InputActionValue)
+{
+	if (!bEnableInputToMinigame)
+	{
+		return;
+	}
+
+	if (const bool Pressed = InputActionValue.Get<bool>() && CurrentMinigameDisplayed)
+	{
+		DebugHelper::LogSuccess("Minigame input enabled and i pressed P");
+		CurrentMinigameDisplayed->SetStopSlider(true);
+		CurrentMinigameDisplayed->Flow();
+		
+		MinigameHandler->EndMinigame();
+	}
+	else
+	{
+		DebugHelper::LogError("Can't init Minigame");
 	}
 }
 

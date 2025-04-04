@@ -22,7 +22,7 @@ void UICantCryGameInstance::RecreatePlayer(UWorld* World,FVector& PreviousPositi
 	PreviousPosition = PersistentData->PlayerPosition;
 	PreviousRotation = PersistentData->PlayerOrientation;
 	CurrentHp = PersistentData->PlayerHp;
-	CurrentAp = PersistentData->AbilityPoints;
+	//CurrentAp = PersistentData->AbilityPoints;
 	
 	checkf(World, TEXT("World is null in UICantCryGameInstance::RecreatePlayer "));
 

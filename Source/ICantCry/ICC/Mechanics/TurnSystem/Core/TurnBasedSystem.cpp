@@ -88,7 +88,7 @@ void UTurnBasedSystem::Update(UWorld* World)
 		/* CODE PROTOTYPE BELOW
 		 *
 		 * Player->PlayTurn();
-		 * 
+		 * TODO CONSIDER PLAYER ATTACK POWER IN PLAYER STATS
 		 * if(Player->TurnDone()
 		 * {
 		 *    EndTurn();
@@ -140,7 +140,7 @@ FTurn UTurnBasedSystem::GetTurn() const
 
 void UTurnBasedSystem::Flow()
 {
-	/*
+	/* TODO ADD A WAY TO SPEED UP THE BATTLE USING BATTLE FLOW IN PLAYER STATS
 	* In case of AI death
 	* Remove its index from the array and if array is empty victory condition is achieved
 	*/
@@ -149,7 +149,7 @@ void UTurnBasedSystem::Flow()
 	{
 		/*
 		 * Victory
-		 * TODO IMPLEMENT VICTORY
+		 * TODO IMPLEMENT VICTORY AND GAIN EXPERIENCE
 		 */
 	}
 /*
