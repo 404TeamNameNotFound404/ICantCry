@@ -17,7 +17,6 @@ void ABattleHandler::BeginPlay()
 {
 	Super::BeginPlay();
 	TurnBasedSystem = NewObject<UTurnBasedSystem>();
-	
 	TurnBasedSystem->Start(GetWorld());
 }
 

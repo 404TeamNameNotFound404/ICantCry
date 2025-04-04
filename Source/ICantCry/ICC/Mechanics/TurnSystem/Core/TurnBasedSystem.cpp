@@ -3,6 +3,7 @@
 #include "ICantCry/ICC/Actors/ICC_Actor.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "EngineUtils.h"
+#include "FunctionalUIScreenshotTest.h"
 #include "ICantCry/ICC/Actors/AI/Mob.h"
 
 UTurnBasedSystem::UTurnBasedSystem() : MaxAITurnTime(10.0f), bIsAiTurn(false), bIsPlayerTurn(false),
@@ -74,26 +75,21 @@ void UTurnBasedSystem::Update(UWorld* World)
 		}
 	}
 
-	if (bIsPlayerTurn)
+	if (bIsPlayerTurn && CurrentPlayer)
 	{
-		// Waiting for the actual implementation for now the player will skip the turn
-		Turn.Timer += World->GetDeltaSeconds() * Variations;
-		if (Turn.Timer >= MaxAITurnTime)
+		if (CurrentPlayer->GetBattleHUD()->IsShootFired())
 		{
-			Turn.Timer = 0;
-			EndTurn();
-			StartNextTurn();
+			if (!CurrentPlayer->GetBattleHUD()->CanvasStatus->IsVisible())
+			{
+				DebugHelper::LogWarning("Canvas status is already visible");
+				CurrentPlayer->GetBattleHUD()->CanvasStatus->SetVisibility(ESlateVisibility::Visible);
+			}
+			
+			if (Turn.Queue.Num() > 0)
+			{
+				CurrentPlayer->GetBattleHUD()->UpdateTarget();
+			}
 		}
-		// the code above must be deleted once the real implementation is done
-		/* CODE PROTOTYPE BELOW
-		 *
-		 * Player->PlayTurn();
-		 * TODO CONSIDER PLAYER ATTACK POWER IN PLAYER STATS
-		 * if(Player->TurnDone()
-		 * {
-		 *    EndTurn();
-		 *    StartNextTurn();
-		 * } */
 	}
 	
 	Flow();
@@ -117,11 +113,12 @@ void UTurnBasedSystem::StartNextTurn()
 		//otherwise is player playing
 		else
 		{
+			DebugHelper::LogMessage(3, FColor::FromHex("4D55CC"), "Player turn!");
 			bIsAiTurn = false;
 			bIsPlayerTurn = true;
 			AICC_Player* Player = Cast<AICC_Player>(Who);
 			CurrentPlayer = Player;
-			// Player->PlayTurn(); // TODO ADD PLAYER PLAY TURN
+			Player->GetBattleHUD()->ShowHUD();
 		}
 	}
 }
@@ -136,6 +133,11 @@ void UTurnBasedSystem::EndTurn()
 FTurn UTurnBasedSystem::GetTurn() const
 {
     return Turn;
+}
+
+bool UTurnBasedSystem::GetIsPlayerTurn() const
+{
+	return bIsPlayerTurn;
 }
 
 void UTurnBasedSystem::Flow()

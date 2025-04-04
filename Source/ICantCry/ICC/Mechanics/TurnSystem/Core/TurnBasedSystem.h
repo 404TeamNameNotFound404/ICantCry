@@ -23,6 +23,8 @@ public:
 	void EndTurn();
 	FTurn GetTurn() const;
 
+	bool GetIsPlayerTurn() const;
+
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Turn", meta=(AllowPrivateAccess=true))
 	FTurn Turn;

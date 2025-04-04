@@ -16,11 +16,14 @@
 #include "GameFramework/PlayerController.h"
 #include "../Source/ICantCry/ICC/Actors/Bullet/BulletData.h"
 #include "../Mechanics/TurnSystem/Core/BattleHandler.h"
+#include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
 #include "BattleHUD.generated.h"
 
 /**
  * 
  */
+
+
 UCLASS()
 class ICANTCRY_API UBattleHUD : public UUserWidget
 {
@@ -78,6 +81,14 @@ public:
 
 
     UFUNCTION(BlueprintCallable)void ScrollBulletSelection(int ScrollValue);
+	void UpdateTarget();
+	void ScrollTargetSelection(float ScrollValue);
+
+	void SetSelectTarget(const bool& Enable);
+	bool GetSelectTarget() const;
+
+	void ShowHUD();
+	bool IsShootFired() const;
 
 private:
 
@@ -93,10 +104,21 @@ private:
     int32 CurrentRevolverSlot = 0;
     UPROPERTY(EditDefaultsOnly, Category = "Bullets") int32 MaxRevolverSlots = 6;
 
-    TArray<AActor*> Enemies;
+    TArray<AActor*> Enemies; // non ha senso sta variabile qua , abbiamo la queue sul battle handler
     TArray<UImage*> RevolverSlots;
     TArray<UBulletData*> LoadedBulletData;
     UPROPERTY() UBulletData* CurrentBulletData;
+
+	UPROPERTY(meta = (BindWidget))
+	UImage* Bullet_1;
+	UPROPERTY(meta = (BindWidget))
+	UImage* Bullet_2;
+	UPROPERTY(meta = (BindWidget))
+	UImage* Bullet_3;
+
+	// select the target before shooting
+	UPROPERTY()
+	bool bSelectTarget = false;
 
     // UI Functions
     UFUNCTION() void IncreaseAP(int Amount);
@@ -110,8 +132,7 @@ private:
     UFUNCTION() void OnPassPressed();
     
     // Targetting
-    UFUNCTION() void ScrollTargetSelection(float ScrollValue);
-    UFUNCTION() void UpdateTarget();
+    
     UFUNCTION() void UpdateCrosshair();
     
     // Bullet Management
@@ -122,6 +143,10 @@ private:
 
     UFUNCTION() void SwitchToBattleUI();
 
+	UPROPERTY()
+	AMinigameHandler* MinigameHandler = nullptr;
 
-	
+	// this variable will handle the target selection and will proceed to start the minigame
+	UPROPERTY()
+	bool bShootFired = false;
 };

@@ -66,6 +66,10 @@ public:
 	void EnableMinigameInput(const bool& Enable);
 	void SetActiveMinigameUserWidget(UMinigameUserWidget* Minigame);
 
+	UBattleHUD* GetBattleHUD() const;
+
+	UMinigameUserWidget* GetCurrentMinigameDisplayed() const;
+
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Movement")
 	float WalkSpeed;
@@ -100,8 +104,8 @@ private:
 	UPROPERTY()
 	bool bEnableInputToMinigame = false;
 
-	UPROPERTY()
-	UBattleHUD* Hud = nullptr;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	UBattleHUD* Hud;
 
 	UPROPERTY()
 	UMinigameUserWidget* CurrentMinigameDisplayed = nullptr;
