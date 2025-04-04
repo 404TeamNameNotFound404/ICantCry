@@ -12,13 +12,18 @@ class ICANTCRY_API ABattleHandler : public AActor
 public:
 	ABattleHandler();
 
+
 protected:
 	virtual void BeginPlay() override;
 
 public:
 	virtual void Tick(float DeltaTime) override;
 
+	UTurnBasedSystem* GetTurnBasedSystem() const;
+
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UTurnBasedSystem* TurnBasedSystem;
+
+
 };

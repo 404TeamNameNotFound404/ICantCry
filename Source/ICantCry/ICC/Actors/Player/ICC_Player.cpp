@@ -101,8 +101,8 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 }
 
 AWorldCamera* AICC_Player::GetWorldCamera() const
-{
-	return WorldCamera;
+{  
+    return WorldCamera;
 }
 
 UCameraComponent* AICC_Player::GetCamera() const
@@ -164,6 +164,22 @@ void AICC_Player::Input_Interact(const FInputActionValue& InputActionValue)
 	}
 	
 	DebugHelper::LogSuccess("Interacting with something");
+}
+
+
+void AICC_Player::Input_Scroll(const FInputActionValue &InputActionValue)
+{
+	const float Scroll = InputActionValue.Get<float>();
+
+	if(!Hud)
+	{
+		return;
+	}
+
+	if(Scroll)
+	{
+		Hud->ScrollBulletSelection(Scroll);
+	}
 }
 
 

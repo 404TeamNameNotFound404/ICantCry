@@ -13,6 +13,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "ICantCry/ICC/Actors/Player/Camera/WorldCamera.h"
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
+#include "../Source/ICantCry/ICC/UI/BattleHUD.h"
 #include "ICC_Player.generated.h"
 
 UCLASS()
@@ -59,7 +60,7 @@ public:
 	
 
 private:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Movement")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite,  meta = (AllowPrivateAccess = "true"), Category = "Movement")
 	float WalkSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Movement")
@@ -89,7 +90,11 @@ private:
 	UPROPERTY()
 	AMinigameHandler* MinigameHandler;
 
+	UPROPERTY()
+	UBattleHUD* Hud = nullptr;
+
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Interact(const FInputActionValue& InputActionValue);
 	void Input_Run(const FInputActionValue& InputActionValue);
+	void Input_Scroll(const FInputActionValue& InputActionValue);
 };

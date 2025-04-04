@@ -9,6 +9,8 @@ AMob::AMob()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	Tags.Add("Enemy");
 }
 
 // Called when the game starts or when spawned
@@ -24,9 +26,7 @@ void AMob::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-// Called to bind functionality to input
-void AMob::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+UEnemyDatas *AMob::GetData() const
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+    return EnemyData;
 }
-
