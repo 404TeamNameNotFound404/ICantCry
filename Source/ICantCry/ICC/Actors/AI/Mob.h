@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ICantCry/ICC/Actors/ICC_Actor.h"
-#include "../Mechanics/Core/Data/EnemyDatas.h"
+#include "ICantCry/ICC/Mechanics/Core/Data/EnemyDatas.h"
 #include "Mob.generated.h"
 
 UCLASS(Blueprintable)

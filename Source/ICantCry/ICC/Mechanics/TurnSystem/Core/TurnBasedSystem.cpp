@@ -25,7 +25,7 @@ void UTurnBasedSystem::Start(UWorld* World)
 
 	}
 
-	EnemySpawnManager->SpawnRandomEnemy();
+	//EnemySpawnManager->SpawnRandomEnemy();
 
 	Turn.PopulateQueue(World);
 	Turn.AssignFirstTurn();

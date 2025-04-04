@@ -16,6 +16,8 @@
 
 
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
+#include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameUserWidget.h"
+#include "ICantCry/ICC/UI/BattleHUD.h"
 #include "ICC_Player.generated.h"
 
 UCLASS()
@@ -59,7 +61,10 @@ public:
  */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Battle System", Blueprintable)
 	bool bIsInFight = false;
-	
+
+
+	void EnableMinigameInput(const bool& Enable);
+	void SetActiveMinigameUserWidget(UMinigameUserWidget* Minigame);
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Movement")
@@ -92,7 +97,18 @@ private:
 	UPROPERTY()
 	AMinigameHandler* MinigameHandler;
 
+	UPROPERTY()
+	bool bEnableInputToMinigame = false;
+
+	UPROPERTY()
+	UBattleHUD* Hud = nullptr;
+
+	UPROPERTY()
+	UMinigameUserWidget* CurrentMinigameDisplayed = nullptr;
+
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Interact(const FInputActionValue& InputActionValue);
 	void Input_Run(const FInputActionValue& InputActionValue);
+	void Input_Minigame(const FInputActionValue& InputActionValue);
+	void Input_Scroll(const FInputActionValue& InputActionValue);
 };
