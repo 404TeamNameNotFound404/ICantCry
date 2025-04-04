@@ -37,6 +37,8 @@ public:
     UPROPERTY(meta = (BindWidget)) UWidget* CanvasFirstReloadMagazine; 
     UPROPERTY(meta = (BindWidget)) UWidget* CanvasMainBattlePanel; 
     UPROPERTY(meta = (BindWidget)) UWidget* CanvasMiniGames; 
+    UPROPERTY(meta = (BindWidget)) UWidget* CanvasAmmoSelection;
+    UPROPERTY(meta = (BindWidget)) UWidget* CanvasStatus;
 
     // Action Buttons
     UPROPERTY(meta = (BindWidget)) UButton* Shoot;
@@ -67,7 +69,9 @@ public:
     // Bullet Selection
     UPROPERTY(meta = (BindWidget)) UImage* AmmoSelectionIndicator;
     UPROPERTY(meta = (BindWidget)) TArray<UImage*> BulletIcons;
-
+    UPROPERTY(meta = (BindWidget)) UTextBlock* TargetText_2; // Bullet name
+    UPROPERTY(meta = (BindWidget)) UTextBlock* TargetNameText_2; // Bullet name
+ 
     // Bullet Data
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullets")
     TArray<TSubclassOf<UBulletData>> AvailableBulletTypes;
