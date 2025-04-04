@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
+#include "ICantCry/ICC/Mechanics/Core/Data/PlayerStats.h"
 #include "DamageCalculator.generated.h"
 
 
@@ -11,11 +12,18 @@ USTRUCT(BlueprintType)
 struct FDamage
 {
 	GENERATED_BODY()
-	/* UBulletData* Bullets; */
-	/* UPlayerStats* PlayerStats; */
-	/* UEnemyTactics* Moves; */
+	/*
+	 *  UPROPERTY()
+	 * 	TArray<UBulletData*> Bullets;
+	*/
+	UPROPERTY()
+	UPlayerStats* PlayerStats;
+	
+	  /*   UPROPERTY()
+	  *    UEnemyTactics* Moves; 
+	  */
 
-	/* FDamage( UBulletData* BulletData, UPlayerStats* Stats, UEnemyTactics* EMoves) : BulletData(Bullets) , Stats(PlayerStats), EMoves(Moves) {}*/
+	/* FDamage( UBulletData* BulletData, UPlayerStats* Stats, UEnemyTactics* EMoves) : BulletData(Bullets) , Stats(PlayerStats), EMoves(Moves) {} */
 };
 
 /**
@@ -30,6 +38,6 @@ public:
 	
 
 private:
-
-	
+	UPROPERTY()
+	FDamage DamageMath;
 };
