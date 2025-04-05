@@ -160,29 +160,21 @@ void UBattleHUD::OnPassPressed()
 void UBattleHUD::ScrollTargetSelection(float ScrollValue)
 {
     TArray<AICC_Actor*> Queue = BattleHandler->GetTurnBasedSystem()->GetTurn().Queue;
-    
+
     if (Queue.IsEmpty())
     {
         DebugHelper::LogError("Queue is empty at ScrollTargetSelection");
         return;
     }
-
-    const int QueueSize = Queue.Num();
     
+  
+    const int QueueSize = Queue.Num();
+    const int EnemyCount = QueueSize - 1;
+
     const int Direction = (ScrollValue > 0) ? 1 : (ScrollValue < 0 ? -1 : 0);
-    if (Direction == 0) {
-        return; // No valid scroll
-    }
+    if (Direction == 0 /*|| EnemyCount <= 0*/) return;
 
-    // Update the index
     CurrentEnemyIndex = (CurrentEnemyIndex + Direction + QueueSize) % QueueSize;
-
-    // Check if index is still within bounds, this shouldn't happen if modulo works correctly
-    if (CurrentEnemyIndex < 0 || CurrentEnemyIndex >= QueueSize)
-    {
-        CurrentEnemyIndex = 0;
-        DebugHelper::LogError("CurrentEnemyIndex out of bounds! Index: " + FString::FromInt(CurrentEnemyIndex));
-    }
     
     DebugHelper::LogSuccess(FString::FromInt(CurrentEnemyIndex));
     TargetText->SetText(FText::FromString(FString(TEXT("Target: ")) + Queue[CurrentEnemyIndex]->GetName()));
@@ -198,7 +190,13 @@ void UBattleHUD::UpdateTarget()
     {
         bSelectTarget = true;
         Crosshair->SetVisibility(ESlateVisibility::Visible);
-        const AActor* TargetEnemy = Enemies[CurrentEnemyIndex];
+        const AICC_Actor* TargetEnemy = BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex];
+
+        if (TargetEnemy->IsA(AICC_Player::StaticClass())) // if TargetEnemy is Player just skip it , we don't need to target ourselves right?
+        {
+            return;
+        }
+        
         const FString EnemyName = TargetEnemy->GetName();
         TargetNameText->SetText(FText::FromString(FString(TEXT("Name: ")) + TargetEnemy->GetName()));
         TargetText->SetText(FText::FromString(FString(TEXT("Target: ")) + TargetEnemy->GetName()));
@@ -221,7 +219,7 @@ void UBattleHUD::UpdateTargetInfo(const FString& EnemyName, UBulletData* BulletD
     {
         InfoString += FString::Printf(TEXT("\n\nBULLET: %s\nPOWER: %d\nEFFECT: %s"), 
             *BulletData->BulletName,
-            BulletData->Power,
+             BulletData->Power,
             *BulletData->Effect);
     }
 

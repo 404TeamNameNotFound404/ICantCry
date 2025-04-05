@@ -71,3 +71,26 @@ AActor* DebugHelper::FindActorByName(UWorld* World, const FName& Name)
 
 	return nullptr;
 }
+
+void DebugHelper::AddOverlayMaterialToStaticMesh(UStaticMeshComponent* Target)
+{
+	if (!Target)
+	{
+		return;
+	}
+
+	UMaterialInterface* OverlayMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("Material'/Game/ICC/BluePrints/Actors/Materials/OutLiner/M_Outliner'"));
+	checkf(OverlayMaterial, TEXT("Could not find Material 'Outliner'"));
+	UMaterialInstanceDynamic* OverlayMaterialInstance = UMaterialInstanceDynamic::Create(OverlayMaterial, Target);
+	Target->OverlayMaterial = OverlayMaterialInstance;
+}
+
+void DebugHelper::RemoveOverlayMaterialFromStaticMesh(UStaticMeshComponent* Target)
+{
+	if (!Target)
+	{
+		return;
+	}
+
+	Target->OverlayMaterial = nullptr;
+}

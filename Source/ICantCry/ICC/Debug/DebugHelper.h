@@ -3,6 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 
 
 /**
@@ -31,4 +34,8 @@ public:
 	 * @return Desired Actor if found
 	 */
 	static AActor* FindActorByName(UWorld* World, const FName& Name);
+
+	static void AddOverlayMaterialToStaticMesh(UStaticMeshComponent* Target);
+
+	static void RemoveOverlayMaterialFromStaticMesh(UStaticMeshComponent* Target);
 };
