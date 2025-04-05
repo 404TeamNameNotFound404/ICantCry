@@ -19,19 +19,24 @@ static AMob* CurrentMob = nullptr;
 
 void UTurnBasedSystem::Start(UWorld* World)
 {
-
 	for (TActorIterator<AEnemySpawnManager> It(World); It; ++It)
 	{
 		EnemySpawnManager = *It;
 		DebugHelper::LogSuccess("EnemySpawnManager FOUND");
 		break;
-
 	}
 
+	for (TActorIterator<AICC_Player> It(World); It; ++It)
+	{
+		CurrentPlayer = *It;
+		break;
+	}
+	
 	//EnemySpawnManager->SpawnRandomEnemy();
 
 	Turn.PopulateQueue(World);
 	Turn.AssignFirstTurn();
+	CurrentPlayer->GetBattleHUD()->ShowHUD();
 	
 	if (Turn.Queue.IsValidIndex(Turn.CurrentTurn))
 	{
@@ -52,8 +57,6 @@ void UTurnBasedSystem::Start(UWorld* World)
 			bIsPlayerTurn = true;
 			AICC_Player* Player = Cast<AICC_Player>(Who);
 			CurrentPlayer = Player;
-			Player->GetBattleHUD()->ShowHUD();
-			// Player->PlayTurn(); // TODO ADD PLAYER PLAY TURN
 		}
 	}
 }
@@ -76,6 +79,7 @@ void UTurnBasedSystem::Update(UWorld* World)
 		{
 			Turn.Timer = 0;
 			DebugHelper::LogError(Turn.Queue[Turn.CurrentTurn]->GetName() + " ended it's turn");
+			CurrentPlayer->GetMinigameHandler()->StartMinigame(false);
 			Mob->DisableSilhouette();
 			EndTurn();
 			StartNextTurn();
@@ -134,7 +138,6 @@ void UTurnBasedSystem::StartNextTurn()
 			}
 			
 			CurrentPlayer = Player;
-			Player->GetBattleHUD()->ShowHUD();
 		}
 	}
 }

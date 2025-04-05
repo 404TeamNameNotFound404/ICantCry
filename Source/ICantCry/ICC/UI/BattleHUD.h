@@ -16,6 +16,8 @@
 #include "GameFramework/PlayerController.h"
 #include "../Source/ICantCry/ICC/Actors/Bullet/BulletData.h"
 #include "../Mechanics/TurnSystem/Core/BattleHandler.h"
+#include "Components/CanvasPanel.h"
+#include "Components/SizeBox.h"
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
 #include "BattleHUD.generated.h"
 
@@ -39,9 +41,10 @@ public:
 	// Canvas Panels
     UPROPERTY(meta = (BindWidget)) UWidget* CanvasFirstReloadMagazine; 
     UPROPERTY(meta = (BindWidget)) UWidget* CanvasMainBattlePanel; 
-    UPROPERTY(meta = (BindWidget)) UWidget* CanvasMiniGames; 
+    UPROPERTY(meta = (BindWidget)) UCanvasPanel* CanvasMiniGames;
+	UPROPERTY(meta = (BindWidget)) USizeBox* MinigameSlot;
     UPROPERTY(meta = (BindWidget)) UWidget* CanvasAmmoSelection;
-    UPROPERTY(meta = (BindWidget)) UWidget* CanvasStatus;
+    UPROPERTY(meta = (BindWidget)) UCanvasPanel* CanvasStatus;
 
     // Action Buttons
     UPROPERTY(meta = (BindWidget)) UButton* Shoot;
@@ -67,7 +70,11 @@ public:
     // Targetting
     UPROPERTY(meta = (BindWidget)) UImage* Crosshair;
 	UPROPERTY(meta = (BindWidget)) UTextBlock* TargetText;
-    UPROPERTY(meta = (BindWidget)) UTextBlock* TargetNameText; 
+    UPROPERTY(meta = (BindWidget)) UTextBlock* TargetNameText;
+	UPROPERTY(meta = (BindWidget)) UTextBlock* StatusText;
+	UPROPERTY(meta = (BindWidget)) UTextBlock* TargetNameText_1;
+	UPROPERTY(meta = (BindWidget)) UTextBlock* TargetText_3;
+	UPROPERTY(meta = (BindWidget)) UTextBlock* TargetNameText_3;
 
     // Bullet Selection
     UPROPERTY(meta = (BindWidget)) UImage* AmmoSelectionIndicator;
@@ -86,9 +93,18 @@ public:
 
 	void SetSelectTarget(const bool& Enable);
 	bool GetSelectTarget() const;
+	/**
+	 * Proceed to the battle phase
+	 */
+	void Engage();
 
 	void ShowHUD();
 	bool IsShootFired() const;
+	bool IsBulletSelectionOver() const;
+	bool IsSelectingTarget() const;
+	void SetIsSelectingTarget(const bool& Enable);
+	void ShowInfo() const;
+	void HideInfo() const;
 
 private:
 
@@ -149,4 +165,10 @@ private:
 	// this variable will handle the target selection and will proceed to start the minigame
 	UPROPERTY()
 	bool bShootFired = false;
+
+	UPROPERTY()
+	bool bBulletSetupFinished = false;
+
+	UPROPERTY()
+	bool bTargetSelection = false;
 };

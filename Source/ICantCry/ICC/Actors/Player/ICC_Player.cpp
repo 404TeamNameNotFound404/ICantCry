@@ -101,6 +101,7 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Interact, ETriggerEvent::Triggered, this, &ThisClass::Input_Interact);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Minigame, ETriggerEvent::Triggered, this, &ThisClass::Input_Minigame);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_BulletScroll, ETriggerEvent::Triggered, this, &ThisClass::Input_Scroll);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_ConfirmEngage, ETriggerEvent::Triggered, this, &ThisClass::Input_Engage);
 }
 
 AWorldCamera* AICC_Player::GetWorldCamera() const
@@ -138,6 +139,11 @@ UMinigameUserWidget* AICC_Player::GetCurrentMinigameDisplayed() const
 	}
 	
 	return CurrentMinigameDisplayed;
+}
+
+AMinigameHandler* AICC_Player::GetMinigameHandler() const
+{
+	return MinigameHandler;
 }
 
 
@@ -221,10 +227,18 @@ void AICC_Player::Input_Interact(const FInputActionValue& InputActionValue)
 void AICC_Player::Input_Scroll(const FInputActionValue &InputActionValue)
 {
 	// if player is not fighting there's no need to call this bindings
-	// if (!bIsInFight)
-	// {
-	// 	return;
-	// }
+	if (!bIsInFight)
+	{
+		DebugHelper::LogError("Can't get scroll is in fight = false");
+		return;
+	}
+
+	if (!Hud->IsSelectingTarget())
+	{
+		DebugHelper::LogError("You can't do that yet");
+		return;
+	}
+	
 	DebugHelper::LogSuccess("Scrolling something");
 	
 	if(!Hud)
@@ -242,10 +256,31 @@ void AICC_Player::Input_Scroll(const FInputActionValue &InputActionValue)
 	}
 	else
 	{
-		if(Scroll)
+		if(Scroll && !Hud->IsBulletSelectionOver())
 		{
 			Hud->ScrollBulletSelection(Scroll);
 		}
+	}
+}
+
+void AICC_Player::Input_Engage(const FInputActionValue& InputActionValue)
+{
+	if (!bIsInFight)
+	{
+		DebugHelper::LogError("Can't get engage is in fight = false");
+		return;
+	}
+
+	if (!Hud->IsSelectingTarget())
+	{
+		DebugHelper::LogError("You can't do that yet, Engaging without selecting a target");
+		return;
+	}
+
+	const bool Pressed = InputActionValue.Get<bool>();
+	if (Pressed)
+	{
+		Hud->Engage();
 	}
 }
 

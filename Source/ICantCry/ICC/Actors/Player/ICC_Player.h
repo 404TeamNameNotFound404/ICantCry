@@ -67,8 +67,8 @@ public:
 	void SetActiveMinigameUserWidget(UMinigameUserWidget* Minigame);
 
 	UBattleHUD* GetBattleHUD() const;
-
 	UMinigameUserWidget* GetCurrentMinigameDisplayed() const;
+	AMinigameHandler* GetMinigameHandler() const;
 
 	/**
 	 * Read below!!
@@ -123,4 +123,5 @@ private:
 	void Input_Run(const FInputActionValue& InputActionValue);
 	void Input_Minigame(const FInputActionValue& InputActionValue);
 	void Input_Scroll(const FInputActionValue& InputActionValue);
+	void Input_Engage(const FInputActionValue& InputActionValue);
 };

@@ -2,6 +2,7 @@
 #include "BattleHUD.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
+#include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
 #include "EngineUtils.h"
 
 void UBattleHUD::NativeConstruct()
@@ -122,6 +123,7 @@ void UBattleHUD::OnShootPressed()
     TargetNameText->SetVisibility(ESlateVisibility::Visible);
     bShootFired = true;
     IncreaseAP(1);
+    bTargetSelection = true;
     DebugHelper::LogSuccess("Shoot pressed");
 }
 
@@ -138,6 +140,7 @@ void UBattleHUD::OnFocusPressed()
     BattleHandler->GetTurnBasedSystem()->StartNextTurn();
     DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
     BattleHandler->GetTurnBasedSystem()->SetTurnOverlayApplied(false);
+    bTargetSelection = false;
 }
 
 void UBattleHUD::OnReloadPressed()
@@ -159,10 +162,12 @@ void UBattleHUD::OnPassPressed()
     BattleHandler->GetTurnBasedSystem()->StartNextTurn();
     DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
     BattleHandler->GetTurnBasedSystem()->SetTurnOverlayApplied(false);
+    bTargetSelection = false;
 }
 
 void UBattleHUD::ScrollTargetSelection(float ScrollValue)
 {
+    bTargetSelection = true;
     TArray<AICC_Actor*> Queue = BattleHandler->GetTurnBasedSystem()->GetTurn().Queue;
 
     if (Queue.IsEmpty())
@@ -170,7 +175,6 @@ void UBattleHUD::ScrollTargetSelection(float ScrollValue)
         DebugHelper::LogError("Queue is empty at ScrollTargetSelection");
         return;
     }
-    
   
     const int QueueSize = Queue.Num();
     const int EnemyCount = QueueSize - 1;
@@ -191,8 +195,14 @@ void UBattleHUD::ScrollTargetSelection(float ScrollValue)
 
 void UBattleHUD::UpdateTarget()
 {
+    if (!bTargetSelection)
+    {
+        return;
+    }
+    
     if (BattleHandler->GetTurnBasedSystem()->GetTurn().Queue.IsValidIndex(CurrentEnemyIndex))
     {
+        ShowInfo();
         bSelectTarget = true;
         //Crosshair->SetVisibility(ESlateVisibility::Visible);
         AICC_Actor* TargetEnemy = BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex];
@@ -277,7 +287,7 @@ void UBattleHUD::UpdateCrosshair()
 // BULLET
 void UBattleHUD::UpdateBulletSelection() 
 {
-    if (!CanvasAmmoSelection || !LoadedBulletData.IsValidIndex(SelectedBulletIndex)) 
+    if (!CanvasAmmoSelection || !LoadedBulletData.IsValidIndex(SelectedBulletIndex) || !bBulletSetupFinished) 
     {
         return;
     }
@@ -372,6 +382,7 @@ void UBattleHUD::ConfirmBulletSelection() // this is for the confirm button
     if (CanvasAmmoSelection) CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
     if (ConfirmButton) ConfirmButton->SetVisibility(ESlateVisibility::Hidden);
     SwitchToBattleUI();
+    bBulletSetupFinished = true;
 }
 
 void UBattleHUD::SwitchToBattleUI()
@@ -427,6 +438,16 @@ bool UBattleHUD::GetSelectTarget() const
     return bSelectTarget;
 }
 
+void UBattleHUD::Engage()
+{
+    bTargetSelection = false;
+    AMob* SelectedEnemy = Cast<AMob>(BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex]);
+    checkf(SelectedEnemy, TEXT("SelectedEnemy is null at UBattleHUD::Engage"));
+    DebugHelper::LogMessage(3, FColor::FromHex("3D5300"), "Targeting " + SelectedEnemy->GetActorLabel());
+    checkf(MinigameHandler, TEXT("Minigame handler is null at UBattleHUD::Engage"));
+    MinigameHandler->StartMinigame(true);
+}
+
 void UBattleHUD::ShowHUD() 
 {
     AddToViewport();
@@ -439,6 +460,45 @@ void UBattleHUD::ShowHUD()
 bool UBattleHUD::IsShootFired() const
 {
     return bShootFired;
+}
+
+bool UBattleHUD::IsBulletSelectionOver() const
+{
+    return bBulletSetupFinished;
+}
+
+bool UBattleHUD::IsSelectingTarget() const
+{
+    return bTargetSelection;
+}
+
+void UBattleHUD::SetIsSelectingTarget(const bool& Enable)
+{
+    bTargetSelection = Enable;
+}
+
+void UBattleHUD::ShowInfo() const
+{
+    TargetText->SetVisibility(ESlateVisibility::Visible);
+    TargetNameText->SetVisibility(ESlateVisibility::Visible);
+    TargetText_2->SetVisibility(ESlateVisibility::Visible);
+    TargetNameText_2->SetVisibility(ESlateVisibility::Visible);
+    StatusText->SetVisibility(ESlateVisibility::Visible);
+    TargetNameText_1->SetVisibility(ESlateVisibility::Visible);
+    TargetText_3->SetVisibility(ESlateVisibility::Visible);
+    TargetNameText_3->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UBattleHUD::HideInfo() const
+{
+    TargetText->SetVisibility(ESlateVisibility::Hidden);
+    TargetNameText->SetVisibility(ESlateVisibility::Hidden);
+    TargetText_2->SetVisibility(ESlateVisibility::Hidden);
+    TargetNameText_2->SetVisibility(ESlateVisibility::Hidden);
+    StatusText->SetVisibility(ESlateVisibility::Hidden);
+    TargetNameText_1->SetVisibility(ESlateVisibility::Hidden);
+    TargetText_3->SetVisibility(ESlateVisibility::Hidden);
+    TargetNameText_3->SetVisibility(ESlateVisibility::Hidden);
 }
 
 
