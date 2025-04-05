@@ -70,6 +70,13 @@ public:
 
 	UMinigameUserWidget* GetCurrentMinigameDisplayed() const;
 
+	/**
+	 * Read below!!
+	 * @note DEBUG ONLY!
+	 */
+	UPROPERTY(EditAnywhere, Blueprintreadwrite, Category = "Debug", meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* DebugMesh;
+
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Movement")
 	float WalkSpeed;
@@ -109,6 +116,7 @@ private:
 
 	UPROPERTY()
 	UMinigameUserWidget* CurrentMinigameDisplayed = nullptr;
+	
 
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Interact(const FInputActionValue& InputActionValue);

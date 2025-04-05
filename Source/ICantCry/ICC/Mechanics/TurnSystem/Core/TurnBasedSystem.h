@@ -24,6 +24,9 @@ public:
 	FTurn GetTurn() const;
 
 	bool GetIsPlayerTurn() const;
+	AICC_Player* TryGetCurrentPlayer() const;
+
+	void SetTurnOverlayApplied(const bool &Applied);
 
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Turn", meta=(AllowPrivateAccess=true))
@@ -52,5 +55,8 @@ private:
 
 	UPROPERTY()
 	AEnemySpawnManager* EnemySpawnManager;
+
+	UPROPERTY()
+	bool bTurnOverlayApplied = false;
 	
 };

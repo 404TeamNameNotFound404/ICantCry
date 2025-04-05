@@ -15,6 +15,8 @@ UTurnBasedSystem::UTurnBasedSystem() : MaxAITurnTime(10.0f), bIsAiTurn(false), b
 	Turn.Queue.Empty();
 }
 
+static AMob* CurrentMob = nullptr;
+
 void UTurnBasedSystem::Start(UWorld* World)
 {
 
@@ -40,6 +42,7 @@ void UTurnBasedSystem::Start(UWorld* World)
 			AMob* Mob = Cast<AMob>(Who);
 			bIsAiTurn = true;
 			bIsPlayerTurn = false;
+			
 			// Mob->PlayTurn(); //TODO ADD MOB PLAY TURN (Define the ai class)
 		}
 		//otherwise is player playing
@@ -49,6 +52,7 @@ void UTurnBasedSystem::Start(UWorld* World)
 			bIsPlayerTurn = true;
 			AICC_Player* Player = Cast<AICC_Player>(Who);
 			CurrentPlayer = Player;
+			Player->GetBattleHUD()->ShowHUD();
 			// Player->PlayTurn(); // TODO ADD PLAYER PLAY TURN
 		}
 	}
@@ -65,11 +69,14 @@ void UTurnBasedSystem::Update(UWorld* World)
 	if (bIsAiTurn)
 	{
 		Turn.Timer += World->GetDeltaSeconds() * Variations;
+		AMob* Mob = Cast<AMob>(Turn.Queue[Turn.CurrentTurn]);
+		Mob->HighlightsSilhouette();
 		
 		if (Turn.Timer >= MaxAITurnTime)
 		{
 			Turn.Timer = 0;
 			DebugHelper::LogError(Turn.Queue[Turn.CurrentTurn]->GetName() + " ended it's turn");
+			Mob->DisableSilhouette();
 			EndTurn();
 			StartNextTurn();
 		}
@@ -95,6 +102,7 @@ void UTurnBasedSystem::Update(UWorld* World)
 	Flow();
 }
 
+
 void UTurnBasedSystem::StartNextTurn()
 {
 	DebugHelper::LogWarning("Next turn is started");
@@ -106,6 +114,7 @@ void UTurnBasedSystem::StartNextTurn()
 		if (Who->IsA(AMob::StaticClass()))
 		{
 			AMob* Mob = Cast<AMob>(Who);
+			CurrentMob = Mob;
 			bIsAiTurn = true;
 			bIsPlayerTurn = false;
 			// Mob->PlayTurn(); //TODO ADD MOB PLAY TURN (Define the ai class)
@@ -117,6 +126,13 @@ void UTurnBasedSystem::StartNextTurn()
 			bIsAiTurn = false;
 			bIsPlayerTurn = true;
 			AICC_Player* Player = Cast<AICC_Player>(Who);
+			
+			if (!bTurnOverlayApplied)
+			{
+				DebugHelper::AddTurnMaterialOverlayToStaticMesh(Player->DebugMesh);
+				bTurnOverlayApplied = true;
+			}
+			
 			CurrentPlayer = Player;
 			Player->GetBattleHUD()->ShowHUD();
 		}
@@ -138,6 +154,21 @@ FTurn UTurnBasedSystem::GetTurn() const
 bool UTurnBasedSystem::GetIsPlayerTurn() const
 {
 	return bIsPlayerTurn;
+}
+
+AICC_Player* UTurnBasedSystem::TryGetCurrentPlayer() const
+{
+	if (!CurrentPlayer)
+	{
+		return nullptr;
+	}
+	
+	return CurrentPlayer;
+}
+
+void UTurnBasedSystem::SetTurnOverlayApplied(const bool& Applied)
+{
+	bTurnOverlayApplied = Applied;
 }
 
 void UTurnBasedSystem::Flow()

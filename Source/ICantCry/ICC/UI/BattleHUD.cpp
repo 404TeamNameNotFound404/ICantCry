@@ -136,6 +136,8 @@ void UBattleHUD::OnFocusPressed()
     IncreaseAP(1);
     BattleHandler->GetTurnBasedSystem()->EndTurn();
     BattleHandler->GetTurnBasedSystem()->StartNextTurn();
+    DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
+    BattleHandler->GetTurnBasedSystem()->SetTurnOverlayApplied(false);
 }
 
 void UBattleHUD::OnReloadPressed()
@@ -155,6 +157,8 @@ void UBattleHUD::OnPassPressed()
     DebugHelper::LogSuccess("Player passed the turn");
     BattleHandler->GetTurnBasedSystem()->EndTurn();
     BattleHandler->GetTurnBasedSystem()->StartNextTurn();
+    DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
+    BattleHandler->GetTurnBasedSystem()->SetTurnOverlayApplied(false);
 }
 
 void UBattleHUD::ScrollTargetSelection(float ScrollValue)
@@ -175,9 +179,10 @@ void UBattleHUD::ScrollTargetSelection(float ScrollValue)
     if (Direction == 0 /*|| EnemyCount <= 0*/) return;
 
     CurrentEnemyIndex = (CurrentEnemyIndex + Direction + QueueSize) % QueueSize;
-    
     DebugHelper::LogSuccess(FString::FromInt(CurrentEnemyIndex));
-    TargetText->SetText(FText::FromString(FString(TEXT("Target: ")) + Queue[CurrentEnemyIndex]->GetName()));
+    TargetNameText->SetText(FText::FromString(Queue[CurrentEnemyIndex]->GetActorLabel()));
+    TargetText->SetText(FText::FromString(FString(TEXT("Target: ")) + Queue[CurrentEnemyIndex]->GetActorLabel()));
+    
     // if (bSelectTarget)
     // {
     //     MinigameHandler->StartMinigame(true);
@@ -189,23 +194,44 @@ void UBattleHUD::UpdateTarget()
     if (BattleHandler->GetTurnBasedSystem()->GetTurn().Queue.IsValidIndex(CurrentEnemyIndex))
     {
         bSelectTarget = true;
-        Crosshair->SetVisibility(ESlateVisibility::Visible);
-        const AICC_Actor* TargetEnemy = BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex];
+        //Crosshair->SetVisibility(ESlateVisibility::Visible);
+        AICC_Actor* TargetEnemy = BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex];
+        static AMob* PreviousTargetEnemy = nullptr; 
+        static bool bOverlayMaterialApplied = false;
 
-        if (TargetEnemy->IsA(AICC_Player::StaticClass())) // if TargetEnemy is Player just skip it , we don't need to target ourselves right?
+        if (TargetEnemy->IsA(AICC_Player::StaticClass())) // if TargetEnemy is Player just skip it , we don't need to target ourselves right? and we all the info will be hidden for now 
         {
+            TargetNameText->SetText(FText::FromString(""));
+            TargetText->SetText(FText::FromString(""));
+            TargetText_2->SetText(FText::FromString(""));
+            TargetNameText_2->SetText(FText::FromString(""));
             return;
         }
         
-        const FString EnemyName = TargetEnemy->GetName();
-        TargetNameText->SetText(FText::FromString(FString(TEXT("Name: ")) + TargetEnemy->GetName()));
-        TargetText->SetText(FText::FromString(FString(TEXT("Target: ")) + TargetEnemy->GetName()));
-        FWidgetTransform T;
-        T.Translation = FVector2D{TargetEnemy->GetActorLocation().X, TargetEnemy->GetActorLocation().Y};
-        T.Angle = Crosshair->GetRenderTransform().Angle;
-        T.Scale = Crosshair->GetRenderTransform().Scale;
-        T.Shear = Crosshair->GetRenderTransform().Shear;
-        Crosshair->SetRenderTransform(T);
+        AMob* Current = Cast<AMob>(TargetEnemy);
+        
+        if (PreviousTargetEnemy && PreviousTargetEnemy != Current)
+        {
+            DebugHelper::RemoveOverlayMaterialFromStaticMesh(PreviousTargetEnemy->StaticMesh); 
+            bOverlayMaterialApplied = false;
+        }
+        
+        if (!bOverlayMaterialApplied)
+        {
+            DebugHelper::AddOverlayMaterialToStaticMesh(Current->StaticMesh);
+            bOverlayMaterialApplied = true;
+            PreviousTargetEnemy = Current;
+        }
+        
+        // const FString EnemyName = TargetEnemy->GetName();
+        // TargetNameText->SetText(FText::FromString(FString(TEXT("Name: ")) + TargetEnemy->GetName()));
+        // TargetText->SetText(FText::FromString(FString(TEXT("Target: ")) + TargetEnemy->GetName()));
+        // FWidgetTransform T;
+        // T.Translation = FVector2D{TargetEnemy->GetActorLocation().X, TargetEnemy->GetActorLocation().Y};
+        // T.Angle = Crosshair->GetRenderTransform().Angle;
+        // T.Scale = Crosshair->GetRenderTransform().Scale;
+        // T.Shear = Crosshair->GetRenderTransform().Shear;
+        // Crosshair->SetRenderTransform(T);
     }
 }
 

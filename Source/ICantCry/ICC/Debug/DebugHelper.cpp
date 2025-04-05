@@ -79,18 +79,105 @@ void DebugHelper::AddOverlayMaterialToStaticMesh(UStaticMeshComponent* Target)
 		return;
 	}
 
-	UMaterialInterface* OverlayMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("Material'/Game/ICC/BluePrints/Actors/Materials/OutLiner/M_Outliner'"));
+	UMaterialInterface* OverlayMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("Material'/Game/ICC/BluePrints/Actors/Materials/OutLiner/M_Outliner.M_Outliner'"));
 	checkf(OverlayMaterial, TEXT("Could not find Material 'Outliner'"));
 	UMaterialInstanceDynamic* OverlayMaterialInstance = UMaterialInstanceDynamic::Create(OverlayMaterial, Target);
 	Target->OverlayMaterial = OverlayMaterialInstance;
+	Target->MarkRenderStateDirty();
 }
 
-void DebugHelper::RemoveOverlayMaterialFromStaticMesh(UStaticMeshComponent* Target)
+void DebugHelper::AddOverlayMaterialToASkeletalMesh(USkeletalMeshComponent* Target, const FString& MaterialName)
+{
+	if (!Target)
+	{
+		LogError("Target is null at DebugHelper::AddTurnMaterialOverlayToSkeletalMesh");
+		return;
+	}
+
+	const FString MaterialPath = TEXT("Material'/Game/ICC/BluePrints/Actors/Materials/OutLiner/") + MaterialName + TEXT(".") + MaterialName;
+	UMaterialInterface* OverlayMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("Material'/Game/ICC/BluePrints/Actors/Materials/OutLiner/M_TurnOutliner.M_TurnOutliner'"));
+	checkf(OverlayMaterial, TEXT("Could not find Material 'M_TurnOutliner'"));
+	
+	UMaterialInstanceDynamic* OverlayMaterialInstance = UMaterialInstanceDynamic::Create(OverlayMaterial, Target);
+	Target->SetMaterial(0, OverlayMaterialInstance); // Apply to the first material slot (index 0)
+	Target->MarkRenderStateDirty();
+}
+
+void DebugHelper::AddTurnOverlayMaterialToASkeletalMesh(USkeletalMeshComponent* Target)
 {
 	if (!Target)
 	{
 		return;
 	}
 
-	Target->OverlayMaterial = nullptr;
+	UMaterialInterface* OverlayMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("Material'/Game/ICC/BluePrints/Actors/Materials/OutLiner/M_TurnOutliner.M_TurnOutliner'"));
+	checkf(OverlayMaterial, TEXT("Could not find Material 'M_TUrnOutliner'"));
+
+	UMaterialInstanceDynamic* OverlayMaterialInstance = UMaterialInstanceDynamic::Create(OverlayMaterial, Target);
+	Target->OverlayMaterial = OverlayMaterialInstance;
+	Target->MarkRenderStateDirty();
 }
+
+void DebugHelper::RemoveTurnOverlayMaterialToASkeletalMesh(USkeletalMeshComponent* Target)
+{
+	if (!Target)
+	{
+		LogError("Target is null at DebugHelper::RemoveOverlayMaterialFromStaticMesh");
+		return;
+	}
+
+	Target->OverlayMaterial = nullptr;
+	Target->MarkRenderStateDirty();
+}
+
+void DebugHelper::RemoveOverlayMaterialToASkeletalMesh(USkeletalMeshComponent* Target)
+{
+	if (!Target)
+	{
+		LogError("Target is null at DebugHelper::RemoveOverlayMaterialFromStaticMesh");
+		return;
+	}
+
+	Target->OverlayMaterial = nullptr;
+	Target->MarkRenderStateDirty();
+}
+
+void DebugHelper::RemoveOverlayMaterialFromStaticMesh(UStaticMeshComponent* Target)
+{
+	if (!Target)
+	{
+		LogError("Target is null at DebugHelper::RemoveOverlayMaterialFromStaticMesh");
+		return;
+	}
+
+	Target->OverlayMaterial = nullptr;
+	Target->MarkRenderStateDirty();
+}
+
+void DebugHelper::AddTurnMaterialOverlayToStaticMesh(UStaticMeshComponent* Target)
+{
+	if (!Target)
+	{
+		return;
+	}
+
+	UMaterialInterface* OverlayMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("Material'/Game/ICC/BluePrints/Actors/Materials/OutLiner/M_TurnOutliner.M_TurnOutliner'"));
+	checkf(OverlayMaterial, TEXT("Could not find Material 'M_TUrnOutliner'"));
+
+	UMaterialInstanceDynamic* OverlayMaterialInstance = UMaterialInstanceDynamic::Create(OverlayMaterial, Target);
+	Target->OverlayMaterial = OverlayMaterialInstance;
+	Target->MarkRenderStateDirty();
+}
+
+void DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(UStaticMeshComponent* Target)
+{
+	if (!Target)
+	{
+		LogError("Target is null at DebugHelper::RemoveOverlayMaterialFromStaticMesh");
+		return;
+	}
+
+	Target->OverlayMaterial = nullptr;
+	Target->MarkRenderStateDirty();
+}
+

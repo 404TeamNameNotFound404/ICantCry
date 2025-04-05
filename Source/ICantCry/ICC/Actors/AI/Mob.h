@@ -27,13 +27,19 @@ public:
 	// Get EnemyData
 	UEnemyDatas* GetData() const;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Basic",  meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Basic",  meta = (AllowPrivateAccess = "true"))
 	UStaticMeshComponent* StaticMesh;
+
+	void HighlightsSilhouette();
+	void DisableSilhouette();
 
 private:
 
 	// Reference to Enemy Data Asset
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data",  meta = (AllowPrivateAccess = "true"))
 	UEnemyDatas* EnemyData;
+
+	UPROPERTY()
+	bool bEnableSilhouette = false;
 	
 };

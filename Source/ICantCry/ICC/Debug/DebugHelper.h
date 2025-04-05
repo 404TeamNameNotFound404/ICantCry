@@ -35,7 +35,47 @@ public:
 	 */
 	static AActor* FindActorByName(UWorld* World, const FName& Name);
 
+	/**
+	 * Add Overlay Material to a static mesh only
+	 * @param Target the static mesh
+	 */
 	static void AddOverlayMaterialToStaticMesh(UStaticMeshComponent* Target);
 
+	/**
+	 * Add Overlay material to a skeletal mesh component, the overlay path is PREDEFINED so it will take the material name
+	 * within /Game/ICC/BluePrints/Actors/Materials/OutLiner/ Folder!
+	 * @note /Game/ICC/BluePrints/Actors/Materials/OutLiner/ is the predefined path!
+	 * @param Target Skeletal mesh component you want to apply
+	 * @param MaterialName Material name
+	 */
+	static void AddOverlayMaterialToASkeletalMesh(USkeletalMeshComponent* Target, const FString& MaterialName);
+
+	static void AddTurnOverlayMaterialToASkeletalMesh(USkeletalMeshComponent* Target);
+
+	static void RemoveTurnOverlayMaterialToASkeletalMesh(USkeletalMeshComponent* Target);
+
+	/**
+	 * Remove the overlay material from a skeletal mesh component
+	 * @param Target skeletal mesh
+	 */
+	static void RemoveOverlayMaterialToASkeletalMesh(USkeletalMeshComponent* Target);
+
+	/**
+	 * Remove the overlay material from a static mesh component
+	 * @param Target 
+	 */
 	static void RemoveOverlayMaterialFromStaticMesh(UStaticMeshComponent* Target);
+
+	/**
+	 * Same function as above but it loads the M_TurnOutliner material
+	 * @param Target static mesh
+	 */
+	static void AddTurnMaterialOverlayToStaticMesh(UStaticMeshComponent* Target);
+
+	/**
+	 * Same as remove
+	 * @param Target static mesh
+	 */
+	static void RemoveTurnMaterialOverlayToStaticMesh(UStaticMeshComponent* Target);
+	
 };
