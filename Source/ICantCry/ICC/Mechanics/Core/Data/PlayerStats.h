@@ -50,10 +50,30 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle")
 	float BattleSpeedFlow = 1.0f;
+	
 	/**
 	 * Player status (if affected by any)
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle")
 	FName Status;
+
+
+	/**
+ * Minigame modifier 
+ */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Modifiers")
+	float MinigameModifier = 0.5f;
+
+	/**
+	 * Ap modifier
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Modifiers")
+	float ApModifier = 1.0f;
+
+	/**
+	 * Weakness modifier
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Modifiers")
+	float WeaknessModifier = 0.0f;
 	
 };

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "ICantCry/ICC/Actors/ICC_Actor.h"
 #include "ICantCry/ICC/Mechanics/Core/Data/EnemyDatas.h"
+#include "ICantCry/ICC/Mechanics/Core/Data/EnemyTactics.h"
 #include "Mob.generated.h"
 
 UCLASS(Blueprintable)
@@ -27,6 +28,8 @@ public:
 	// Get EnemyData
 	UEnemyDatas* GetData() const;
 
+	UEnemyTactics* GetTactics() const;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Basic",  meta = (AllowPrivateAccess = "true"))
 	UStaticMeshComponent* StaticMesh;
 
@@ -38,6 +41,9 @@ private:
 	// Reference to Enemy Data Asset
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data",  meta = (AllowPrivateAccess = "true"))
 	UEnemyDatas* EnemyData;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data",  meta = (AllowPrivateAccess = "true"))
+	UEnemyTactics* Moves;
 
 	UPROPERTY()
 	bool bEnableSilhouette = false;

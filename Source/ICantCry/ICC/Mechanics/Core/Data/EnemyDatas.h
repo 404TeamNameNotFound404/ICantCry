@@ -24,7 +24,14 @@ public:
 	float Health;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float AbilityPoints;
+	float AbilityPoints = 1.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float AttackPower = 1.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float DefencePower = 1.0f;
+	
 
 	// aggiungi potenza degli attacchi che non ho messo e che trovi nel documento che ti ho linkato e che trovi su generale che è ultimo link di drive 
 

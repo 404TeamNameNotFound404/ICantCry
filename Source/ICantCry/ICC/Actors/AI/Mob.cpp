@@ -29,6 +29,11 @@ UEnemyDatas *AMob::GetData() const
     return EnemyData;
 }
 
+UEnemyTactics* AMob::GetTactics() const
+{
+	return Moves;
+}
+
 void AMob::HighlightsSilhouette()
 {
 	if (!bEnableSilhouette)
