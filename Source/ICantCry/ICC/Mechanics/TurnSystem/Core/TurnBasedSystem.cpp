@@ -19,6 +19,7 @@ static AMob* CurrentMob = nullptr;
 
 void UTurnBasedSystem::Start(UWorld* World)
 {
+	
 	for (TActorIterator<AEnemySpawnManager> It(World); It; ++It)
 	{
 		EnemySpawnManager = *It;
@@ -32,11 +33,16 @@ void UTurnBasedSystem::Start(UWorld* World)
 		break;
 	}
 	
+	bFightStarted = true;
+	
+	CurrentPlayer->GetBattleHUD()->ShowHUD();
+	Turn.PopulateQueue(World);
+	
+	DebugHelper::LogSuccess("Fight started right after");
+	
 	//EnemySpawnManager->SpawnRandomEnemy();
 
-	Turn.PopulateQueue(World);
 	Turn.AssignFirstTurn();
-	CurrentPlayer->GetBattleHUD()->ShowHUD();
 	
 	if (Turn.Queue.IsValidIndex(Turn.CurrentTurn))
 	{
@@ -56,6 +62,7 @@ void UTurnBasedSystem::Start(UWorld* World)
 			bIsAiTurn = false;
 			bIsPlayerTurn = true;
 			AICC_Player* Player = Cast<AICC_Player>(Who);
+			DebugHelper::AddTurnMaterialOverlayToStaticMesh(Player->DebugMesh);
 			CurrentPlayer = Player;
 		}
 	}
@@ -63,6 +70,11 @@ void UTurnBasedSystem::Start(UWorld* World)
 
 void UTurnBasedSystem::Update(UWorld* World)
 {
+	if (!bRequestFight)
+	{
+		return;
+	}
+	
 	if (!World)
 	{
 		DebugHelper::LogError("World is null! at UTurnBasedSystem::Update");
@@ -75,11 +87,11 @@ void UTurnBasedSystem::Update(UWorld* World)
 		AMob* Mob = Cast<AMob>(Turn.Queue[Turn.CurrentTurn]);
 		Mob->HighlightsSilhouette();
 		
-		if (Turn.Timer >= MaxAITurnTime)
+		if (Turn.Timer >= MaxAITurnTime) 
 		{
 			Turn.Timer = 0;
 			DebugHelper::LogError(Turn.Queue[Turn.CurrentTurn]->GetName() + " ended it's turn");
-			CurrentPlayer->GetMinigameHandler()->StartMinigame(false);
+			CurrentPlayer->GetMinigameHandler()->StartMinigame(false); /*TODO TO PLAY THE DEFENCE MINIGAME AND KEEP THE AI "WAITING" AFTER THE MINIGAME IS DONE, WE NEED TO DEFINE THE BEHAVIOUR FIRST! AND PUT IT ON THE ATTACK BEHAVIOUR*/
 			Mob->DisableSilhouette();
 			EndTurn();
 			StartNextTurn();
@@ -105,7 +117,6 @@ void UTurnBasedSystem::Update(UWorld* World)
 	
 	Flow();
 }
-
 
 void UTurnBasedSystem::StartNextTurn()
 {
@@ -176,6 +187,11 @@ void UTurnBasedSystem::SetTurnOverlayApplied(const bool& Applied)
 
 void UTurnBasedSystem::Flow()
 {
+	if (!CurrentPlayer->GetBattleHUD()->IsReadyToBattle())
+	{
+		return;
+	}
+	
 	/* TODO ADD A WAY TO SPEED UP THE BATTLE USING BATTLE FLOW IN PLAYER STATS
 	* In case of AI death
 	* Remove its index from the array and if array is empty victory condition is achieved
@@ -198,5 +214,14 @@ void UTurnBasedSystem::Flow()
 }
 
 
+void UTurnBasedSystem::RequestFight(const bool& Request)
+{
+	bRequestFight = Request;
+}
 
+void UTurnBasedSystem::ExitBattle()
+{
+	
+	bRequestFight = false;
+}
 

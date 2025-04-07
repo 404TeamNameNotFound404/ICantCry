@@ -3,7 +3,9 @@
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
+
 #include "EngineUtils.h"
+#include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 
 void UBattleHUD::NativeConstruct()
 {
@@ -15,6 +17,7 @@ void UBattleHUD::NativeConstruct()
     if (Reload) Reload->OnClicked.AddDynamic(this, &UBattleHUD::OnReloadPressed);
     if (Pass) Pass->OnClicked.AddDynamic(this, &UBattleHUD::OnPassPressed);
     if (ConfirmButton) ConfirmButton->OnClicked.AddDynamic(this, &UBattleHUD::ConfirmBulletSelection);
+    if (EngageBtn) EngageBtn->OnClicked.AddDynamic(this, &UBattleHUD::Engage);
 
     //SET VISIBILITY PANNELS
 
@@ -204,25 +207,26 @@ void UBattleHUD::UpdateTarget()
     {
         ShowInfo();
         bSelectTarget = true;
-        //Crosshair->SetVisibility(ESlateVisibility::Visible);
         AICC_Actor* TargetEnemy = BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex];
         static AMob* PreviousTargetEnemy = nullptr; 
         static bool bOverlayMaterialApplied = false;
-
+        
         if (TargetEnemy->IsA(AICC_Player::StaticClass())) // if TargetEnemy is Player just skip it , we don't need to target ourselves right? and we all the info will be hidden for now 
         {
             TargetNameText->SetText(FText::FromString(""));
             TargetText->SetText(FText::FromString(""));
             TargetText_2->SetText(FText::FromString(""));
             TargetNameText_2->SetText(FText::FromString(""));
+            EngageBtn->SetVisibility(ESlateVisibility::Hidden);
             return;
         }
         
         AMob* Current = Cast<AMob>(TargetEnemy);
-        
+       
         if (PreviousTargetEnemy && PreviousTargetEnemy != Current)
         {
-            DebugHelper::RemoveOverlayMaterialFromStaticMesh(PreviousTargetEnemy->StaticMesh); 
+            DebugHelper::RemoveOverlayMaterialFromStaticMesh(PreviousTargetEnemy->StaticMesh);
+            
             bOverlayMaterialApplied = false;
         }
         
@@ -232,16 +236,6 @@ void UBattleHUD::UpdateTarget()
             bOverlayMaterialApplied = true;
             PreviousTargetEnemy = Current;
         }
-        
-        // const FString EnemyName = TargetEnemy->GetName();
-        // TargetNameText->SetText(FText::FromString(FString(TEXT("Name: ")) + TargetEnemy->GetName()));
-        // TargetText->SetText(FText::FromString(FString(TEXT("Target: ")) + TargetEnemy->GetName()));
-        // FWidgetTransform T;
-        // T.Translation = FVector2D{TargetEnemy->GetActorLocation().X, TargetEnemy->GetActorLocation().Y};
-        // T.Angle = Crosshair->GetRenderTransform().Angle;
-        // T.Scale = Crosshair->GetRenderTransform().Scale;
-        // T.Shear = Crosshair->GetRenderTransform().Shear;
-        // Crosshair->SetRenderTransform(T);
     }
 }
 
@@ -383,6 +377,8 @@ void UBattleHUD::ConfirmBulletSelection() // this is for the confirm button
     if (ConfirmButton) ConfirmButton->SetVisibility(ESlateVisibility::Hidden);
     SwitchToBattleUI();
     bBulletSetupFinished = true;
+    bStartFight = true;
+    BattleHandler->GetTurnBasedSystem()->RequestFight(true);
 }
 
 void UBattleHUD::SwitchToBattleUI()
@@ -441,11 +437,20 @@ bool UBattleHUD::GetSelectTarget() const
 void UBattleHUD::Engage()
 {
     bTargetSelection = false;
+    UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+    checkf(Instance, TEXT("Instance is null at void UBattleHUD::UpdateTarget()"));
     AMob* SelectedEnemy = Cast<AMob>(BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex]);
     checkf(SelectedEnemy, TEXT("SelectedEnemy is null at UBattleHUD::Engage"));
+    Damage.BulletData = CurrentBulletData;
+    Damage.EnemyData = SelectedEnemy->GetData();
+    Damage.AIMoves = SelectedEnemy->GetTactics();
+    Damage.PlayerStats = Instance->GetPlayerStats();
+    Instance->SetDamageData(Damage);
+    
     DebugHelper::LogMessage(3, FColor::FromHex("3D5300"), "Targeting " + SelectedEnemy->GetActorLabel());
     checkf(MinigameHandler, TEXT("Minigame handler is null at UBattleHUD::Engage"));
     MinigameHandler->StartMinigame(true);
+    EngageBtn->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UBattleHUD::ShowHUD() 
@@ -487,6 +492,7 @@ void UBattleHUD::ShowInfo() const
     TargetNameText_1->SetVisibility(ESlateVisibility::Visible);
     TargetText_3->SetVisibility(ESlateVisibility::Visible);
     TargetNameText_3->SetVisibility(ESlateVisibility::Visible);
+    EngageBtn->SetVisibility(ESlateVisibility::Visible);
 }
 
 void UBattleHUD::HideInfo() const
@@ -499,6 +505,17 @@ void UBattleHUD::HideInfo() const
     TargetNameText_1->SetVisibility(ESlateVisibility::Hidden);
     TargetText_3->SetVisibility(ESlateVisibility::Hidden);
     TargetNameText_3->SetVisibility(ESlateVisibility::Hidden);
+    EngageBtn->SetVisibility(ESlateVisibility::Hidden);
+}
+
+bool UBattleHUD::IsReadyToBattle() const
+{
+    return bStartFight;
+}
+
+ABattleHandler* UBattleHUD::GetBattleHandler() const
+{
+    return BattleHandler;
 }
 
 

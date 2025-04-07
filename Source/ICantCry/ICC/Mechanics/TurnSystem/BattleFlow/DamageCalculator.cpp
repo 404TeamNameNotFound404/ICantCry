@@ -17,7 +17,7 @@ UDamageCalculator::UDamageCalculator(UBulletData* Data, UPlayerStats* Stats , UE
 
 int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 {
-	if (!PlayerStats || !EnemyData || !BulletData || !AIMoves)
+	if (!PlayerStats || !EnemyData || !BulletData || !AIMoves) // PLAYER STATS IS NULL
 	{
 		DebugHelper::LogError("Something is null in FDamage::CalculateDamage, can't do math");
 		return 0;

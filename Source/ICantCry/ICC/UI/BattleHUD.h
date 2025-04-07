@@ -19,6 +19,7 @@
 #include "Components/CanvasPanel.h"
 #include "Components/SizeBox.h"
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
+#include "ICantCry/ICC/Mechanics/TurnSystem/BattleFlow/DamageCalculator.h"
 #include "BattleHUD.generated.h"
 
 /**
@@ -53,6 +54,7 @@ public:
     UPROPERTY(meta = (BindWidget)) UButton* Reload;
     UPROPERTY(meta = (BindWidget)) UButton* Pass;
     UPROPERTY(meta = (BindWidget)) UButton* ConfirmButton;
+	UPROPERTY(meta = (BindWidget)) UButton* EngageBtn;
 
     // Status Bars
     UPROPERTY(meta = (BindWidget)) UProgressBar* PlayerHealth;
@@ -96,6 +98,7 @@ public:
 	/**
 	 * Proceed to the battle phase
 	 */
+	UFUNCTION()
 	void Engage();
 
 	void ShowHUD();
@@ -105,6 +108,8 @@ public:
 	void SetIsSelectingTarget(const bool& Enable);
 	void ShowInfo() const;
 	void HideInfo() const;
+	bool IsReadyToBattle() const;
+	ABattleHandler* GetBattleHandler() const;
 
 private:
 
@@ -131,7 +136,7 @@ private:
 	UImage* Bullet_2;
 	UPROPERTY(meta = (BindWidget))
 	UImage* Bullet_3;
-
+	
 	// select the target before shooting
 	UPROPERTY()
 	bool bSelectTarget = false;
@@ -156,9 +161,13 @@ private:
 	UFUNCTION() void UpdateBulletInfo(UBulletData* BulletData);
     UFUNCTION() void UpdateTargetInfo(const FString& EnemyName, UBulletData* BulletData = nullptr); 
     UFUNCTION() void ConfirmBulletSelection();
-
     UFUNCTION() void SwitchToBattleUI();
 
+	/*
+	 *-------------------------------------------------------
+	 *  PLAYER / AI INTERACTION PLEASE DO NOT EDIT 
+	 *  -----------------------------------------------------
+	 */
 	UPROPERTY()
 	AMinigameHandler* MinigameHandler = nullptr;
 
@@ -171,4 +180,25 @@ private:
 
 	UPROPERTY()
 	bool bTargetSelection = false;
+
+	UPROPERTY()
+	FDamage Damage;
+
+	/*
+	 *-------------------------------------------------------
+	 *  PLAYER / AI INTERACTION PLEASE DO NOT EDIT 
+	 *  -----------------------------------------------------
+	 */
+
+	/**
+	 * ----------- Battle -----------------
+	 */
+
+	UPROPERTY()
+	bool bStartFight = false;
+	
+	/**
+	 * ----------------------------------
+	 */
+	
 };

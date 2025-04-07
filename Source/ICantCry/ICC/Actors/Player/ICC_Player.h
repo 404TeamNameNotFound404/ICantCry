@@ -69,6 +69,7 @@ public:
 	UBattleHUD* GetBattleHUD() const;
 	UMinigameUserWidget* GetCurrentMinigameDisplayed() const;
 	AMinigameHandler* GetMinigameHandler() const;
+	UPlayerStats* GetStats() const;
 
 	/**
 	 * Read below!!
@@ -105,6 +106,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Body", meta = (AllowPrivateAccess = "true"))
 	UICC_InputDataAsset* InputDataAsset;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Data", meta = (AllowPrivateAccess = "true"))
+	UPlayerStats* Stats;
+
 	UPROPERTY()
 	AMinigameHandler* MinigameHandler;
 
@@ -123,5 +127,4 @@ private:
 	void Input_Run(const FInputActionValue& InputActionValue);
 	void Input_Minigame(const FInputActionValue& InputActionValue);
 	void Input_Scroll(const FInputActionValue& InputActionValue);
-	void Input_Engage(const FInputActionValue& InputActionValue);
 };
