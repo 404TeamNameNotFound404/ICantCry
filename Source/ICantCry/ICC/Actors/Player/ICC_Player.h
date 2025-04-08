@@ -16,6 +16,8 @@
 
 
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
+#include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameUserWidget.h"
+#include "ICantCry/ICC/UI/BattleHUD.h"
 #include "ICC_Player.generated.h"
 
 UCLASS()
@@ -59,7 +61,22 @@ public:
  */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Battle System", Blueprintable)
 	bool bIsInFight = false;
-	
+
+
+	void EnableMinigameInput(const bool& Enable);
+	void SetActiveMinigameUserWidget(UMinigameUserWidget* Minigame);
+
+	UBattleHUD* GetBattleHUD() const;
+	UMinigameUserWidget* GetCurrentMinigameDisplayed() const;
+	AMinigameHandler* GetMinigameHandler() const;
+	UPlayerStats* GetStats() const;
+
+	/**
+	 * Read below!!
+	 * @note DEBUG ONLY!
+	 */
+	UPROPERTY(EditAnywhere, Blueprintreadwrite, Category = "Debug", meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* DebugMesh;
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Movement")
@@ -89,10 +106,25 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Body", meta = (AllowPrivateAccess = "true"))
 	UICC_InputDataAsset* InputDataAsset;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Data", meta = (AllowPrivateAccess = "true"))
+	UPlayerStats* Stats;
+
 	UPROPERTY()
 	AMinigameHandler* MinigameHandler;
+
+	UPROPERTY()
+	bool bEnableInputToMinigame = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	UBattleHUD* Hud;
+
+	UPROPERTY()
+	UMinigameUserWidget* CurrentMinigameDisplayed = nullptr;
+	
 
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Interact(const FInputActionValue& InputActionValue);
 	void Input_Run(const FInputActionValue& InputActionValue);
+	void Input_Minigame(const FInputActionValue& InputActionValue);
+	void Input_Scroll(const FInputActionValue& InputActionValue);
 };

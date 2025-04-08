@@ -46,7 +46,9 @@ void AMinigameHandler::StartMinigame(const bool& EnableAttack)
 			return;
 		}
 		
-		CurrentMinigameDisplayed->AddToViewport();
+		//CurrentMinigameDisplayed->AddToViewport();
+		Player->GetBattleHUD()->MinigameSlot->AddChild(CurrentMinigameDisplayed);
+		Player->GetBattleHUD()->HideInfo();
 		Player->EnableMinigameInput(true);
 		Player->SetActiveMinigameUserWidget(CastedWidget);
 		CurrentMinigameDisplayed->SetKeyboardFocus();
@@ -65,7 +67,9 @@ void AMinigameHandler::StartMinigame(const bool& EnableAttack)
 			return;
 		}
 		
-		CurrentMinigameDisplayed->AddToViewport();
+		//CurrentMinigameDisplayed->AddToViewport();
+		Player->GetBattleHUD()->MinigameSlot->AddChild(CurrentMinigameDisplayed);
+		Player->GetBattleHUD()->HideInfo();
 		Player->EnableMinigameInput(true);
 		Player->SetActiveMinigameUserWidget(CastedWidget);
 		CurrentMinigameDisplayed->SetKeyboardFocus();
@@ -85,7 +89,7 @@ void AMinigameHandler::EndMinigame()
 	CurrentMinigameDisplayed = nullptr;
 	// FInputModeGameOnly InputMode;
 	// Controller->SetInputMode(InputMode);
-	Controller->bShowMouseCursor = false;
+	Controller->bShowMouseCursor = true;
 	Player->EnableMinigameInput(false);
 }
 

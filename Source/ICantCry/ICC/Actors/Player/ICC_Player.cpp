@@ -5,6 +5,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "EnhancedInput/Public/EnhancedInputSubsystems.h"
+#include "EntitySystem/MovieSceneEntityManager.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "ICantCry/ICC/Input/ICC_EnhancedInputCmp.h"
 #include "ICantCry/ICC/Input/ICC_PlayerController.h"
@@ -78,6 +79,8 @@ void AICC_Player::BeginPlay()
 		DebugHelper::LogSuccess("Minigame Handler found!");
 		break;
 	}
+
+	DontDestroyOnLoad->SetPlayerStats(Stats);
 }
 
 // Called every frame
@@ -99,6 +102,7 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Run, ETriggerEvent::Triggered, this, &ThisClass::Input_Run);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Interact, ETriggerEvent::Triggered, this, &ThisClass::Input_Interact);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Minigame, ETriggerEvent::Triggered, this, &ThisClass::Input_Minigame);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_BulletScroll, ETriggerEvent::Triggered, this, &ThisClass::Input_Scroll);
 }
 
 AWorldCamera* AICC_Player::GetWorldCamera() const
@@ -120,6 +124,32 @@ void AICC_Player::EnableMinigameInput(const bool& Enable)
 void AICC_Player::SetActiveMinigameUserWidget(UMinigameUserWidget* Minigame)
 {
 	CurrentMinigameDisplayed = Minigame;
+}
+
+UBattleHUD* AICC_Player::GetBattleHUD() const
+{
+	return Hud;
+}
+
+UMinigameUserWidget* AICC_Player::GetCurrentMinigameDisplayed() const
+{
+	if (!CurrentMinigameDisplayed)
+	{
+		DebugHelper::LogError("Can't return the CurrentMinigameDisplayed since it's null");
+		return nullptr;
+	}
+	
+	return CurrentMinigameDisplayed;
+}
+
+AMinigameHandler* AICC_Player::GetMinigameHandler() const
+{
+	return MinigameHandler;
+}
+
+UPlayerStats* AICC_Player::GetStats() const
+{
+	return Stats;
 }
 
 
@@ -202,16 +232,40 @@ void AICC_Player::Input_Interact(const FInputActionValue& InputActionValue)
 
 void AICC_Player::Input_Scroll(const FInputActionValue &InputActionValue)
 {
-	const float Scroll = InputActionValue.Get<float>();
-
-	if(!Hud)
+	// if player is not fighting there's no need to call this bindings
+	if (!bIsInFight)
 	{
+		DebugHelper::LogError("Can't get scroll is in fight = false");
 		return;
 	}
 
-	if(Scroll)
+	if (!Hud->IsSelectingTarget())
 	{
-		Hud->ScrollBulletSelection(Scroll);
+		DebugHelper::LogError("You can't do that yet");
+		return;
+	}
+	
+	DebugHelper::LogSuccess("Scrolling something");
+	
+	if(!Hud)
+	{
+		DebugHelper::LogError("HUD is null!");
+		return;
+	}
+	
+	const float Scroll = InputActionValue.Get<float>();
+
+	if (Hud->GetSelectTarget())
+	{
+		Hud->ScrollTargetSelection(Scroll);
+		DebugHelper::LogSuccess("Selecting target ");
+	}
+	else
+	{
+		if(Scroll && !Hud->IsBulletSelectionOver())
+		{
+			Hud->ScrollBulletSelection(Scroll);
+		}
 	}
 }
 

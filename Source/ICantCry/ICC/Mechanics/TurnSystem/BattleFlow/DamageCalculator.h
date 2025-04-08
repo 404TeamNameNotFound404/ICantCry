@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
+#include "ICantCry/ICC/Actors/Bullet/BulletData.h"
 #include "ICantCry/ICC/Mechanics/Core/Data/PlayerStats.h"
+#include "ICantCry/ICC/Mechanics/Core/Data/EnemyTactics.h"
+#include "ICantCry/ICC/Mechanics/Core/Data/EnemyDatas.h"
 #include "DamageCalculator.generated.h"
 
 
@@ -12,18 +15,22 @@ USTRUCT(BlueprintType)
 struct FDamage
 {
 	GENERATED_BODY()
-	/*
-	 *  UPROPERTY()
-	 * 	TArray<UBulletData*> Bullets;
-	*/
-	UPROPERTY()
+	
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
+	UBulletData* BulletData;
+	
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
 	UPlayerStats* PlayerStats;
 	
-	  /*   UPROPERTY()
-	  *    UEnemyTactics* Moves; 
-	  */
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
+	UEnemyTactics* AIMoves;
 
-	/* FDamage( UBulletData* BulletData, UPlayerStats* Stats, UEnemyTactics* EMoves) : BulletData(Bullets) , Stats(PlayerStats), EMoves(Moves) {} */
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
+	UEnemyDatas* EnemyData;
+	  
+	FDamage() : BulletData(nullptr), PlayerStats(nullptr), AIMoves(nullptr) , EnemyData(nullptr) {};
+
+	int CalculateDamage(const bool& IsPlayerAttacking);
 };
 
 /**
@@ -35,7 +42,8 @@ class ICANTCRY_API UDamageCalculator : public UObject
 	GENERATED_BODY()
 
 public:
-	
+	UDamageCalculator();
+	UDamageCalculator(UBulletData* Data, UPlayerStats* Stats , UEnemyDatas* EnemyData ,UEnemyTactics* Moves);
 
 private:
 	UPROPERTY()

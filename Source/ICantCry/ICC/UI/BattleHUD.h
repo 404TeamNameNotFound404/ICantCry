@@ -16,11 +16,17 @@
 #include "GameFramework/PlayerController.h"
 #include "../Source/ICantCry/ICC/Actors/Bullet/BulletData.h"
 #include "../Mechanics/TurnSystem/Core/BattleHandler.h"
+#include "Components/CanvasPanel.h"
+#include "Components/SizeBox.h"
+#include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
+#include "ICantCry/ICC/Mechanics/TurnSystem/BattleFlow/DamageCalculator.h"
 #include "BattleHUD.generated.h"
 
 /**
  * 
  */
+
+
 UCLASS()
 class ICANTCRY_API UBattleHUD : public UUserWidget
 {
@@ -36,9 +42,10 @@ public:
 	// Canvas Panels
     UPROPERTY(meta = (BindWidget)) UWidget* CanvasFirstReloadMagazine; 
     UPROPERTY(meta = (BindWidget)) UWidget* CanvasMainBattlePanel; 
-    UPROPERTY(meta = (BindWidget)) UWidget* CanvasMiniGames; 
+    UPROPERTY(meta = (BindWidget)) UCanvasPanel* CanvasMiniGames;
+	UPROPERTY(meta = (BindWidget)) USizeBox* MinigameSlot;
     UPROPERTY(meta = (BindWidget)) UWidget* CanvasAmmoSelection;
-    UPROPERTY(meta = (BindWidget)) UWidget* CanvasStatus;
+    UPROPERTY(meta = (BindWidget)) UCanvasPanel* CanvasStatus;
 
     // Action Buttons
     UPROPERTY(meta = (BindWidget)) UButton* Shoot;
@@ -47,6 +54,7 @@ public:
     UPROPERTY(meta = (BindWidget)) UButton* Reload;
     UPROPERTY(meta = (BindWidget)) UButton* Pass;
     UPROPERTY(meta = (BindWidget)) UButton* ConfirmButton;
+	UPROPERTY(meta = (BindWidget)) UButton* EngageBtn;
 
     // Status Bars
     UPROPERTY(meta = (BindWidget)) UProgressBar* PlayerHealth;
@@ -64,7 +72,11 @@ public:
     // Targetting
     UPROPERTY(meta = (BindWidget)) UImage* Crosshair;
 	UPROPERTY(meta = (BindWidget)) UTextBlock* TargetText;
-    UPROPERTY(meta = (BindWidget)) UTextBlock* TargetNameText; 
+    UPROPERTY(meta = (BindWidget)) UTextBlock* TargetNameText;
+	UPROPERTY(meta = (BindWidget)) UTextBlock* StatusText;
+	UPROPERTY(meta = (BindWidget)) UTextBlock* TargetNameText_1;
+	UPROPERTY(meta = (BindWidget)) UTextBlock* TargetText_3;
+	UPROPERTY(meta = (BindWidget)) UTextBlock* TargetNameText_3;
 
     // Bullet Selection
     UPROPERTY(meta = (BindWidget)) UImage* AmmoSelectionIndicator;
@@ -78,6 +90,26 @@ public:
 
 
     UFUNCTION(BlueprintCallable)void ScrollBulletSelection(int ScrollValue);
+	void UpdateTarget();
+	void ScrollTargetSelection(float ScrollValue);
+
+	void SetSelectTarget(const bool& Enable);
+	bool GetSelectTarget() const;
+	/**
+	 * Proceed to the battle phase
+	 */
+	UFUNCTION()
+	void Engage();
+
+	void ShowHUD();
+	bool IsShootFired() const;
+	bool IsBulletSelectionOver() const;
+	bool IsSelectingTarget() const;
+	void SetIsSelectingTarget(const bool& Enable);
+	void ShowInfo() const;
+	void HideInfo() const;
+	bool IsReadyToBattle() const;
+	ABattleHandler* GetBattleHandler() const;
 
 private:
 
@@ -93,10 +125,21 @@ private:
     int32 CurrentRevolverSlot = 0;
     UPROPERTY(EditDefaultsOnly, Category = "Bullets") int32 MaxRevolverSlots = 6;
 
-    TArray<AActor*> Enemies;
+    TArray<AActor*> Enemies; // non ha senso sta variabile qua , abbiamo la queue sul battle handler
     TArray<UImage*> RevolverSlots;
     TArray<UBulletData*> LoadedBulletData;
-    UPROPERTY() UBulletData* CurrentBulletData;
+    UPROPERTY() UBulletData* CurrentBulletData; 
+
+	UPROPERTY(meta = (BindWidget))
+	UImage* Bullet_1;
+	UPROPERTY(meta = (BindWidget))
+	UImage* Bullet_2;
+	UPROPERTY(meta = (BindWidget))
+	UImage* Bullet_3;
+	
+	// select the target before shooting
+	UPROPERTY()
+	bool bSelectTarget = false;
 
     // UI Functions
     UFUNCTION() void IncreaseAP(int Amount);
@@ -110,18 +153,56 @@ private:
     UFUNCTION() void OnPassPressed();
     
     // Targetting
-    UFUNCTION() void ScrollTargetSelection(float ScrollValue);
-    UFUNCTION() void UpdateTarget();
-    UFUNCTION() void UpdateCrosshair();
+    
+    UFUNCTION() void UpdateCrosshair(); // questo si puo rimuovere visto che gestisco internamente da AMob la selezione
     
     // Bullet Management
     UFUNCTION() void UpdateBulletSelection();
 	UFUNCTION() void UpdateBulletInfo(UBulletData* BulletData);
     UFUNCTION() void UpdateTargetInfo(const FString& EnemyName, UBulletData* BulletData = nullptr); 
     UFUNCTION() void ConfirmBulletSelection();
-
     UFUNCTION() void SwitchToBattleUI();
 
+	/*
+	 *-------------------------------------------------------
+	 *  PLAYER / AI INTERACTION PLEASE DO NOT EDIT 
+	 *  -----------------------------------------------------
+	 */
+	UPROPERTY()
+	AMinigameHandler* MinigameHandler = nullptr;
 
+	// this variable will handle the target selection and will proceed to start the minigame
+	UPROPERTY()
+	bool bShootFired = false;
+
+	UPROPERTY()
+	bool bBulletSetupFinished = false;
+
+	UPROPERTY()
+	bool bTargetSelection = false;
+
+	UPROPERTY()
+	FDamage Damage;
+
+	/*
+	 *-------------------------------------------------------
+	 *  PLAYER / AI INTERACTION PLEASE DO NOT EDIT 
+	 *  -----------------------------------------------------
+	 */
+
+	/**
+	 *-----------------------------
+	 *          BATTLE
+	 * ----------------------------
+	 */
+
+	UPROPERTY()
+	bool bStartFight = false;
+	
+	/**
+	 * -----------------------------------
+	 *         END BATTLE
+	 * ----------------------------------
+	 */
 	
 };

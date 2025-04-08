@@ -1,8 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Mob.h"
-
+#include "ICantCry/ICC/Debug/DebugHelper.h"
 
 // Sets default values
 AMob::AMob()
@@ -30,3 +28,24 @@ UEnemyDatas *AMob::GetData() const
 {
     return EnemyData;
 }
+
+UEnemyTactics* AMob::GetTactics() const
+{
+	return Moves;
+}
+
+void AMob::HighlightsSilhouette()
+{
+	if (!bEnableSilhouette)
+	{
+		DebugHelper::AddTurnMaterialOverlayToStaticMesh(StaticMesh);
+		bEnableSilhouette = true;
+	}
+}
+
+void AMob::DisableSilhouette()
+{
+	DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(StaticMesh);
+	bEnableSilhouette = false;
+}
+

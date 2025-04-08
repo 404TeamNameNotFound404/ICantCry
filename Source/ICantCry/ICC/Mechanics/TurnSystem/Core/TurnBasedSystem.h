@@ -23,6 +23,22 @@ public:
 	void EndTurn();
 	FTurn GetTurn() const;
 
+	bool GetIsPlayerTurn() const;
+	AICC_Player* TryGetCurrentPlayer() const;
+
+	void SetTurnOverlayApplied(const bool &Applied);
+	void RequestFight(const bool &Request);
+
+	/**
+	 * --------- WIP FUNCTIONS -----------
+	 */
+
+	void ExitBattle();
+	
+	/**
+     * --------- WIP FUNCTIONS -----------
+     */
+	
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Turn", meta=(AllowPrivateAccess=true))
 	FTurn Turn;
@@ -50,5 +66,14 @@ private:
 
 	UPROPERTY()
 	AEnemySpawnManager* EnemySpawnManager;
+
+	UPROPERTY()
+	bool bTurnOverlayApplied = false;
+
+	UPROPERTY()
+	bool bRequestFight = false;
+
+	UPROPERTY()
+	bool bFightStarted = false;
 	
 };
