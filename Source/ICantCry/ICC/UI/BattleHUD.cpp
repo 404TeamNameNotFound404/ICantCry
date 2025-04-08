@@ -208,11 +208,7 @@ void UBattleHUD::UpdateTarget()
         
         if (TargetEnemy->IsA(AICC_Player::StaticClass())) // if TargetEnemy is Player just skip it , we don't need to target ourselves right? and we all the info will be hidden for now 
         {
-            TargetNameText->SetText(FText::FromString(""));
-            TargetText->SetText(FText::FromString(""));
-            TargetText_2->SetText(FText::FromString(""));
-            TargetNameText_2->SetText(FText::FromString(""));
-            EngageBtn->SetVisibility(ESlateVisibility::Hidden);
+            HideInfo();
             return;
         }
         
