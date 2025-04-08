@@ -78,6 +78,11 @@ FDamage UICantCryGameInstance::GetCurrentDamageData() const
 	return StoredDamage;
 }
 
+void UICantCryGameInstance::SetPlayerStats(UPlayerStats* Stats)
+{
+	PlayerStats = Stats;
+}
+
 void UICantCryGameInstance::SetDamageData(const FDamage& Damage)
 {
 	StoredDamage = Damage;

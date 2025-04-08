@@ -32,6 +32,7 @@ public:
 
 	UPlayerStats* GetPlayerStats() const;
 	FDamage GetCurrentDamageData() const;
+	void SetPlayerStats(UPlayerStats* Stats);
 	void SetDamageData(const FDamage& Damage);
 	
 private:

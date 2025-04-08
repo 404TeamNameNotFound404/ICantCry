@@ -79,6 +79,8 @@ void AICC_Player::BeginPlay()
 		DebugHelper::LogSuccess("Minigame Handler found!");
 		break;
 	}
+
+	DontDestroyOnLoad->SetPlayerStats(Stats);
 }
 
 // Called every frame

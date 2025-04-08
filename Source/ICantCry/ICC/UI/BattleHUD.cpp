@@ -81,7 +81,7 @@ void UBattleHUD::NativeConstruct()
     }
 
     //FIND ENEMY IN THE LEVEL
-    UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Enemy"), Enemies);
+    UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Enemy"), Enemies); // Questo non credo serva piu visto che Enemies è vuoto
 
 
     for (TActorIterator<ABattleHandler> It(GetWorld()); It; ++It)
@@ -189,11 +189,6 @@ void UBattleHUD::ScrollTargetSelection(float ScrollValue)
     DebugHelper::LogSuccess(FString::FromInt(CurrentEnemyIndex));
     TargetNameText->SetText(FText::FromString(Queue[CurrentEnemyIndex]->GetActorLabel()));
     TargetText->SetText(FText::FromString(FString(TEXT("Target: ")) + Queue[CurrentEnemyIndex]->GetActorLabel()));
-    
-    // if (bSelectTarget)
-    // {
-    //     MinigameHandler->StartMinigame(true);
-    // }
 }
 
 void UBattleHUD::UpdateTarget()
@@ -339,8 +334,8 @@ void UBattleHUD::ConfirmBulletSelection() // this is for the confirm button
 {
     /*
      * Commento tutto questo perche non mi fa andare avanti , array dei bullet non funziona ,
-     * la selezione del index del bullet non funziona perche hai scritto una formula assurda dove moltiplichi il modulo per 0
-     * io intanto skippo poi rivedi
+     * la selezione del index del bullet non funziona perche hai scritto una formula dove moltiplichi il modulo per 0 (perche array di bulleticon è vuoto)
+     * io intanto lo commento il resto che vedi sotto non commentato non lo toccare se no non parte la fight poi
      */
     // if (!LoadedBulletData.IsValidIndex(SelectedBulletIndex))
     // {
@@ -441,13 +436,13 @@ void UBattleHUD::Engage()
     checkf(Instance, TEXT("Instance is null at void UBattleHUD::UpdateTarget()"));
     AMob* SelectedEnemy = Cast<AMob>(BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex]);
     checkf(SelectedEnemy, TEXT("SelectedEnemy is null at UBattleHUD::Engage"));
-    Damage.BulletData = CurrentBulletData;
+    Damage.BulletData = CurrentBulletData; // Current Bullet data is null , must be defined the array of bullet data first because it's empty right now
     Damage.EnemyData = SelectedEnemy->GetData();
     Damage.AIMoves = SelectedEnemy->GetTactics();
     Damage.PlayerStats = Instance->GetPlayerStats();
     Instance->SetDamageData(Damage);
-    
-    DebugHelper::LogMessage(3, FColor::FromHex("3D5300"), "Targeting " + SelectedEnemy->GetActorLabel());
+    Instance->GetCurrentDamageData().CalculateDamage(true);
+    DebugHelper::LogMessage(3, FColor::White, "Targeting " + SelectedEnemy->GetActorLabel());
     checkf(MinigameHandler, TEXT("Minigame handler is null at UBattleHUD::Engage"));
     MinigameHandler->StartMinigame(true);
     EngageBtn->SetVisibility(ESlateVisibility::Hidden);

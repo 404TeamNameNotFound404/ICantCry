@@ -128,7 +128,7 @@ private:
     TArray<AActor*> Enemies; // non ha senso sta variabile qua , abbiamo la queue sul battle handler
     TArray<UImage*> RevolverSlots;
     TArray<UBulletData*> LoadedBulletData;
-    UPROPERTY() UBulletData* CurrentBulletData;
+    UPROPERTY() UBulletData* CurrentBulletData; 
 
 	UPROPERTY(meta = (BindWidget))
 	UImage* Bullet_1;
@@ -154,7 +154,7 @@ private:
     
     // Targetting
     
-    UFUNCTION() void UpdateCrosshair();
+    UFUNCTION() void UpdateCrosshair(); // questo si puo rimuovere visto che gestisco internamente da AMob la selezione
     
     // Bullet Management
     UFUNCTION() void UpdateBulletSelection();
@@ -191,13 +191,17 @@ private:
 	 */
 
 	/**
-	 * ----------- Battle -----------------
+	 *-----------------------------
+	 *          BATTLE
+	 * ----------------------------
 	 */
 
 	UPROPERTY()
 	bool bStartFight = false;
 	
 	/**
+	 * -----------------------------------
+	 *         END BATTLE
 	 * ----------------------------------
 	 */
 	

@@ -17,9 +17,9 @@ UDamageCalculator::UDamageCalculator(UBulletData* Data, UPlayerStats* Stats , UE
 
 int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 {
-	if (!PlayerStats || !EnemyData || !BulletData || !AIMoves) // PLAYER STATS IS NULL
+	if (!PlayerStats || !EnemyData || !BulletData || !AIMoves) //  BulletData is null 
 	{
-		DebugHelper::LogError("Something is null in FDamage::CalculateDamage, can't do math");
+		DebugHelper::LogError("PlayerStats is null in FDamage::CalculateDamage, can't do math");
 		return 0;
 	}
 	
@@ -38,6 +38,7 @@ int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 		DebugHelper::LogMessage(3, FColor::FromHex("433878"), "Damage dealt -> " + FString::FromInt(AIDamageResult));
 		return AIDamageResult;
 	}
+	
 	return 0;
 }
 
