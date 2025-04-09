@@ -3,7 +3,6 @@
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
-
 #include "EngineUtils.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 
@@ -428,16 +427,16 @@ bool UBattleHUD::GetSelectTarget() const
 void UBattleHUD::Engage()
 {
     bTargetSelection = false;
-    UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
-    checkf(Instance, TEXT("Instance is null at void UBattleHUD::UpdateTarget()"));
+    UICantCryGameInstance* PersistentInstance = Cast<UICantCryGameInstance>(GetGameInstance());
+    checkf(PersistentInstance, TEXT("Instance is null at void UBattleHUD::UpdateTarget()"));
     AMob* SelectedEnemy = Cast<AMob>(BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex]);
     checkf(SelectedEnemy, TEXT("SelectedEnemy is null at UBattleHUD::Engage"));
     Damage.BulletData = CurrentBulletData; // Current Bullet data is null , must be defined the array of bullet data first because it's empty right now
     Damage.EnemyData = SelectedEnemy->GetData();
     Damage.AIMoves = SelectedEnemy->GetTactics();
-    Damage.PlayerStats = Instance->GetPlayerStats();
-    Instance->SetDamageData(Damage);
-    Instance->GetCurrentDamageData().CalculateDamage(true);
+    Damage.PlayerStats = PersistentInstance->GetPlayerStats();
+    PersistentInstance->SetDamageData(Damage);
+    PersistentInstance->GetCurrentDamageData().CalculateDamage(true);
     DebugHelper::LogMessage(3, FColor::White, "Targeting " + SelectedEnemy->GetActorLabel());
     checkf(MinigameHandler, TEXT("Minigame handler is null at UBattleHUD::Engage"));
     MinigameHandler->StartMinigame(true);
