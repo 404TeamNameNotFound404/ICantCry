@@ -25,4 +25,7 @@ public:
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Actions")
 	int32 WeaknessModifier = 1.0f;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Actions")
+	int32 MovePower = 1.0f;
 };

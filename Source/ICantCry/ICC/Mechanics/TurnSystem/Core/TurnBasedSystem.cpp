@@ -67,7 +67,7 @@ void UTurnBasedSystem::Start(UWorld* World)
 		}
 	}
 }
-
+// TODO IMPLEMENT FAST FORWARD USING 'PlayerStats->BattleSpeedFlow'
 void UTurnBasedSystem::Update(UWorld* World)
 {
 	if (!bRequestFight)

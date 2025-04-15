@@ -9,6 +9,9 @@ AMob::AMob()
 	PrimaryActorTick.bCanEverTick = true;
 
 	Tags.Add("Enemy");
+
+	HealthBarComponent = CreateDefaultSubobject<UHealthBarWidgetCmp>("HealthBarCmp");
+	HealthBarComponent->SetAbsolute(false, false, false);
 }
 
 // Called when the game starts or when spawned

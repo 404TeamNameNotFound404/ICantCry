@@ -32,4 +32,10 @@ public:
 	// for UI
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	UTexture2D* Icon;
+
+	/**
+ * Weakness modifier
+ */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Modifiers")
+	float WeaknessModifier = 0.0f;
 };
