@@ -19,7 +19,7 @@
 #include "Components/CanvasPanel.h"
 #include "Components/SizeBox.h"
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
-#include "ICantCry/ICC/Mechanics/TurnSystem/BattleFlow/DamageCalculator.h"
+#include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "BattleHUD.generated.h"
 
 /**
@@ -182,7 +182,7 @@ private:
 	bool bTargetSelection = false;
 
 	UPROPERTY()
-	FDamage Damage;
+	UICantCryGameInstance* GameInstance = nullptr;
 
 	/*
 	 *-------------------------------------------------------

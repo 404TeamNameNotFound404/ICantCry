@@ -98,6 +98,10 @@ void UBattleHUD::NativeConstruct()
     }
 
     CurrentEnemyIndex = 0;
+
+    GameInstance = Cast<UICantCryGameInstance>(UGameplayStatics::GetGameInstance(this));
+    checkf(GameInstance, TEXT("Game instance is null at constructor battle hud"));
+    PlayerHealth->SetPercent(GameInstance->GetPlayerStats()->CurrentHealth);
 }
 
 
@@ -162,7 +166,6 @@ void UBattleHUD::OnPassPressed()
     DebugHelper::LogSuccess("Player passed the turn");
     BattleHandler->GetTurnBasedSystem()->EndTurn();
     BattleHandler->GetTurnBasedSystem()->StartNextTurn();
-    DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
     BattleHandler->GetTurnBasedSystem()->SetTurnOverlayApplied(false);
     bTargetSelection = false;
 }
@@ -431,16 +434,11 @@ void UBattleHUD::Engage()
     checkf(PersistentInstance, TEXT("Instance is null at void UBattleHUD::UpdateTarget()"));
     AMob* SelectedEnemy = Cast<AMob>(BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex]);
     checkf(SelectedEnemy, TEXT("SelectedEnemy is null at UBattleHUD::Engage"));
-    Damage.BulletData = CurrentBulletData; // Current Bullet data is null , must be defined the array of bullet data first because it's empty right now
-    Damage.EnemyData = SelectedEnemy->GetData();
-    Damage.AIMoves = SelectedEnemy->GetTactics();
-    Damage.PlayerStats = PersistentInstance->GetPlayerStats();
-    PersistentInstance->SetDamageData(Damage);
-    PersistentInstance->GetCurrentDamageData().CalculateDamage(true);
     DebugHelper::LogMessage(3, FColor::White, "Targeting " + SelectedEnemy->GetActorLabel());
     checkf(MinigameHandler, TEXT("Minigame handler is null at UBattleHUD::Engage"));
     MinigameHandler->StartMinigame(true);
     EngageBtn->SetVisibility(ESlateVisibility::Hidden);
+    DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(SelectedEnemy->StaticMesh);
 }
 
 void UBattleHUD::ShowHUD() 

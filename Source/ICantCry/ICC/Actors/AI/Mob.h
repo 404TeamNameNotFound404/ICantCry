@@ -7,6 +7,8 @@
 #include "ICantCry/ICC/Mechanics/Core/Data/EnemyDatas.h"
 #include "ICantCry/ICC/Mechanics/Core/Data/EnemyTactics.h"
 #include "ICantCry/ICC/Mechanics/UI/Actors/EnemyHealthBar/HealthBarWidgetCmp.h"
+#include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
+#include "ICantCry/ICC/Mechanics/TurnSystem/BattleFlow/DamageCalculator.h"
 #include "Mob.generated.h"
 
 UCLASS(Blueprintable)
@@ -44,6 +46,10 @@ public:
 	void HighlightsSilhouette();
 	void DisableSilhouette();
 
+	void StartDefenceMinigame();
+
+	static void DealDamage();
+
 private:
 
 	// Reference to Enemy Data Asset
@@ -52,9 +58,13 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data",  meta = (AllowPrivateAccess = "true"))
 	UEnemyTactics* Moves;
-	
+
+	UPROPERTY()
+	AMinigameHandler* MinigameHandler = nullptr;
 
 	UPROPERTY()
 	bool bEnableSilhouette = false;
+	
+	static FDamage Damage;
 	
 };

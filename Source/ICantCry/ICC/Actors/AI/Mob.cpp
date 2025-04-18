@@ -1,6 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "Mob.h"
+#include "EngineUtils.h"
+#include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
+
+FDamage AMob::Damage;
+static AMinigameHandler* Handler;
 
 // Sets default values
 AMob::AMob()
@@ -18,7 +23,20 @@ AMob::AMob()
 void AMob::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	for (TActorIterator<AMinigameHandler> It(GetWorld()); It; ++It)
+	{
+		MinigameHandler = *It;
+		break;
+	}
+
+	Damage.BulletData = nullptr;
+	Damage.EnemyData = EnemyData;
+	Damage.PlayerStats = MinigameHandler->GetBattlePlayer()->GetStats();
+	Damage.AIMoves = Moves;
+	Handler = MinigameHandler;
+	DebugHelper::LogSuccess("Move power moves -> " + FString::FromInt(Moves->MovePower));
+	DebugHelper::LogSuccess("Move power -> " + FString::FromInt(Damage.AIMoves->MovePower));
 }
 
 // Called every frame
@@ -50,5 +68,21 @@ void AMob::DisableSilhouette()
 {
 	DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(StaticMesh);
 	bEnableSilhouette = false;
+}
+
+void AMob::StartDefenceMinigame()
+{
+	MinigameHandler->StartMinigame(false);
+}
+
+void AMob::DealDamage()
+{
+	const float DamageDealt = Damage.CalculateDamage(false);
+	const AICC_Player* Player = Handler->GetBattlePlayer();
+	Player->GetStats()->CurrentHealth -= DamageDealt;
+	Player->GetStats()->CurrentHealth = FMath::Clamp(Player->GetStats()->CurrentHealth, 0.0f, Player->GetStats()->MaxHealth);
+	const float HealthPercentage = Player->GetStats()->CurrentHealth / Player->GetStats()->MaxHealth;
+	Player->GetBattleHUD()->PlayerHealth->SetPercent(HealthPercentage);
+	
 }
 

@@ -14,18 +14,18 @@ class ICANTCRY_API UEnemyTactics : public UDataAsset
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Moves")
-	float Moves;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Moves")
+	float Moves = 1.0f;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Moves")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category="Moves")
 	float MinigamePower = 1.0f;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Actions")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category="Actions")
 	int32 ActionPointsModifier = 1;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Actions")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category="Actions")
 	int32 WeaknessModifier = 1.0f;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Actions")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Actions")
 	int32 MovePower = 1.0f;
 };

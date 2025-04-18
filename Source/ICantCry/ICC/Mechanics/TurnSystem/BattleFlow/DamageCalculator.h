@@ -27,25 +27,17 @@ struct FDamage
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
 	UEnemyDatas* EnemyData;
-	  
-	FDamage() : BulletData(nullptr), PlayerStats(nullptr), AIMoves(nullptr) , EnemyData(nullptr) {};
 
+	FDamage();
+
+	/**
+	 * Fills the struct with the corresponding data
+	 * @param BData  Bullet Data
+	 * @param PStats Player Stats
+	 * @param AITactics AIMoves
+	 * @param EData Enemy Data
+	 */
+	FDamage(UBulletData* BData, UPlayerStats* PStats, UEnemyTactics* AITactics, UEnemyDatas* EData);
 	int CalculateDamage(const bool& IsPlayerAttacking);
 };
 
-/**
- * UObject container for damage calculation
- */
-UCLASS()
-class ICANTCRY_API UDamageCalculator : public UObject
-{
-	GENERATED_BODY()
-
-public:
-	UDamageCalculator();
-	UDamageCalculator(UBulletData* Data, UPlayerStats* Stats , UEnemyDatas* EnemyData ,UEnemyTactics* Moves);
-
-private:
-	UPROPERTY()
-	FDamage DamageMath;
-};

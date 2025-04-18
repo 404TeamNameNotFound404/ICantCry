@@ -31,9 +31,7 @@ public:
 	void LoadLastPlayerTransform();
 
 	UPlayerStats* GetPlayerStats() const;
-	FDamage GetCurrentDamageData() const;
 	void SetPlayerStats(UPlayerStats* Stats);
-	void SetDamageData(const FDamage& Damage);
 	
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))
@@ -41,9 +39,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))
 	UPlayerStats* PlayerStats;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))
-	FDamage StoredDamage;
 	
 	UWorld* TryGetWorld() const;
 	

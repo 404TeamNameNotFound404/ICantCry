@@ -44,6 +44,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void EndMinigame();
 
+	AICC_Player* GetBattlePlayer() const;
+
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Minigame", meta = (AllowPrivateAccess = "true"))

@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "DefenceMinigame.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
+#include "ICantCry/ICC/Actors/AI/Mob.h"
 #include "Kismet/GameplayStatics.h"
 
 //static UICantCryGameInstance* Instance = nullptr;
@@ -46,22 +47,22 @@ void UDefenceMinigame::HandleScore()
 	case EMinigameThreshold::Bad:
 			DebugHelper::LogMessage(3, FColor::FromHex("640D5F"),"33% damage reduction");
 		    Instance->GetPlayerStats()->MinigameModifier = 0.66f;
-		    Instance->GetCurrentDamageData().CalculateDamage(false);
+		    AMob::DealDamage();
 			break;
 		case EMinigameThreshold::Good:
 			DebugHelper::LogMessage(3, FColor::FromHex("D91656"), "66% reduction");
 		    Instance->GetPlayerStats()->MinigameModifier = 0.33f;
-		    Instance->GetCurrentDamageData().CalculateDamage(false);
+		    AMob::DealDamage();
 			break;
 		case EMinigameThreshold::Perfect:
 			DebugHelper::LogMessage(3, FColor::FromHex("EB5B00"),"Perfect parry");
 		    Instance->GetPlayerStats()->MinigameModifier = 0.0f;
-		    Instance->GetCurrentDamageData().CalculateDamage(false);
+		    AMob::DealDamage();
 		break;
 		default:
 			DebugHelper::LogError("You suck! miss");
 		    Instance->GetPlayerStats()->MinigameModifier = 1.0f;
-		    Instance->GetCurrentDamageData().CalculateDamage(false);
+		    AMob::DealDamage();
 			break;
 	}
 }

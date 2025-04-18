@@ -93,4 +93,9 @@ void AMinigameHandler::EndMinigame()
 	Player->EnableMinigameInput(false);
 }
 
+AICC_Player* AMinigameHandler::GetBattlePlayer() const
+{
+	return Player;
+}
+
 

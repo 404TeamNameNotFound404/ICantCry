@@ -30,11 +30,19 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stats")
 	float Experience;
+
+	/**
+	 * Read-only property used for player progress bar
+	 */
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Stats")
+	float MaxHealth = 50;
+
 	/**
 	 * Current Health
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stats")
-	float CurrentHealth;
+	float CurrentHealth = MaxHealth;
+	
 	/**
 	 * Attack Power
 	 */

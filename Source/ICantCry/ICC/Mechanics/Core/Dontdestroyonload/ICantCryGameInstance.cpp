@@ -73,22 +73,11 @@ UPlayerStats* UICantCryGameInstance::GetPlayerStats() const
 	return PlayerStats;
 }
 
-FDamage UICantCryGameInstance::GetCurrentDamageData() const
-{
-	return StoredDamage;
-}
-
 void UICantCryGameInstance::SetPlayerStats(UPlayerStats* Stats)
 {
 	PlayerStats = Stats;
 }
 
-void UICantCryGameInstance::SetDamageData(const FDamage& Damage)
-{
-	StoredDamage = Damage;
-	// DebugHelper::LogSuccess(FString::FromInt(Damage.BulletData->Power));
-	// DebugHelper::LogSuccess(FString::FromInt(Damage.BulletData->Power));
-}
 
 UWorld* UICantCryGameInstance::TryGetWorld() const
 {
