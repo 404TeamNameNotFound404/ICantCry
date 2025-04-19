@@ -34,7 +34,7 @@ public:
 	/**
 	 * Read-only property used for player progress bar
 	 */
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Stats")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Stats")
 	float MaxHealth = 50;
 
 	/**

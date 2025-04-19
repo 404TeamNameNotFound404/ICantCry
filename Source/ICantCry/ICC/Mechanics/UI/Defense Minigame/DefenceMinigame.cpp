@@ -46,7 +46,7 @@ void UDefenceMinigame::HandleScore()
 	{
 	case EMinigameThreshold::Bad:
 			DebugHelper::LogMessage(3, FColor::FromHex("640D5F"),"33% damage reduction");
-		    Instance->GetPlayerStats()->MinigameModifier = 0.66f;
+		    Instance->GetPlayerStats()->MinigameModifier = 0.70f;
 		    AMob::DealDamage();
 			break;
 		case EMinigameThreshold::Good:
@@ -83,9 +83,15 @@ void UDefenceMinigame::MoveSlider(const FVector2D& Position)
 	FVector2D NewPosition = CurrentPosition + DeltaMove;
 	NewPosition.Y = 0;
 	const FVector2D LeftBarrierPosition = LeftSeparator->GetRenderTransform().Translation;
-
+	
 	if (const float Distance = FVector2D::Distance(LeftBarrierPosition , CurrentPosition); Distance >= DistanceThreshold)
 	{
+		Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+		checkf(Instance, TEXT("Instance not found UDefenceMinigame::HandleScore()"));
+		this->RemoveFromParent();
+		Instance->GetPlayerStats()->MinigameModifier = 1.0f;
+		AMob::DealDamage();
+		DebugHelper::LogError("You hit late!");
 		return;
 	}
 	

@@ -6,9 +6,6 @@
 #include "Engine/DataAsset.h"
 #include "BulletData.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class ICANTCRY_API UBulletData : public UDataAsset
 {

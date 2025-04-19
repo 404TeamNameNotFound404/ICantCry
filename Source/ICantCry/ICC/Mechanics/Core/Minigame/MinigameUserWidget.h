@@ -28,7 +28,8 @@ public:
 	virtual EMinigameThreshold  CheckBar();
 	virtual void HandleScore();
 	virtual void Flow();
-
+	virtual bool OffsideChecker();
+	
 	UFUNCTION(BlueprintCallable)
 	virtual void MoveSlider(const FVector2D& Position);
 	

@@ -36,7 +36,6 @@ protected:
 public:
 	virtual void MoveSlider(const FVector2D& Position) override;
 	virtual EMinigameThreshold CheckBar() override;
-	
 
 private:
 

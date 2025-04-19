@@ -39,15 +39,7 @@ int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 			return 0;
 		}
 		
-		DebugHelper::LogSuccess("Calculating damage Enemy -> Player");
-		DebugHelper::LogWarning("Move Power -> " + FString::FromInt(AIMoves->MovePower));
-		DebugHelper::LogWarning("AI Minigame power -> " + FString::FromInt(AIMoves->MinigamePower));
-		DebugHelper::LogWarning("Enemy Attack Power  -> " + FString::FromInt(EnemyData->AttackPower));
-		DebugHelper::LogWarning("Player Defence Power  -> " + FString::FromInt(PlayerStats->DefencePower));
-		DebugHelper::LogWarning("Action point modifier  -> " + FString::FromInt(AIMoves->ActionPointsModifier));
-		DebugHelper::LogWarning("Action weakness modifier  -> " + FString::FromInt(AIMoves->WeaknessModifier));
-		DebugHelper::LogWarning("Player minigame modifier  -> " + FString::FromInt(PlayerStats->MinigameModifier));
-		const int AIDamageResult = (((AIMoves->MovePower / (2 - AIMoves->MinigamePower)) * (EnemyData->AttackPower / PlayerStats->DefencePower))) * AIMoves->ActionPointsModifier * AIMoves->WeaknessModifier; // Missing PlayerStats->MinigameModifier?
+		const int AIDamageResult = ((((AIMoves->MovePower / (2 - AIMoves->MinigamePower)) * (EnemyData->AttackPower / PlayerStats->DefencePower))) * AIMoves->ActionPointsModifier * AIMoves->WeaknessModifier) * PlayerStats->MinigameModifier;
 		DebugHelper::LogMessage(3, FColor::FromHex("433878"), "Damage dealt -> " + FString::FromInt(AIDamageResult));
 		return AIDamageResult;
 	}

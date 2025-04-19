@@ -21,6 +21,11 @@ void UMinigameUserWidget::Flow()
 	HandleScore();
 }
 
+bool UMinigameUserWidget::OffsideChecker()
+{
+	return false;
+}
+
 void UMinigameUserWidget::MoveSlider(const FVector2D& Position)
 {
 	

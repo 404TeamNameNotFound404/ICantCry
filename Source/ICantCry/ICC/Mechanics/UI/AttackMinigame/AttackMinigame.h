@@ -63,4 +63,13 @@ private:
 
 	UPROPERTY()
 	FVector2D StartingSliderPosition;
+
+	UPROPERTY()
+	int MovementDirection = 1;
+
+	UPROPERTY()
+	float BorderLeft = 0.0f;
+
+	UPROPERTY()
+	float BorderRight = 950.0f;
 };
