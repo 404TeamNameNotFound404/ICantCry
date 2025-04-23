@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BehaviorTree/BehaviorTree.h"
 #include "ICantCry/ICC/Actors/ICC_Actor.h"
 #include "ICantCry/ICC/Mechanics/Core/Data/EnemyDatas.h"
 #include "ICantCry/ICC/Mechanics/Core/Data/EnemyTactics.h"
@@ -23,6 +24,12 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	UHealthBarWidgetCmp* HealthBarComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Behaviors", meta = (AllowPrivateAccess = "true"))
+	UBehaviorTree* Tree;
 
 public:
 	// Called every frame
@@ -33,15 +40,14 @@ public:
 
 	UEnemyTactics* GetTactics() const;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
-	UHealthBarWidgetCmp* HealthBarComponent;
-
 	/**
 	 * Debug only
 	 * @note MUST BE REPLACED WITH THE ACTUAL SKIN
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Basic",  meta = (AllowPrivateAccess = "true"))
 	UStaticMeshComponent* StaticMesh;
+
+	UBehaviorTree* GetBehaviorTree() const;
 
 	void HighlightsSilhouette();
 	void DisableSilhouette();

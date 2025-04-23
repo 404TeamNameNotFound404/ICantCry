@@ -55,6 +55,16 @@ UEnemyTactics* AMob::GetTactics() const
 	return Moves;
 }
 
+UBehaviorTree* AMob::GetBehaviorTree() const
+{
+	if (!Tree)
+	{
+		return nullptr;
+	}
+	
+	return Tree;
+}
+
 void AMob::HighlightsSilhouette()
 {
 	if (!bEnableSilhouette)

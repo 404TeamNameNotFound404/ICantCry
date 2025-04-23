@@ -3,10 +3,14 @@
 
 #include "Components/PanelWidget.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
+#include "Kismet/GameplayStatics.h"
 
 void UAttackMinigame::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	GameInstance = Cast<UICantCryGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	checkf(GameInstance, TEXT("game instance is null at the constructor attack"))
 }
 
 void UAttackMinigame::MoveSlider(const FVector2D& Position)
@@ -76,15 +80,19 @@ void UAttackMinigame::HandleScore()
 	{
 		case EMinigameThreshold::Bad:
 			DebugHelper::LogError("Bad minigame score!");
+		    GameInstance->GetPlayerStats()->MinigameModifier = 0.5f;
 			break;
 		case EMinigameThreshold::Good:
 			DebugHelper::LogWarning("Good minigame score!");
+		    GameInstance->GetPlayerStats()->MinigameModifier = 1.0f;
 			break;
 		case EMinigameThreshold::Perfect:
 			DebugHelper::LogSuccess("Perfect minigame score!");
+		    GameInstance->GetPlayerStats()->MinigameModifier = 1.5f;
 			break;
 		default:
 			DebugHelper::LogMessage(3, FColor::FromHex("ADB2D4"),"Unknown minigame score!");
+		    GameInstance->GetPlayerStats()->MinigameModifier = 0.5f;
 			break;
 	}
 }
