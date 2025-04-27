@@ -78,6 +78,16 @@ void UICantCryGameInstance::SetPlayerStats(UPlayerStats* Stats)
 	PlayerStats = Stats;
 }
 
+void UICantCryGameInstance::SetCurrentPlayer(AICC_Player* NewPlayer)
+{
+	CurrentPlayer = NewPlayer;
+}
+
+AICC_Player* UICantCryGameInstance::GetCurrentPlayer() const
+{
+	return CurrentPlayer;
+}
+
 
 UWorld* UICantCryGameInstance::TryGetWorld() const
 {

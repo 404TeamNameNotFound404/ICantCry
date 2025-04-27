@@ -207,7 +207,7 @@ void UBattleHUD::UpdateTarget()
         AICC_Actor* TargetEnemy = BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex];
         static AMob* PreviousTargetEnemy = nullptr; 
         static bool bOverlayMaterialApplied = false;
-        
+       
         if (TargetEnemy->IsA(AICC_Player::StaticClass())) // if TargetEnemy is Player just skip it , we don't need to target ourselves right? and we all the info will be hidden for now 
         {
             HideInfo();
@@ -215,17 +215,17 @@ void UBattleHUD::UpdateTarget()
         }
         
         AMob* Current = Cast<AMob>(TargetEnemy);
-       
+        
         if (PreviousTargetEnemy && PreviousTargetEnemy != Current)
         {
-            DebugHelper::RemoveOverlayMaterialFromStaticMesh(PreviousTargetEnemy->StaticMesh);
+          //  DebugHelper::RemoveOverlayMaterialFromStaticMesh(PreviousTargetEnemy->StaticMesh);
             
             bOverlayMaterialApplied = false;
         }
         
         if (!bOverlayMaterialApplied)
         {
-            DebugHelper::AddOverlayMaterialToStaticMesh(Current->StaticMesh);
+           // DebugHelper::AddOverlayMaterialToStaticMesh(Current->StaticMesh);
             bOverlayMaterialApplied = true;
             PreviousTargetEnemy = Current;
         }
@@ -439,6 +439,16 @@ void UBattleHUD::Engage()
     MinigameHandler->StartMinigame(true);
     EngageBtn->SetVisibility(ESlateVisibility::Hidden);
     DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(SelectedEnemy->StaticMesh);
+}
+
+AMob* UBattleHUD::GetCurrentPlayingEmotion() const
+{
+    return CurrentActiveAI;
+}
+
+void UBattleHUD::SetCurrentPlayingEmotion(AMob* Current)
+{
+    CurrentActiveAI = Current;
 }
 
 void UBattleHUD::ShowHUD() 

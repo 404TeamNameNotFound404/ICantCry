@@ -73,6 +73,9 @@ void AMinigameHandler::StartMinigame(const bool& EnableAttack)
 		Player->EnableMinigameInput(true);
 		Player->SetActiveMinigameUserWidget(CastedWidget);
 		CurrentMinigameDisplayed->SetKeyboardFocus();
+		AMob::SetMinigameStarted(true);
+		AMob::MinigameEnded = false;
+		Player->GetBattleHUD()->GetCurrentPlayingEmotion()->SetIsBusy(true);
 	}
 }
 
@@ -91,6 +94,9 @@ void AMinigameHandler::EndMinigame()
 	// Controller->SetInputMode(InputMode);
 	Controller->bShowMouseCursor = true;
 	Player->EnableMinigameInput(false);
+	// TODO Set a way to Player->GetBattleHUD()->GetCurrentPlayingEmotion()->SetIsBusy(false); when player is attacking
+	AMob::SetMinigameStarted(false);
+	AMob::MinigameEnded = true;
 }
 
 AICC_Player* AMinigameHandler::GetBattlePlayer() const

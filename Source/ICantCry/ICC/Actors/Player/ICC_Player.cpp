@@ -81,6 +81,7 @@ void AICC_Player::BeginPlay()
 	}
 
 	DontDestroyOnLoad->SetPlayerStats(Stats);
+	//DontDestroyOnLoad->SetCurrentPlayer(this);
 }
 
 // Called every frame

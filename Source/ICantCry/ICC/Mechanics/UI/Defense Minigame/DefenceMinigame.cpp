@@ -91,6 +91,8 @@ void UDefenceMinigame::MoveSlider(const FVector2D& Position)
 		this->RemoveFromParent();
 		Instance->GetPlayerStats()->MinigameModifier = 1.0f;
 		AMob::DealDamage();
+		AMob::MinigameEnded = true;
+		AMob::SetMinigameStarted(false);
 		DebugHelper::LogError("You hit late!");
 		return;
 	}

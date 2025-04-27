@@ -44,6 +44,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void EndMinigame();
 
+	/**
+	 * Get The Combat player
+	 * @note this probably will be removed
+	 * @return Player
+	 */
 	AICC_Player* GetBattlePlayer() const;
 
 

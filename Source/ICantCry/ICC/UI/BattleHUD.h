@@ -101,6 +101,9 @@ public:
 	UFUNCTION()
 	void Engage();
 
+	AMob* GetCurrentPlayingEmotion() const;
+	void SetCurrentPlayingEmotion(AMob* Current);
+
 	void ShowHUD();
 	bool IsShootFired() const;
 	bool IsBulletSelectionOver() const;
@@ -198,6 +201,9 @@ private:
 
 	UPROPERTY()
 	bool bStartFight = false;
+
+	UPROPERTY()
+	AMob* CurrentActiveAI = nullptr;
 	
 	/**
 	 * -----------------------------------

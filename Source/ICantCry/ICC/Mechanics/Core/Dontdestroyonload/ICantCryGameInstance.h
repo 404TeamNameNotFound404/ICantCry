@@ -7,6 +7,9 @@
 #include "ICantCry/ICC/Mechanics/TurnSystem/BattleFlow/DamageCalculator.h"
 #include "ICantCryGameInstance.generated.h"
 
+
+class AICC_Player;
+
 /**
  * DontDestroyOnLoad like class
  * @note class should be added in project settings -> instance -> add this 
@@ -32,6 +35,9 @@ public:
 
 	UPlayerStats* GetPlayerStats() const;
 	void SetPlayerStats(UPlayerStats* Stats);
+
+	void SetCurrentPlayer(AICC_Player* NewPlayer);
+	AICC_Player* GetCurrentPlayer() const;
 	
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))
@@ -41,5 +47,8 @@ private:
 	UPlayerStats* PlayerStats;
 	
 	UWorld* TryGetWorld() const;
+
+	UPROPERTY()
+	AICC_Player* CurrentPlayer = nullptr;
 	
 };

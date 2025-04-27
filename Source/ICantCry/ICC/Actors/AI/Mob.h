@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ICC_AIController.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "ICantCry/ICC/Actors/ICC_Actor.h"
 #include "ICantCry/ICC/Mechanics/Core/Data/EnemyDatas.h"
@@ -10,6 +11,9 @@
 #include "ICantCry/ICC/Mechanics/UI/Actors/EnemyHealthBar/HealthBarWidgetCmp.h"
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
 #include "ICantCry/ICC/Mechanics/TurnSystem/BattleFlow/DamageCalculator.h"
+#include "Niagara/Public/NiagaraComponent.h"
+#include "ICantCry/ICC/Actors/AI/Memory/EmotionMemory.h"
+#include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "Mob.generated.h"
 
 UCLASS(Blueprintable)
@@ -24,10 +28,19 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	/**
+	 * Emotions shape
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character Shape", meta = (AllowPrivateAccess = "true"))
+	UNiagaraComponent* Shape;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	UHealthBarWidgetCmp* HealthBarComponent;
 
+	UPROPERTY()
+	FEmotionMemory Memory;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Behaviors", meta = (AllowPrivateAccess = "true"))
 	UBehaviorTree* Tree;
 
@@ -35,9 +48,16 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Get EnemyData
+	/**
+	 * Enemy Data
+	 * @return Enemy Data
+	 */
 	UEnemyDatas* GetData() const;
 
+	/**
+	 * AI moves 
+	 * @return Get the AIMoves
+	 */
 	UEnemyTactics* GetTactics() const;
 
 	/**
@@ -47,14 +67,36 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Basic",  meta = (AllowPrivateAccess = "true"))
 	UStaticMeshComponent* StaticMesh;
 
+	/**
+	 * Get The current behavior tree
+	 * @return Selected Mob behavior tree
+	 */
 	UBehaviorTree* GetBehaviorTree() const;
 
+	FEmotionMemory GetAIMemory() const;
+
+	/**
+	 * Highlights the silhouette during AI turn
+	 */
 	void HighlightsSilhouette();
+	/**
+	 * Disable the Silhouette
+	 */
 	void DisableSilhouette();
 
 	void StartDefenceMinigame();
 
 	static void DealDamage();
+
+	void SetIsBusy(const bool& Value);
+	bool IsBusy() const;
+
+	void PlayTurn();
+	void EndTurn();
+	static bool MinigameEnded;
+
+	static bool IsMinigameStarted();
+	static void SetMinigameStarted(const bool& Value);
 
 private:
 
@@ -73,4 +115,22 @@ private:
 	
 	static FDamage Damage;
 	
+
+	/**
+	 * Check if AI is performing attack
+	 */
+	UPROPERTY()
+	bool bBusy = false;
+
+	UPROPERTY()
+	UICantCryGameInstance* Instance;
+
+	UPROPERTY()
+	AICC_AIController* AIController;
+
+	UPROPERTY()
+	AICC_Player* DebugPlayer = nullptr;
+	
+	static bool bMinigameHasStarted;
+	static bool bStopTree;
 };

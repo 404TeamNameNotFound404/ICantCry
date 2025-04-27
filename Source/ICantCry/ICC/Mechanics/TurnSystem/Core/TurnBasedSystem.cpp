@@ -53,8 +53,8 @@ void UTurnBasedSystem::Start(UWorld* World)
 			AMob* Mob = Cast<AMob>(Who);
 			bIsAiTurn = true;
 			bIsPlayerTurn = false;
-			
-			// Mob->PlayTurn(); //TODO ADD MOB PLAY TURN (Define the ai class)
+			CurrentPlayer->GetBattleHUD()->SetCurrentPlayingEmotion(Mob);
+			Mob->PlayTurn();
 		}
 		//otherwise is player playing
 		else
@@ -85,21 +85,14 @@ void UTurnBasedSystem::Update(UWorld* World)
 	{
 		Turn.Timer += World->GetDeltaSeconds() * Variations;
 		AMob* Mob = Cast<AMob>(Turn.Queue[Turn.CurrentTurn]);
+		CurrentPlayer->GetBattleHUD()->SetCurrentPlayingEmotion(Mob);
 		Mob->HighlightsSilhouette();
-		
-		if (Turn.Timer >= MaxAITurnTime) 
-		{
-			Turn.Timer = 0;
-			DebugHelper::LogError(Turn.Queue[Turn.CurrentTurn]->GetName() + " ended it's turn");
-			CurrentPlayer->GetMinigameHandler()->StartMinigame(false); /*TODO TO PLAY THE DEFENCE MINIGAME AND KEEP THE AI "WAITING" AFTER THE MINIGAME IS DONE, WE NEED TO DEFINE THE BEHAVIOUR FIRST! AND PUT IT ON THE ATTACK BEHAVIOUR*/
-			Mob->DisableSilhouette();
-			EndTurn();
-			StartNextTurn();
-		}
+		Mob->PlayTurn();
 	}
 
 	if (bIsPlayerTurn && CurrentPlayer)
 	{
+		
 		if (CurrentPlayer->GetBattleHUD()->IsShootFired())
 		{
 			if (!CurrentPlayer->GetBattleHUD()->CanvasStatus->IsVisible())

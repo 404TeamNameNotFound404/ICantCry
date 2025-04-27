@@ -1,7 +1,6 @@
 #include "ICC_AIController.h"
 #include "Mob.h"
 
-
 AICC_AIController::AICC_AIController(FObjectInitializer const& FObjectInitializer)
 {
 }
@@ -9,6 +8,7 @@ AICC_AIController::AICC_AIController(FObjectInitializer const& FObjectInitialize
 void AICC_AIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
+	
 
 	if (const AMob* Mob = Cast<AMob>(InPawn))
 	{
@@ -17,7 +17,6 @@ void AICC_AIController::OnPossess(APawn* InPawn)
 			UBlackboardComponent* BlackBoardCmp;
 			UseBlackboard(BT->BlackboardAsset, BlackBoardCmp);
 			Blackboard = BlackBoardCmp;
-			RunBehaviorTree(BT);
 		}
 	}
 }

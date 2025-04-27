@@ -18,7 +18,7 @@ public class ICantCry : ModuleRules
 		}
 		
 		
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" , "GameplayTags", "UMG", "AIModule", "NavigationSystem", "GameplayTasks"});
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" , "GameplayTags", "UMG", "AIModule", "NavigationSystem", "GameplayTasks", "Niagara", "NiagaraEditor"});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
