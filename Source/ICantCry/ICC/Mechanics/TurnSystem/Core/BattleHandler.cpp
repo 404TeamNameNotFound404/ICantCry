@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "BattleHandler.h"
+#include "ICantCry/ICC/Debug/DebugHelper.h"
 
+UBattleInfo* ABattleHandler::InfoBattle;
 
 // Sets default values
 ABattleHandler::ABattleHandler(): TurnBasedSystem(nullptr)
@@ -18,6 +18,14 @@ void ABattleHandler::BeginPlay()
 	Super::BeginPlay();
 	TurnBasedSystem = NewObject<UTurnBasedSystem>();
 	TurnBasedSystem->Start(GetWorld());
+
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	checkf(PlayerController, TEXT("PlayerController is null at ABattleHandler::BeginPlay"));
+
+	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), BattleInfoWidget);
+	BattleInfo = Cast<UBattleInfo>(Widget);
+	BattleInfo->AddToViewport();
+	InfoBattle = BattleInfo;
 }
 
 // Called every frame
@@ -31,4 +39,16 @@ void ABattleHandler::Tick(float DeltaTime)
 UTurnBasedSystem *ABattleHandler::GetTurnBasedSystem() const
 {
     return TurnBasedSystem;
+}
+
+UBattleInfo* ABattleHandler::GetBattleInfo() const
+{
+	checkf(BattleInfo, TEXT("Battle Info is invalid"))
+	return BattleInfo;
+}
+
+UBattleInfo* ABattleHandler::GetBattleInfoInstance()
+{
+	checkf(InfoBattle, TEXT("Static Battle Info is invalid"));
+	return InfoBattle;
 }

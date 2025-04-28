@@ -3,6 +3,7 @@
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
+#include "ICantCry/ICC/Mechanics/TurnSystem/Core/BattleHandler.h"
 #include "EngineUtils.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 
@@ -169,6 +170,7 @@ void UBattleHUD::OnPassPressed()
     BattleHandler->GetTurnBasedSystem()->SetTurnOverlayApplied(false);
     DebugHelper::RemoveOverlayMaterialFromStaticMesh(BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
     bTargetSelection = false;
+    ABattleHandler::GetBattleInfoInstance()->ClearInfo();
 }
 
 void UBattleHUD::ScrollTargetSelection(float ScrollValue)

@@ -3,7 +3,7 @@
 #include "ICantCry/ICC/Actors/ICC_Actor.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "EngineUtils.h"
-#include "FunctionalUIScreenshotTest.h"
+#include "ICantCry/ICC/Mechanics/TurnSystem/Core/BattleHandler.h"
 #include "ICantCry/ICC/Actors/AI/Mob.h"
 
 UTurnBasedSystem::UTurnBasedSystem() : MaxAITurnTime(10.0f), bIsAiTurn(false), bIsPlayerTurn(false),
@@ -64,6 +64,7 @@ void UTurnBasedSystem::Start(UWorld* World)
 			AICC_Player* Player = Cast<AICC_Player>(Who);
 			DebugHelper::AddTurnMaterialOverlayToStaticMesh(Player->DebugMesh);
 			CurrentPlayer = Player;
+			ABattleHandler::GetBattleInfoInstance()->SetInfo(FText::FromString("Your Turn"));
 		}
 	}
 }
@@ -99,6 +100,7 @@ void UTurnBasedSystem::Update(UWorld* World)
 	if (bIsPlayerTurn && CurrentPlayer)
 	{
 		DebugHelper::AddTurnMaterialOverlayToStaticMesh(CurrentPlayer->DebugMesh);
+		ABattleHandler::GetBattleInfoInstance()->SetInfo(FText::FromString("Your Turn"));
 		
 		if (CurrentPlayer->GetBattleHUD()->IsShootFired())
 		{
@@ -231,7 +233,7 @@ void UTurnBasedSystem::SetAIPlaying(const bool& Play)
 
 void UTurnBasedSystem::ExitBattle()
 {
-	
+	ABattleHandler::GetBattleInfoInstance()->RemoveFromParent();
 	bRequestFight = false;
 }
 

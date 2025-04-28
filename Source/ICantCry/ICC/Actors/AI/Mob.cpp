@@ -178,6 +178,7 @@ void AMob::SetMinigameStarted(const bool& Value)
 
 ABattleHandler* AMob::GetBattleHandler() const
 {
+	checkf(BattleHandler, TEXT("Battle Handler is invalid at AMob::GetBattleHandler"));
 	return BattleHandler;
 }
 

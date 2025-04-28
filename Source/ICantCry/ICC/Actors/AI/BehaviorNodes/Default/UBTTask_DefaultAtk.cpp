@@ -30,6 +30,7 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 	checkf(Current, TEXT("Current is invalid at Type UUBTTask_DefaultAtk::ExecuteTask"));
 	
 	Controller->MoveToActor(Target);
+	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " is attacking"));
 	
 	return EBTNodeResult::InProgress;
 }
@@ -52,6 +53,7 @@ void UUBTTask_DefaultAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 	{
 		BlackBoard->SetValueAsInt("Id", -1); 
 		bBusy = false;
+		Cast<AMob>(Controller->GetPawn())->GetBattleHandler()->GetBattleInfo()->ClearInfo();
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
 }

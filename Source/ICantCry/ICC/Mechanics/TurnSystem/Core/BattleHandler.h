@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "TurnBasedSystem.h"
+#include "ICantCry/ICC/Mechanics/UI/BattleNotifiers/BattleInfo.h"
 #include "BattleHandler.generated.h"
 
 UCLASS(Blueprintable)
@@ -21,9 +22,19 @@ public:
 
 	UTurnBasedSystem* GetTurnBasedSystem() const;
 
+	UBattleInfo* GetBattleInfo() const;
+
+	static UBattleInfo* GetBattleInfoInstance();
+
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UTurnBasedSystem* TurnBasedSystem;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category= "Battle Info" ,meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UBattleInfo> BattleInfoWidget ;
 
+	UPROPERTY()
+	UBattleInfo* BattleInfo;
+
+	static UBattleInfo* InfoBattle;
 };
