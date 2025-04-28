@@ -52,6 +52,7 @@ void AMinigameHandler::StartMinigame(const bool& EnableAttack)
 		Player->EnableMinigameInput(true);
 		Player->SetActiveMinigameUserWidget(CastedWidget);
 		CurrentMinigameDisplayed->SetKeyboardFocus();
+		bPlayerMinigameEnded = false;
 	}
 
 	
@@ -97,11 +98,17 @@ void AMinigameHandler::EndMinigame()
 	// TODO Set a way to Player->GetBattleHUD()->GetCurrentPlayingEmotion()->SetIsBusy(false); when player is attacking
 	AMob::SetMinigameStarted(false);
 	AMob::MinigameEnded = true;
+	bPlayerMinigameEnded = true;
 }
 
 AICC_Player* AMinigameHandler::GetBattlePlayer() const
 {
 	return Player;
+}
+
+bool AMinigameHandler::IsPlayerMinigameEnded() const
+{
+	return bPlayerMinigameEnded;
 }
 
 

@@ -51,6 +51,8 @@ public:
 	 */
 	AICC_Player* GetBattlePlayer() const;
 
+	bool IsPlayerMinigameEnded() const;
+
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Minigame", meta = (AllowPrivateAccess = "true"))
@@ -67,4 +69,7 @@ private:
 
 	UPROPERTY()
 	AICC_Player* Player = nullptr;
+
+	UPROPERTY()
+	bool bPlayerMinigameEnded = false;
 };

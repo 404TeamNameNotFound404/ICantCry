@@ -48,7 +48,7 @@ void UUBTTask_DefaultAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 	}
 	
 	//
-	if (!AMob::IsMinigameStarted() && AMob::MinigameEnded)
+	if (!AMob::IsMinigameStarted() && AMob::MinigameEnded && Target->GetMinigameHandler()->IsPlayerMinigameEnded())
 	{
 		BlackBoard->SetValueAsInt("Id", -1); 
 		bBusy = false;

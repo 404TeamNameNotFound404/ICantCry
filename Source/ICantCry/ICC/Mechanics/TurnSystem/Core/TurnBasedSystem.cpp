@@ -83,15 +83,22 @@ void UTurnBasedSystem::Update(UWorld* World)
 	
 	if (bIsAiTurn)
 	{
+		if (!bAIPlayTurn)
+		{
+			bAIPlayTurn = true; 
+			AMob* Mob = Cast<AMob>(Turn.Queue[Turn.CurrentTurn]);
+			checkf(Mob, TEXT("Mob invalid at UTurnBasedSystem::Update"))
+			DebugHelper::LogWarning(Mob->GetActorLabel() + " Turn");
+			CurrentPlayer->GetBattleHUD()->SetCurrentPlayingEmotion(Mob);
+			Mob->PlayTurn();
+		}
+
 		Turn.Timer += World->GetDeltaSeconds() * Variations;
-		AMob* Mob = Cast<AMob>(Turn.Queue[Turn.CurrentTurn]);
-		CurrentPlayer->GetBattleHUD()->SetCurrentPlayingEmotion(Mob);
-		Mob->HighlightsSilhouette();
-		Mob->PlayTurn();
 	}
 
 	if (bIsPlayerTurn && CurrentPlayer)
 	{
+		DebugHelper::AddTurnMaterialOverlayToStaticMesh(CurrentPlayer->DebugMesh);
 		
 		if (CurrentPlayer->GetBattleHUD()->IsShootFired())
 		{
@@ -125,7 +132,6 @@ void UTurnBasedSystem::StartNextTurn()
 			CurrentMob = Mob;
 			bIsAiTurn = true;
 			bIsPlayerTurn = false;
-			// Mob->PlayTurn(); //TODO ADD MOB PLAY TURN (Define the ai class)
 		}
 		//otherwise is player playing
 		else
@@ -148,9 +154,15 @@ void UTurnBasedSystem::StartNextTurn()
 
 void UTurnBasedSystem::EndTurn()
 {
+	if (bAIPlayTurn)
+	{
+		DebugHelper::LogError("AI Turn Ended");
+		bAIPlayTurn = false;
+	}
+
 	Turn.CurrentTurn = Turn.NextTurn;
 	Turn.NextTurn = (Turn.NextTurn + 1) % Turn.Queue.Num();
-	DebugHelper::LogWarning("Ai turn ended, " + Turn.Queue[Turn.CurrentTurn]->GetName() + " will now play");
+	DebugHelper::LogWarning("turn ended, " + Turn.Queue[Turn.CurrentTurn]->GetName() + " will now play");
 }
 
 FTurn UTurnBasedSystem::GetTurn() const
@@ -210,6 +222,11 @@ void UTurnBasedSystem::Flow()
 void UTurnBasedSystem::RequestFight(const bool& Request)
 {
 	bRequestFight = Request;
+}
+
+void UTurnBasedSystem::SetAIPlaying(const bool& Play)
+{
+	bAIPlayTurn = Play;
 }
 
 void UTurnBasedSystem::ExitBattle()

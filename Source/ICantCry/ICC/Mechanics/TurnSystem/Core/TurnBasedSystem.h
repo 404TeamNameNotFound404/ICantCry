@@ -28,6 +28,7 @@ public:
 
 	void SetTurnOverlayApplied(const bool &Applied);
 	void RequestFight(const bool &Request);
+	void SetAIPlaying(const bool &Play);
 
 	/**
 	 * --------- WIP FUNCTIONS -----------
@@ -75,5 +76,7 @@ private:
 
 	UPROPERTY()
 	bool bFightStarted = false;
-	
+
+	UPROPERTY()
+	bool bAIPlayTurn = false;
 };

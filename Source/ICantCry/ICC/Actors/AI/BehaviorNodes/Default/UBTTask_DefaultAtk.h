@@ -27,4 +27,7 @@ protected:
 
 	UPROPERTY()
 	bool bBusy = false;
+
+	UPROPERTY()
+	FTimerHandle TimerHandle;
 };

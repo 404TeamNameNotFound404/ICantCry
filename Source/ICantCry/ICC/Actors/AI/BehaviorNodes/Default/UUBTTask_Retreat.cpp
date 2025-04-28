@@ -45,7 +45,8 @@ void UUUBTTask_Retreat::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	if (!bRetreated)
 	{
 		const float Distance = FVector::Distance(Current->GetAIMemory().DefaultBattleLocation, Current->GetActorLocation());
-		if (Distance < 40.f)
+		
+		if (Distance < 60.f) // 40
 		{
 			bRetreated = true;
 		}

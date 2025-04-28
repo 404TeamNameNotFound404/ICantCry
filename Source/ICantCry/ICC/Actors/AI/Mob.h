@@ -16,6 +16,8 @@
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "Mob.generated.h"
 
+class ABattleHandler;
+
 UCLASS(Blueprintable)
 class ICANTCRY_API AMob : public AICC_Actor
 {
@@ -43,6 +45,27 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Behaviors", meta = (AllowPrivateAccess = "true"))
 	UBehaviorTree* Tree;
+
+	/**
+	 * Turn it on if the AI can cure the other mobs
+	 */
+	UPROPERTY()
+	bool bIsHealer;
+
+	// Reference to Enemy Data Asset
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data",  meta = (AllowPrivateAccess = "true"))
+	UEnemyDatas* EnemyData;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data",  meta = (AllowPrivateAccess = "true"))
+	UEnemyTactics* Moves;
+
+	UPROPERTY()
+	AICC_AIController* AIController;
+
+	UPROPERTY()
+	AICC_Player* DebugPlayer = nullptr;
+
+	static bool bStopTree;
 
 public:
 	// Called every frame
@@ -98,14 +121,9 @@ public:
 	static bool IsMinigameStarted();
 	static void SetMinigameStarted(const bool& Value);
 
+	ABattleHandler* GetBattleHandler() const;
+
 private:
-
-	// Reference to Enemy Data Asset
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data",  meta = (AllowPrivateAccess = "true"))
-	UEnemyDatas* EnemyData;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data",  meta = (AllowPrivateAccess = "true"))
-	UEnemyTactics* Moves;
 
 	UPROPERTY()
 	AMinigameHandler* MinigameHandler = nullptr;
@@ -114,7 +132,6 @@ private:
 	bool bEnableSilhouette = false;
 	
 	static FDamage Damage;
-	
 
 	/**
 	 * Check if AI is performing attack
@@ -126,11 +143,7 @@ private:
 	UICantCryGameInstance* Instance;
 
 	UPROPERTY()
-	AICC_AIController* AIController;
-
-	UPROPERTY()
-	AICC_Player* DebugPlayer = nullptr;
+	ABattleHandler* BattleHandler = nullptr;
 	
 	static bool bMinigameHasStarted;
-	static bool bStopTree;
 };

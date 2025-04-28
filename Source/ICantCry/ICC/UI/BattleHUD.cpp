@@ -167,6 +167,7 @@ void UBattleHUD::OnPassPressed()
     BattleHandler->GetTurnBasedSystem()->EndTurn();
     BattleHandler->GetTurnBasedSystem()->StartNextTurn();
     BattleHandler->GetTurnBasedSystem()->SetTurnOverlayApplied(false);
+    DebugHelper::RemoveOverlayMaterialFromStaticMesh(BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
     bTargetSelection = false;
 }
 
@@ -438,7 +439,7 @@ void UBattleHUD::Engage()
     checkf(MinigameHandler, TEXT("Minigame handler is null at UBattleHUD::Engage"));
     MinigameHandler->StartMinigame(true);
     EngageBtn->SetVisibility(ESlateVisibility::Hidden);
-    DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(SelectedEnemy->StaticMesh);
+    // DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(SelectedEnemy->StaticMesh);
 }
 
 AMob* UBattleHUD::GetCurrentPlayingEmotion() const

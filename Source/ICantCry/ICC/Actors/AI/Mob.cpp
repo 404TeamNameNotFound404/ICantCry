@@ -5,6 +5,7 @@
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Actors/AI/ICC_AIController.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
+#include "ICantCry/ICC/Mechanics/TurnSystem/Core/BattleHandler.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 
 FDamage AMob::Damage;
@@ -46,6 +47,12 @@ void AMob::BeginPlay()
 	for (TActorIterator<AICC_Player> It(GetWorld()); It; ++It)
 	{
 		DebugPlayer = *It;
+		break;
+	}
+
+	for (TActorIterator<ABattleHandler> It(GetWorld()); It; ++It)
+	{
+		BattleHandler = *It;
 		break;
 	}
 
@@ -167,5 +174,10 @@ bool AMob::IsMinigameStarted()
 void AMob::SetMinigameStarted(const bool& Value)
 {
 	bMinigameHasStarted = Value;
+}
+
+ABattleHandler* AMob::GetBattleHandler() const
+{
+	return BattleHandler;
 }
 
