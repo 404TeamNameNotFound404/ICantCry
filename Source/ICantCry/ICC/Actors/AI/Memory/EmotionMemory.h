@@ -13,5 +13,8 @@ struct FEmotionMemory
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Emotion Memory")
 	FRotator DefaultBattleOrientation;
 
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Emotion Memory")
+	FVector AttackLocation;
+
 	FEmotionMemory(); 
 };

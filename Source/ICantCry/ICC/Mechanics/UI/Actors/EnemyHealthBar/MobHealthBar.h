@@ -25,6 +25,9 @@ public:
 
 	UPROPERTY()
 	UEnemyDatas* Info;
+
+	void Restore(const float& RestoredHealth);
+	bool IsLow() const;
 	
 protected:
 	virtual void NativeConstruct() override;
@@ -37,6 +40,5 @@ protected:
 
 	UPROPERTY()
 	float CurrentHealth;
-
-
+	
 };

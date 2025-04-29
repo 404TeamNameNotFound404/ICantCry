@@ -1,4 +1,6 @@
 #include "UBTTask_DefaultAtk.h"
+
+#include "LightmapResRatioAdjust.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "ICantCry/ICC/Actors/AI/ICC_AIController.h"
 #include "ICantCry/ICC/Actors/AI/Mob.h"
@@ -44,6 +46,8 @@ void UUBTTask_DefaultAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 	
 	if (FVector::Distance(Target->GetActorLocation(),Controller->GetPawn()->GetActorLocation()) <= 95.f && !bBusy)
 	{
+		Cast<AMob>(Controller->GetPawn())->GetAIMemory().AttackLocation = Cast<AMob>(Controller->GetPawn())->GetActorLocation();
+		DebugHelper::LogWarning("Attack Location -> " + Cast<AMob>(Controller->GetPawn())->GetAIMemory().AttackLocation.ToString());
 		Target->GetMinigameHandler()->StartMinigame(false);
 		bBusy = true;
 	}

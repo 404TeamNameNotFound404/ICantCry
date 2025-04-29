@@ -49,7 +49,7 @@ protected:
 	/**
 	 * Turn it on if the AI can cure the other mobs
 	 */
-	UPROPERTY()
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Behaviors", meta = (AllowPrivateAccess = "true"))
 	bool bIsHealer;
 
 	// Reference to Enemy Data Asset
@@ -108,6 +108,7 @@ public:
 	void DisableSilhouette();
 
 	void StartDefenceMinigame();
+	virtual void Heal(const float& RestoredHealth);
 
 	static void DealDamage();
 
@@ -118,10 +119,37 @@ public:
 	void EndTurn();
 	static bool MinigameEnded;
 
+
+	/**
+	 * Check if the minigame has started
+	 * @return true if started
+	 */
 	static bool IsMinigameStarted();
+
+	/**
+	 * Set the minigame bool value
+	 * @note this function is used for behavior decorator attack and retreat
+	 * @param Value true or false
+	 */
 	static void SetMinigameStarted(const bool& Value);
 
+	/**
+	 * Get the battle handler
+	 * @return Current Battle Handler
+	 */
 	ABattleHandler* GetBattleHandler() const;
+
+	/**
+	 * Get the health bar inside the widget component if not null
+	 * @return valid health-bar
+	 */
+	UMobHealthBar* GetHealthBar() const;
+
+	/**
+	 * Check if current Emotion can heal or not
+	 * @return true if healer
+	 */
+	bool IsHealer() const;
 
 private:
 

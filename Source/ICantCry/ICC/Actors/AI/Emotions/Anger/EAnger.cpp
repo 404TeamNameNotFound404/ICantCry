@@ -7,14 +7,13 @@
 // Sets default values
 AEAnger::AEAnger()
 {
-
+	bIsHealer = false;
 }
 
 // Called when the game starts or when spawned
 void AEAnger::BeginPlay()
 {
 	Super::BeginPlay();
-	bIsHealer = false;
 }
 
 // Called every frame

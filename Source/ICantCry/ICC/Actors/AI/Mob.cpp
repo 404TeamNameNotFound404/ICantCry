@@ -117,6 +117,30 @@ void AMob::StartDefenceMinigame()
 	MinigameHandler->StartMinigame(false);
 }
 
+bool AMob::IsHealer() const
+{
+	return bIsHealer;
+}
+
+void AMob::Heal(const float& RestoredHealth)
+{
+	if (!bIsHealer)
+	{
+		return;
+	}
+
+	UMobHealthBar* Bar = Cast<UMobHealthBar>(HealthBarComponent->GetWidget());
+	checkf(Bar, TEXT("Bar is invalid in AMob::Heal"));
+	Bar->Restore(RestoredHealth);
+}
+
+UMobHealthBar* AMob::GetHealthBar() const
+{
+	UMobHealthBar* Bar = Cast<UMobHealthBar>(HealthBarComponent->GetWidget());
+	checkf(Bar, TEXT("Bar is invalid in AMob::GetHealthBar"));
+	return Bar;
+}
+
 void AMob::DealDamage()
 {
 	const float DamageDealt = Damage.CalculateDamage(false);
