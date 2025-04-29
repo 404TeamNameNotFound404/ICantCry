@@ -18,6 +18,7 @@ bool UBTDecorator_LowHealth::CalculateRawConditionValue(UBehaviorTreeComponent& 
 	AMob* Current = Cast<AMob>(AIController->GetPawn());
 	checkf(Current, TEXT("Mob is invalid at decorator UBTDecorator_LowHealth::CalculateRawConditionValue"));
 	
+	
 	if (!Current->IsHealer())
 	{
 		return false;
