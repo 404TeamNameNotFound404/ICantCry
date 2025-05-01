@@ -24,6 +24,7 @@ public:
 	FTurn GetTurn() const;
 
 	bool GetIsPlayerTurn() const;
+	bool GetIsAITurn() const;
 	AICC_Player* TryGetCurrentPlayer() const;
 
 	void SetTurnOverlayApplied(const bool &Applied);

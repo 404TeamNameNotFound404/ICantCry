@@ -92,6 +92,7 @@ void UTurnBasedSystem::Update(UWorld* World)
 			DebugHelper::LogWarning(Mob->GetActorLabel() + " Turn");
 			CurrentPlayer->GetBattleHUD()->SetCurrentPlayingEmotion(Mob);
 			Mob->PlayTurn();
+			Mob->PlaySecondTurn();
 		}
 
 		Turn.Timer += World->GetDeltaSeconds() * Variations;
@@ -175,6 +176,11 @@ FTurn UTurnBasedSystem::GetTurn() const
 bool UTurnBasedSystem::GetIsPlayerTurn() const
 {
 	return bIsPlayerTurn;
+}
+
+bool UTurnBasedSystem::GetIsAITurn() const
+{
+	return bAIPlayTurn;
 }
 
 AICC_Player* UTurnBasedSystem::TryGetCurrentPlayer() const

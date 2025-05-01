@@ -40,6 +40,19 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	UHealthBarWidgetCmp* HealthBarComponent;
 
+	// Reference to Enemy Data Asset
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data",  meta = (AllowPrivateAccess = "true"))
+	UEnemyDatas* EnemyData;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data",  meta = (AllowPrivateAccess = "true"))
+	UEnemyTactics* Moves;
+
+	UPROPERTY()
+	AICC_AIController* AIController;
+	
+
+	//----------------
+
 	UPROPERTY()
 	FEmotionMemory Memory;
 	
@@ -52,18 +65,41 @@ protected:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Behaviors", meta = (AllowPrivateAccess = "true"))
 	bool bIsHealer;
 
-	// Reference to Enemy Data Asset
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data",  meta = (AllowPrivateAccess = "true"))
-	UEnemyDatas* EnemyData;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data",  meta = (AllowPrivateAccess = "true"))
-	UEnemyTactics* Moves;
+	
+	UPROPERTY()
+	bool bSelf;
 
 	UPROPERTY()
-	AICC_AIController* AIController;
+	bool bIsBuffed;
+
+	UPROPERTY()
+	bool bIsDebuffed;
 
 	UPROPERTY()
 	AICC_Player* DebugPlayer = nullptr;
+
+	UPROPERTY()
+	bool bEnvyBurned;
+
+	UPROPERTY()
+	bool bIsAshamedState;
+
+	UPROPERTY()
+	bool bIsLow;
+
+	UPROPERTY()
+	bool bFreezedUp;
+
+	UPROPERTY()
+	bool bAttacked;
+
+	UPROPERTY()
+	int Bt_Id;
+
+	UPROPERTY()
+	int AI_Id;
+	
+	//------
 
 	static bool bStopTree;
 
@@ -116,6 +152,9 @@ public:
 	bool IsBusy() const;
 
 	void PlayTurn();
+
+	void PlaySecondTurn();
+	
 	void EndTurn();
 	static bool MinigameEnded;
 
@@ -151,6 +190,32 @@ public:
 	 */
 	bool IsHealer() const;
 
+	void SetIsBuffed(const bool& Value);
+	
+	void SetIsDebuffed(const bool& Value);
+
+	void SetIsAshamedState(const bool& Value);
+	
+	void SetIsLow(const bool& Value);
+	
+	void SetIsFreezedUp(const bool& Value);
+
+	void SetIsAttacked(const bool& Value);
+
+	void SetIsEnvyBurned(const bool& Value);
+
+	void SetTreeId(const int& Value);
+
+	bool GetIsIsBuffed() const;
+	bool GetIsIsDebuffed() const;
+	bool GetIsIsAshamedState() const;
+	bool GetIsIsLow() const;
+	bool GetIsIsFreezedUp() const;
+	bool GetIsIsAttacked() const;
+	bool GetIsIsEnvyBurned() const;
+	int GetTreeId() const;
+	int GetAIId() const;
+
 private:
 
 	UPROPERTY()
@@ -172,6 +237,9 @@ private:
 
 	UPROPERTY()
 	ABattleHandler* BattleHandler = nullptr;
+
+	UPROPERTY()
+	FTimerHandle BehaviorTreeTimerHandle;
 	
 	static bool bMinigameHasStarted;
 };

@@ -10,14 +10,12 @@ UUUBTTask_Retreat::UUUBTTask_Retreat()
 {
 	NodeName = TEXT("Retreat");
 	bNotifyTick = true;
+	bNotifyTaskFinished = true;
 }
 
 EBTNodeResult::Type UUUBTTask_Retreat::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	BlackBoard = OwnerComp.GetBlackboardComponent();
-	BlackBoard->SetValueAsInt("Id", -1);
-	BlackBoard->SetValueAsBool("Attacked?", true);
-
 	Target = Cast<AICC_Player>(BlackBoard->GetValueAsObject("Target"));
 	
 	AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner());
@@ -25,6 +23,13 @@ EBTNodeResult::Type UUUBTTask_Retreat::ExecuteTask(UBehaviorTreeComponent& Owner
 
 	AMob* Current = Cast<AMob>(Controller->GetPawn());
 	checkf(Current, TEXT("Current is invalid at EBTNodeResult::Type AICC_AIController::GetPawn"));
+
+	Current->SetTreeId(-1);
+	Current->SetIsAttacked(true);
+	
+	BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
+	BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
+	
 	
 	FAIMoveRequest Request;
 	Request.SetGoalLocation(Current->GetAIMemory().DefaultBattleLocation);
@@ -50,6 +55,7 @@ void UUUBTTask_Retreat::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 		
 		if (const float Threshold = Distance / ActualDistance <= 0.8f)  // 60 - 40
 		{
+			DebugHelper::LogError("Returned in position");
 			bRetreated = true;
 		}
 	}
@@ -58,17 +64,20 @@ void UUUBTTask_Retreat::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	{
 		bTimerStarted = true; // Prevent starting multiple timers
         
-		Controller->GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, &OwnerComp, Controller]()
+		Controller->GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, &OwnerComp, Controller, Current]()
 		{
-			BlackBoard->SetValueAsInt("Id", 0);
-			BlackBoard->SetValueAsBool("Attacked?", false); // Now attack mode
+			
+			Current->SetTreeId(0);
+			Current->SetIsAttacked(false);
+			BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
+			BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked()); // Now attack mode
 			AMob::MinigameEnded = false;
 			AMob::SetMinigameStarted(false);
 
 			Controller->BrainComponent->StopLogic("End Turn");
 
-			Target->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->EndTurn();
-			Target->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->StartNextTurn();
+			// Target->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->EndTurn();
+			// Target->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->StartNextTurn();
 			Target->GetBattleHUD()->GetCurrentPlayingEmotion()->SetIsBusy(false);
 
 			bRetreated = false;
@@ -78,4 +87,17 @@ void UUUBTTask_Retreat::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 
 		}, 0.5f, false); // Half-second delay
 	}
+}
+
+void UUUBTTask_Retreat::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory,
+	EBTNodeResult::Type TaskResult)
+{
+	Super::OnTaskFinished(OwnerComp, NodeMemory, TaskResult);
+
+	AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner());
+	AMob* Current = Cast<AMob>(Controller->GetPawn());
+	checkf(Current, TEXT("Current is invalid at EBTNodeResult::TickTask"));
+
+	Current->GetBattleHandler()->GetTurnBasedSystem()->EndTurn();
+	Current->GetBattleHandler()->GetTurnBasedSystem()->StartNextTurn();
 }

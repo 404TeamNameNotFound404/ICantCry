@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
+#include "ICantCry/ICC/Actors/AI/DecisionMaker/DecisionMaker.h"
 #include "UBTTask_DefaultAtk.generated.h"
 
 /**
@@ -30,4 +31,13 @@ protected:
 
 	UPROPERTY()
 	FTimerHandle TimerHandle;
+
+	UPROPERTY()
+	EDecision Decision;
+
+	UPROPERTY()
+	bool bBuffed = false;
+
+	UPROPERTY()
+	float buffTimer = 0.0f;
 };

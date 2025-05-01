@@ -16,7 +16,7 @@ enum class EDecision : uint8
 	DebuffShieldItSelf UMETA(DisplayName = "Debuff Shield Itself"),
 	DebuffShieldOther UMETA(DisplayName = "Debuff Shield Other"),
 	EnvyBurned UMETA(DisplayName = "Envy Burned"),
-	None UMETA(DisplayName = "None"),
+	None UMETA(DisplayName = "Attack"),
 };
 
 /**
@@ -29,7 +29,10 @@ struct FDecisionMaker
 
 	FDecisionMaker();
 	/**
-	 * Plan the next decision based of probability 
+	 * Plan the next decision based of probability and Aleatory math
+	 * Each Mob turn before performing the move, AI will calculate the chance
+	 * of performing special moves according to an aleatory value between 0 and 1
+	 * and plan the next move according to it
 	 * @return Decision
 	 */
 	EDecision Thought();

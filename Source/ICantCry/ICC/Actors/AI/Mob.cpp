@@ -122,6 +122,92 @@ bool AMob::IsHealer() const
 	return bIsHealer;
 }
 
+void AMob::SetIsBuffed(const bool& Value)
+{
+	bIsBuffed = Value;
+}
+
+void AMob::SetIsDebuffed(const bool& Value)
+{
+	bIsDebuffed = Value;
+}
+
+void AMob::SetIsAshamedState(const bool& Value)
+{
+	bIsAshamedState = Value;
+}
+
+void AMob::SetIsLow(const bool& Value)
+{
+	bIsLow = Value;
+}
+
+void AMob::SetIsFreezedUp(const bool& Value)
+{
+	bFreezedUp = Value;
+}
+
+void AMob::SetIsAttacked(const bool& Value)
+{
+	bAttacked = Value;
+}
+
+void AMob::SetIsEnvyBurned(const bool& Value)
+{
+	bEnvyBurned = Value;
+}
+
+void AMob::SetTreeId(const int& Value)
+{
+	Bt_Id = Value;
+}
+
+bool AMob::GetIsIsBuffed() const
+{
+	return bIsBuffed;
+}
+
+bool AMob::GetIsIsDebuffed() const
+{
+	return bIsDebuffed;
+}
+
+bool AMob::GetIsIsAshamedState() const
+{
+	return bIsAshamedState;
+}
+
+bool AMob::GetIsIsLow() const
+{
+	return bIsLow;
+}
+
+bool AMob::GetIsIsFreezedUp() const
+{
+	return bFreezedUp;
+}
+
+bool AMob::GetIsIsAttacked() const
+{
+	return bAttacked;
+}
+
+bool AMob::GetIsIsEnvyBurned() const
+{
+	return bEnvyBurned;
+}
+
+int AMob::GetTreeId() const
+{
+	return Bt_Id;
+}
+
+int AMob::GetAIId() const
+{
+	return AI_Id;
+}
+
+
 void AMob::Heal(const float& RestoredHealth)
 {
 	if (!bIsHealer)
@@ -168,17 +254,47 @@ void AMob::PlayTurn()
 	{
 		return;
 	}
+
+	bIsBuffed = false;
+	bIsDebuffed = false;
+	bIsLow = false;
+	bFreezedUp = false;
+	bAttacked = false;
+	bEnvyBurned = false;
+	bIsAshamedState = false;
+	Bt_Id = 0;
 	
 	AIController = Cast<AICC_AIController>(GetController());
 	checkf(AIController, TEXT("AI Controller is invalid at AMob::PlayTurn"));
+	AI_Id = AIController->GetPawn()->GetUniqueID();
+	
+	AIController->GetBlackboardComponent()->SetValueAsInt("AiId", AI_Id);
 	AIController->GetBlackboardComponent()->SetValueAsObject("Target", DebugPlayer);
-	AIController->GetBlackboardComponent()->SetValueAsBool("IsBuffed?", false);
-	AIController->GetBlackboardComponent()->SetValueAsBool("IsDebuffed?", false);
+	AIController->GetBlackboardComponent()->SetValueAsBool("IsBuffed?", bIsBuffed);
+	AIController->GetBlackboardComponent()->SetValueAsBool("IsDebuffed?", bIsDebuffed);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsAlive?", GetData()->Alive);
-	AIController->GetBlackboardComponent()->SetValueAsBool("IsEnvyBurnedState?", false);
-	AIController->GetBlackboardComponent()->SetValueAsBool("IsAshamedState?", false);
-	AIController->GetBlackboardComponent()->SetValueAsBool("Attacked?", false);
-	AIController->RunBehaviorTree(Tree);
+	AIController->GetBlackboardComponent()->SetValueAsBool("IsEnvyBurnedState?", bEnvyBurned);
+	AIController->GetBlackboardComponent()->SetValueAsBool("IsAshamedState?", bIsAshamedState);
+	AIController->GetBlackboardComponent()->SetValueAsBool("Attacked?", bAttacked);
+	AIController->GetBlackboardComponent()->SetValueAsBool("IsFreezedUp?", bFreezedUp);
+	
+	GetWorld()->GetTimerManager().SetTimer(BehaviorTreeTimerHandle, [this]()
+	{
+		AIController->RunBehaviorTree(Tree);
+	}, FMath::RandRange(0.1f, 0.3f), false); 
+	// AIController->RunBehaviorTree(Tree);
+}
+
+void AMob::PlaySecondTurn()
+{
+	AIController = Cast<AICC_AIController>(GetController());
+	checkf(AIController, TEXT("AI Controller is invalid at AMob::PlaySecondTurn"));
+	
+	if (AIController->GetBlackboardComponent()->GetValueAsInt("CurrentAIId") != AIController->GetPawn()->GetUniqueID())
+	{
+		DebugHelper::LogError(TEXT("Skipping execution—this AI is not the active turn."));
+		return;
+	}
 }
 
 void AMob::EndTurn()

@@ -21,6 +21,7 @@ EBTNodeResult::Type UBTTask_Heal::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	AMob* Current = Cast<AMob>(Controller->GetPawn());
 	checkf(Current, TEXT("Current Mob is invalid heal execute task"));
 	
+	
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " uses Heal"));
 	FDecisionMaker DecisionMaker;
 	DecisionMaker.DecisionMap.Add(EDecision::HealItSelf, 0.70f); // from 0.0 to 0.7 heal itself 70%

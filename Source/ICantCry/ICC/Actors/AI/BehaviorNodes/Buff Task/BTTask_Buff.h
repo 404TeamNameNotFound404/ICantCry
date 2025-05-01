@@ -4,37 +4,30 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "ICantCry/ICC/Actors/Player/ICC_Player.h"
-#include "UUBTTask_Retreat.generated.h"
+#include "BTTask_Buff.generated.h"
 
 /**
- * To call right AFTER the performed attack 
+ * Buff Node Task
  */
 UCLASS()
-class ICANTCRY_API UUUBTTask_Retreat : public UBTTaskNode
+class ICANTCRY_API UBTTask_Buff : public UBTTaskNode
 {
 	GENERATED_BODY()
 
 public:
-	UUUBTTask_Retreat();
+	UBTTask_Buff();
 
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 	virtual void OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult) override;
-
+	
 	UPROPERTY()
 	UBlackboardComponent* BlackBoard;
-
-	UPROPERTY()
-	AICC_Player* Target;
-
-	UPROPERTY()
-	bool bRetreated = false;
-
-	UPROPERTY()
-	bool bTimerStarted = false;
-
+	
 	UPROPERTY()
 	FTimerHandle TimerHandle;
+
+	UPROPERTY()
+	bool bTimerStarted;
 };
