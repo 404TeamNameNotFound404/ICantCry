@@ -25,10 +25,10 @@ EBTNodeResult::Type UBTTask_Buff::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	AMob* Current = Cast<AMob>(Controller->GetPawn());
 	checkf(Current, TEXT("Current is invalid at Type UUBTTask_DefaultAtk::ExecuteTask"));
 
-	Current->SetIsBuffed(true);
+	Current->SetIsBuffedAtk(true);
 	Current->SetIsAttacked(false);
 	
-	BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffed());
+	BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
 	BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 
 
@@ -57,10 +57,10 @@ void UBTTask_Buff::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 				Brain->StopLogic("Buff Finished");
 			}
 
-			Current->SetIsBuffed(false);
+			Current->SetIsBuffedAtk(false);
 			Current->SetTreeId(0);
 			Current->SetIsAttacked(false);
-			BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffed());
+			BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
 			BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
 			BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 

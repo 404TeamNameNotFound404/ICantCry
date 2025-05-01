@@ -60,17 +60,58 @@ protected:
 	UBehaviorTree* Tree;
 
 	/**
-	 * Turn it on if the AI can cure the other mobs
+	 * Variable used to determinate if Emotion is 'Joy'
 	 */
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Behaviors", meta = (AllowPrivateAccess = "true"))
-	bool bIsHealer;
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Species", meta = (AllowPrivateAccess = "true"))
+	bool bIsHealer = false;
 
+	/**
+	 * Used to determinate if Emotion is 'Fear'
+	 */
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Species", meta = (AllowPrivateAccess = "true"))
+	bool bIsEFear = false;
+
+	/**
+	 * Used to determinate is Emotion is 'Disgust'
+	 */
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Species", meta = (AllowPrivateAccess = "true"))
+	bool bIsEDisgust = false;
+
+	/**
+	 * Used to determinate if Emotion is 'Sadness'
+	 */
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Species", meta = (AllowPrivateAccess = "true"))
+	bool bIsESadness = false;
+
+	/**
+	 * Used to determinate if Emotion is 'Anxiety'
+	 */
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Species", meta = (AllowPrivateAccess = "true"))
+	bool bIsEAnxiety = false;
+
+	/**
+	 * Used to determinate if Emotion is 'Calm'
+	 */
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Species", meta = (AllowPrivateAccess = "true"))
+	bool bIsECalm = false;
+
+	/**
+	 * Used to determinate if Emotion is 'Jealousy'
+	 */
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Species", meta = (AllowPrivateAccess = "true"))
+	bool bIsEJealousy = false;
+
+	/**
+	 * Used to determinate if Emotion is 'Shame'
+	 */
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Species", meta = (AllowPrivateAccess = "true"))
+	bool bIsEShame = false;
 	
 	UPROPERTY()
 	bool bSelf;
 
 	UPROPERTY()
-	bool bIsBuffed;
+	bool bIsBuffedAtk;
 
 	UPROPERTY()
 	bool bIsDebuffed;
@@ -83,6 +124,9 @@ protected:
 
 	UPROPERTY()
 	bool bIsAshamedState;
+
+	UPROPERTY()
+	bool bDebuffShield;
 
 	UPROPERTY()
 	bool bIsLow;
@@ -190,7 +234,7 @@ public:
 	 */
 	bool IsHealer() const;
 
-	void SetIsBuffed(const bool& Value);
+	void SetIsBuffedAtk(const bool& Value);
 	
 	void SetIsDebuffed(const bool& Value);
 
@@ -206,13 +250,16 @@ public:
 
 	void SetTreeId(const int& Value);
 
-	bool GetIsIsBuffed() const;
+	void SetDebuffShield(const bool& Value);
+
+	bool GetIsIsBuffedAtk() const;
 	bool GetIsIsDebuffed() const;
 	bool GetIsIsAshamedState() const;
 	bool GetIsIsLow() const;
 	bool GetIsIsFreezedUp() const;
 	bool GetIsIsAttacked() const;
 	bool GetIsIsEnvyBurned() const;
+	bool GetIsDebuffShield() const;
 	int GetTreeId() const;
 	int GetAIId() const;
 

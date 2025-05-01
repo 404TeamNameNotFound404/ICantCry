@@ -61,8 +61,8 @@ void UUBTTask_DefaultAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 			return;
 		}
 			
-		Current->SetIsBuffed(true);
-		BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffed());
+		Current->SetIsBuffedAtk(true);
+		BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
 	
@@ -76,8 +76,8 @@ void UUBTTask_DefaultAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 		case EDecision::BuffItSelf:
 			if (!Current->IsHealer())
 			{
-				Current->SetIsBuffed(true);
-				BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffed());
+				Current->SetIsBuffedAtk(true);
+				BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
 				FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 			}
 			else
@@ -98,9 +98,9 @@ void UUBTTask_DefaultAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 			if (!AMob::IsMinigameStarted() && AMob::MinigameEnded && Target->GetMinigameHandler()->IsPlayerMinigameEnded())
 			{
 				Current->SetTreeId(-1);
-				Current->SetIsBuffed(false);
+				Current->SetIsBuffedAtk(false);
 				BlackBoard->SetValueAsInt("Id", Current->GetTreeId()); 
-				BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffed());
+				BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
 				bBusy = false;
 				Cast<AMob>(Controller->GetPawn())->GetBattleHandler()->GetBattleInfo()->ClearInfo();
 				FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
