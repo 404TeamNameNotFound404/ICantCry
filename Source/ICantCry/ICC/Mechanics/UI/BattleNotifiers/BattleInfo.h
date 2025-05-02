@@ -18,9 +18,13 @@ class ICANTCRY_API UBattleInfo : public UUserWidget
 
 protected:
 	UPROPERTY(meta = (BindWidget)) TObjectPtr<UTextBlock> InfoText;
+	UPROPERTY(meta = (BindWidget)) TObjectPtr<UTextBlock> TurnInfo;
 	virtual void NativeConstruct() override;
 
 public:
 	UFUNCTION() void SetInfo(const FText& Text);
 	UFUNCTION() void ClearInfo() const;
+
+	UFUNCTION() void SetTurnInfo(const FText& Text);
+	UFUNCTION() void ClearTurnInfo() const;
 };

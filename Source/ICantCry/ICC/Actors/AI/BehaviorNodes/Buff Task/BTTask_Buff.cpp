@@ -31,10 +31,10 @@ EBTNodeResult::Type UBTTask_Buff::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
 	BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 
-
+	Current->GetTactics()->MovePower *= 1.2f;
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(
-		FText::FromString(Current->GetActorLabel() + " is buffing atk"));
+		FText::FromString(Current->GetActorLabel() + " buffed it's atk"));
 
 	return EBTNodeResult::InProgress;
 }
@@ -42,54 +42,62 @@ EBTNodeResult::Type UBTTask_Buff::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 void UBTTask_Buff::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
+	
+	if (bTimerStarted)
+		return;
 
-	if (!bTimerStarted)
+	bTimerStarted = true;
+
+	AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner());
+	AMob* Current = Cast<AMob>(Controller->GetPawn());
+
+	if (!Current || !Controller)
 	{
-		bTimerStarted = true;
-		AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner());
-		AMob* Current = Cast<AMob>(Controller->GetPawn());
-		BlackBoard = OwnerComp.GetBlackboardComponent();
-
-		Controller->GetWorld()->GetTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this, &OwnerComp, Current]()
-		{
-			if (UBrainComponent* Brain = OwnerComp.GetAIOwner()->BrainComponent)
-			{
-				Brain->StopLogic("Buff Finished");
-			}
-
-			Current->SetIsBuffedAtk(false);
-			Current->SetTreeId(0);
-			Current->SetIsAttacked(false);
-			BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
-			BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
-			BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
-
-			Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
-			Current->GetBattleHandler()->GetTurnBasedSystem()->EndTurn();
-			Current->GetBattleHandler()->GetTurnBasedSystem()->StartNextTurn();
-			
-			// AMob* Mob = Cast<AMob>(OwnerComp.GetAIOwner()->GetPawn());
-			// Mob->GetBattleHandler()->GetBattleInfo()->ClearInfo();
-			// Mob->GetBattleHandler()->GetTurnBasedSystem()->EndTurn();
-			// Mob->GetBattleHandler()->GetTurnBasedSystem()->StartNextTurn();
-
-			DebugHelper::LogSuccess("Buff Task Completed");
-			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-
-		}), 1.0f, false);
+		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+		return;
 	}
+
+	if (Current != Current->GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion())
+	{
+		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
+		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+		return;
+	}
+	
+	TWeakObjectPtr<UBehaviorTreeComponent> OwnerCompWeak = &OwnerComp;
+
+	Controller->GetWorld()->GetTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this, OwnerCompWeak]()
+	{
+		if (!OwnerCompWeak.IsValid())
+			return;
+
+		DebugHelper::LogSuccess("Buff Task Completed");
+		FinishLatentTask(*OwnerCompWeak.Get(), EBTNodeResult::Succeeded);
+	}), 1.0f, false);
+	
 }
 
 void UBTTask_Buff::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult)
 {
 	Super::OnTaskFinished(OwnerComp, NodeMemory, TaskResult);
 	
-	// if (AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner()))
-	// {
-	// 	Controller->GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
-	// }
-	
+	if (AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner()))
+	{
+		AMob* Current = Cast<AMob>(Controller->GetPawn());
+
+		Current->SetIsBuffedAtk(false);
+		Current->SetIsAttacked(false);
+		Current->SetTreeId(-1);
+
+		if (BlackBoard)
+		{
+			BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
+			BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
+			BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
+		}
+
+		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
+	}
+
 	bTimerStarted = false;
 }
-
-

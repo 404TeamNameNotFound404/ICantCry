@@ -323,9 +323,30 @@ bool AMob::IsMinigameStarted()
 	return bMinigameHasStarted;
 }
 
+bool AMob::IsMinigameHasStarted() const
+{
+	return bMinigameStarted;
+}
+
+bool AMob::IsMinigameEnded() const
+{
+	return bMinigameEnded;
+}
+
+void AMob::SetMinigameEnd(const bool& Value)
+{
+	bMinigameEnded = Value;
+}
+
 void AMob::SetMinigameStarted(const bool& Value)
 {
 	bMinigameHasStarted = Value;
+}
+
+
+void AMob::SetMinigameHasStarted(const bool& Value)
+{
+	bMinigameStarted = Value;
 }
 
 ABattleHandler* AMob::GetBattleHandler() const

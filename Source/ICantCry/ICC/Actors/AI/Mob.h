@@ -209,12 +209,19 @@ public:
 	 */
 	static bool IsMinigameStarted();
 
+	bool IsMinigameHasStarted() const;
+
+	bool IsMinigameEnded() const;
+	void SetMinigameEnd(const bool& Value);
+
 	/**
 	 * Set the minigame bool value
 	 * @note this function is used for behavior decorator attack and retreat
 	 * @param Value true or false
 	 */
 	static void SetMinigameStarted(const bool& Value);
+
+	void SetMinigameHasStarted(const bool& Value);
 
 	/**
 	 * Get the battle handler
@@ -289,4 +296,10 @@ private:
 	FTimerHandle BehaviorTreeTimerHandle;
 	
 	static bool bMinigameHasStarted;
+
+	UPROPERTY()
+	bool bMinigameStarted = false;
+
+	UPROPERTY()
+	bool bMinigameEnded = false;
 };

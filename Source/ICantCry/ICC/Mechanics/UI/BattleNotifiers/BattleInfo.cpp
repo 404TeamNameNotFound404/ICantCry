@@ -27,3 +27,23 @@ void UBattleInfo::ClearInfo() const
 	
 	InfoText->SetText(FText::FromString(""));
 }
+
+void UBattleInfo::SetTurnInfo(const FText& Text)
+{
+	if (!TurnInfo)
+	{
+		return;
+	}
+
+	TurnInfo->SetText(Text);
+}
+
+void UBattleInfo::ClearTurnInfo() const
+{
+	if (!TurnInfo)
+	{
+		return;
+	}
+
+	TurnInfo->SetText(FText::FromString(""));
+}

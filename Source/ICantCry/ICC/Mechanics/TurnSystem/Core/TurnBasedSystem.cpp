@@ -90,9 +90,11 @@ void UTurnBasedSystem::Update(UWorld* World)
 			AMob* Mob = Cast<AMob>(Turn.Queue[Turn.CurrentTurn]);
 			checkf(Mob, TEXT("Mob invalid at UTurnBasedSystem::Update"))
 			DebugHelper::LogWarning(Mob->GetActorLabel() + " Turn");
+			AICC_AIController* AIController = Cast<AICC_AIController>(Mob->GetController());
+			Mob->GetBattleHandler()->GetBattleInfo()->SetTurnInfo(FText::FromString(Mob->GetActorLabel() + " Turn\n AI Controller id : " + AIController->GetActorLabel()));
 			CurrentPlayer->GetBattleHUD()->SetCurrentPlayingEmotion(Mob);
 			Mob->PlayTurn();
-			Mob->PlaySecondTurn();
+			//Mob->PlaySecondTurn();
 		}
 
 		Turn.Timer += World->GetDeltaSeconds() * Variations;
