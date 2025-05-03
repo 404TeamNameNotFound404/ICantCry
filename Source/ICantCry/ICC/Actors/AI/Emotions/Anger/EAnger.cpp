@@ -8,6 +8,7 @@
 AEAnger::AEAnger()
 {
 	bIsHealer = false;
+	bEAnger = true;
 }
 
 // Called when the game starts or when spawned

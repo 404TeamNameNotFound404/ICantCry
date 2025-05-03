@@ -31,11 +31,13 @@ EBTNodeResult::Type UBTTask_Buff::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
 	BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 
+	//TODO ADD a counter for the buff (must last 3 turns)
+
 	Current->GetTactics()->MovePower *= 1.2f;
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(
 		FText::FromString(Current->GetActorLabel() + " buffed it's atk"));
-
+	
 	return EBTNodeResult::InProgress;
 }
 

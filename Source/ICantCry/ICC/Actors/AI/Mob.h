@@ -66,6 +66,12 @@ protected:
 	bool bIsHealer = false;
 
 	/**
+	 * Used to determinate if Emotion is 'Anger'
+	 */
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Species", meta = (AllowPrivateAccess = "true"))
+	bool bEAnger = false;
+
+	/**
 	 * Used to determinate if Emotion is 'Fear'
 	 */
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Species", meta = (AllowPrivateAccess = "true"))
@@ -114,7 +120,7 @@ protected:
 	bool bIsBuffedAtk;
 
 	UPROPERTY()
-	bool bIsDebuffed;
+	bool bIsDebuffedDefence;
 
 	UPROPERTY()
 	AICC_Player* DebugPlayer = nullptr;
@@ -235,6 +241,23 @@ public:
 	 */
 	UMobHealthBar* GetHealthBar() const;
 
+
+	bool IsEAnger() const;
+	
+	bool IsEFear() const;
+	
+	bool IsEDisgust() const;
+
+	bool IsESadness() const;
+
+	bool IsEAnxiety() const;
+
+	bool IsECalm() const;
+
+	bool IsEJealousy() const;
+
+	bool IsEShame() const;
+	
 	/**
 	 * Check if current Emotion can heal or not
 	 * @return true if healer
@@ -243,7 +266,7 @@ public:
 
 	void SetIsBuffedAtk(const bool& Value);
 	
-	void SetIsDebuffed(const bool& Value);
+	void SetIsTargetDefDebuffed(const bool& Value);
 
 	void SetIsAshamedState(const bool& Value);
 	
@@ -260,7 +283,7 @@ public:
 	void SetDebuffShield(const bool& Value);
 
 	bool GetIsIsBuffedAtk() const;
-	bool GetIsIsDebuffed() const;
+	bool GetIsTargetDefenceDebuffed() const;
 	bool GetIsIsAshamedState() const;
 	bool GetIsIsLow() const;
 	bool GetIsIsFreezedUp() const;

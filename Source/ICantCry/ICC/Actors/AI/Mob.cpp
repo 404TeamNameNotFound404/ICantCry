@@ -127,9 +127,9 @@ void AMob::SetIsBuffedAtk(const bool& Value)
 	bIsBuffedAtk = Value;
 }
 
-void AMob::SetIsDebuffed(const bool& Value)
+void AMob::SetIsTargetDefDebuffed(const bool& Value)
 {
-	bIsDebuffed = Value;
+	bIsDebuffedDefence = Value;
 }
 
 void AMob::SetIsAshamedState(const bool& Value)
@@ -172,9 +172,9 @@ bool AMob::GetIsIsBuffedAtk() const
 	return bIsBuffedAtk;
 }
 
-bool AMob::GetIsIsDebuffed() const
+bool AMob::GetIsTargetDefenceDebuffed() const
 {
-	return bIsDebuffed;
+	return bIsDebuffedDefence;
 }
 
 bool AMob::GetIsIsAshamedState() const
@@ -237,6 +237,46 @@ UMobHealthBar* AMob::GetHealthBar() const
 	return Bar;
 }
 
+bool AMob::IsEAnger() const
+{
+	return bEAnger;
+}
+
+bool AMob::IsEFear() const
+{
+	return bIsEFear;
+}
+
+bool AMob::IsEDisgust() const
+{
+	return bIsEDisgust;
+}
+
+bool AMob::IsESadness() const
+{
+	return bIsESadness;
+}
+
+bool AMob::IsEAnxiety() const
+{
+	return bIsEAnxiety;
+}
+
+bool AMob::IsECalm() const
+{
+	return bIsECalm;
+}
+
+bool AMob::IsEJealousy() const
+{
+	return bIsEJealousy;
+}
+
+bool AMob::IsEShame() const
+{
+	return bIsEShame;
+}
+
 void AMob::DealDamage()
 {
 	const float DamageDealt = Damage.CalculateDamage(false);
@@ -266,7 +306,7 @@ void AMob::PlayTurn()
 	}
 
 	bIsBuffedAtk = false;
-	bIsDebuffed = false;
+	bIsDebuffedDefence = false;
 	bIsLow = false;
 	bFreezedUp = false;
 	bAttacked = false;
@@ -282,7 +322,7 @@ void AMob::PlayTurn()
 	AIController->GetBlackboardComponent()->SetValueAsInt("AiId", AI_Id);
 	AIController->GetBlackboardComponent()->SetValueAsObject("Target", DebugPlayer);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsBuffed?", bIsBuffedAtk);
-	AIController->GetBlackboardComponent()->SetValueAsBool("IsDebuffed?", bIsDebuffed);
+	AIController->GetBlackboardComponent()->SetValueAsBool("IsDefenceDebuffed?", bIsDebuffedDefence);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsShieldDebuffed?", bDebuffShield);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsAlive?", GetData()->Alive);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsEnvyBurnedState?", bEnvyBurned);

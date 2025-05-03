@@ -34,7 +34,16 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 
 
 	FDecisionMaker DecisionMaker;
-	DecisionMaker.DecisionMap.Add(EDecision::BuffItSelf, 0.55);
+	if (Current->IsEAnger())
+	{
+		DecisionMaker.DecisionMap.Add(EDecision::BuffItSelf, 0.55); // Buff atk chance in normal status
+	}
+
+	if (Current->IsESadness())
+	{
+		DecisionMaker.DecisionMap.Add(EDecision::DebuffDefence, 0.60); // debuff target defence in normal status
+	}
+	
 	Decision = DecisionMaker.Thought();
 
 	// Controller->MoveToActor(Target);
@@ -58,16 +67,18 @@ void UUBTTask_DefaultAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 	}
 
-	if (Decision == EDecision::BuffItSelf)
+	if (Decision == EDecision::BuffItSelf && Current->IsEAnger())
 	{
-		if (Current->IsHealer())
-		{
-			FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
-			return;
-		}
-
 		Current->SetIsBuffedAtk(true);
 		BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+	}
+
+	if (Decision == EDecision::DebuffDefence && Current->IsESadness())
+	{
+		Current->GetBattleHandler()->GetBattleInfo()->SetTurnInfo(FText::FromString(Current->GetActorLabel() + " de-buff"));
+		Current->SetIsTargetDefDebuffed(true);
+		BlackBoard->SetValueAsBool("IsDefenceDebuffed?", Current->GetIsTargetDefenceDebuffed());
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
 
@@ -96,6 +107,7 @@ void UUBTTask_DefaultAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 			Current->SetIsBuffedAtk(false);
 			BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
 			BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
+			BlackBoard->SetValueAsBool("IsDefenceDebuffed?", Current->GetIsTargetDefenceDebuffed());
 			bBusy = false;
 			Cast<AMob>(Controller->GetPawn())->GetBattleHandler()->GetBattleInfo()->ClearInfo();
 			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
