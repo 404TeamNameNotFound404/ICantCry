@@ -80,8 +80,12 @@ void AICC_Player::BeginPlay()
 		break;
 	}
 
+	
+	Stats->CurrentHealth = Stats->MaxHealth; // TODO REMINDER CLEAR UP THIS IT'S FOR TESTING PURPOSE ONLY 
+	
 	DontDestroyOnLoad->SetPlayerStats(Stats);
 	//DontDestroyOnLoad->SetCurrentPlayer(this);
+
 }
 
 // Called every frame

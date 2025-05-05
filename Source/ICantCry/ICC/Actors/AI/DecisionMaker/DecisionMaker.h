@@ -14,6 +14,8 @@ enum class EDecision : uint8
 	BuffItSelf UMETA(DisplayName = "Buff Atk Itself"),
 	BuffOther UMETA(DisplayName = "Buff Atk Other"),
 	DebuffDefence UMETA(DisplayName = "Debuff Defence"),
+	BuffDefence UMETA(DisplayName = "Buff Defence"),
+	BuffOtherDefence UMETA(DisplayName = "Buff OtherDefence"),
 	DebuffAtk UMETA(DisplayName = "Debuff Atk"),
 	DebuffShieldItSelf UMETA(DisplayName = "Debuff Shield Itself"),
 	DebuffShieldOther UMETA(DisplayName = "Debuff Shield Other"),

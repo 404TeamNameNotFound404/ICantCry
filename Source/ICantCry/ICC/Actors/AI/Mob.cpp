@@ -167,6 +167,21 @@ void AMob::SetDebuffShield(const bool& Value)
 	bDebuffShield = Value;
 }
 
+void AMob::SetBuffedDefence(const bool& Value)
+{
+	bBuffDefence = Value;
+}
+
+void AMob::SetBuffOtherDefence(const bool& Value)
+{
+	bBuffOtherDefence = Value;
+}
+
+void AMob::SetPlayerDebuffAttack(const bool& Value)
+{
+	bIsAttackDebuffed = Value;
+}
+
 bool AMob::GetIsIsBuffedAtk() const
 {
 	return bIsBuffedAtk;
@@ -205,6 +220,21 @@ bool AMob::GetIsIsEnvyBurned() const
 bool AMob::GetIsDebuffShield() const
 {
 	return bDebuffShield;
+}
+
+bool AMob::GetIsBuffedDefence() const
+{
+	return bBuffDefence;
+}
+
+bool AMob::GetPlayerDebuffAttack() const
+{
+	return bIsAttackDebuffed;
+}
+
+bool AMob::GetBuffOtherDefence() const
+{
+	return bBuffOtherDefence;
 }
 
 int AMob::GetTreeId() const
@@ -323,12 +353,16 @@ void AMob::PlayTurn()
 	AIController->GetBlackboardComponent()->SetValueAsObject("Target", DebugPlayer);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsBuffed?", bIsBuffedAtk);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsDefenceDebuffed?", bIsDebuffedDefence);
+	AIController->GetBlackboardComponent()->SetValueAsBool("IsDefenceBuffed?", bBuffDefence);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsShieldDebuffed?", bDebuffShield);
+	AIController->GetBlackboardComponent()->SetValueAsBool("IsBuffedOtherDef?", bBuffOtherDefence);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsAlive?", GetData()->Alive);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsEnvyBurnedState?", bEnvyBurned);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsAshamedState?", bIsAshamedState);
 	AIController->GetBlackboardComponent()->SetValueAsBool("Attacked?", bAttacked);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsFreezedUp?", bFreezedUp);
+	AIController->GetBlackboardComponent()->SetValueAsBool("IsAttackDebuffed?", bIsAttackDebuffed);
+	
 	
 	GetWorld()->GetTimerManager().SetTimer(BehaviorTreeTimerHandle, [this]()
 	{

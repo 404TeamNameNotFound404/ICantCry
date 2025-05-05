@@ -123,6 +123,9 @@ protected:
 	bool bIsDebuffedDefence;
 
 	UPROPERTY()
+	bool bIsAttackDebuffed;
+
+	UPROPERTY()
 	AICC_Player* DebugPlayer = nullptr;
 
 	UPROPERTY()
@@ -133,6 +136,12 @@ protected:
 
 	UPROPERTY()
 	bool bDebuffShield;
+
+	UPROPERTY()
+	bool bBuffDefence;
+
+	UPROPERTY()
+	bool bBuffOtherDefence;
 
 	UPROPERTY()
 	bool bIsLow;
@@ -282,6 +291,12 @@ public:
 
 	void SetDebuffShield(const bool& Value);
 
+	void SetBuffedDefence(const bool& Value);
+	
+	void SetBuffOtherDefence(const bool& Value);
+
+	void SetPlayerDebuffAttack(const bool& Value);
+
 	bool GetIsIsBuffedAtk() const;
 	bool GetIsTargetDefenceDebuffed() const;
 	bool GetIsIsAshamedState() const;
@@ -290,6 +305,9 @@ public:
 	bool GetIsIsAttacked() const;
 	bool GetIsIsEnvyBurned() const;
 	bool GetIsDebuffShield() const;
+	bool GetIsBuffedDefence() const;
+	bool GetPlayerDebuffAttack() const;
+	bool GetBuffOtherDefence() const;
 	int GetTreeId() const;
 	int GetAIId() const;
 

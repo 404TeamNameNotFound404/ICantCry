@@ -34,6 +34,7 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 
 
 	FDecisionMaker DecisionMaker;
+	
 	if (Current->IsEAnger())
 	{
 		DecisionMaker.DecisionMap.Add(EDecision::BuffItSelf, 0.55); // Buff atk chance in normal status
@@ -42,6 +43,17 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 	if (Current->IsESadness())
 	{
 		DecisionMaker.DecisionMap.Add(EDecision::DebuffDefence, 0.60); // debuff target defence in normal status
+	}
+
+	if (Current->IsEDisgust())
+	{
+		DecisionMaker.DecisionMap.Add(EDecision::DebuffAtk, 0.60);
+	}
+
+	if (Current->IsEFear())
+	{
+		DecisionMaker.DecisionMap.Add(EDecision::BuffDefence, 0.60);
+		DecisionMaker.DecisionMap.Add(EDecision::BuffOtherDefence, 0.20);
 	}
 	
 	Decision = DecisionMaker.Thought();
@@ -67,6 +79,8 @@ void UUBTTask_DefaultAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 	}
 
+	// -------   REWRITE THIS PART -----------------
+	
 	if (Decision == EDecision::BuffItSelf && Current->IsEAnger())
 	{
 		Current->SetIsBuffedAtk(true);
@@ -79,6 +93,27 @@ void UUBTTask_DefaultAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 		Current->GetBattleHandler()->GetBattleInfo()->SetTurnInfo(FText::FromString(Current->GetActorLabel() + " de-buff"));
 		Current->SetIsTargetDefDebuffed(true);
 		BlackBoard->SetValueAsBool("IsDefenceDebuffed?", Current->GetIsTargetDefenceDebuffed());
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+	}
+
+	if (Decision == EDecision::BuffDefence && Current->IsEFear())
+	{
+		Current->SetBuffedDefence(true);
+		BlackBoard->SetValueAsBool("IsDefenceBuffed?", Current->GetIsBuffedDefence());
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+	}
+
+	if (Decision == EDecision::BuffOtherDefence && Current->IsEFear())
+	{
+		Current->SetBuffOtherDefence(true);
+		BlackBoard->SetValueAsBool("IsBuffedOtherDef?", Current->GetBuffOtherDefence());
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+	}
+
+	if (Decision == EDecision::DebuffAtk && Current->IsEDisgust())
+	{
+		Current->SetPlayerDebuffAttack(true);
+		BlackBoard->SetValueAsBool("IsAttackDebuffed?", Current->GetPlayerDebuffAttack());
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
 
@@ -100,7 +135,9 @@ void UUBTTask_DefaultAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 			bBusy = true;
 		}
 
+		// -------   REWRITE THIS PART -----------------
 
+		
 		if (!Current->IsMinigameStarted() && Current->IsMinigameEnded() && Target->GetMinigameHandler()->IsPlayerMinigameEnded()) //if (!AMob::IsMinigameStarted() && AMob::MinigameEnded && Target->GetMinigameHandler()->IsPlayerMinigameEnded())
 		{
 			Current->SetTreeId(-1);
