@@ -177,6 +177,11 @@ void AMob::SetBuffOtherDefence(const bool& Value)
 	bBuffOtherDefence = Value;
 }
 
+void AMob::SetBuffOtherAtk(const bool& Value)
+{
+	bBuffOtherAtk = Value;
+}
+
 void AMob::SetPlayerDebuffAttack(const bool& Value)
 {
 	bIsAttackDebuffed = Value;
@@ -225,6 +230,11 @@ bool AMob::GetIsDebuffShield() const
 bool AMob::GetIsBuffedDefence() const
 {
 	return bBuffDefence;
+}
+
+bool AMob::GetBuffOtherAtk() const
+{
+	return bBuffOtherAtk;
 }
 
 bool AMob::GetPlayerDebuffAttack() const
@@ -343,6 +353,7 @@ void AMob::PlayTurn()
 	bEnvyBurned = false;
 	bIsAshamedState = false;
 	bDebuffShield = false;
+	bBuffOtherAtk = false;
 	Bt_Id = 0;
 	
 	AIController = Cast<AICC_AIController>(GetController());
@@ -362,6 +373,7 @@ void AMob::PlayTurn()
 	AIController->GetBlackboardComponent()->SetValueAsBool("Attacked?", bAttacked);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsFreezedUp?", bFreezedUp);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsAttackDebuffed?", bIsAttackDebuffed);
+	AIController->GetBlackboardComponent()->SetValueAsBool("IsBuffOtherAtk?", bBuffOtherAtk);
 	
 	
 	GetWorld()->GetTimerManager().SetTimer(BehaviorTreeTimerHandle, [this]()

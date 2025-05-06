@@ -1,31 +1,36 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-#include "BTTask_BuffOtherDef.h"
+
+
+#include "BTTask_BuffOtherAtk.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "ICantCry/ICC/Actors/AI/ICC_AIController.h"
+#include "ICantCry/ICC/Actors/AI/Mob.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
+#include "ICantCry/ICC/Mechanics/TurnSystem/Core/BattleHandler.h"
 
-
-UBTTask_BuffOtherDef::UBTTask_BuffOtherDef()
+UBTTask_BuffOtherAtk::UBTTask_BuffOtherAtk()
 {
-	NodeName = "BuffOtherDef";
+	NodeName = "TBuffOtherAtk";
+	bNotifyTick = true;
+	bNotifyTaskFinished = true;
 }
 
-EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UBTTask_BuffOtherAtk::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	BlackBoard = OwnerComp.GetBlackboardComponent();
-	AICC_Player* Target = Cast<AICC_Player>(BlackBoard->GetValueAsObject("Target"));
+	
 	AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner());
 	checkf(Controller, TEXT("AI Controller is invalid at EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask"));
 
-	checkf(Target, TEXT("Target is invalid at EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask"));
 
 	AMob* Current = Cast<AMob>(Controller->GetPawn());
 	checkf(Current, TEXT("Current is invalid at Type UUBTTask_DefaultAtk::ExecuteTask"));
 
-	Current->SetBuffOtherDefence(true);
+	Current->SetBuffOtherAtk(true);
 	Current->SetIsAttacked(false);
 	
-	BlackBoard->SetValueAsBool("IsBuffedOtherDef?", Current->GetBuffOtherDefence());
+	BlackBoard->SetValueAsBool("IsBuffOtherAtk?", Current->GetBuffOtherAtk());
 	BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 
 	//TODO ADD a counter for the buff (must last 3 turns)
@@ -34,19 +39,19 @@ EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& Ow
 	AMob* TargetToBuff = Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetMobInQueue();
 	checkf(TargetToBuff, TEXT("TargetToBuff is invalid Type UBTTask_BuffDefence::ExecuteTask"))
 
-	TargetToBuff->GetData()->DefencePower *= 0.20f; // still assuming a 20% increase
+	TargetToBuff->GetData()->AttackPower *= 0.20f; // still assuming a 20% increase
 	
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(
-		FText::FromString(Current->GetActorLabel() + " buffed " + TargetToBuff->GetActorLabel() + " def"));
+		FText::FromString(Current->GetActorLabel() + " buffed " + TargetToBuff->GetActorLabel() + " atk"));
 	
 	return EBTNodeResult::InProgress;
 }
 
-void UBTTask_BuffOtherDef::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+void UBTTask_BuffOtherAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
-	
+
 	if (bTimerStarted)
 		return;
 
@@ -75,12 +80,12 @@ void UBTTask_BuffOtherDef::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* No
 		if (!OwnerCompWeak.IsValid())
 			return;
 
-		DebugHelper::LogSuccess("buff def target task Task Completed");
+		DebugHelper::LogSuccess("buff atk target task completed");
 		FinishLatentTask(*OwnerCompWeak.Get(), EBTNodeResult::Succeeded);
 	}), 1.0f, false);
 }
 
-void UBTTask_BuffOtherDef::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory,
+void UBTTask_BuffOtherAtk::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory,
 	EBTNodeResult::Type TaskResult)
 {
 	Super::OnTaskFinished(OwnerComp, NodeMemory, TaskResult);
@@ -90,13 +95,13 @@ void UBTTask_BuffOtherDef::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uin
 	{
 		AMob* Current = Cast<AMob>(Controller->GetPawn());
 
-		Current->SetBuffOtherDefence(false);
+		Current->SetBuffOtherAtk(false);
 		Current->SetIsAttacked(false);
 		Current->SetTreeId(-1);
 
 		if (BlackBoard)
 		{
-			BlackBoard->SetValueAsBool("IsBuffedOtherDef?", Current->GetBuffOtherDefence());
+			BlackBoard->SetValueAsBool("IsBuffOtherAtk?", Current->GetBuffOtherAtk());
 			BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 			BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
 		}

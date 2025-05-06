@@ -144,6 +144,9 @@ protected:
 	bool bBuffOtherDefence;
 
 	UPROPERTY()
+	bool bBuffOtherAtk;
+
+	UPROPERTY()
 	bool bIsLow;
 
 	UPROPERTY()
@@ -295,6 +298,8 @@ public:
 	
 	void SetBuffOtherDefence(const bool& Value);
 
+	void SetBuffOtherAtk(const bool& Value);
+
 	void SetPlayerDebuffAttack(const bool& Value);
 
 	bool GetIsIsBuffedAtk() const;
@@ -306,6 +311,7 @@ public:
 	bool GetIsIsEnvyBurned() const;
 	bool GetIsDebuffShield() const;
 	bool GetIsBuffedDefence() const;
+	bool GetBuffOtherAtk() const;
 	bool GetPlayerDebuffAttack() const;
 	bool GetBuffOtherDefence() const;
 	int GetTreeId() const;

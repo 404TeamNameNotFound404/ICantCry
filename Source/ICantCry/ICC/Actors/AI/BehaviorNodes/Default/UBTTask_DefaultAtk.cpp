@@ -55,6 +55,19 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 		DecisionMaker.DecisionMap.Add(EDecision::BuffDefence, 0.60);
 		DecisionMaker.DecisionMap.Add(EDecision::BuffOtherDefence, 0.20);
 	}
+
+	if (Current->IsEAnxiety())
+	{
+		DecisionMaker.DecisionMap.Add(EDecision::DebuffAtk, 0.30);
+		DecisionMaker.DecisionMap.Add(EDecision::DebuffDefence, 0.30);
+		DecisionMaker.DecisionMap.Add(EDecision::FreezedUp, 0.40);
+	}
+
+	if (Current->IsEJealousy())
+	{
+		DecisionMaker.DecisionMap.Add(EDecision::EnvyBurned, 0.50);
+		DecisionMaker.DecisionMap.Add(EDecision::BuffOther, 0.20);
+	}
 	
 	Decision = DecisionMaker.Thought();
 
@@ -88,7 +101,7 @@ void UUBTTask_DefaultAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
 
-	if (Decision == EDecision::DebuffDefence && Current->IsESadness())
+	if ((Decision == EDecision::DebuffDefence && Current->IsESadness()) || (Decision == EDecision::DebuffDefence && Current->IsEAnxiety()))
 	{
 		Current->GetBattleHandler()->GetBattleInfo()->SetTurnInfo(FText::FromString(Current->GetActorLabel() + " de-buff"));
 		Current->SetIsTargetDefDebuffed(true);
@@ -110,12 +123,34 @@ void UUBTTask_DefaultAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
 
-	if (Decision == EDecision::DebuffAtk && Current->IsEDisgust())
+	if ((Decision == EDecision::DebuffAtk && Current->IsEDisgust()) || (Decision == EDecision::DebuffAtk && Current->IsEAnxiety()))
 	{
 		Current->SetPlayerDebuffAttack(true);
 		BlackBoard->SetValueAsBool("IsAttackDebuffed?", Current->GetPlayerDebuffAttack());
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
+
+	if (Decision == EDecision::FreezedUp && Current->IsEAnxiety())
+	{
+		Current->SetIsFreezedUp(true);
+		BlackBoard->SetValueAsBool("IsFreezedUp?", Current->GetIsIsFreezedUp());
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+	}
+
+	if (Decision == EDecision::BuffOther && Current->IsEJealousy())
+	{
+		Current->SetBuffOtherAtk(true);
+		BlackBoard->SetValueAsBool("IsBuffOtherAtk??", Current->GetBuffOtherAtk());
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+	}
+
+	if (Decision == EDecision::EnvyBurned && Current->IsEJealousy())
+	{
+		Current->SetIsEnvyBurned(true);
+		BlackBoard->SetValueAsBool("IsBuffOtherAtk??", Current->GetIsIsEnvyBurned());
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+	}
+	
 
 	if (Decision == EDecision::None)
 	{
