@@ -138,6 +138,15 @@ protected:
 	bool bDebuffShield;
 
 	UPROPERTY()
+	bool bDebuffOtherShield;
+
+	UPROPERTY()
+	bool bHeal;
+
+	UPROPERTY()
+	bool bHealOther;
+
+	UPROPERTY()
 	bool bBuffDefence;
 
 	UPROPERTY()
@@ -294,6 +303,12 @@ public:
 
 	void SetDebuffShield(const bool& Value);
 
+	void SetDebuffOtherShield(const bool& Value);
+
+	void SetHeal(const bool& Value);
+
+	void SetHealOther(const bool& Value);
+
 	void SetBuffedDefence(const bool& Value);
 	
 	void SetBuffOtherDefence(const bool& Value);
@@ -310,6 +325,9 @@ public:
 	bool GetIsIsAttacked() const;
 	bool GetIsIsEnvyBurned() const;
 	bool GetIsDebuffShield() const;
+	bool GetIsDebuffOtherShield() const;
+	bool GetIsHeal() const;
+	bool GetIsHealOther() const;
 	bool GetIsBuffedDefence() const;
 	bool GetBuffOtherAtk() const;
 	bool GetPlayerDebuffAttack() const;

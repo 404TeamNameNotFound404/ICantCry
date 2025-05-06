@@ -167,6 +167,21 @@ void AMob::SetDebuffShield(const bool& Value)
 	bDebuffShield = Value;
 }
 
+void AMob::SetDebuffOtherShield(const bool& Value)
+{
+	bDebuffOtherShield = Value;
+}
+
+void AMob::SetHeal(const bool& Value)
+{
+	bHeal = Value;
+}
+
+void AMob::SetHealOther(const bool& Value)
+{
+	bHealOther = Value;
+}
+
 void AMob::SetBuffedDefence(const bool& Value)
 {
 	bBuffDefence = Value;
@@ -225,6 +240,21 @@ bool AMob::GetIsIsEnvyBurned() const
 bool AMob::GetIsDebuffShield() const
 {
 	return bDebuffShield;
+}
+
+bool AMob::GetIsDebuffOtherShield() const
+{
+	return bDebuffOtherShield;
+}
+
+bool AMob::GetIsHeal() const
+{
+	return bHeal;
+}
+
+bool AMob::GetIsHealOther() const
+{
+	return bHealOther;
 }
 
 bool AMob::GetIsBuffedDefence() const
@@ -354,6 +384,9 @@ void AMob::PlayTurn()
 	bIsAshamedState = false;
 	bDebuffShield = false;
 	bBuffOtherAtk = false;
+	bBuffOtherDefence = false;
+	bHeal = false;
+	bHealOther = false;
 	Bt_Id = 0;
 	
 	AIController = Cast<AICC_AIController>(GetController());
@@ -366,6 +399,7 @@ void AMob::PlayTurn()
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsDefenceDebuffed?", bIsDebuffedDefence);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsDefenceBuffed?", bBuffDefence);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsShieldDebuffed?", bDebuffShield);
+	AIController->GetBlackboardComponent()->SetValueAsBool("IsOtherShieldDebuffed?", bDebuffOtherShield);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsBuffedOtherDef?", bBuffOtherDefence);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsAlive?", GetData()->Alive);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsEnvyBurnedState?", bEnvyBurned);
@@ -374,6 +408,8 @@ void AMob::PlayTurn()
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsFreezedUp?", bFreezedUp);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsAttackDebuffed?", bIsAttackDebuffed);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsBuffOtherAtk?", bBuffOtherAtk);
+	AIController->GetBlackboardComponent()->SetValueAsBool("IsHealing?", bHeal);
+	AIController->GetBlackboardComponent()->SetValueAsBool("IsHealingOther?", bHealOther);
 	
 	
 	GetWorld()->GetTimerManager().SetTimer(BehaviorTreeTimerHandle, [this]()

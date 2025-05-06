@@ -40,6 +40,12 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 		DecisionMaker.DecisionMap.Add(EDecision::BuffItSelf, 0.55); // Buff atk chance in normal status
 	}
 
+	if (Current->IsHealer())
+	{
+		DecisionMaker.DecisionMap.Add(EDecision::HealItSelf, 0.10);
+		DecisionMaker.DecisionMap.Add(EDecision::HealOther, 0.20);
+	}
+
 	if (Current->IsESadness())
 	{
 		DecisionMaker.DecisionMap.Add(EDecision::DebuffDefence, 0.60); // debuff target defence in normal status
@@ -67,6 +73,14 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 	{
 		DecisionMaker.DecisionMap.Add(EDecision::EnvyBurned, 0.50);
 		DecisionMaker.DecisionMap.Add(EDecision::BuffOther, 0.20);
+	}
+
+	if (Current->IsECalm())
+	{
+		DecisionMaker.DecisionMap.Add(EDecision::DebuffShieldItSelf, 0.60);
+		DecisionMaker.DecisionMap.Add(EDecision::DebuffShieldOther, 0.10);
+		DecisionMaker.DecisionMap.Add(EDecision::BuffDefence, 0.10);
+		DecisionMaker.DecisionMap.Add(EDecision::BuffOtherDefence, 0.20);
 	}
 	
 	Decision = DecisionMaker.Thought();
@@ -101,6 +115,20 @@ void UUBTTask_DefaultAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
 
+	if (Decision == EDecision::HealItSelf && Current->IsHealer())
+	{
+		Current->SetHeal(true);
+		BlackBoard->SetValueAsBool("IsHealing?", Current->GetIsHeal());
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+	}
+
+	if (Decision == EDecision::HealOther && Current->IsHealer())
+	{
+		Current->SetHealOther(true);
+		BlackBoard->SetValueAsBool("IsHealingOther?", Current->GetIsHealOther());
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+	}
+
 	if ((Decision == EDecision::DebuffDefence && Current->IsESadness()) || (Decision == EDecision::DebuffDefence && Current->IsEAnxiety()))
 	{
 		Current->GetBattleHandler()->GetBattleInfo()->SetTurnInfo(FText::FromString(Current->GetActorLabel() + " de-buff"));
@@ -109,14 +137,14 @@ void UUBTTask_DefaultAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
 
-	if (Decision == EDecision::BuffDefence && Current->IsEFear())
+	if ((Decision == EDecision::BuffDefence && Current->IsEFear()) || (Decision == EDecision::BuffDefence && Current->IsECalm()))
 	{
 		Current->SetBuffedDefence(true);
 		BlackBoard->SetValueAsBool("IsDefenceBuffed?", Current->GetIsBuffedDefence());
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
 
-	if (Decision == EDecision::BuffOtherDefence && Current->IsEFear())
+	if ((Decision == EDecision::BuffOtherDefence && Current->IsEFear()) || (Decision == EDecision::BuffOtherDefence && Current->IsECalm()))
 	{
 		Current->SetBuffOtherDefence(true);
 		BlackBoard->SetValueAsBool("IsBuffedOtherDef?", Current->GetBuffOtherDefence());
@@ -148,6 +176,20 @@ void UUBTTask_DefaultAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 	{
 		Current->SetIsEnvyBurned(true);
 		BlackBoard->SetValueAsBool("IsBuffOtherAtk??", Current->GetIsIsEnvyBurned());
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+	}
+
+	if (Decision == EDecision::DebuffShieldItSelf && Current->IsECalm())
+	{
+		Current->SetDebuffShield(true);
+		BlackBoard->SetValueAsBool("IsShieldDebuffed??", Current->GetIsIsEnvyBurned());
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+	}
+
+	if (Decision == EDecision::DebuffShieldOther && Current->IsECalm())
+	{
+		Current->SetDebuffOtherShield(true);
+		BlackBoard->SetValueAsBool("IsOtherShieldDebuffed??", Current->GetIsIsEnvyBurned());
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
 	

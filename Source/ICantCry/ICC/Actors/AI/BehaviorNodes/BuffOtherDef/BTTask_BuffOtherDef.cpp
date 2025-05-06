@@ -8,6 +8,8 @@
 UBTTask_BuffOtherDef::UBTTask_BuffOtherDef()
 {
 	NodeName = "BuffOtherDef";
+	bNotifyTick = true;
+	bNotifyTaskFinished = true;
 }
 
 EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
