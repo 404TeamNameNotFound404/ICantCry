@@ -60,15 +60,16 @@ void AWorldCamera::SetbDefaultCamera(const bool& bCondition)
 	bDefaultCamera = bCondition;
 }
 
-int AWorldCamera::GetWaypointIndex() const
+AActor* AWorldCamera::GetPreviousWaypoint() const
 {
-	return WaypointIndex;
+	return PreviousWaypoint;
 }
 
-void AWorldCamera::SetWaypointIndex(int index)
+AActor* AWorldCamera::GetCurrentWaypoint() const
 {
-	WaypointIndex = index;
+	return CurrentWaypoint;
 }
+
 
 AActor* AWorldCamera::FindClosestWaypoint()
 {
@@ -148,6 +149,31 @@ void AWorldCamera::MoveToNextWaypoint()
 			SetActorLocation(CurrentWaypoint->GetActorLocation());
 			SetActorRotation(CurrentWaypoint->GetActorRotation());
 		}
+	}
+}
+
+void AWorldCamera::MoveToThePreviousWaypoint()
+{
+	SetActorLocation(CurrentWaypoint->GetActorLocation());
+	SetActorRotation(CurrentWaypoint->GetActorRotation());
+}
+
+void AWorldCamera::SnapToFixedWaypoint(AActor* Waypoint)
+{
+	if (!Waypoint) return;
+	
+	CurrentWaypoint = nullptr;
+	CurrentWaypoint = Waypoint;
+
+	if (bEnableSmoothMovement)
+	{
+		bLerpStarted = true;
+	}
+	else
+	{
+		SetActorLocation(CurrentWaypoint->GetActorLocation());
+		SetActorRotation(CurrentWaypoint->GetActorRotation());
+		DebugHelper::LogError("Moving to " + CurrentWaypoint->GetActorLabel());
 	}
 }
 

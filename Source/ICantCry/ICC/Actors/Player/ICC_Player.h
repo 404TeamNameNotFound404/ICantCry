@@ -78,6 +78,21 @@ public:
 	UPROPERTY(EditAnywhere, Blueprintreadwrite, Category = "Debug", meta = (AllowPrivateAccess = "true"))
 	UStaticMeshComponent* DebugMesh;
 
+	/**
+	 * Checks the internal 'Counter' of Hallway Traveler class.
+	 * Meaning, if I pass through an instance and after that I pass into another instance ,
+	 * the counter won't get updated so it will be stuck at the previous waypoint.
+	 * This counter fixes the issue
+	 */
+	int32 GetWorldCameraCounter() const;
+
+	/**
+	 * Set the global counter equal to the internal counter
+	 * @note DO NOT SET ANYWHERE ELSE
+	 * @param Counter Internal counter parameter
+	 */
+	void SetWorldCameraCounter(const int32& Counter);
+
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Movement")
 	float WalkSpeed;
@@ -120,6 +135,9 @@ private:
 
 	UPROPERTY()
 	UMinigameUserWidget* CurrentMinigameDisplayed = nullptr;
+
+	UPROPERTY()
+	int32 CameraCounter = 0;
 	
 
 	void Input_Move(const FInputActionValue& InputActionValue);

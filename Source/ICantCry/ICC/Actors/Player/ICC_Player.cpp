@@ -36,6 +36,9 @@ AICC_Player::AICC_Player()
 	CameraBoom->SocketOffset = FVector(0.0f, 0.0f, 0.0f);
 	
 	CameraBoom->bUsePawnControlRotation = true;
+	CameraBoom->ProbeChannel = ECC_Visibility;
+	CameraBoom->bEnableCameraLag = true;
+	CameraBoom->bDoCollisionTest = true;
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	Camera->bUsePawnControlRotation = false;
@@ -79,11 +82,9 @@ void AICC_Player::BeginPlay()
 		DebugHelper::LogSuccess("Minigame Handler found!");
 		break;
 	}
-
 	
-	Stats->CurrentHealth = Stats->MaxHealth; // TODO REMINDER CLEAR UP THIS IT'S FOR TESTING PURPOSE ONLY 
 	
-	DontDestroyOnLoad->SetPlayerStats(Stats);
+	// DontDestroyOnLoad->SetPlayerStats(Stats);
 	//DontDestroyOnLoad->SetCurrentPlayer(this);
 
 }
@@ -155,6 +156,16 @@ AMinigameHandler* AICC_Player::GetMinigameHandler() const
 UPlayerStats* AICC_Player::GetStats() const
 {
 	return Stats;
+}
+
+int32 AICC_Player::GetWorldCameraCounter() const
+{
+	return CameraCounter;
+}
+
+void AICC_Player::SetWorldCameraCounter(const int32& Counter)
+{
+	CameraCounter = Counter;
 }
 
 

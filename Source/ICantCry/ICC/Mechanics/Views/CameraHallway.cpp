@@ -21,6 +21,8 @@ void ACameraHallway::BeginPlay()
 {
 	Super::BeginPlay();
 
+	checkf(FixedWaypoint, TEXT("FixedWaypoint has not been assigned in editor!"))
+
 	for (TActorIterator<ACameraTraveler> It(GetWorld()); It; ++It)
 	{
 		Travelers.Add(*It);
@@ -42,6 +44,8 @@ void ACameraHallway::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AA
 
 	// Mark that the player has overlapped
 	bPlayerOverlapped = true;
+
+	Counter = Player->GetWorldCameraCounter();
 	
 	if (Player->GetWorldCamera() && Player && Counter == 0)
 	{
@@ -52,6 +56,7 @@ void ACameraHallway::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AA
 		PlayerController->SetViewTargetWithBlend(Player, 0.0f);
 		DebugHelper::LogSuccess("Set Target to Player Camera");
 		Counter++;
+		Player->SetWorldCameraCounter(Counter);
 	}
 	
 	else if (Player->GetWorldCamera() && Player  && Counter == 1)
@@ -63,6 +68,8 @@ void ACameraHallway::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AA
 		checkf(PlayerController, TEXT("PlayerController is NULL"));
 		PlayerController->SetViewTargetWithBlend(Player->GetWorldCamera(), 0.0f);
 		Counter = 0;
+		Player->SetWorldCameraCounter(Counter);
+		Player->GetWorldCamera()->SnapToFixedWaypoint(FixedWaypoint);
 	}
 }
 
