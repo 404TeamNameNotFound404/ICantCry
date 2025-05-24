@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "CameraHallway.h"
 #include "EngineUtils.h"
+#include "LevelSequencePlayer.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
-
 
 // Sets default values
 ACameraHallway::ACameraHallway()
@@ -71,6 +71,7 @@ void ACameraHallway::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AA
 		Player->SetWorldCameraCounter(Counter);
 		Player->GetWorldCamera()->SnapToFixedWaypoint(FixedWaypoint);
 	}
+	
 }
 
 void ACameraHallway::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)

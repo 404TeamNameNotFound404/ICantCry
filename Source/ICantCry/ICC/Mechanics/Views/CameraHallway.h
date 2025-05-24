@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "LevelSequence.h"
 #include "GameFramework/Actor.h"
 #include "Components/BoxComponent.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
@@ -54,4 +55,5 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))
 	AActor* FixedWaypoint;
+	
 };
