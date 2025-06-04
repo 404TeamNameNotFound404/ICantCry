@@ -7,4 +7,6 @@ namespace Icc_InputTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Run, "InputTag.Run")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Minigame, "InputTag.Minigame")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_BulletScroll, "InputTag.Battle.BulletScroll")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Inventory, "InputTag.Inventory")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Crafting, "InputTag.Crafting")
 }

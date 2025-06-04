@@ -55,6 +55,15 @@ void AICC_Player::BeginPlay()
 	GetCapsuleComponent()->SetCapsuleSize(90.0f, 200.0f);
 	OldSpeed = GetCharacterMovement()->MaxWalkSpeed;
 
+	//Inventory
+	InventoryManager = NewObject<UInventoryManager>(this);
+	InventoryManager->Initialize(InventoryHUD);
+	InventoryManager->LinkCraftingHUD(CraftingHUD);
+
+	CraftingTable = NewObject<UCraftingTable>(this);
+	CraftingHUD->SetCraftingTable(CraftingTable);
+	//CraftingTable->SetInventoryReference(&PlayerInventory);
+
 	if (!WorldCamera)
 	{
 		for (TActorIterator<AWorldCamera> It(GetWorld()); It; ++It)
@@ -103,6 +112,10 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Interact, ETriggerEvent::Triggered, this, &ThisClass::Input_Interact);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Minigame, ETriggerEvent::Triggered, this, &ThisClass::Input_Minigame);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_BulletScroll, ETriggerEvent::Triggered, this, &ThisClass::Input_Scroll);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Inventory, ETriggerEvent::Triggered, this, &ThisClass::Input_OpenInventory);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Crafting, ETriggerEvent::Triggered, this, &ThisClass::Input_OpenCrafting);
+	//LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Crafting, ETriggerEvent::Triggered, this, &ThisClass::Input_CloseCrafting);
+
 }
 
 AWorldCamera* AICC_Player::GetWorldCamera() const
@@ -152,6 +165,20 @@ UPlayerStats* AICC_Player::GetStats() const
 	return Stats;
 }
 
+const FInventory AICC_Player::GetPlayerInventory() const
+{
+    return PlayerInventory;
+}
+
+void AICC_Player::SetPlayerInventory(const FInventory &Inventory)
+{
+	PlayerInventory = Inventory;
+}
+
+UInventoryManager *AICC_Player::GetInventoryManager() const
+{
+    return InventoryManager;
+}
 
 void AICC_Player::Input_Move(const FInputActionValue& InputActionValue)
 {
@@ -233,17 +260,17 @@ void AICC_Player::Input_Interact(const FInputActionValue& InputActionValue)
 void AICC_Player::Input_Scroll(const FInputActionValue &InputActionValue)
 {
 	// if player is not fighting there's no need to call this bindings
-	if (!bIsInFight)
-	{
-		DebugHelper::LogError("Can't get scroll is in fight = false");
-		return;
-	}
+	// if (!bIsInFight)
+	// {
+	// 	DebugHelper::LogError("Can't get scroll is in fight = false");
+	// 	return;
+	// }
 
-	if (!Hud->IsSelectingTarget())
-	{
-		DebugHelper::LogError("You can't do that yet");
-		return;
-	}
+	// if (!Hud->IsSelectingTarget())
+	// {
+	// 	DebugHelper::LogError("You can't do that yet");
+	// 	return;
+	// }
 	
 	DebugHelper::LogSuccess("Scrolling something");
 	
@@ -267,7 +294,153 @@ void AICC_Player::Input_Scroll(const FInputActionValue &InputActionValue)
 			Hud->ScrollBulletSelection(Scroll);
 		}
 	}
+
+
 }
 
+void AICC_Player::Input_OpenInventory(const FInputActionValue& InputActionValue)
+{
+	ToggleInventory();
+}
 
+void AICC_Player::Input_OpenCrafting(const FInputActionValue &InputActionValue)
+{
 
+	ToggleCraftingHUD();
+
+}
+
+void AICC_Player::Input_CloseCrafting(const FInputActionValue &InputActionValue)
+{
+	CloseCraftingHUD();
+}
+
+void AICC_Player::CloseInventory()
+{
+	if (InventoryHUD && InventoryHUD->IsInViewport())
+    {
+        InventoryHUD->RemoveFromParent();
+
+        AICC_PlayerController* PC = Cast<AICC_PlayerController>(GetController());
+        if (PC)
+        {
+            PC->SetInputMode(FInputModeGameOnly());
+            PC->bShowMouseCursor = false;
+        }
+    }
+
+}
+
+void AICC_Player::ToggleInventory()
+{
+	if (!InventoryHUD)
+    {
+        InventoryHUD = CreateWidget<UInventoryHUD>(GetWorld(), InventoryHUDClass);
+
+        if (InventoryHUD)
+        {
+            InventoryHUD->AddToViewport();
+
+            InventoryHUD->UpdateInventoryDisplay(PlayerInventory); // aggiorna manualmente
+
+            AICC_PlayerController* PC = Cast<AICC_PlayerController>(GetController());
+            if (PC)
+            {
+                PC->SetInputMode(FInputModeUIOnly());
+                PC->bShowMouseCursor = true;
+            }
+        }
+        return;
+    }
+
+    if (InventoryHUD->IsInViewport())
+    {
+        CloseInventory();
+    }
+    else
+    {
+        InventoryHUD->AddToViewport();
+        InventoryHUD->UpdateInventoryDisplay(PlayerInventory); //  aggiorna quando riapri
+
+        AICC_PlayerController* PC = Cast<AICC_PlayerController>(GetController());
+        if (PC)
+        {
+            PC->SetInputMode(FInputModeUIOnly());
+            PC->bShowMouseCursor = true;
+        }
+    }
+}
+
+void AICC_Player::ToggleCraftingHUD()
+{
+    if (!CraftingHUD)
+    {
+        DebugHelper::LogWarning("ToggleCraftingHUD chiamato");
+        CraftingHUD = CreateWidget<UCraftingHUD>(GetWorld(), CraftingHUDClass);
+        
+        if (CraftingHUD)
+        {
+            CraftingHUD->AddToViewport();
+
+            
+            if (InventoryManager)
+            {
+                InventoryManager->LinkCraftingHUD(CraftingHUD);
+            }
+
+            if (InventoryManager && CraftingTable)
+            {
+                CraftingHUD->SetupCraftingHUD(CraftingTable, InventoryManager);
+                //CraftingTable->SetInventoryReference(&InventoryManager->GetInventory());
+            }
+
+            CraftingHUD->RefreshUI();
+
+            if (AICC_PlayerController* PC = Cast<AICC_PlayerController>(GetController()))
+            {
+                PC->SetInputMode(FInputModeUIOnly());
+                PC->bShowMouseCursor = true;
+            }
+        }
+        return;
+    }
+
+    if (CraftingHUD->IsInViewport())
+    {
+        CloseCraftingHUD();
+    }
+    else
+    {
+        CraftingHUD->AddToViewport();
+
+        // Collegamento anche in caso di riapertura
+        if (InventoryManager)
+        {
+            InventoryManager->LinkCraftingHUD(CraftingHUD);
+        }
+
+        CraftingHUD->RefreshUI();
+
+        if (AICC_PlayerController* PC = Cast<AICC_PlayerController>(GetController()))
+        {
+            PC->SetInputMode(FInputModeUIOnly());
+            PC->bShowMouseCursor = true;
+        }
+    }
+}
+
+void AICC_Player::CloseCraftingHUD()
+{
+	if (CraftingHUD && CraftingHUD->IsInViewport())
+    {
+        CraftingHUD->RemoveFromParent();
+
+        AICC_PlayerController* PC = Cast<AICC_PlayerController>(GetController());
+        if (PC)
+        {
+            PC->SetInputMode(FInputModeGameOnly());
+            PC->bShowMouseCursor = false;
+        }
+
+    }
+}

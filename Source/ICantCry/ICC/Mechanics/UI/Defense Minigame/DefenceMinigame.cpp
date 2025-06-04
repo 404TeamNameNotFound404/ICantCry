@@ -1,10 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "DefenceMinigame.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
-#include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 
-static UICantCryGameInstance* Instance = nullptr;
 
 void UDefenceMinigame::NativeConstruct()
 {

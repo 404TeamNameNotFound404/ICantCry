@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/Image.h"
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameUserWidget.h"
+#include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "DefenceMinigame.generated.h"
 
 
@@ -67,6 +68,9 @@ private:
 	UImage* MediumScore;
 	UPROPERTY(meta = (BindWidget))
 	UImage* PerfectScore;
+
+	UPROPERTY()
+	UICantCryGameInstance* Instance = nullptr;
 	
 	virtual void HandleScore() override;
 };

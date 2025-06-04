@@ -6,6 +6,19 @@
 #include "Engine/DataAsset.h"
 #include "BulletData.generated.h"
 
+
+UENUM(BlueprintType)
+enum EBulletStatus
+{
+    FreezedUp,
+    EnvyBurned,
+    Ashamed,
+    DebuffShield
+
+
+};
+
+
 /**
  * 
  */
@@ -18,6 +31,9 @@ class ICANTCRY_API UBulletData : public UDataAsset
 public:
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet Properties")
+    FName ID;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet Properties")
     int32 Power;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet Properties")
@@ -29,7 +45,15 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet Properties")
     FString MinigameType;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifiers")
+    float WeaknessModifier = 0.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifiers")
+    TEnumAsByte<EBulletStatus> Status;
+
 	// for UI
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	UTexture2D* Icon;
+
+    
 };
