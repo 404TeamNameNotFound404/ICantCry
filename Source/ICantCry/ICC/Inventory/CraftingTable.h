@@ -36,7 +36,9 @@ public:
 
 	FInventory GetInventory() const { return Inventory; }
 
-	const TArray<FRecipe>& GetAvailableRecipes() const;
+	TArray<ERecipeType> GetAvailableRecipes() const;
+
+	TArray<FRecipe> GetAvaiableRecipes();
 
 
 	//////////// NOTA ///////////
@@ -75,6 +77,7 @@ private :
 
 	// Lista di tutte le ricette esistenti nel gioco
 	// uso MasterRecipes e creo AvailableRecipes per la separazione tra ricette bloccate/sbloccate
+	
     UPROPERTY()
     TArray<FRecipe> MasterRecipes;
 

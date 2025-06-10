@@ -46,6 +46,11 @@ public:
     // Lista delle essenze raccolte
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<FEssence> Essences;
+    /**
+     * Total Recipes owned 
+     */
+    UPROPERTY()
+    TArray<FRecipe> Recipes;
 
     
 
@@ -122,6 +127,7 @@ public:
         // If essence was found, add a modified copy of it
 
         Essences.Add(FoundEssence);
+        DebugHelper::LogError("Essence size " + FString::FromInt(Essences.Num()));
 
         if(!FoundEssence.IsValid())
         {

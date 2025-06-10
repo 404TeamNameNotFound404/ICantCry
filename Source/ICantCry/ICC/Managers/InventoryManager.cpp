@@ -21,7 +21,7 @@ void UInventoryManager::LinkCraftingHUD(UCraftingHUD *InCraftingHUD)
     CraftingLinkedHUD = InCraftingHUD;
 }
 
-FInventory& UInventoryManager::GetInventory()
+FInventory UInventoryManager::GetInventory()
 {
     return Inventory;
 }
@@ -67,12 +67,17 @@ void UInventoryManager::RemoveEssence(EEssenceType EssenceType, int32 Quantity)
 
 void UInventoryManager::AddRecipe(ERecipeType RecipeType, int32 Quantity)
 {
-    for (int32 i = 0; i < Quantity; ++i)
-    {
-        Inventory.OwnedBlueprints.Add(RecipeType);
-    }
+    Inventory.OwnedBlueprints.Add(RecipeType);
+    DebugHelper::LogError("Size on UInventoryManager::AddRecipe = " + FString::FromInt(Inventory.OwnedBlueprints.Num()));
+  //  RefreshHUD();
+}
 
-    RefreshHUD();
+void UInventoryManager::AddRecipe(const FRecipe& RecipeToAdd, int32 Quantity)
+{
+    Inventory.Recipes.Add(RecipeToAdd);
+    Inventory.OwnedBlueprints.Add(RecipeToAdd.RequiredBlueprintType);
+    DebugHelper::LogError("On Add -> Recipe size: " + FString::FromInt(Inventory.Recipes.Num()));
+    DebugHelper::LogError("On Add -> Type size:  " + FString::FromInt(Inventory.OwnedBlueprints.Num()));
 }
 
 void UInventoryManager::RemoveRecipe(ERecipeType RecipeType, int32 Quantity)
@@ -88,7 +93,7 @@ void UInventoryManager::RemoveRecipe(ERecipeType RecipeType, int32 Quantity)
         }
     }
 
-    RefreshHUD();
+    //RefreshHUD();
 }
 
 void UInventoryManager::RemoveBullet(UBulletData* BulletData, int32 Quantity)
@@ -107,17 +112,6 @@ void UInventoryManager::RefreshHUD()
 
     UE_LOG(LogTemp, Warning, TEXT("LinkedHUD: %s"), LinkedHUD ? TEXT("VALID") : TEXT("NULL"));
     UE_LOG(LogTemp, Warning, TEXT("CraftingLinkedHUD: %s"), CraftingLinkedHUD ? TEXT("VALID") : TEXT("NULL"));
-
-    if (LinkedHUD)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("LinkedHUD->IsInViewport(): %s"), LinkedHUD->IsInViewport() ? TEXT("YES") : TEXT("NO"));
-    }
-
-    if (CraftingLinkedHUD)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("CraftingLinkedHUD->IsInViewport(): %s"), CraftingLinkedHUD->IsInViewport() ? TEXT("YES") : TEXT("NO"));
-    }
-
     
 
     if (LinkedHUD ) //&& LinkedHUD->IsInViewport()

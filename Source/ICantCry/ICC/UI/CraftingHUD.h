@@ -25,9 +25,13 @@
 #include "../Actors/Bullet/BulletData.h"
 #include "../Source/ICantCry/ICC/Input/ICC_PlayerController.h"
 #include "../Source/ICantCry/ICC/Managers/InventoryManager.h"
+
 #include "Kismet/KismetSystemLibrary.h"
 #include "CraftingHUD.generated.h"
 
+
+
+class AICC_Player;
 
 class URecipeButtonWidget;
 
@@ -51,6 +55,8 @@ public:
 	void OnRecipeSelected( const FRecipe& NewRecipe); // Seleziona una blueprint, aggiorna i dettagli
 	void SetupCraftingHUD(UCraftingTable* InCraftingTable, UInventoryManager* InInventoryManager);
 
+	FInventory GetInventory() const;
+	
 protected:
 
 	virtual void NativeConstruct() override;
@@ -58,7 +64,7 @@ protected:
 protected:
 
 	// SX
-	UPROPERTY(meta = (BindWidget)) UVerticalBox* RecipeListContainer;
+	UPROPERTY(meta = (BindWidget)) UScrollBox* RecipeListScrollBar;
 
 	// CENTER
 	UPROPERTY(meta = (BindWidget)) UImage* BulletImage;
@@ -68,9 +74,9 @@ protected:
     UPROPERTY(meta = (BindWidget)) UButton* CraftButton;
 
 	// DX
-	UPROPERTY(meta = (BindWidget)) UVerticalBox* EssenceList;
     UPROPERTY(meta = (BindWidget)) UTextBlock* EmptyCasingCountText;
     UPROPERTY(meta = (BindWidget)) UTextBlock* GoldCasingCountText;
+	UPROPERTY(meta = (BindWidget)) UScrollBox* EssenceListScrollBar;
 
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
@@ -90,6 +96,18 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
     TSubclassOf<UEssenceWidget> EssenceWidgetClass;
+
+	UPROPERTY()
+	URecipeButtonWidget* RecipeButtonWidget = nullptr;
+
+	UPROPERTY()
+	AICC_PlayerController* Controller;
+
+	UPROPERTY()
+	AICC_Player* Player = nullptr;
+
+	UPROPERTY()
+	FInventory Inventory;
 
 	// AICC_PlayerController* Controller;
 

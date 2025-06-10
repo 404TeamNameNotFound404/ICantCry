@@ -49,6 +49,35 @@ public:
         return EssenceType == Other.EssenceType;
     }
 
+    FString GetName(const EEssenceType& Type) const
+    {
+        switch (Type)
+        {
+            case EEssenceType::Indifference:
+                return "Indifference";
+            case EEssenceType::Anger:
+                return "Anger";
+            case EEssenceType::Fear:
+                return "Fear";
+            case EEssenceType::Disgust:
+                return "Disgust";
+            case EEssenceType::Sadness:
+                return "Sadness";
+            case EEssenceType::Joy:
+                return "Joy";
+            case EEssenceType::Anxiety:
+                return "Anxiety";
+            case EEssenceType::Calm:
+                return "Calm";
+            case EEssenceType::Jealousy:
+                return "Jealousy";
+            case EEssenceType::Shame:
+                return "Shame";
+            default:
+            return "Unknown";
+        }
+    }
+
     FEssence()
         : EssenceType(), Quantity(0)
     {}

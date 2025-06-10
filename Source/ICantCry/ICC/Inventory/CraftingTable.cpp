@@ -149,23 +149,41 @@ void UCraftingTable::Craft()
     IsCraftable = false;
 }
 
-const TArray<FRecipe> &UCraftingTable::GetAvailableRecipes() const
+TArray<ERecipeType> UCraftingTable::GetAvailableRecipes() const
 {
-    static TArray<FRecipe> AvailableRecipes;
+    TArray<ERecipeType> AvailableRecipes;
 
     AvailableRecipes.Empty();
+
+    DebugHelper::LogSuccess("GetAvailableRecipes called before loop");
+
     
-    for (const FRecipe& RecipeDef : MasterRecipes)
+    for (const ERecipeType& RecipeDef : GetInventory().OwnedBlueprints)
     {
-        // Mostra solo se il player ha la blueprint corrispondente
-        if (Inventory.OwnedBlueprints.Contains(RecipeDef.RequiredBlueprintType))
-        {
-            AvailableRecipes.Add(RecipeDef);
-        }
+        DebugHelper::LogError("Joining the recipe loop");
+        AvailableRecipes.Add(RecipeDef);
     }
 
-    return AvailableRecipes;
+    DebugHelper::LogSuccess("GetAvailableRecipes called after loop");
 
+    return AvailableRecipes;
+}
+
+TArray<FRecipe> UCraftingTable::GetAvaiableRecipes()
+{
+    TArray<FRecipe> AvailableRecipes;
+
+    DebugHelper::LogSuccess("GetAvailableRecipes called before loop");
+    
+    for (const FRecipe& R : GetInventory().Recipes)
+    {
+        DebugHelper::LogError("Joining the recipe loop");
+        AvailableRecipes.Add(R);
+    }
+
+    DebugHelper::LogSuccess("GetAvailableRecipes called after loop");
+
+    return AvailableRecipes;
 }
 
 

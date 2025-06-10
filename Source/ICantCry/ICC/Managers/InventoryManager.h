@@ -23,7 +23,7 @@ class ICANTCRY_API UInventoryManager : public UObject
     void LinkCraftingHUD(UCraftingHUD* InCraftingHUD);
 
     // Accesso all'inventario
-    FInventory& GetInventory();
+    FInventory GetInventory();
 
     // Aggiunta/Rimozione generica
     void AddItem(EItemType ItemType, const FBullet& Bullet, const TArray<FEssence>& Essences, const FRecipe& Recipe, int32 Quantity = 1);
@@ -39,6 +39,7 @@ class ICANTCRY_API UInventoryManager : public UObject
 
 	// Recipe
 	void AddRecipe(ERecipeType RecipeType, int32 Quantity = 1);
+	void AddRecipe(const FRecipe& RecipeToAdd, int32 Quantity = 1);
 	void RemoveRecipe(ERecipeType RecipeType, int32 Quantity = 1);
 
     // Bullet diretto (es. da BattleHUD)
@@ -46,6 +47,7 @@ class ICANTCRY_API UInventoryManager : public UObject
 
 private:
 
+	UPROPERTY()
     FInventory Inventory;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))

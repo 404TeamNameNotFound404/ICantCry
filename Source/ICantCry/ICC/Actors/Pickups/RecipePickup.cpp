@@ -31,7 +31,8 @@ ARecipePickup::ARecipePickup()
 void ARecipePickup::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+    Self.RequiredBlueprintType = RecipeType;
 }
 
 
@@ -43,13 +44,17 @@ void ARecipePickup::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAc
     AICC_Player* Player = Cast<AICC_Player>(OtherActor);
     if (Player)
     {
-        FInventory Inventory = Player->GetPlayerInventory(); 
-        if (!Inventory.OwnedBlueprints.Contains(RecipeType))
-        {
-            Inventory.OwnedBlueprints.Add(RecipeType);
-            Player->SetPlayerInventory(Inventory);
-        }
+        FInventory Inventory = Player->GetPlayerInventory();
+        Player->SetPlayerInventory(Inventory);
+        
+        // if (!Inventory.OwnedBlueprints.Contains(RecipeType))
+        // {
+        //     DebugHelper::LogError("");
+        //     Inventory.OwnedBlueprints.Add(RecipeType);
+        //     Player->SetPlayerInventory(Inventory);
+        // }
 
+        OnPickedUp(Player);
         
         Destroy();
     }
@@ -58,12 +63,13 @@ void ARecipePickup::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAc
 
 void ARecipePickup::OnPickedUp(AActor* OtherActor)
 {
+    DebugHelper::LogError("OnPickedUp");
+    
     if (AICC_Player* Player = Cast<AICC_Player>(OtherActor))
     {
         if (UInventoryManager* InvMgr = Player->GetInventoryManager())
         {
-            InvMgr->AddRecipe(RecipeType, Quantity);
-            Destroy();
+            InvMgr->AddRecipe(Self);
         }
     }
 }

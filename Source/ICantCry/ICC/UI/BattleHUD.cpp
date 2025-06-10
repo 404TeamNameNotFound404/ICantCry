@@ -38,7 +38,7 @@ void UBattleHUD::NativeConstruct()
 
     //LOAD BULLET DATA
     LoadedBulletData.Empty();
-    for (const TSubclassOf<UBulletData> BulletClass : AvailableBulletTypes)
+    for (const TSubclassOf<UBulletData>& BulletClass : AvailableBulletTypes)
     {
          if (BulletClass)
         {

@@ -79,6 +79,12 @@ public:
 	UInventoryManager* GetInventoryManager() const;
 
 	/**
+	 * In game menu is open
+	 * @return true if In Game menu is active
+	 */
+	bool IsGameMenuOpen() const;
+
+	/**
 	 * Read below!!
 	 * @note DEBUG ONLY!
 	 */
@@ -149,8 +155,17 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UCraftingHUD> CraftingHUDClass;
 
+	/**
+	 * Close the crafting / inventory counter
+	 */
 	UPROPERTY()
 	int32 CraftingCounter;
+
+	/**
+	 * Check if in game menu is open
+	 */
+	UPROPERTY()
+	bool bIsInGameMenuOpen = false;
 
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Interact(const FInputActionValue& InputActionValue);

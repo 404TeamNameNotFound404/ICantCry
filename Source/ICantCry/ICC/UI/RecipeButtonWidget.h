@@ -22,7 +22,8 @@ class ICANTCRY_API URecipeButtonWidget : public UUserWidget
 
 public:
 
-    void Setup( const FRecipe& InRecipe, UCraftingHUD* InOwnerHUD);
+    void Setup( const ERecipeType& InRecipe, UCraftingHUD* InOwnerHUD);
+    void Setup(const FRecipe& Recipe, UCraftingHUD* InOwnerHUD);
 
 protected:
 
@@ -36,7 +37,10 @@ protected:
 
 private:
 
+    UPROPERTY()
     FRecipe LinkedRecipe;
+    
+    UPROPERTY()
     UCraftingHUD* OwnerHUD;
 	
 };

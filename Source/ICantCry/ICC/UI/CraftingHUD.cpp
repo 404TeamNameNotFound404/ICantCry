@@ -3,6 +3,7 @@
 
 #include "CraftingHUD.h"
 #include "RecipeButtonWidget.h"
+#include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "../Source/ICantCry/ICC/Debug/DebugHelper.h"
 
 
@@ -16,7 +17,10 @@ void UCraftingHUD::NativeConstruct()
         CraftButton->OnClicked.AddDynamic(this, &UCraftingHUD::OnCraftClicked);
     }
 
-    //Controller = AICC_PlayerController::GetICCPlayerController(this);
+    Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
+    Player = Cast<AICC_Player>(Controller->GetPawn());
+    
+    // RecipeButtonWidget = CreateWidget<URecipeButtonWidget>(GetWorld(), RecipeButtonClass);
     
     RefreshUI();
     //RefreshRecipesList();
@@ -44,72 +48,38 @@ void UCraftingHUD::RefreshUI()
         CraftingTable->Initialize();
     }
     
-    check(CraftingTable)
-    check(InventoryManager)
-    // if (!CraftingTable || !CraftingTable->GetInventory()|| !InventoryManager) 
-    // {
-
-    //     return;
-    //    // UE_LOG(LogTemp, Warning, TEXT("Controllo blueprint: %d - Posseduta? %s"), (int32)Recipe.RequiredBlueprintType, Inventory->HasBlueprint(Recipe.RequiredBlueprintType) ? TEXT("SI") : TEXT("NO"));
-    // }
+    checkf(CraftingTable, TEXT("Crafting table is null at CraftingHUD"))
+    checkf(InventoryManager, TEXT("InventoryManager is null at CraftingHUD"))
 
 
-    check(RecipeListContainer)
-    check(EssenceList)
+    RecipeListScrollBar->ClearChildren();
+    EssenceListScrollBar->ClearChildren();
+    Inventory = Player->GetInventoryManager()->GetInventory();
 
-    // if (RecipeListContainer) 
-    // {
-         RecipeListContainer->ClearChildren();
-    // }
-
-    // if (EssenceList) 
-    // {
-        EssenceList->ClearChildren();
-    // }
-
-    FInventory Inventory = CraftingTable->GetInventory();
-
-    // -- POPOLA LISTA DELLE BLUEPRINTS --
-    for ( const FRecipe& Recipe : CraftingTable->GetAvailableRecipes())
+    for (const FRecipe& R : Inventory.Recipes)
     {
-        if (!Inventory.HasBlueprint(Recipe.RequiredBlueprintType)) 
-        {
-            DebugHelper::LogError("SKIPPAAA");
-            continue;
-        }
-
-        AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
-
-        URecipeButtonWidget* RecipeWidget = CreateWidget<URecipeButtonWidget>(Controller, RecipeButtonClass); 
-
-        checkf(RecipeWidget, TEXT("RecipeWidget è nullo "))
-        
-        
-            
-        RecipeListContainer->AddChild(RecipeWidget);
-        RecipeWidget->Setup(Recipe, this);
-        RecipeWidget->SetVisibility(ESlateVisibility::Visible);
-        DebugHelper::LogError("Add recipe");
-       
+        RecipeButtonWidget = CreateWidget<URecipeButtonWidget>(GetWorld(), RecipeButtonClass);
+        //RecipeListContainer->AddChild(RecipeButtonWidget);
+        RecipeListScrollBar->AddChild(RecipeButtonWidget);
+        RecipeButtonWidget->SetPadding(FMargin(0, 3.5f));
+        RecipeButtonWidget->Setup(R, this);
+        RecipeListScrollBar->SetScrollBarVisibility(ESlateVisibility::Visible);
+        RecipeListScrollBar->SetVisibility(ESlateVisibility::Visible);
+        RecipeButtonWidget->SetVisibility(ESlateVisibility::Visible);
+        DebugHelper::LogError("Add recipe for (const ERecipeType& Recipe : InventoryManager->GetInventory().OwnedBlueprints)");
     }
+
+    DebugHelper::LogError("Inventory Essence size: " + FString::FromInt(Inventory.Essences.Num()));
 
     // --- MOSTRA TUTTE LE ESSENZE POSSEDUTE ---
     for (const FEssence& Essence : Inventory.Essences)
     {
-        // UUserWidget* Widget = CreateWidget<UUserWidget>(this, EssenceWidgetClass);
-
-        // UEssenceWidget* EssenceWidget = Cast<UEssenceWidget>(Widget);
-
-        AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
-
-        UEssenceWidget* EssenceWidget = CreateWidget<UEssenceWidget>(Controller, EssenceWidgetClass);
-
-        check(EssenceWidget)
-        
-        EssenceList->AddChild(EssenceWidget);
+        UEssenceWidget* EssenceWidget = CreateWidget<UEssenceWidget>(GetWorld(), EssenceWidgetClass);
+        checkf(EssenceWidget, TEXT("Essence widget is null"))
+        EssenceListScrollBar->AddChild(EssenceWidget);
+        EssenceWidget->SetPadding(FMargin(0, 4.5f));
         EssenceWidget->Setup(Essence, Essence.Quantity);
         DebugHelper::LogError("Add essence");
-       
     }
 
     // -- MOSTRA COUNT BOSSOLI --
@@ -130,33 +100,25 @@ void UCraftingHUD::RefreshUI()
 
 void UCraftingHUD::RefreshRecipesList()
 {
-    if (!RecipeListContainer || !CraftingTable) return;
-
-    RecipeListContainer->ClearChildren();
+   
 
     // Mostra SOLO le ricette sbloccate
-    for (const FRecipe& Recipe : CraftingTable->GetAvailableRecipes())
-    {
-        AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
-
-        URecipeButtonWidget* RecipeWid = CreateWidget<URecipeButtonWidget>(Controller, RecipeButtonClass);
-        if (RecipeWid)
-        {
-            RecipeWid->Setup(Recipe, this);
-            RecipeListContainer->AddChild(RecipeWid);
-        }
-    }
+    // for (const FRecipe& Recipe : CraftingTable->GetAvailableRecipes())
+    // {
+    //    // AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
+    //
+    //     URecipeButtonWidget* RecipeWid = CreateWidget<URecipeButtonWidget>(Controller, RecipeButtonClass);
+    //     
+    //     if (RecipeWid)
+    //     {
+    //         RecipeWid->Setup(Recipe, this);
+    //         RecipeListContainer->AddChild(RecipeWid);
+    //     }
+    // }
 }
 
 void UCraftingHUD::UpdateEssenceList()
 {
-   if (!CraftingTable || !EssenceList)
-        return;
-
-    EssenceList->ClearChildren();
-
-    const FInventory& Inventory = CraftingTable->GetInventory();
-    
     for (const FEssence& Essence : Inventory.Essences)
     {
         if (Essence.Quantity <= 0) continue;
@@ -166,7 +128,6 @@ void UCraftingHUD::UpdateEssenceList()
         {
             // La quantità posseduta è la stessa di quella in Inventory
             Widget->Setup(Essence, Essence.Quantity);
-            EssenceList->AddChild(Widget);
         }
     }
 }
@@ -219,10 +180,6 @@ void UCraftingHUD::UpdateSelectedRecipeDetails()
 
 void UCraftingHUD::UpdateMaterialList()
 {
-   if (!EssenceList || !CraftingTable) return;
-
-    EssenceList->ClearChildren();
-    FInventory Inventory = CraftingTable->GetInventory();
 
     for (const FEssence& Required : SelectedRecipe.RequiredEssences)
     {
@@ -231,7 +188,6 @@ void UCraftingHUD::UpdateMaterialList()
         {
             int32 OwnedQty = Inventory.GetEssenceQuantity(Required.EssenceType);
             Widget->Setup(Required, OwnedQty);
-            EssenceList->AddChild(Widget);
         }
     }
     
@@ -277,6 +233,11 @@ void UCraftingHUD::SetupCraftingHUD(UCraftingTable* InCraftingTable, UInventoryM
 {
     CraftingTable = InCraftingTable;
     InventoryManager = InInventoryManager;
+}
+
+FInventory UCraftingHUD::GetInventory() const
+{
+    return Inventory;
 }
 
 

@@ -23,7 +23,7 @@ AEssencePickup::AEssencePickup()
 void AEssencePickup::BeginPlay()
 {
 	Super::BeginPlay();
-	
+    Self.EssenceType = EssenceType;
 }
 
 void AEssencePickup::OnOverlapBegin(

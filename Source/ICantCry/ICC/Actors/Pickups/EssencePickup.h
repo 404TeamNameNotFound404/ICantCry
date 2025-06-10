@@ -34,6 +34,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Essence")
     int32 Quantity = 1;
 
+	UPROPERTY()
+	FEssence Self;
+
     
     UFUNCTION()
     void OnOverlapBegin(

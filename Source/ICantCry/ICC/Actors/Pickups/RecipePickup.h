@@ -40,6 +40,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pickup")
     ERecipeType RecipeType;
 
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Pickup")
+	FRecipe Self;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pickup")
 	int32 Quantity;
 
