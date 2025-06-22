@@ -17,6 +17,7 @@
 #include "../Source/ICantCry/ICC/Actors/Bullet/BulletData.h"
 #include "../Mechanics/TurnSystem/Core/BattleHandler.h"
 #include "Components/CanvasPanel.h"
+#include "Components/ScaleBox.h"
 #include "Components/SizeBox.h"
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
@@ -43,7 +44,7 @@ public:
     UPROPERTY(meta = (BindWidget)) UWidget* CanvasFirstReloadMagazine; 
     UPROPERTY(meta = (BindWidget)) UWidget* CanvasMainBattlePanel; 
     UPROPERTY(meta = (BindWidget)) UCanvasPanel* CanvasMiniGames;
-	UPROPERTY(meta = (BindWidget)) USizeBox* MinigameSlot;
+	UPROPERTY(meta = (BindWidget)) UScaleBox* MinigameScaleSlot;
     UPROPERTY(meta = (BindWidget)) UWidget* CanvasAmmoSelection;
     UPROPERTY(meta = (BindWidget)) UCanvasPanel* CanvasStatus;
 

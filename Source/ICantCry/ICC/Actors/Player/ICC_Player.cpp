@@ -37,7 +37,7 @@ AICC_Player::AICC_Player()
 	
 	CameraBoom->bUsePawnControlRotation = true;
 	CameraBoom->ProbeChannel = ECC_Visibility;
-	CameraBoom->bEnableCameraLag = true;
+	CameraBoom->bEnableCameraLag = false;
 	CameraBoom->bDoCollisionTest = true;
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
@@ -178,19 +178,20 @@ void AICC_Player::Input_Move(const FInputActionValue& InputActionValue)
 	
 	const FVector2d Direction = InputActionValue.Get<FVector2d>();
 	DirectionMovement = FVector::ZeroVector;
-	const FRotator Rotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
+	//const FRotator Rotation(0.f, Controller->GetControlRotation().Yaw, 0.f); //FRotator CameraRotation = CameraComponent->GetComponentRotation(); Controller->GetControlRotation().Yaw
+	const FRotator CameraRotation = Camera->GetComponentRotation();
 	GetCharacterMovement()->MaxWalkSpeed = OldSpeed;
 	
 	if (Direction.Y != 0.f)
 	{
-		const FVector ForwardDirection = Rotation.RotateVector(FVector::ForwardVector);
+		const FVector ForwardDirection = CameraRotation.RotateVector(FVector::ForwardVector); //Rotation.RotateVector(FVector::ForwardVector);
 		AddMovementInput(ForwardDirection, Direction.Y);
 		DirectionMovement.Y = Direction.Y;
 	}
 	
 	if (Direction.X != 0.f)
 	{
-		const FVector RightDirection = Rotation.RotateVector(FVector::RightVector);
+		const FVector RightDirection =  CameraRotation.RotateVector(FVector::RightVector);//Rotation.RotateVector(FVector::RightVector);
 		AddMovementInput(RightDirection, Direction.X);
 		DirectionMovement.X = Direction.X;
 	}

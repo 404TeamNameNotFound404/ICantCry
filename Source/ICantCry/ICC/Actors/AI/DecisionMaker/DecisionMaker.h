@@ -43,5 +43,10 @@ struct FDecisionMaker
 
 	TMap<EDecision, float> DecisionMap;
 
+	/**
+	 * Clear the Decision Map in order to avoid repetitions
+	 */
+	void Clear();
+
 };
 

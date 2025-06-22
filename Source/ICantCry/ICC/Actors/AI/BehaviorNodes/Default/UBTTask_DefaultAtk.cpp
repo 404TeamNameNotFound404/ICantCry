@@ -34,6 +34,8 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 
 
 	FDecisionMaker DecisionMaker;
+
+	DecisionMaker.Clear(); // If I'm not wrong clearing before adding new states will avoid repetitions
 	
 	if (Current->IsEAnger())
 	{

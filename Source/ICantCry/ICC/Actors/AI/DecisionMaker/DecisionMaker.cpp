@@ -24,3 +24,8 @@ EDecision FDecisionMaker::Thought()
 	return EDecision::None;
 }
 
+void FDecisionMaker::Clear()
+{
+	DecisionMap.Empty();
+}
+
