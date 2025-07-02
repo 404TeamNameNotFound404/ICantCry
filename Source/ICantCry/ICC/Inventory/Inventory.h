@@ -8,8 +8,14 @@
 #include "../Actors/Bullet/GoldEmptyCasing.h"
 #include "../Actors/Bullet/Essence.h"
 #include "../Source/ICantCry/ICC/Debug/DebugHelper.h"
+#include "ICantCry/ICC/Actors/Pickups/GoldEmptyCasingPickup.h"
+#include "Kismet/GameplayStatics.h"
+#include "ICantCry/ICC/Actors/Bullet/BulletData.h"
+
 #include "Inventory.generated.h"
 
+
+class UCraftingHUD;
 
 USTRUCT(BlueprintType)
 struct ICANTCRY_API FInventory
@@ -19,9 +25,10 @@ struct ICANTCRY_API FInventory
 
 
 public:
-
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    /**
+     * Total items stored in inventory
+     */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FInventoryItem> Items;
 
 
@@ -46,13 +53,39 @@ public:
     // Lista delle essenze raccolte
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<FEssence> Essences;
+
+    UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
+    TArray<FGoldEmptyCasing> GoldCasings;
+
+    UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
+    TArray<FEmptyCasing> EmptyCasings;
+
+    UPROPERTY()
+    TMap<FString, FCasing> CasingsStored;
+
+    UPROPERTY()
+    TMap<EEssenceType, int32> EssencesInInventory;
+
+    UPROPERTY()
+    TMap<FString, FEssence> EssencesStored;
+
+    UPROPERTY()
+    TMap<ECasingType, FCasing> CasingsInInventory;
+
+    UPROPERTY()
+    TArray<FBullet> Bullets;
+
+    UPROPERTY()
+    TMap<TEnumAsByte<EBulletType>, FBullet> BulletsStored;
+    
     /**
      * Total Recipes owned 
      */
     UPROPERTY()
     TArray<FRecipe> Recipes;
 
-    
+    UPROPERTY()
+    TMap<int32, FRecipe> RecipeLists;
 
     bool HasBlueprint(ERecipeType RecipeType) const
     {
@@ -94,49 +127,26 @@ public:
 
     }
 
-    void AddCasing(ECasingType CasingType, int32 Quantity)
+    void AddEssenceInMap(const EEssenceType& EssenceType, const int32& Quantity)
     {
-        switch (CasingType)
+        if (EssencesInInventory.Contains(EssenceType))
         {
-        case ECasingType::Base:
-            EmptyCasingCount += Quantity;
-            break;
-        case ECasingType::Gold:
-            GoldCasingCount += Quantity;
-            break;
+            EssencesInInventory[EssenceType] += Quantity;
         }
+        else
+        {
+            EssencesInInventory.Add(EssenceType, Quantity);
+        }
+    }
+
+    int32 GetEssenceQuantityInMap(const EEssenceType& EssenceType) const
+    {
+        return EssencesInInventory.Contains(EssenceType) ? EssencesInInventory[EssenceType] : 0;
     }
 
     void AddEssence(EEssenceType EssenceType, int32 Quantity)
     {
-        DebugHelper::LogWarning("inventory -> AddEssence chiamato");
 
-        FEssence FoundEssence;
-
-        for (FEssence &Essence : Essences)
-        {
-            if (Essence.EssenceType == EssenceType)
-            {
-                DebugHelper::LogWarning("aggiunto una quantità " + FString::FromInt(Essence.Quantity));
-                Essence.Quantity += Quantity;
-                FoundEssence = Essence; // Store reference to the modified essence
-                break;                  // Exit loop once found
-            }
-        }
-
-        // If essence was found, add a modified copy of it
-
-        Essences.Add(FoundEssence);
-        DebugHelper::LogError("Essence size " + FString::FromInt(Essences.Num()));
-
-        if(!FoundEssence.IsValid())
-        {
-            FEssence NewEssence;
-            NewEssence.EssenceType = EssenceType;
-            NewEssence.Quantity = Quantity;
-            Essences.Add(NewEssence);
-        }
-        
     }
 
     void RemoveEssence(EEssenceType EssenceType, int32 Quantity)
@@ -247,6 +257,66 @@ public:
         return 0;
     }
 
+    void StarterPack()
+    {
+        UTexture2D* IndifferenceIcon = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass(), nullptr, TEXT("/Game/StarterContent/Textures/T_Ceramic_Tile_M.T_Ceramic_Tile_M")));
+        checkf(IndifferenceIcon, TEXT("Invalid"))
+        FBullet Indifference;
+        UBulletData* Data = NewObject<UBulletData>();
+        Data->BulletName = "Indifference";
+        Data->Icon = IndifferenceIcon;
+        Data->Type = EBulletType::Indifference;
+        Data->Power = 5.0f;
+        Data->WeaknessModifier = 0.8f;
+        Data->DisplayColor = FColor::White;
+        Data->Description = "Indifference starter pack";
+
+        Indifference.SetBulletData(Data);
+        Indifference.SetQuantity(6);
+
+        UTexture2D* SadnessIcon = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass(), nullptr, TEXT("/Game/StarterContent/Textures/T_Fire_Tiled_D")));
+        FBullet Sadness;
+        UBulletData* SadnessData = NewObject<UBulletData>();
+        SadnessData->BulletName = "Sadness";
+        SadnessData->Icon = SadnessIcon;
+        SadnessData->Type = EBulletType::Sadness;
+        SadnessData->Power = 12.0f;
+        SadnessData->DisplayColor = FColor::Red;
+        SadnessData->Description = "Sadness starter pack test";
+
+        Sadness.SetBulletData(SadnessData);
+        Sadness.SetQuantity(3);
+
+        
+        BulletsStored.Add(Data->Type, Indifference);
+        BulletsStored.Add(SadnessData->Type, Sadness);
+    }
+
+    void AddCraftedBullet(FBullet &Bullet)
+    {
+        Bullets.Add(Bullet);
+        
+        checkf(Bullet.GetBulletData(), TEXT("Bullet data is null during add"))
+
+        EBulletType Key = Bullet.GetBulletData()->Type;
+        
+        if (BulletsStored.Contains(Key))
+        {
+            int32 ExistingQuantity = BulletsStored[Key].GetQuantity();
+            BulletsStored[Key].SetQuantity(ExistingQuantity + 1);
+            DebugHelper::LogWarning("Already registered updating it's quantity " + FString::FromInt(BulletsStored[Key].GetQuantity()));
+        }
+        else
+        {
+            FBullet NewBullet;
+            NewBullet.SetBulletData(Bullet.GetBulletData());
+            NewBullet.SetQuantity(1);
+
+            BulletsStored.Add(Key, NewBullet);
+            DebugHelper::LogSuccess("New bullet crafted and added: " + Bullet.GetBulletData()->BulletName);
+        }
+    }
+
 	int32 GetEssenceQuantity(EEssenceType EssenceType) const
     {
         for (const FEssence& Essence : Essences)
@@ -278,4 +348,23 @@ public:
     {
         return Items;
     }
+
+
+    void SetSelectedRecipe(const FRecipe& SelectedRecipe)
+    {
+        DebugHelper::LogMessage(4, FColor::Purple, "Selected Recipe Quantity " + FString::FromInt(SelectedRecipe.Requirements->EssenceQuantity) + "\nCasing Quantity " + FString::FromInt(SelectedRecipe.Requirements->CasingQuantity));
+        CurrentRecipe = SelectedRecipe;
+        CurrentRecipe.ResultBullet.SetBulletData(nullptr);
+        CurrentRecipe.ResultBullet.SetBulletData(SelectedRecipe.ResultBullet.GetBulletData());
+    }
+
+    FRecipe& GetSelectedRecipe() 
+    {
+        return CurrentRecipe;
+    }
+
+private:
+    
+    UPROPERTY()
+    FRecipe CurrentRecipe;
 };

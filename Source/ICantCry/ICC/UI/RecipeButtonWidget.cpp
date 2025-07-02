@@ -4,6 +4,7 @@
 #include "../UI/CraftingHUD.h"
 
 
+
 void URecipeButtonWidget::NativeConstruct()
 {
     Super::NativeConstruct();
@@ -12,6 +13,8 @@ void URecipeButtonWidget::NativeConstruct()
     {
         SelectButton->OnClicked.AddDynamic(this, &URecipeButtonWidget::OnButtonClicked);
     }
+
+    
 }
 
 void URecipeButtonWidget::Setup( const ERecipeType& InRecipe, UCraftingHUD* InOwnerHUD)
@@ -33,14 +36,21 @@ void URecipeButtonWidget::Setup(const FRecipe& Recipe, UCraftingHUD* InOwnerHUD)
     checkf(RecipeNameText, TEXT("RecipeName null at URecipeButtonWidget::Setup"))
     RecipeNameText->SetText(FText::FromString(Recipe.GetName(Recipe.RequiredBlueprintType)));
     DebugHelper::LogError("Setup Recipe called");
+
+    Index = Recipe.Index;
+    Name = Recipe.GetName(Recipe.RequiredBlueprintType);
+
+    DebugHelper::LogMessage(5, FColor::FromHex("504B38"),  "Name and Index in widget " + Recipe.GetName(Recipe.RequiredBlueprintType) +  FString::FromInt(Index));
+
+   
 }
 
 
 void URecipeButtonWidget::OnButtonClicked()
 {
-    if (OwnerHUD)
-    {
-        const FRecipe R = LinkedRecipe;
-        OwnerHUD->OnRecipeSelected(R);
-    }
+    Instance = Cast<UICantCryGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+    checkf(Instance, TEXT("Instance invalid"))
+    checkf(OwnerHUD, TEXT("Owner hud invalid"))
+    const FRecipe R = Instance->GetInventory().RecipeLists[Index];
+    OwnerHUD->OnRecipeSelected(R);
 }

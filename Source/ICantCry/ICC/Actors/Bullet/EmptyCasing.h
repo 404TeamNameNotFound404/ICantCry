@@ -3,23 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Casing.h"
 #include "EmptyCasing.generated.h"
 
 
 /**
  * 
  */
-USTRUCT(BlueprintType)
-struct ICANTCRY_API FEmptyCasing
+USTRUCT(BlueprintType, Blueprintable)
+struct ICANTCRY_API FEmptyCasing : public FCasing
 {
 	
 	GENERATED_BODY()
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString Name;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UTexture2D* Icon;
 
     bool operator==(const FEmptyCasing& Other) const
     {

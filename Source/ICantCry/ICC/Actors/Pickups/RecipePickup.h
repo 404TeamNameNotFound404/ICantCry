@@ -5,8 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "../Source/ICantCry/ICC/Inventory/Recipe.h"
-#include "../Source/ICantCry/ICC/Managers/InventoryManager.h"
-#include "ICantCry/ICC/Inventory/Inventory.h"
 #include "RecipePickup.generated.h"
 
 
@@ -40,9 +38,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pickup")
     ERecipeType RecipeType;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Pickup")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Pickup")
 	FRecipe Self;
 
+	static FRecipe CurrentRecipe;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pickup")
 	int32 Quantity;
 
@@ -53,6 +53,6 @@ public:
     USphereComponent* Collision;
 
 	UFUNCTION()
-    void OnPickedUp(class AActor* OtherActor);
-
+    void OnPickedUp(AActor* OtherActor);
+	
 };

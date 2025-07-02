@@ -1,0 +1,42 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "BulletSelector.h"
+#include "Blueprint/UserWidget.h"
+#include "Components/HorizontalBox.h"
+#include "BulletDisplayer.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class ICANTCRY_API UBulletDisplayer : public UUserWidget
+{
+	GENERATED_BODY()
+
+protected:
+	virtual void NativeConstruct() override;
+
+	UPROPERTY(meta = (BindWidget))
+	UHorizontalBox* Main;
+
+	void Setup();
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
+	TSubclassOf<UBulletSelector> BulletButtonItemClass;
+
+	UPROPERTY()
+	TArray<UBulletSelector*> Bullets;
+
+public:
+	
+	void Refresh();
+
+	TArray<UBulletSelector*> GetBullets() const;
+
+	void RefreshBullets();
+
+	void RemoveBullet();
+};

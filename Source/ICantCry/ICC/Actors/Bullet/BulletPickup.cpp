@@ -45,8 +45,9 @@ void ABulletPickup::OnOverlapBegin(
     {
         if (UInventoryManager* InvManager = Player->GetInventoryManager())
         {
+            DebugHelper::LogSuccess("Bullet overlap begin");
             InvManager->AddItem(EItemType::Bullet, BulletData, TArray<FEssence>(), FRecipe(), Quantity);
-            Destroy();
+            //Destroy();
         }
     }
 }

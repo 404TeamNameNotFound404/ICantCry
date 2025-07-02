@@ -10,7 +10,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable)
 class ICANTCRY_API URevolverSlot : public UUserWidget
 {
 	GENERATED_BODY()

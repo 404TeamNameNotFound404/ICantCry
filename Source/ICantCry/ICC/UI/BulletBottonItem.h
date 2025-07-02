@@ -28,9 +28,15 @@ public:
     void Setup(const FBullet& NewBullet, int32 InQuantity);
     void SetSelected(bool bIsSelected);
     void SetOwner(UInventoryHUD* Owner, int32 Index);
+
+    bool IsHoverSelected() const;
+    void SetIsSelected(const bool& Value);
    
 
 protected:
+
+    virtual void NativeConstruct() override;
+    
     UPROPERTY(meta = (BindWidget)) UButton* SelectButton;
     UPROPERTY(meta = (BindWidget)) UBorder* SelectionBorder; // dave avere Abbia IsVariable attivo
 
@@ -51,8 +57,14 @@ private:
     UInventoryHUD* OwnerHUD;
 
     int32 MyIndex;
-    FBullet MyBullet;;	
 
+    UPROPERTY()
+    bool bIsHovered = false;
 
-	
+    UPROPERTY()
+    FBullet MyBullet;;
+    
+    UFUNCTION() void DisplayBulletInfo();
+    UFUNCTION() void HideBulletInfo();
+    
 };

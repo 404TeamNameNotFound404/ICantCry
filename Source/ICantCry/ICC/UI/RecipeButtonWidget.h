@@ -7,6 +7,7 @@
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
 #include "../Inventory/Recipe.h"
+#include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "RecipeButtonWidget.generated.h"
 
 
@@ -25,6 +26,7 @@ public:
     void Setup( const ERecipeType& InRecipe, UCraftingHUD* InOwnerHUD);
     void Setup(const FRecipe& Recipe, UCraftingHUD* InOwnerHUD);
 
+
 protected:
 
     virtual void NativeConstruct() override;
@@ -42,5 +44,14 @@ private:
     
     UPROPERTY()
     UCraftingHUD* OwnerHUD;
-	
+
+    UPROPERTY()
+    int32 Index;
+
+    UPROPERTY()
+    FString Name;
+
+    UPROPERTY()
+    UICantCryGameInstance* Instance;
+    
 };

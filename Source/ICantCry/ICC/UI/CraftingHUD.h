@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CasingWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/VerticalBox.h"
 #include "Components/Button.h"
@@ -55,7 +56,13 @@ public:
 	void OnRecipeSelected( const FRecipe& NewRecipe); // Seleziona una blueprint, aggiorna i dettagli
 	void SetupCraftingHUD(UCraftingTable* InCraftingTable, UInventoryManager* InInventoryManager);
 
+	void ClearInfo(const FRecipe& NewRecipe);
+	void DisplayInfo(const FRecipe& NewRecipe);
+	
+
 	FInventory GetInventory() const;
+	
+	static FRecipe SelectedRecipe; 
 	
 protected:
 
@@ -64,6 +71,7 @@ protected:
 protected:
 
 	// SX
+	//UPROPERTY(meta = (BindWidget)) UVerticalBox* RecipeListContainer;
 	UPROPERTY(meta = (BindWidget)) UScrollBox* RecipeListScrollBar;
 
 	// CENTER
@@ -74,9 +82,15 @@ protected:
     UPROPERTY(meta = (BindWidget)) UButton* CraftButton;
 
 	// DX
+	//UPROPERTY(meta = (BindWidget)) UVerticalBox* EssenceList;
     UPROPERTY(meta = (BindWidget)) UTextBlock* EmptyCasingCountText;
     UPROPERTY(meta = (BindWidget)) UTextBlock* GoldCasingCountText;
+	UPROPERTY(meta = (BindWidget)) UImage* CasingImage;
+	UPROPERTY(meta = (BindWidget)) UImage* GoldCasingImage;
+	
 	UPROPERTY(meta = (BindWidget)) UScrollBox* EssenceListScrollBar;
+	
+	UPROPERTY(meta = (BindWidget)) USizeBox* EssenceContainer;
 
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
@@ -84,8 +98,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	UInventoryManager* InventoryManager;
-    
-    FRecipe SelectedRecipe; 
+	
+   
 
 	// Mappa icone associate ai tipi di essenza
 	// UPROPERTY(EditDefaultsOnly, Category = "UI")
@@ -96,6 +110,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
     TSubclassOf<UEssenceWidget> EssenceWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UCasingWidget> CasingWidgetClass;
 
 	UPROPERTY()
 	URecipeButtonWidget* RecipeButtonWidget = nullptr;
@@ -114,5 +131,11 @@ protected:
 	UFUNCTION()
     void OnCraftClicked();
 
+	UPROPERTY()
+	int32 TestIndex;
+
+private:
+
+	void UpdateCasingTexts();
     
 };

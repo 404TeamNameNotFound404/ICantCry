@@ -22,6 +22,7 @@
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameUserWidget.h"
 #include "ICantCry/ICC/UI/BattleHUD.h"
+#include "ICantCry/ICC/UI/InGameMenu.h"
 #include "ICC_Player.generated.h"
 
 UCLASS()
@@ -78,11 +79,10 @@ public:
 	void SetPlayerInventory(const FInventory& Inventory);
 	UInventoryManager* GetInventoryManager() const;
 
-	/**
-	 * In game menu is open
-	 * @return true if In Game menu is active
-	 */
-	bool IsGameMenuOpen() const;
+	UInGameMenu* GetInGameMenu() const;
+
+	UInventoryHUD* GetInventoryHUD() const;
+	
 
 	/**
 	 * Read below!!
@@ -90,6 +90,9 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, Blueprintreadwrite, Category = "Debug", meta = (AllowPrivateAccess = "true"))
 	UStaticMeshComponent* DebugMesh;
+
+	void SetIsPickedUp(const bool& IsPicked);
+	bool IsPickedUp() const;
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Movement")
@@ -147,6 +150,12 @@ private:
 	TSubclassOf<UInventoryHUD> InventoryHUDClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UInGameMenu> InGameMenuClass;
+	
+	UPROPERTY()
+	UInGameMenu* InGameMenu;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	UCraftingHUD* CraftingHUD;  
 
 	UPROPERTY()
@@ -161,11 +170,8 @@ private:
 	UPROPERTY()
 	int32 CraftingCounter;
 
-	/**
-	 * Check if in game menu is open
-	 */
 	UPROPERTY()
-	bool bIsInGameMenuOpen = false;
+	bool bReadyToPickUp = false;
 
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Interact(const FInputActionValue& InputActionValue);

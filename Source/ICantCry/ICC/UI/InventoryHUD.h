@@ -11,8 +11,9 @@
 #include "Components/TextBlock.h"
 #include "Components/Border.h"
 #include "BulletBottonItem.h"
-
-#include "../Source/ICantCry/ICC/Input/ICC_PlayerController.h"
+#include "CasingWidget.h"
+#include "Components/CanvasPanel.h"
+#include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "InventoryHUD.generated.h"
 
 class AICC_Player;
@@ -35,17 +36,21 @@ public:
 
     void SelectBullet(int32 Index);
 
+	void Refresh();
+	
+	UPROPERTY(meta = (BindWidget)) UImage* SelectedBulletImage;  // icon proiettile (pannello di dx)
+	UPROPERTY(meta = (BindWidget)) UTextBlock* SelectedBulletName;
+    UPROPERTY(meta = (BindWidget)) UTextBlock* SelectedBulletPower;
+    UPROPERTY(meta = (BindWidget)) UTextBlock* SelectedBulletEffectiveness;
+    UPROPERTY(meta = (BindWidget)) UTextBlock* SelectedBulletWeakness;
+	UPROPERTY(meta = (BindWidget)) UTextBlock* CraftInfo;
+	
 protected:
 
     //left pannel
     UPROPERTY(meta = (BindWidget)) UScrollBox* BulletListContainer; // Lista proiettili (sinistra)
     
 	// Right pannel
-	UPROPERTY(meta = (BindWidget)) UImage* SelectedBulletImage;  // icon proiettile (pannello di dx)
-	UPROPERTY(meta = (BindWidget)) UTextBlock* SelectedBulletName;
-    UPROPERTY(meta = (BindWidget)) UTextBlock* SelectedBulletPower;
-    // UPROPERTY(meta = (BindWidget)) UTextBlock* SelectedBulletEffectiveness;
-    // UPROPERTY(meta = (BindWidget)) UTextBlock* SelectedBulletWeakness;
 
 	// Template per i bottoni dei proiettili
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
@@ -56,11 +61,15 @@ protected:
     UPROPERTY(EditDefaultsOnly, Category = "UI")
     FLinearColor UnselectedColor;
 
+	void DisplayCasings();
 
 private:
 
  	void ClearBulletList();
     void PopulateBulletList(const TArray<FInventoryItem>& Items);
+
+	void DisplayBullets();
+	
     void UpdateDetailPanel(const FBullet& Bullet);
     
 	void MoveSelectionUp();
@@ -69,7 +78,18 @@ private:
     TArray<FBullet> DisplayedBullets;
     int32 CurrentSelectedIndex;
     TArray<UBulletBottonItem*> BulletButtons;
-    
-    
+
+	UPROPERTY()
+	UICantCryGameInstance* GameInstance;
+
+	UPROPERTY()
+	FInventory ImmutableInventory;
+
+	UPROPERTY()
+	TMap<FString, UCasingWidget*> CasingWidgetsStored;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI-Class", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UCasingWidget> CasingWidgetClass;
+	
 	
 };

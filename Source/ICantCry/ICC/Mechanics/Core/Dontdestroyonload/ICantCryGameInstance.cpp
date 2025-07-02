@@ -57,6 +57,16 @@ void UICantCryGameInstance::SavePlayerTransform(const FVector& LastPosition, con
 	DebugHelper::LogSuccess("New Saved Orientation " + PersistentData->PlayerOrientation.ToString());
 }
 
+AICC_Player* UICantCryGameInstance::GetCurrentPlayer() const
+{
+	return PersistentPlayer;
+}
+
+void UICantCryGameInstance::SetPersistentPlayer(AICC_Player* Player)
+{
+	PersistentPlayer = Player;
+}
+
 void UICantCryGameInstance::LoadLastPlayerTransform()
 {
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
@@ -88,6 +98,17 @@ void UICantCryGameInstance::SetDamageData(const FDamage& Damage)
 	StoredDamage = Damage;
 	// DebugHelper::LogSuccess(FString::FromInt(Damage.BulletData->Power));
 	// DebugHelper::LogSuccess(FString::FromInt(Damage.BulletData->Power));
+}
+
+void UICantCryGameInstance::SetInventory(const FInventory& Inv)
+{
+	DebugHelper::LogMessage(3, FColor::Cyan , "Inventory set to game instance");
+	this->Inventory = Inv;
+}
+
+FInventory& UICantCryGameInstance::GetInventory() 
+{
+	return Inventory;
 }
 
 UWorld* UICantCryGameInstance::TryGetWorld() const

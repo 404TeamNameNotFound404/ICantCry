@@ -6,9 +6,16 @@
 #include "../UI/CraftingHUD.h"
 #include "../Source/ICantCry/ICC/Debug/DebugHelper.h"
 
+#include "Engine/GameInstance.h"
+
 void UInventoryManager::Initialize(UInventoryHUD* InHUD)
 {
     LinkedHUD = InHUD;
+
+    Instance = Cast<UICantCryGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+    checkf(Instance, TEXT("Instance is null"))
+
+    Instance->SetInventory(Inventory);
 
     if (LinkedHUD)
     {
@@ -21,7 +28,12 @@ void UInventoryManager::LinkCraftingHUD(UCraftingHUD *InCraftingHUD)
     CraftingLinkedHUD = InCraftingHUD;
 }
 
-FInventory UInventoryManager::GetInventory()
+FInventory& UInventoryManager::GetInventory()
+{
+    return Inventory;
+}
+
+FInventory UInventoryManager::GetImmutableInventory() const
 {
     return Inventory;
 }
@@ -29,7 +41,6 @@ FInventory UInventoryManager::GetInventory()
 void UInventoryManager::AddItem(EItemType ItemType, const FBullet& Bullet, const TArray<FEssence>& Essences, const FRecipe& Recipe, int32 Quantity)
 {
     Inventory.AddToInventory(ItemType, Bullet, Essences, Recipe, Quantity);
-    DebugHelper::LogWarning("AddItem chiamato correttamente!");
     RefreshHUD();
 }
 
@@ -41,8 +52,9 @@ void UInventoryManager::RemoveItem(EItemType ItemType, const FBullet& Bullet, co
 
 void UInventoryManager::AddCasing(ECasingType CasingType, int32 Quantity)
 {
-    Inventory.AddCasing(CasingType, Quantity);
-    RefreshHUD();
+    //Inventory.AddCasing();
+   // RefreshHUD();
+    
 }
 
 void UInventoryManager::RemoveCasing(ECasingType CasingType, int32 Quantity)
@@ -53,9 +65,104 @@ void UInventoryManager::RemoveCasing(ECasingType CasingType, int32 Quantity)
 
 void UInventoryManager::AddEssence(EEssenceType EssenceType, int32 Quantity)
 {
-    DebugHelper::LogWarning("UInventoryManager->AddEssence chiamato");
-    Inventory.AddEssence(EssenceType, Quantity);
-    RefreshHUD();
+    
+}
+
+void UInventoryManager::AddEssence2(const FEssence& Essence)
+{
+    Instance->GetInventory().AddEssenceInMap(Essence.EssenceType, Essence.Quantity);
+    Instance->GetInventory().Essences.Add(Essence);
+
+    StoreEssenceInMap(Essence, Essence.Quantity);
+    
+    switch (Essence.EssenceType)
+    {
+    default:
+        break;
+    case EEssenceType::Indifference:
+        IndifferenceCounter++; // real quantity added
+        break;
+    case EEssenceType::Anger:
+        AngerCounter++;
+        break;
+    case EEssenceType::Fear:
+        FearCounter++;
+        break;
+    case EEssenceType::Disgust:
+        DisgustCounter++;
+        break;
+    case EEssenceType::Sadness:
+        SadnessCounter++;
+        break;
+    case EEssenceType::Joy:
+        JoyCounter++;
+        break;
+    case EEssenceType::Anxiety:
+        AnxietyCounter++;
+        break;
+    case EEssenceType::Calm:
+        CalmCounter++;
+        break;
+    case EEssenceType::Jealousy:
+        JealousyCounter++;
+        break;
+    case EEssenceType::Shame:
+        ShameCounter++;
+        //DebugHelper::LogSuccess("Added indifference -> size " + FString::FromInt(ShameCounter));
+        break;
+    }
+    
+}
+
+void UInventoryManager::StoreEssenceInMap(const FEssence& Essence, const int32& NewQuantity)
+{
+    const FString Name = Essence.GetName(Essence.EssenceType);
+
+    if (Instance->GetInventory().EssencesStored.Contains(Name))
+    {
+        const int32 ExistingQuantity = Instance->GetInventory().EssencesStored[Name].Quantity;
+        Instance->GetInventory().EssencesStored[Name].Quantity = ExistingQuantity + NewQuantity;
+    }
+
+    else
+    {
+        Instance->GetInventory().EssencesStored.Add(Name, Essence);
+    }
+}
+
+int32 UInventoryManager::GetEssenceQuantityForType(const EEssenceType& EssenceType)
+{
+    switch (EssenceType)
+    {
+    case EEssenceType::Indifference:
+        return IndifferenceCounter;
+    case EEssenceType::Anger:
+        return AngerCounter;
+    case EEssenceType::Fear:
+        return FearCounter;
+    case EEssenceType::Disgust:
+        return DisgustCounter;
+    case EEssenceType::Sadness:
+        return SadnessCounter;
+    case EEssenceType::Joy:
+        return JoyCounter;
+    case EEssenceType::Anxiety:
+        return AnxietyCounter;
+    case EEssenceType::Calm:
+        return CalmCounter;
+    case EEssenceType::Jealousy:
+        return JealousyCounter;
+    case EEssenceType::Shame:
+       // DebugHelper::LogSuccess("GetEssenceQuantityForShame");
+        return ShameCounter;
+    }
+
+    return 0;
+}
+
+void UInventoryManager::AddEssence(const FEssence& Essence, const int32& Quantity)
+{
+    Instance->GetInventory().Essences.Add(Essence);
 }
 
 void UInventoryManager::RemoveEssence(EEssenceType EssenceType, int32 Quantity)
@@ -68,16 +175,16 @@ void UInventoryManager::RemoveEssence(EEssenceType EssenceType, int32 Quantity)
 void UInventoryManager::AddRecipe(ERecipeType RecipeType, int32 Quantity)
 {
     Inventory.OwnedBlueprints.Add(RecipeType);
-    DebugHelper::LogError("Size on UInventoryManager::AddRecipe = " + FString::FromInt(Inventory.OwnedBlueprints.Num()));
   //  RefreshHUD();
 }
 
+
+
 void UInventoryManager::AddRecipe(const FRecipe& RecipeToAdd, int32 Quantity)
 {
-    Inventory.Recipes.Add(RecipeToAdd);
-    Inventory.OwnedBlueprints.Add(RecipeToAdd.RequiredBlueprintType);
-    DebugHelper::LogError("On Add -> Recipe size: " + FString::FromInt(Inventory.Recipes.Num()));
-    DebugHelper::LogError("On Add -> Type size:  " + FString::FromInt(Inventory.OwnedBlueprints.Num()));
+    Instance->GetInventory().Recipes.Add(RecipeToAdd);
+    Instance->GetInventory().RecipeLists.Add(RecipeToAdd.Index, RecipeToAdd);
+    Instance->GetInventory().OwnedBlueprints.Add(RecipeToAdd.RequiredBlueprintType);
 }
 
 void UInventoryManager::RemoveRecipe(ERecipeType RecipeType, int32 Quantity)
@@ -104,25 +211,18 @@ void UInventoryManager::RemoveBullet(UBulletData* BulletData, int32 Quantity)
 
 void UInventoryManager::RefreshHUD()
 {
-    DebugHelper::LogWarning("RefreshHUD Chiamato");
-
-
+    
     check(LinkedHUD)
     check(CraftingLinkedHUD)
-
-    UE_LOG(LogTemp, Warning, TEXT("LinkedHUD: %s"), LinkedHUD ? TEXT("VALID") : TEXT("NULL"));
-    UE_LOG(LogTemp, Warning, TEXT("CraftingLinkedHUD: %s"), CraftingLinkedHUD ? TEXT("VALID") : TEXT("NULL"));
     
 
     if (LinkedHUD ) //&& LinkedHUD->IsInViewport()
     {
-        DebugHelper::LogWarning("LinkedHUD Chiamato");   
         LinkedHUD->UpdateInventoryDisplay(Inventory);   
     }
 
     if (CraftingLinkedHUD ) //&& CraftingLinkedHUD->IsInViewport()
     {
-        DebugHelper::LogWarning("CraftingLinkedHUD Chiamato");
         CraftingLinkedHUD->RefreshUI(); 
     }
 }

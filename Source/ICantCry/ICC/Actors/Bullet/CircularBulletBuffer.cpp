@@ -3,6 +3,8 @@
 
 #include "CircularBulletBuffer.h"
 
+#include "ICantCry/ICC/Debug/DebugHelper.h"
+
 UCircularBulletBuffer::UCircularBulletBuffer()
 {
    
@@ -22,17 +24,17 @@ void UCircularBulletBuffer::AddBullet(UBulletData *Bullet)
 {
     if(IsFull())
     {
-        // Overwrites the oldest bullet if the buffer is full
-        Buffer[Head] = Bullet;
-        Head = (Head + 1) % Capacity;
-        Tail = (Tail + 1) % Capacity;
+        // // Overwrites the oldest bullet if the buffer is full
+        // Buffer[Head] = Bullet;
+        // Head = (Head + 1) % Capacity;
+        // Tail = (Tail + 1) % Capacity;
+
+        return;
     }
-    else
-    {
-        Buffer[Head] = Bullet;
-        Head = (Head + 1) % Capacity;
-        bIsFull = (Head == Tail);
-    }
+    
+    Buffer[Head] = Bullet;
+    Head = (Head + 1) % Capacity;
+    bIsFull = (Head == Tail);
 }
 
 UBulletData *UCircularBulletBuffer::RemoveBullet()

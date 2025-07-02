@@ -1,12 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "CraftingHUD.h"
 #include "RecipeButtonWidget.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "../Source/ICantCry/ICC/Debug/DebugHelper.h"
+#include "ICantCry/ICC/Actors/Pickups/RecipePickup.h"
+#include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 
-
+FRecipe UCraftingHUD::SelectedRecipe;
 
 void UCraftingHUD::NativeConstruct()
 {
@@ -21,6 +22,27 @@ void UCraftingHUD::NativeConstruct()
     Player = Cast<AICC_Player>(Controller->GetPawn());
     
     // RecipeButtonWidget = CreateWidget<URecipeButtonWidget>(GetWorld(), RecipeButtonClass);
+
+    UCanvasPanelSlot* ImageSlot = Cast<UCanvasPanelSlot>(BulletImage->Slot);
+    ImageSlot->SetZOrder(0);
+
+    BulletImage->SetColorAndOpacity(FLinearColor(0.f, 0.f, 0.1f, 0.5f));
+    
+    UCanvasPanelSlot* DecriptionText = Cast<UCanvasPanelSlot>(RecipeDescription->Slot);
+    DecriptionText->SetZOrder(1);
+
+    RecipeDescription->SetColorAndOpacity(FLinearColor(1.f, 1.f, 1.f, 1.f));
+
+
+    BulletNameText->SetVisibility(ESlateVisibility::Hidden);
+    RecipeDescription->SetVisibility(ESlateVisibility::Hidden);
+    BulletEffectText->SetVisibility(ESlateVisibility::Hidden);
+
+    
+    CraftingTable = NewObject<UCraftingTable>(this);
+    CraftingTable->Initialize();
+
+    CraftButton->SetIsEnabled(false);
     
     RefreshUI();
     //RefreshRecipesList();
@@ -33,28 +55,27 @@ void UCraftingHUD::SetCraftingTable(UCraftingTable *InTable)
 
 void UCraftingHUD::RefreshUI()
 {
-    DebugHelper::LogWarning("UCraftingHUD::RefreshUI chiamato");
 
     if(!InventoryManager)
     {
-        DebugHelper::LogError("InventoryManager INIT");
         InventoryManager = NewObject<UInventoryManager>(this);
     }
 
-    if(!CraftingTable)
-    {
-        DebugHelper::LogError("CraftingTable INIT");
-        CraftingTable = NewObject<UCraftingTable>(this);
-        CraftingTable->Initialize();
-    }
+    CraftingTable->Initialize();
     
     checkf(CraftingTable, TEXT("Crafting table is null at CraftingHUD"))
     checkf(InventoryManager, TEXT("InventoryManager is null at CraftingHUD"))
 
 
+   // checkf(RecipeListContainer, TEXT("RecipeContainer is null at CraftingHud"))
+    //checkf(EssenceList, TEXT("EssenceList is null at CraftingHud"))
+    
+   // RecipeListContainer->ClearChildren();
+   // EssenceList->ClearChildren();
     RecipeListScrollBar->ClearChildren();
     EssenceListScrollBar->ClearChildren();
-    Inventory = Player->GetInventoryManager()->GetInventory();
+    UICantCryGameInstance* GameInstance = Cast<UICantCryGameInstance>(GetGameInstance());
+    Inventory = GameInstance->GetInventory();
 
     for (const FRecipe& R : Inventory.Recipes)
     {
@@ -63,44 +84,47 @@ void UCraftingHUD::RefreshUI()
         RecipeListScrollBar->AddChild(RecipeButtonWidget);
         RecipeButtonWidget->SetPadding(FMargin(0, 3.5f));
         RecipeButtonWidget->Setup(R, this);
+        
         RecipeListScrollBar->SetScrollBarVisibility(ESlateVisibility::Visible);
         RecipeListScrollBar->SetVisibility(ESlateVisibility::Visible);
         RecipeButtonWidget->SetVisibility(ESlateVisibility::Visible);
-        DebugHelper::LogError("Add recipe for (const ERecipeType& Recipe : InventoryManager->GetInventory().OwnedBlueprints)");
+        TestIndex = R.Index; // TO DELETE
     }
+    
 
-    DebugHelper::LogError("Inventory Essence size: " + FString::FromInt(Inventory.Essences.Num()));
-
-    // --- MOSTRA TUTTE LE ESSENZE POSSEDUTE ---
-    for (const FEssence& Essence : Inventory.Essences)
+    for (const auto& Essence : Inventory.EssencesStored)
     {
         UEssenceWidget* EssenceWidget = CreateWidget<UEssenceWidget>(GetWorld(), EssenceWidgetClass);
         checkf(EssenceWidget, TEXT("Essence widget is null"))
+
         EssenceListScrollBar->AddChild(EssenceWidget);
-        EssenceWidget->SetPadding(FMargin(0, 4.5f));
-        EssenceWidget->Setup(Essence, Essence.Quantity);
-        DebugHelper::LogError("Add essence");
+        const FEssence& E = Essence.Value;
+        EssenceWidget->Setup(E, E.Quantity);
     }
 
-    // -- MOSTRA COUNT BOSSOLI --
-    if (EmptyCasingCountText)
+
+    for (const auto& Pair : Inventory.CasingsStored)
     {
-        EmptyCasingCountText->SetText(FText::AsNumber(Inventory.EmptyCasingCount));
+        const auto& Casing = Pair.Value;
+    
+        UCasingWidget* CasingSlot = CreateWidget<UCasingWidget>(GetWorld(), CasingWidgetClass);
+        CasingSlot->GetCasingImage()->SetBrushFromTexture(Casing.GetIcon());
+        FString Label = Casing.GetName() + " " + FString::FromInt(Casing.GetQuantity()) + "x";
+        CasingSlot->GetCaseName()->SetText(FText::FromString(Label));
+        CasingSlot->SetPadding(FMargin{0, 2.5f});
     }
 
-    if (GoldCasingCountText)
-    {
-        GoldCasingCountText->SetText(FText::AsNumber(Inventory.GoldCasingCount));
-    }
+    
+    UpdateCasingTexts();
 
-    // Se c'è una recipe già selezionata, aggiorna tutto 
     UpdateSelectedRecipeDetails();
-  
 }
 
 void UCraftingHUD::RefreshRecipesList()
 {
-   
+    if (!CraftingTable) return;
+
+    //RecipeListContainer->ClearChildren();
 
     // Mostra SOLO le ricette sbloccate
     // for (const FRecipe& Recipe : CraftingTable->GetAvailableRecipes())
@@ -119,6 +143,13 @@ void UCraftingHUD::RefreshRecipesList()
 
 void UCraftingHUD::UpdateEssenceList()
 {
+   if (!CraftingTable)
+        return;
+
+   // EssenceList->ClearChildren();
+
+    
+    
     for (const FEssence& Essence : Inventory.Essences)
     {
         if (Essence.Quantity <= 0) continue;
@@ -128,6 +159,8 @@ void UCraftingHUD::UpdateEssenceList()
         {
             // La quantità posseduta è la stessa di quella in Inventory
             Widget->Setup(Essence, Essence.Quantity);
+            //EssenceList->AddChild(Widget);
+            EssenceListScrollBar->AddChild(Widget);
         }
     }
 }
@@ -139,12 +172,18 @@ void UCraftingHUD::UpdateSelectedRecipeDetails()
         return;
     }
 
-    UBulletData* BulletData = SelectedRecipe.ResultBullet.GetBulletData();
-    if (!BulletData) return;
+    UICantCryGameInstance* GameInstance = Cast<UICantCryGameInstance>(GetGameInstance());
+    
+    const UBulletData* BulletData = GameInstance->GetInventory().GetSelectedRecipe().ResultBullet.GetBulletData();
+
+    if (!BulletData)
+    {
+        return;
+    }
 
     if (BulletImage && BulletData->Icon)
     {
-        BulletImage->SetBrushFromTexture(BulletData->Icon);
+       BulletImage->SetBrushFromTexture(BulletData->Icon);
     }
 
     if (BulletNameText)
@@ -174,12 +213,16 @@ void UCraftingHUD::UpdateSelectedRecipeDetails()
         BulletEffectText->SetText(FText::FromString(BulletData->Effect));
     }
 
-    UpdateMaterialList();
-    UpdateCraftButton();
+   // UpdateMaterialList();
+    //UpdateCraftButton();
 }
 
 void UCraftingHUD::UpdateMaterialList()
 {
+   if (!CraftingTable) return;
+
+    //EssenceList->ClearChildren();
+    
 
     for (const FEssence& Required : SelectedRecipe.RequiredEssences)
     {
@@ -188,6 +231,7 @@ void UCraftingHUD::UpdateMaterialList()
         {
             int32 OwnedQty = Inventory.GetEssenceQuantity(Required.EssenceType);
             Widget->Setup(Required, OwnedQty);
+            EssenceListScrollBar->AddChild(Widget);
         }
     }
     
@@ -208,25 +252,60 @@ void UCraftingHUD::UpdateCraftButton()
 
 void UCraftingHUD::OnCraftClicked()
 {
+    UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+    
     if (CraftingTable)
     {
-        CraftingTable->CraftBullet(SelectedRecipe.ResultBullet,
-            SelectedRecipe.RequiredBlueprintType,
-            SelectedRecipe.RequiredCasingType
+        CraftingTable->CraftBullet(Instance->GetInventory().GetSelectedRecipe().ResultBullet,
+            Instance->GetInventory().GetSelectedRecipe().RequiredBlueprintType,
+            Instance->GetInventory().GetSelectedRecipe().RequiredCasingType
         );
 
         RefreshUI(); 
     }
 }
 
+void UCraftingHUD::UpdateCasingTexts()
+{
+    for (auto& Casing : Inventory.CasingsStored)
+    {
+        FCasing C = Casing.Value;
+
+       switch (C.GetType())
+       {
+       case ECasingType::Base:
+           EmptyCasingCountText->SetText(FText::FromString(FString::FromInt(C.GetQuantity())));
+           CasingImage->SetBrushFromTexture(C.GetIcon());
+           break;
+       case ECasingType::Gold:
+           GoldCasingCountText->SetText(FText::FromString(FString::FromInt(C.GetQuantity())));
+           GoldCasingImage->SetBrushFromTexture(C.GetIcon());
+           break;
+       }
+    }
+}
+
 void UCraftingHUD::OnRecipeSelected( const FRecipe& NewRecipe)
 {
+    UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+    checkf(Instance, TEXT("Instance is null"))
+    Instance->GetInventory().SetSelectedRecipe(NewRecipe);
     
     SelectedRecipe = NewRecipe;
-    CraftingTable->SetRecipe(SelectedRecipe);
-    CraftingTable->CheckResurces();
-
+    
+    
+    DisplayInfo(SelectedRecipe);
     UpdateSelectedRecipeDetails();
+
+    CraftingTable->ScanResources();
+
+    CraftButton->SetIsEnabled(false);
+    
+    if (CraftingTable->CanCraft())
+    {
+        CraftButton->SetIsEnabled(true);
+    }
+    
 }
 
 void UCraftingHUD::SetupCraftingHUD(UCraftingTable* InCraftingTable, UInventoryManager* InInventoryManager)
@@ -234,6 +313,28 @@ void UCraftingHUD::SetupCraftingHUD(UCraftingTable* InCraftingTable, UInventoryM
     CraftingTable = InCraftingTable;
     InventoryManager = InInventoryManager;
 }
+
+void UCraftingHUD::ClearInfo(const FRecipe& NewRecipe)
+{
+    SelectedRecipe.Description = FText::FromString("");
+    BulletNameText->SetText(FText::FromString(""));
+    RecipeDescription->SetText(SelectedRecipe.Description);
+}
+
+void UCraftingHUD::DisplayInfo(const FRecipe& NewRecipe)
+{
+    const FText BaseDescription = FText::FromString("Type: ");
+    const FText RecipeName = FText::FromString(NewRecipe.GetName(NewRecipe.RequiredBlueprintType));
+    const FText EffectDescription = FText::FromString("Effect: ");
+    BulletNameText->SetText(FText::Format(FText::FromString("{0} {1}"), BaseDescription, RecipeName));
+    RecipeDescription->SetText(NewRecipe.DisplayDescription());
+    BulletEffectText->SetText(EffectDescription);
+
+    BulletNameText->SetVisibility(ESlateVisibility::Visible);
+    RecipeDescription->SetVisibility(ESlateVisibility::Visible);
+    BulletEffectText->SetVisibility(ESlateVisibility::Visible);
+}
+
 
 FInventory UCraftingHUD::GetInventory() const
 {

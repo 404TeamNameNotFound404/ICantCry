@@ -20,7 +20,8 @@ class ICANTCRY_API UEssenceWidget : public UUserWidget
 public:
 
     void Setup(const FEssence& Required, int32 OwnedQuantity);
-
+	
+	
 protected:
     //UPROPERTY(meta = (BindWidget)) UImage* EssenceIcon;
     UPROPERTY(meta = (BindWidget)) UTextBlock* EssenceName;

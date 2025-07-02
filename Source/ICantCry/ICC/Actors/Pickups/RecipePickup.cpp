@@ -7,6 +7,8 @@
 #include "../Source/ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "../Source/ICantCry/ICC/Debug/DebugHelper.h"
 
+FRecipe ARecipePickup::CurrentRecipe;
+
 // Sets default values
 ARecipePickup::ARecipePickup()
 {
@@ -54,8 +56,9 @@ void ARecipePickup::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAc
         //     Player->SetPlayerInventory(Inventory);
         // }
 
+        Player->SetIsPickedUp(true);
+
         OnPickedUp(Player);
-        
         Destroy();
     }
 }
@@ -70,9 +73,13 @@ void ARecipePickup::OnPickedUp(AActor* OtherActor)
         if (UInventoryManager* InvMgr = Player->GetInventoryManager())
         {
             InvMgr->AddRecipe(Self);
+            CurrentRecipe = Self;
         }
+
+        Player->SetIsPickedUp(false);
     }
 }
+
 
 
 // Called every frame

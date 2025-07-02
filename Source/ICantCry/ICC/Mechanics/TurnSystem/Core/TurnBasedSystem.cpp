@@ -37,6 +37,8 @@ void UTurnBasedSystem::Start(UWorld* World)
 	
 	CurrentPlayer->GetBattleHUD()->ShowHUD();
 	Turn.PopulateQueue(World);
+
+	CurrentPlayer->bIsInFight = true;
 	
 	DebugHelper::LogSuccess("Fight started right after");
 	
@@ -221,7 +223,7 @@ void UTurnBasedSystem::RequestFight(const bool& Request)
 
 void UTurnBasedSystem::ExitBattle()
 {
-	
+	CurrentPlayer->GetInGameMenu()->SetDisabled(false);
 	bRequestFight = false;
 }
 

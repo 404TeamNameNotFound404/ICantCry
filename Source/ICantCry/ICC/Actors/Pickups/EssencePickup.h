@@ -25,8 +25,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Essence")
     EEssenceType EssenceType;
@@ -36,6 +34,7 @@ public:
 
 	UPROPERTY()
 	FEssence Self;
+
 
     
     UFUNCTION()

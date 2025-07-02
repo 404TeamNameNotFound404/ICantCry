@@ -8,6 +8,9 @@
 #include "../Inventory/Recipe.h"
 #include "CraftingTable.generated.h"
 
+
+class AICC_Player;
+
 /**
  * 
  */
@@ -28,13 +31,20 @@ public:
 
 	void SetRecipe( const FRecipe& InRecipe); // sets which recipe to evaluate
     
-	void CheckResurces(); // check if u can craft 
+	void CheckResources(); // check if u can craft
+
+ 	/**
+	 * Scan and check the avaiable resources and returns true if all the requirements are met
+	 * to craft 
+	 * @return true if requirements are met 
+	 */
+	bool ScanResources(); 
 
 	void Craft(); // crafting (consumes resources and adds bullet)
 
 	//void SetInventoryReference(FInventory* InventoryRef);
 
-	FInventory GetInventory() const { return Inventory; }
+	FInventory GetInventory() const;
 
 	TArray<ERecipeType> GetAvailableRecipes() const;
 
@@ -80,6 +90,9 @@ private :
 	
     UPROPERTY()
     TArray<FRecipe> MasterRecipes;
+
+	UPROPERTY()
+	AICC_Player* Player;
 
 	
 };

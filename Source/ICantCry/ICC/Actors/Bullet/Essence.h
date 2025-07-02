@@ -74,11 +74,11 @@ public:
             case EEssenceType::Shame:
                 return "Shame";
             default:
-            return "Unknown";
+                return "";
         }
     }
 
     FEssence()
-        : EssenceType(), Quantity(0)
+        : EssenceType(), Quantity()
     {}
 };

@@ -7,11 +7,13 @@
 #include "EnhancedInput/Public/EnhancedInputSubsystems.h"
 #include "EntitySystem/MovieSceneEntityManager.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "ICantCry/ICC/Actors/Pickups/RecipePickup.h"
 #include "ICantCry/ICC/Input/ICC_EnhancedInputCmp.h"
 #include "ICantCry/ICC/Input/ICC_PlayerController.h"
 #include "ICantCry/ICC/Input/Tags/ICC_InputTags.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
+
 #include "Kismet/GameplayStatics.h"
 
 
@@ -54,19 +56,15 @@ void AICC_Player::BeginPlay()
 	GetCapsuleComponent()->SetCapsuleRadius(90.0f);
 	GetCapsuleComponent()->SetCapsuleSize(90.0f, 200.0f);
 	OldSpeed = GetCharacterMovement()->MaxWalkSpeed;
+	InGameMenu = CreateWidget<UInGameMenu>(GetWorld(), InGameMenuClass);
+	InGameMenu->AddToViewport();
+	InGameMenu->SetVisibility(ESlateVisibility::Hidden);
 
-	CraftingHUD = CreateWidget<UCraftingHUD>(GetWorld(), CraftingHUD->GetClass());
-	//Inventory
 	InventoryManager = NewObject<UInventoryManager>(this);
 	InventoryManager->Initialize(InventoryHUD);
 	InventoryManager->LinkCraftingHUD(CraftingHUD);
-
-	CraftingTable = NewObject<UCraftingTable>(this);
-	CraftingHUD->AddToViewport();
-	CraftingHUD->SetVisibility(ESlateVisibility::Hidden);
-	CraftingHUD->SetCraftingTable(CraftingTable);
-	//CraftingTable->SetInventoryReference(&PlayerInventory);
-
+	InGameMenu->InstantiateTable(this);
+	
 	if (!WorldCamera)
 	{
 		for (TActorIterator<AWorldCamera> It(GetWorld()); It; ++It)
@@ -93,6 +91,10 @@ void AICC_Player::BeginPlay()
 	}
 
 	DontDestroyOnLoad->SetPlayerStats(Stats);
+	DontDestroyOnLoad->GetInventory().StarterPack();
+	DontDestroyOnLoad->SetPersistentPlayer(this);
+
+	bIsInFight = false;
 }
 
 // Called every frame
@@ -183,9 +185,25 @@ UInventoryManager *AICC_Player::GetInventoryManager() const
     return InventoryManager;
 }
 
-bool AICC_Player::IsGameMenuOpen() const
+UInGameMenu* AICC_Player::GetInGameMenu() const
 {
-	return bIsInGameMenuOpen;
+	return InGameMenu;
+}
+
+UInventoryHUD* AICC_Player::GetInventoryHUD() const
+{
+	return InventoryHUD;
+}
+
+
+void AICC_Player::SetIsPickedUp(const bool& IsPicked)
+{
+	bReadyToPickUp = IsPicked;
+}
+
+bool AICC_Player::IsPickedUp() const
+{
+	return bReadyToPickUp;
 }
 
 
@@ -261,6 +279,11 @@ void AICC_Player::Input_Interact(const FInputActionValue& InputActionValue)
 	{
 		return;
 	}
+
+	if (IsPickedUp())
+	{
+		// Onpickedup
+	}
 	
 	DebugHelper::LogSuccess("Interacting with something");
 }
@@ -296,12 +319,10 @@ void AICC_Player::Input_Scroll(const FInputActionValue &InputActionValue)
 		Hud->ScrollTargetSelection(Scroll);
 		DebugHelper::LogSuccess("Selecting target ");
 	}
-	else
+
+	if(Scroll && !Hud->IsBulletSelectionOver())
 	{
-		if(Scroll && !Hud->IsBulletSelectionOver())
-		{
-			Hud->ScrollBulletSelection(Scroll);
-		}
+		Hud->ScrollBulletSelection(Scroll);
 	}
 }
 
@@ -312,10 +333,17 @@ void AICC_Player::Input_OpenInventory(const FInputActionValue& InputActionValue)
 
 void AICC_Player::Input_OpenCrafting(const FInputActionValue &InputActionValue)
 {
+
+	if (InGameMenu->IsDisabled())
+	{
+		return;
+	}
+	
 	if (const bool Pressed = InputActionValue.Get<bool>() && CraftingCounter == 0)
 	{
 		DebugHelper::LogSuccess("Opening Crafting");
-		bIsInGameMenuOpen = true;
+		InGameMenu->SetMenuOpen(true);
+		//bIsInGameMenuOpen = true;
 		ToggleCraftingHUD();
 
 		FTimerHandle TimerHandle;
@@ -327,12 +355,13 @@ void AICC_Player::Input_OpenCrafting(const FInputActionValue &InputActionValue)
 
 void AICC_Player::Input_CloseCrafting(const FInputActionValue &InputActionValue)
 {
-	if (const bool Pressed = InputActionValue.Get<bool>() && CraftingCounter == 1 && bIsInGameMenuOpen)
+	if (const bool Pressed = InputActionValue.Get<bool>() && CraftingCounter == 1 && InGameMenu->IsOpen())
 	{
 		DebugHelper::LogSuccess("Closing Crafting");
 		CloseCraftingHUD();
 		CraftingCounter = 0;
-		bIsInGameMenuOpen = false;
+		//bIsInGameMenuOpen = false;
+		InGameMenu->SetMenuOpen(false);
 	}
 }
 
@@ -395,9 +424,9 @@ void AICC_Player::ToggleInventory()
 
 void AICC_Player::ToggleCraftingHUD()
 {
-	bIsInGameMenuOpen = true;
-	CraftingHUD->SetVisibility(ESlateVisibility::Visible);
-	CraftingHUD->RefreshUI();
+	InGameMenu->SetMenuOpen(true);
+	InGameMenu->SetVisibility(ESlateVisibility::Visible);
+	//CraftingHUD->RefreshUI();
 	Cast<AICC_PlayerController>(GetController())->bShowMouseCursor = true;
 }
 	
@@ -464,7 +493,8 @@ void AICC_Player::ToggleCraftingHUD()
 void AICC_Player::CloseCraftingHUD()
 {
 	Cast<AICC_PlayerController>(GetController())->bShowMouseCursor = false;
-	bIsInGameMenuOpen = false;
-	CraftingHUD->SetVisibility(ESlateVisibility::Hidden);
+	InGameMenu->SetMenuOpen(false);
+	InGameMenu->SetVisibility(ESlateVisibility::Hidden);
+	//CraftingHUD->SetVisibility(ESlateVisibility::Hidden);
 	CraftingCounter = 0;
 }

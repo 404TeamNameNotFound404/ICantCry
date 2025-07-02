@@ -14,8 +14,21 @@ enum EBulletStatus
     EnvyBurned,
     Ashamed,
     DebuffShield
+};
 
-
+UENUM(BlueprintType)
+enum EBulletType
+{
+	Indifference,
+	Anger,
+	Fear,
+	Disgust,
+	Sadness,
+	Joy,
+	Anxiety,
+	Calm,
+	Jealousy,
+	Shame
 };
 
 
@@ -45,12 +58,27 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet Properties")
     FString MinigameType;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet Properties")
+	FString Description;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet Properties")
+	TArray<TEnumAsByte<EBulletType>> WeakAgainst;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet Properties")
+	TArray<TEnumAsByte<EBulletType>> StrongAgainst;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet Properties")
+	FColor DisplayColor;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifiers")
     float WeaknessModifier = 0.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifiers")
     TEnumAsByte<EBulletStatus> Status;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifiers")
+	TEnumAsByte<EBulletType> Type;
+	
 	// for UI
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	UTexture2D* Icon;
