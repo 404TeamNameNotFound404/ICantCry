@@ -2,6 +2,7 @@
 #include "AttackMinigame.h"
 
 #include "Components/PanelWidget.h"
+#include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "Kismet/GameplayStatics.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"

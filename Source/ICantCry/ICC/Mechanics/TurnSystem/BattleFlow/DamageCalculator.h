@@ -17,16 +17,16 @@ struct FDamage
 	GENERATED_BODY()
 	
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
-	UBulletData* BulletData;
+	UBulletData* BulletData = nullptr;
 	
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
-	UPlayerStats* PlayerStats;
+	UPlayerStats* PlayerStats = nullptr;
 	
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
-	UEnemyTactics* AIMoves;
+	UEnemyTactics* AIMoves = nullptr;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
-	UEnemyDatas* EnemyData;
+	UEnemyDatas* EnemyData = nullptr;
 
 	FDamage();
 
@@ -39,5 +39,5 @@ struct FDamage
 	 */
 	FDamage(UBulletData* BData, UPlayerStats* PStats, UEnemyTactics* AITactics, UEnemyDatas* EData);
 	int CalculateDamage(const bool& IsPlayerAttacking);
+	
 };
-

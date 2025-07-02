@@ -70,12 +70,12 @@ public:
 
     // Ammo Display
     UPROPERTY(meta = (BindWidget)) UImage* Magazine;
-    UPROPERTY(meta = (BindWidget)) UImage* Ammo_1;
-    UPROPERTY(meta = (BindWidget)) UImage* Ammo_2;
-    UPROPERTY(meta = (BindWidget)) UImage* Ammo_3;
-    UPROPERTY(meta = (BindWidget)) UImage* Ammo_4;
-    UPROPERTY(meta = (BindWidget)) UImage* Ammo_5;
-    UPROPERTY(meta = (BindWidget)) UImage* Ammo_6;
+    // UPROPERTY(meta = (BindWidget)) UImage* Ammo_1;
+    // UPROPERTY(meta = (BindWidget)) UImage* Ammo_2;
+    // UPROPERTY(meta = (BindWidget)) UImage* Ammo_3;
+    // UPROPERTY(meta = (BindWidget)) UImage* Ammo_4;
+    // UPROPERTY(meta = (BindWidget)) UImage* Ammo_5;
+    // UPROPERTY(meta = (BindWidget)) UImage* Ammo_6;
 
     // Targetting
     UPROPERTY(meta = (BindWidget)) UImage* Crosshair;
@@ -85,6 +85,11 @@ public:
 	UPROPERTY(meta = (BindWidget)) UTextBlock* TargetNameText_1;
 	UPROPERTY(meta = (BindWidget)) UTextBlock* TargetText_3;
 	UPROPERTY(meta = (BindWidget)) UTextBlock* TargetNameText_3;
+	
+	UPROPERTY(meta = (BindWidget)) UTextBlock* BulletName; 
+	UPROPERTY(meta = (BindWidget)) UTextBlock* Quantity; 
+	UPROPERTY(meta = (BindWidget)) UTextBlock* QuantityTotal;
+	UPROPERTY(meta = (BindWidget)) UTextBlock* Description;
 
     // Bullet Selection
     UPROPERTY(meta = (BindWidget)) UImage* AmmoSelectionIndicator;
@@ -95,14 +100,37 @@ public:
     // Bullet Data
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullets")
     TArray<TSubclassOf<UBulletData>> AvailableBulletTypes;
+	UPROPERTY() TArray<URevolverSlot*> RevolverSlots;
+	UPROPERTY(meta = (BindWidget)) URevolverSlot* RevolverSlot0;
+	UPROPERTY(meta = (BindWidget)) URevolverSlot* RevolverSlot1;
+	UPROPERTY(meta = (BindWidget)) URevolverSlot* RevolverSlot2;
+	UPROPERTY(meta = (BindWidget)) URevolverSlot* RevolverSlot3;
+	UPROPERTY(meta = (BindWidget)) URevolverSlot* RevolverSlot4;
+	UPROPERTY(meta = (BindWidget)) URevolverSlot* RevolverSlot5;
 
+	UPROPERTY(meta = (BindWidget)) UImage* PistolMagazine_1;
+	UPROPERTY(meta = (BindWidget)) UImage* PistolMagazine_2;
+	UPROPERTY(meta = (BindWidget)) UImage* PistolMagazine_3;
+	UPROPERTY(meta = (BindWidget)) UImage* PistolMagazine_4;
+	UPROPERTY(meta = (BindWidget)) UImage* PistolMagazine_5;
+	UPROPERTY(meta = (BindWidget)) UImage* PistolMagazine_6;
+	UPROPERTY(meta = (BindWidget)) UCanvasPanel* CanvasBulletStats;
 
+	UPROPERTY() TArray<UImage*> PistolMagazines;
+
+	UPROPERTY()
+	TArray<UBulletData*> LoadedBulletData;
+	UBulletDisplayer* GetBulletDisplayer() const;
+	
     UFUNCTION(BlueprintCallable)void ScrollBulletSelection(int ScrollValue);
 	void UpdateTarget();
 	void ScrollTargetSelection(float ScrollValue);
 
 	void SetSelectTarget(const bool& Enable);
 	bool GetSelectTarget() const;
+
+	AMob* GetCurrentPlayingEmotion() const;
+	
 	/**
 	 * Proceed to the battle phase
 	 */
@@ -118,6 +146,9 @@ public:
 	void HideInfo() const;
 	bool IsReadyToBattle() const;
 	ABattleHandler* GetBattleHandler() const;
+	UCircularBulletBuffer* GetCircularBulletBuffer() const;
+	
+	void SetCurrentPlayingEmotion(AMob* Current);
 
 private:
 
@@ -134,16 +165,25 @@ private:
     UPROPERTY(EditDefaultsOnly, Category = "Bullets") int32 MaxRevolverSlots = 6;
 
     TArray<AActor*> Enemies; // non ha senso sta variabile qua , abbiamo la queue sul battle handler
-    TArray<UImage*> RevolverSlots;
-    TArray<UBulletData*> LoadedBulletData;
-    UPROPERTY() UBulletData* CurrentBulletData; 
+    UPROPERTY() UBulletData* CurrentBulletData;
+	
+	UPROPERTY()
+	UCircularBulletBuffer* RevolverBuffer; 
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Category="Bullets")
+	TSubclassOf<UBulletDisplayer> BulletDisplayerClass;
+	
+	UPROPERTY() FInventory Inventory;
+
+	// UPROPERTY(meta = (BindWidget))
+	// UImage* Bullet_1;
+	// UPROPERTY(meta = (BindWidget))
+	// UImage* Bullet_2;
+	// UPROPERTY(meta = (BindWidget))
+	// UImage* Bullet_3;
 
 	UPROPERTY(meta = (BindWidget))
-	UImage* Bullet_1;
-	UPROPERTY(meta = (BindWidget))
-	UImage* Bullet_2;
-	UPROPERTY(meta = (BindWidget))
-	UImage* Bullet_3;
+	UHorizontalBox* BulletPanel;
 	
 	// select the target before shooting
 	UPROPERTY()
@@ -159,10 +199,14 @@ private:
     UFUNCTION() void OnFocusPressed();
     UFUNCTION() void OnReloadPressed();
     UFUNCTION() void OnPassPressed();
+
+	UFUNCTION() void RefreshBulletUI();
+	void ReflectBullets();
+	
+	UFUNCTION() void UpdateBulletIcons(const TArray<FInventoryItem>& InventoryItems);
+	
     
     // Targetting
-    
-    UFUNCTION() void UpdateCrosshair(); // questo si puo rimuovere visto che gestisco internamente da AMob la selezione
     
     // Bullet Management
     UFUNCTION() void UpdateBulletSelection();
@@ -170,6 +214,8 @@ private:
     UFUNCTION() void UpdateTargetInfo(const FString& EnemyName, UBulletData* BulletData = nullptr); 
     UFUNCTION() void ConfirmBulletSelection();
     UFUNCTION() void SwitchToBattleUI();
+	UFUNCTION()	void SetSelectedBullet(int32 Index);
+	UFUNCTION() void UpdateRevolverUI();
 
 	/*
 	 *-------------------------------------------------------
@@ -178,6 +224,12 @@ private:
 	 */
 	UPROPERTY()
 	AMinigameHandler* MinigameHandler = nullptr;
+
+	UPROPERTY()
+	UBulletDisplayer* Displayer;
+
+	UPROPERTY()
+	UBulletSelector* CurrentSelectedBullet;
 
 	// this variable will handle the target selection and will proceed to start the minigame
 	UPROPERTY()
@@ -190,13 +242,25 @@ private:
 	bool bTargetSelection = false;
 
 	UPROPERTY()
+	UICantCryGameInstance* GameInstance = nullptr;
+
+	UPROPERTY()
 	FDamage Damage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullets", meta=(AllowPrivateAccess="true"))
+	TSubclassOf<class UBulletIconWidget> BulletIconWidgetClass;
+
+	
 
 	/*
 	 *-------------------------------------------------------
 	 *  PLAYER / AI INTERACTION PLEASE DO NOT EDIT 
 	 *  -----------------------------------------------------
 	 */
+
+
+	UPROPERTY()
+	AMob* CurrentActiveAI = nullptr;
 
 	/**
 	 *-----------------------------

@@ -35,7 +35,7 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 
 	FDecisionMaker DecisionMaker;
 
-	DecisionMaker.Clear(); // If I'm not wrong clearing before adding new states will avoid repetitions
+	//DecisionMaker.Clear(); // If I'm not wrong clearing before adding new states will avoid repetitions
 	
 	if (Current->IsEAnger())
 	{
@@ -88,7 +88,7 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 	Decision = DecisionMaker.Thought();
 
 	// Controller->MoveToActor(Target);
-	// Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " is attacking"));
+	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " is attacking"));
 
 	return EBTNodeResult::InProgress;
 }

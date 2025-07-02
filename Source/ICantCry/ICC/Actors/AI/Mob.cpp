@@ -12,6 +12,7 @@ FDamage AMob::Damage;
 bool AMob::MinigameEnded = false;
 bool AMob::bMinigameHasStarted = false;
 bool AMob::bStopTree = false;
+UICantCryGameInstance* AMob::GameRef;
 static AMinigameHandler* Handler;
 
 // Sets default values
@@ -56,6 +57,7 @@ void AMob::BeginPlay()
 		break;
 	}
 
+	GameRef = Instance;
 	Damage.BulletData = nullptr;
 	Damage.EnemyData = EnemyData;
 	Damage.PlayerStats = MinigameHandler->GetBattlePlayer()->GetStats();
@@ -355,7 +357,6 @@ void AMob::DealDamage()
 	Player->GetStats()->CurrentHealth = FMath::Clamp(Player->GetStats()->CurrentHealth, 0.0f, Player->GetStats()->MaxHealth);
 	const float HealthPercentage = Player->GetStats()->CurrentHealth / Player->GetStats()->MaxHealth;
 	Player->GetBattleHUD()->PlayerHealth->SetPercent(HealthPercentage);
-	
 }
 
 void AMob::SetIsBusy(const bool& Value)

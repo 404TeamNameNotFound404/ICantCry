@@ -73,7 +73,7 @@ UPlayerStats* UICantCryGameInstance::GetPlayerStats() const
 	return PlayerStats;
 }
 
-FDamage UICantCryGameInstance::GetCurrentDamageData() const
+FDamage& UICantCryGameInstance::GetCurrentDamageData()
 {
 	return StoredDamage;
 }
@@ -83,11 +83,30 @@ void UICantCryGameInstance::SetPlayerStats(UPlayerStats* Stats)
 	PlayerStats = Stats;
 }
 
+void UICantCryGameInstance::SetPersistentPlayer(AICC_Player* Player)
+{
+	PersistentPlayer = Player;
+}
+
+AICC_Player* UICantCryGameInstance::GetCurrentPlayer() const
+{
+	return PersistentPlayer;
+}
+
 void UICantCryGameInstance::SetDamageData(const FDamage& Damage)
 {
 	StoredDamage = Damage;
 	// DebugHelper::LogSuccess(FString::FromInt(Damage.BulletData->Power));
 	// DebugHelper::LogSuccess(FString::FromInt(Damage.BulletData->Power));
+}
+
+void UICantCryGameInstance::SetInventory(const FInventory& Inv)
+{
+}
+
+FInventory& UICantCryGameInstance::GetInventory()
+{
+	return Inventory;
 }
 
 UWorld* UICantCryGameInstance::TryGetWorld() const

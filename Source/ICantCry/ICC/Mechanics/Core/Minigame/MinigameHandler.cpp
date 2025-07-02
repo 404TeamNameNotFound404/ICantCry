@@ -47,7 +47,7 @@ void AMinigameHandler::StartMinigame(const bool& EnableAttack)
 		}
 		
 		//CurrentMinigameDisplayed->AddToViewport();
-		Player->GetBattleHUD()->MinigameScaleSlot->AddChild(CurrentMinigameDisplayed);
+		Player->GetBattleHUD()->MinigameSlot->AddChild(CurrentMinigameDisplayed);
 		Player->GetBattleHUD()->HideInfo();
 		Player->EnableMinigameInput(true);
 		Player->SetActiveMinigameUserWidget(CastedWidget);
@@ -69,7 +69,7 @@ void AMinigameHandler::StartMinigame(const bool& EnableAttack)
 		}
 		
 		//CurrentMinigameDisplayed->AddToViewport();
-		Player->GetBattleHUD()->MinigameScaleSlot->AddChild(CurrentMinigameDisplayed);
+		Player->GetBattleHUD()->MinigameSlot->AddChild(CurrentMinigameDisplayed);
 		Player->GetBattleHUD()->HideInfo();
 		Player->EnableMinigameInput(true);
 		Player->SetActiveMinigameUserWidget(CastedWidget);

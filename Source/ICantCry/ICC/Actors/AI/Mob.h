@@ -228,6 +228,7 @@ public:
 	
 	void EndTurn();
 	static bool MinigameEnded;
+	static FDamage Damage;
 
 
 	/**
@@ -342,8 +343,6 @@ private:
 
 	UPROPERTY()
 	bool bEnableSilhouette = false;
-	
-	static FDamage Damage;
 
 	/**
 	 * Check if AI is performing attack
@@ -367,4 +366,6 @@ private:
 
 	UPROPERTY()
 	bool bMinigameEnded = false;
+
+	static UICantCryGameInstance* GameRef;
 };
