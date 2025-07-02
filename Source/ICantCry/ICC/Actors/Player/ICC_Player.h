@@ -93,6 +93,9 @@ public:
 	 */
 	void SetWorldCameraCounter(const int32& Counter);
 
+	void SetIsPickedUp(const bool& IsPicked);
+	bool IsPickedUp() const;
+
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Movement")
 	float WalkSpeed;
@@ -135,9 +138,6 @@ private:
 
 	UPROPERTY()
 	UMinigameUserWidget* CurrentMinigameDisplayed = nullptr;
-
-	UPROPERTY()
-	int32 CameraCounter = 0;
 	
 
 	void Input_Move(const FInputActionValue& InputActionValue);

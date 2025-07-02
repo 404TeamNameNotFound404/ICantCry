@@ -87,6 +87,11 @@ void AICC_Player::BeginPlay()
 	// DontDestroyOnLoad->SetPlayerStats(Stats);
 	//DontDestroyOnLoad->SetCurrentPlayer(this);
 
+	DontDestroyOnLoad->SetPlayerStats(Stats);
+	DontDestroyOnLoad->GetInventory().StarterPack();
+	DontDestroyOnLoad->SetPersistentPlayer(this);
+
+	bIsInFight = false;
 }
 
 // Called every frame
@@ -109,6 +114,10 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Interact, ETriggerEvent::Triggered, this, &ThisClass::Input_Interact);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Minigame, ETriggerEvent::Triggered, this, &ThisClass::Input_Minigame);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_BulletScroll, ETriggerEvent::Triggered, this, &ThisClass::Input_Scroll);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Inventory, ETriggerEvent::Triggered, this, &ThisClass::Input_OpenInventory);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Crafting, ETriggerEvent::Started, this, &ThisClass::Input_OpenCrafting);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_CloseCrafting, ETriggerEvent::Triggered, this, &ThisClass::Input_CloseCrafting);
+
 }
 
 AWorldCamera* AICC_Player::GetWorldCamera() const
@@ -168,6 +177,42 @@ void AICC_Player::SetWorldCameraCounter(const int32& Counter)
 	CameraCounter = Counter;
 }
 
+const FInventory AICC_Player::GetPlayerInventory() const
+{
+    return PlayerInventory;
+}
+
+void AICC_Player::SetPlayerInventory(const FInventory &Inventory)
+{
+	PlayerInventory = Inventory;
+}
+
+UInventoryManager *AICC_Player::GetInventoryManager() const
+{
+    return InventoryManager;
+}
+
+UInGameMenu* AICC_Player::GetInGameMenu() const
+{
+	return InGameMenu;
+}
+
+UInventoryHUD* AICC_Player::GetInventoryHUD() const
+{
+	return InventoryHUD;
+}
+
+
+void AICC_Player::SetIsPickedUp(const bool& IsPicked)
+{
+	bReadyToPickUp = IsPicked;
+}
+
+bool AICC_Player::IsPickedUp() const
+{
+	return bReadyToPickUp;
+}
+
 
 void AICC_Player::Input_Move(const FInputActionValue& InputActionValue)
 {
@@ -178,20 +223,19 @@ void AICC_Player::Input_Move(const FInputActionValue& InputActionValue)
 	
 	const FVector2d Direction = InputActionValue.Get<FVector2d>();
 	DirectionMovement = FVector::ZeroVector;
-	//const FRotator Rotation(0.f, Controller->GetControlRotation().Yaw, 0.f); //FRotator CameraRotation = CameraComponent->GetComponentRotation(); Controller->GetControlRotation().Yaw
-	const FRotator CameraRotation = Camera->GetComponentRotation();
+	const FRotator Rotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
 	GetCharacterMovement()->MaxWalkSpeed = OldSpeed;
 	
 	if (Direction.Y != 0.f)
 	{
-		const FVector ForwardDirection = CameraRotation.RotateVector(FVector::ForwardVector); //Rotation.RotateVector(FVector::ForwardVector);
+		const FVector ForwardDirection = Rotation.RotateVector(FVector::ForwardVector);
 		AddMovementInput(ForwardDirection, Direction.Y);
 		DirectionMovement.Y = Direction.Y;
 	}
 	
 	if (Direction.X != 0.f)
 	{
-		const FVector RightDirection =  CameraRotation.RotateVector(FVector::RightVector);//Rotation.RotateVector(FVector::RightVector);
+		const FVector RightDirection = Rotation.RotateVector(FVector::RightVector);
 		AddMovementInput(RightDirection, Direction.X);
 		DirectionMovement.X = Direction.X;
 	}

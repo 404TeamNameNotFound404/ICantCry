@@ -6,6 +6,35 @@
 #include "Engine/DataAsset.h"
 #include "BulletData.generated.h"
 
+
+UENUM(BlueprintType)
+enum EBulletStatus
+{
+    FreezedUp,
+    EnvyBurned,
+    Ashamed,
+    DebuffShield
+};
+
+UENUM(BlueprintType)
+enum EBulletType
+{
+	Indifference,
+	Anger,
+	Fear,
+	Disgust,
+	Sadness,
+	Joy,
+	Anxiety,
+	Calm,
+	Jealousy,
+	Shame
+};
+
+
+/**
+ * 
+ */
 UCLASS()
 class ICANTCRY_API UBulletData : public UDataAsset
 {
@@ -14,6 +43,9 @@ class ICANTCRY_API UBulletData : public UDataAsset
 
 public:
     
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet Properties")
+    FName ID;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet Properties")
     int32 Power;
 
@@ -29,6 +61,9 @@ public:
 	// for UI
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	UTexture2D* Icon;
+
+
+	
 
 	/**
  * Weakness modifier

@@ -7,7 +7,6 @@
 #include "ICantCry/ICC/Mechanics/TurnSystem/BattleFlow/DamageCalculator.h"
 #include "ICantCryGameInstance.generated.h"
 
-
 class AICC_Player;
 
 /**
@@ -34,10 +33,15 @@ public:
 	void LoadLastPlayerTransform();
 
 	UPlayerStats* GetPlayerStats() const;
+	FDamage GetCurrentDamageData() const;
 	void SetPlayerStats(UPlayerStats* Stats);
-
 	void SetCurrentPlayer(AICC_Player* NewPlayer);
 	AICC_Player* GetCurrentPlayer() const;
+	void SetDamageData(const FDamage& Damage);
+
+	void SetInventory(const FInventory& Inv);
+	FInventory& GetInventory();
+
 	
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))
@@ -45,8 +49,17 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))
 	UPlayerStats* PlayerStats;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))
+	FDamage StoredDamage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))
+	FInventory Inventory;
 	
 	UWorld* TryGetWorld() const;
+
+	UPROPERTY()
+	AICC_Player* PersistentPlayer = nullptr;
 
 	UPROPERTY()
 	AICC_Player* CurrentPlayer = nullptr;

@@ -3,7 +3,6 @@
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
-#include "ICantCry/ICC/Mechanics/TurnSystem/Core/BattleHandler.h"
 #include "EngineUtils.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 
@@ -29,25 +28,12 @@ void UBattleHUD::NativeConstruct()
     if (CanvasStatus) CanvasStatus->SetVisibility(ESlateVisibility::Hidden);
     if (ShootBoost) ShootBoost->SetVisibility(ESlateVisibility::Hidden);
 
-    Ammo_1->SetVisibility(ESlateVisibility::Hidden);
-    Ammo_2->SetVisibility(ESlateVisibility::Hidden);
-    Ammo_3->SetVisibility(ESlateVisibility::Hidden);
-    Ammo_4->SetVisibility(ESlateVisibility::Hidden);
-    Ammo_5->SetVisibility(ESlateVisibility::Hidden);
-    Ammo_6->SetVisibility(ESlateVisibility::Hidden);
-
-    BulletIcons.Add(Bullet_1);
-    BulletIcons.Add(Bullet_2);
-    BulletIcons.Add(Bullet_3);
-
     //VISIBLE
     if (CanvasFirstReloadMagazine)  CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Visible);
     if (CanvasAmmoSelection) CanvasAmmoSelection->SetVisibility(ESlateVisibility::Visible);
     if (ConfirmButton) ConfirmButton->SetVisibility(ESlateVisibility::Visible);
     if (CanvasMiniGames) CanvasMiniGames->SetVisibility(ESlateVisibility::Visible);
 
-    //INIT BULLETS ARRAY
-    RevolverSlots = { Ammo_1, Ammo_2, Ammo_3, Ammo_4, Ammo_5, Ammo_6 };
 
     //LOAD BULLET DATA
     LoadedBulletData.Empty();
@@ -104,6 +90,10 @@ void UBattleHUD::NativeConstruct()
     checkf(GameInstance, TEXT("Game instance is null at constructor battle hud"));
     PlayerHealth->SetPercent(GameInstance->GetPlayerStats()->CurrentHealth);
 }
+    
+    RefreshBulletUI();
+
+    FTimerHandle TimerHandle;
 
 
 
@@ -167,10 +157,10 @@ void UBattleHUD::OnPassPressed()
     DebugHelper::LogSuccess("Player passed the turn");
     BattleHandler->GetTurnBasedSystem()->EndTurn();
     BattleHandler->GetTurnBasedSystem()->StartNextTurn();
+	DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
     BattleHandler->GetTurnBasedSystem()->SetTurnOverlayApplied(false);
     DebugHelper::RemoveOverlayMaterialFromStaticMesh(BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
     bTargetSelection = false;
-    ABattleHandler::GetBattleInfoInstance()->ClearInfo();
 }
 
 void UBattleHUD::ScrollTargetSelection(float ScrollValue)
@@ -210,7 +200,7 @@ void UBattleHUD::UpdateTarget()
         AICC_Actor* TargetEnemy = BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex];
         static AMob* PreviousTargetEnemy = nullptr; 
         static bool bOverlayMaterialApplied = false;
-       
+        
         if (TargetEnemy->IsA(AICC_Player::StaticClass())) // if TargetEnemy is Player just skip it , we don't need to target ourselves right? and we all the info will be hidden for now 
         {
             HideInfo();
@@ -218,17 +208,17 @@ void UBattleHUD::UpdateTarget()
         }
         
         AMob* Current = Cast<AMob>(TargetEnemy);
-        
+       
         if (PreviousTargetEnemy && PreviousTargetEnemy != Current)
         {
-          //  DebugHelper::RemoveOverlayMaterialFromStaticMesh(PreviousTargetEnemy->StaticMesh);
+            DebugHelper::RemoveOverlayMaterialFromStaticMesh(PreviousTargetEnemy->StaticMesh);
             
             bOverlayMaterialApplied = false;
         }
         
         if (!bOverlayMaterialApplied)
         {
-           // DebugHelper::AddOverlayMaterialToStaticMesh(Current->StaticMesh);
+            DebugHelper::AddOverlayMaterialToStaticMesh(Current->StaticMesh);
             bOverlayMaterialApplied = true;
             PreviousTargetEnemy = Current;
         }
@@ -252,29 +242,32 @@ void UBattleHUD::UpdateTargetInfo(const FString& EnemyName, UBulletData* BulletD
     TargetNameText->SetText(FText::FromString(InfoString));
 }
 
-void UBattleHUD::UpdateCrosshair()
-{
-    if (BattleHandler->GetTurnBasedSystem()->GetTurn().Queue.IsValidIndex(CurrentEnemyIndex) && Crosshair)
-{
-    AActor* TargetEnemy = BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex];
-    APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-    if (!PC) return;
-
-    FVector2D ScreenPosition;
-    if (PC->ProjectWorldLocationToScreen(TargetEnemy->GetActorLocation(), ScreenPosition))
-    {
-        // Assicurati che Crosshair sia un widget Canvas
-        UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(Crosshair->Slot);
-        if (CanvasSlot)
-        {
-            CanvasSlot->SetPosition(ScreenPosition);  // Imposta la posizione correttamente
-            Crosshair->SetVisibility(ESlateVisibility::Visible);
-        }
-    }
-}
-}
-
 // BULLET
+
+void UBattleHUD::RefreshBulletUI()
+{
+    // Ricarica tutte le componenti UI relative ai proiettili
+    UpdateBulletIcons(Inventory.GetAllItems());
+    SetSelectedBullet(SelectedBulletIndex);
+    UpdateRevolverUI();
+}
+
+
+void UBattleHUD::SetSelectedBullet(int32 Index)
+{
+    UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+    
+    if (Instance->GetInventory().BulletsStored.IsEmpty()) 
+    {
+        return;
+    }
+
+    TArray<FBullet> Bullets;
+    Instance->GetInventory().BulletsStored.GenerateValueArray(Bullets);
+    
+    CurrentSelectedBullet = Displayer->GetBullets()[Index];
+}
+
 void UBattleHUD::UpdateBulletSelection() 
 {
     if (!CanvasAmmoSelection || !LoadedBulletData.IsValidIndex(SelectedBulletIndex) || !bBulletSetupFinished) 
@@ -401,7 +394,6 @@ void UBattleHUD::ScrollBulletSelection(int ScrollValue)
 
     if (FMath::IsNearlyZero(static_cast<float>(ScrollValue)))
     {
-        UE_LOG(LogTemp, Warning, TEXT("Scroll value is zero, skipping scroll"));
         return;
     }
     
@@ -437,6 +429,14 @@ void UBattleHUD::Engage()
     checkf(PersistentInstance, TEXT("Instance is null at void UBattleHUD::UpdateTarget()"));
     AMob* SelectedEnemy = Cast<AMob>(BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex]);
     checkf(SelectedEnemy, TEXT("SelectedEnemy is null at UBattleHUD::Engage"));
+    CurrentBulletData = GetCircularBulletBuffer()->PeekAt(GetCircularBulletBuffer()->GetTailIndex()); // this will take the first bullet avaiable
+    checkf(CurrentBulletData, TEXT("Assigned CurrentBulletData invalid"))
+    Damage.BulletData = CurrentBulletData; 
+    Damage.EnemyData = SelectedEnemy->GetData();
+    Damage.AIMoves = SelectedEnemy->GetTactics();
+    Damage.PlayerStats = PersistentInstance->GetPlayerStats();
+    PersistentInstance->SetDamageData(Damage);
+    // PersistentInstance->GetCurrentDamageData().CalculateDamage(true);
     DebugHelper::LogMessage(3, FColor::White, "Targeting " + SelectedEnemy->GetActorLabel());
     checkf(MinigameHandler, TEXT("Minigame handler is null at UBattleHUD::Engage"));
     MinigameHandler->StartMinigame(true);
@@ -452,6 +452,7 @@ AMob* UBattleHUD::GetCurrentPlayingEmotion() const
 void UBattleHUD::SetCurrentPlayingEmotion(AMob* Current)
 {
     CurrentActiveAI = Current;
+    CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UBattleHUD::ShowHUD() 

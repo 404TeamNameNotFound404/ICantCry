@@ -17,10 +17,17 @@
 #include "../Source/ICantCry/ICC/Actors/Bullet/BulletData.h"
 #include "../Mechanics/TurnSystem/Core/BattleHandler.h"
 #include "Components/CanvasPanel.h"
-#include "Components/ScaleBox.h"
 #include "Components/SizeBox.h"
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
+#include "ICantCry/ICC/Mechanics/TurnSystem/BattleFlow/DamageCalculator.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
+#include "ICantCry/ICC/Mechanics/TurnSystem/BattleFlow/DamageCalculator.h"
+#include "../Source/ICantCry/ICC/Actors/Bullet/CircularBulletBuffer.h"
+#include "../Source/ICantCry/ICC/Actors/Bullet/RevolverSlot.h"
+#include "../Inventory/Inventory.h"
+#include "Blueprint/UserWidget.h"
+#include "../Inventory/BulletIconWidget.h"
+#include "ICantCry/ICC/Mechanics/UI/BulletDisplay/BulletDisplayer.h"
 #include "BattleHUD.generated.h"
 
 /**
@@ -44,7 +51,7 @@ public:
     UPROPERTY(meta = (BindWidget)) UWidget* CanvasFirstReloadMagazine; 
     UPROPERTY(meta = (BindWidget)) UWidget* CanvasMainBattlePanel; 
     UPROPERTY(meta = (BindWidget)) UCanvasPanel* CanvasMiniGames;
-	UPROPERTY(meta = (BindWidget)) UScaleBox* MinigameScaleSlot;
+	UPROPERTY(meta = (BindWidget)) USizeBox* MinigameSlot;
     UPROPERTY(meta = (BindWidget)) UWidget* CanvasAmmoSelection;
     UPROPERTY(meta = (BindWidget)) UCanvasPanel* CanvasStatus;
 
@@ -101,9 +108,6 @@ public:
 	 */
 	UFUNCTION()
 	void Engage();
-
-	AMob* GetCurrentPlayingEmotion() const;
-	void SetCurrentPlayingEmotion(AMob* Current);
 
 	void ShowHUD();
 	bool IsShootFired() const;
@@ -186,7 +190,7 @@ private:
 	bool bTargetSelection = false;
 
 	UPROPERTY()
-	UICantCryGameInstance* GameInstance = nullptr;
+	FDamage Damage;
 
 	/*
 	 *-------------------------------------------------------
@@ -202,9 +206,6 @@ private:
 
 	UPROPERTY()
 	bool bStartFight = false;
-
-	UPROPERTY()
-	AMob* CurrentActiveAI = nullptr;
 	
 	/**
 	 * -----------------------------------

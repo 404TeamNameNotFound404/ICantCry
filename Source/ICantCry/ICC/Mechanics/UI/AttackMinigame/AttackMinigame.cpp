@@ -4,36 +4,28 @@
 #include "Components/PanelWidget.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "Kismet/GameplayStatics.h"
+#include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 
 void UAttackMinigame::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	GameInstance = Cast<UICantCryGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	checkf(GameInstance, TEXT("game instance is null at the constructor attack"))
 }
 
 void UAttackMinigame::MoveSlider(const FVector2D& Position)
 {
 	checkf(Slider, TEXT("Slider in UDefenceMinigame::MoveSlider is null"));
 	StartingSliderPosition = Slider->GetRenderTransform().Translation;
-	
+
+    if (bStopSlider)
+    {
+        DebugHelper::LogMessage(5, FColor::Black, "Bar Stopped at " + Slider->GetRenderTransform().Translation.ToString());
+        return;
+    }
+    
 	FVector2D CurrentPosition = Slider->GetRenderTransform().Translation;
 	CurrentPosition.Y = 0;
-	FVector2D DeltaMove = Position * Speed * GetWorld()->GetDeltaSeconds() * MovementDirection;
+	FVector2D DeltaMove = Position * Speed * GetWorld()->GetDeltaSeconds();
 	FVector2D NewPosition = CurrentPosition + DeltaMove;
-
-	if (NewPosition.X > BorderRight)
-	{
-		NewPosition.X = BorderRight;
-		MovementDirection *= -1; 
-	}
-	else if (NewPosition.X < BorderLeft)
-	{
-		NewPosition.X = BorderLeft;
-		MovementDirection *= -1;
-	}
-	
 	NewPosition.Y = 0;
 	Slider->SetRenderTranslation(NewPosition);
 }
@@ -75,24 +67,33 @@ EMinigameThreshold UAttackMinigame::CheckBar()
 void UAttackMinigame::HandleScore()
 {
 	const EMinigameThreshold Result = CheckBar();
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
 
 	switch (Result)
 	{
 		case EMinigameThreshold::Bad:
 			DebugHelper::LogError("Bad minigame score!");
-		    GameInstance->GetPlayerStats()->MinigameModifier = 0.5f;
+		    Instance->GetPlayerStats()->MinigameModifier = 0.5f;
+		    Instance->GetCurrentDamageData().CalculateDamage(true);
+		    Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 			break;
 		case EMinigameThreshold::Good:
 			DebugHelper::LogWarning("Good minigame score!");
-		    GameInstance->GetPlayerStats()->MinigameModifier = 1.0f;
+		    Instance->GetPlayerStats()->MinigameModifier = 1.0f;
+		    Instance->GetCurrentDamageData().CalculateDamage(true);
+		    Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 			break;
 		case EMinigameThreshold::Perfect:
 			DebugHelper::LogSuccess("Perfect minigame score!");
-		    GameInstance->GetPlayerStats()->MinigameModifier = 1.5f;
+		    Instance->GetPlayerStats()->MinigameModifier = 1.5f;
+		    Instance->GetCurrentDamageData().CalculateDamage(true);
+		    Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 			break;
 		default:
 			DebugHelper::LogMessage(3, FColor::FromHex("ADB2D4"),"Unknown minigame score!");
-		    GameInstance->GetPlayerStats()->MinigameModifier = 0.5f;
+		    Instance->GetPlayerStats()->MinigameModifier = 0.5f;
+		    Instance->GetCurrentDamageData().CalculateDamage(true);
+		    Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 			break;
 	}
 }
