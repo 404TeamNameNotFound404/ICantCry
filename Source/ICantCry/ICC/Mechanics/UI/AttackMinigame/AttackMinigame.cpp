@@ -2,7 +2,9 @@
 #include "AttackMinigame.h"
 
 #include "Components/PanelWidget.h"
+#include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
+#include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 
 void UAttackMinigame::NativeConstruct()
 {
@@ -65,20 +67,33 @@ EMinigameThreshold UAttackMinigame::CheckBar()
 void UAttackMinigame::HandleScore()
 {
 	const EMinigameThreshold Result = CheckBar();
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
 
 	switch (Result)
 	{
 		case EMinigameThreshold::Bad:
 			DebugHelper::LogError("Bad minigame score!");
+		    Instance->GetPlayerStats()->MinigameModifier = 0.5f;
+		    Instance->GetCurrentDamageData().CalculateDamage(true);
+		    Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 			break;
 		case EMinigameThreshold::Good:
 			DebugHelper::LogWarning("Good minigame score!");
+		    Instance->GetPlayerStats()->MinigameModifier = 1.0f;
+		    Instance->GetCurrentDamageData().CalculateDamage(true);
+		    Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 			break;
 		case EMinigameThreshold::Perfect:
 			DebugHelper::LogSuccess("Perfect minigame score!");
+		    Instance->GetPlayerStats()->MinigameModifier = 1.5f;
+		    Instance->GetCurrentDamageData().CalculateDamage(true);
+		    Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 			break;
 		default:
 			DebugHelper::LogMessage(3, FColor::FromHex("ADB2D4"),"Unknown minigame score!");
+		    Instance->GetPlayerStats()->MinigameModifier = 0.5f;
+		    Instance->GetCurrentDamageData().CalculateDamage(true);
+		    Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 			break;
 	}
 }

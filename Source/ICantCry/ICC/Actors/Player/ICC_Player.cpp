@@ -7,11 +7,13 @@
 #include "EnhancedInput/Public/EnhancedInputSubsystems.h"
 #include "EntitySystem/MovieSceneEntityManager.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "ICantCry/ICC/Actors/Pickups/RecipePickup.h"
 #include "ICantCry/ICC/Input/ICC_EnhancedInputCmp.h"
 #include "ICantCry/ICC/Input/ICC_PlayerController.h"
 #include "ICantCry/ICC/Input/Tags/ICC_InputTags.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
+
 #include "Kismet/GameplayStatics.h"
 
 
@@ -54,7 +56,15 @@ void AICC_Player::BeginPlay()
 	GetCapsuleComponent()->SetCapsuleRadius(90.0f);
 	GetCapsuleComponent()->SetCapsuleSize(90.0f, 200.0f);
 	OldSpeed = GetCharacterMovement()->MaxWalkSpeed;
+	InGameMenu = CreateWidget<UInGameMenu>(GetWorld(), InGameMenuClass);
+	InGameMenu->AddToViewport();
+	InGameMenu->SetVisibility(ESlateVisibility::Hidden);
 
+	InventoryManager = NewObject<UInventoryManager>(this);
+	InventoryManager->Initialize(InventoryHUD);
+	InventoryManager->LinkCraftingHUD(CraftingHUD);
+	InGameMenu->InstantiateTable(this);
+	
 	if (!WorldCamera)
 	{
 		for (TActorIterator<AWorldCamera> It(GetWorld()); It; ++It)
@@ -81,6 +91,10 @@ void AICC_Player::BeginPlay()
 	}
 
 	DontDestroyOnLoad->SetPlayerStats(Stats);
+	DontDestroyOnLoad->GetInventory().StarterPack();
+	DontDestroyOnLoad->SetPersistentPlayer(this);
+
+	bIsInFight = false;
 }
 
 // Called every frame
@@ -103,6 +117,10 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Interact, ETriggerEvent::Triggered, this, &ThisClass::Input_Interact);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Minigame, ETriggerEvent::Triggered, this, &ThisClass::Input_Minigame);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_BulletScroll, ETriggerEvent::Triggered, this, &ThisClass::Input_Scroll);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Inventory, ETriggerEvent::Triggered, this, &ThisClass::Input_OpenInventory);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Crafting, ETriggerEvent::Started, this, &ThisClass::Input_OpenCrafting);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_CloseCrafting, ETriggerEvent::Triggered, this, &ThisClass::Input_CloseCrafting);
+
 }
 
 AWorldCamera* AICC_Player::GetWorldCamera() const
@@ -150,6 +168,42 @@ AMinigameHandler* AICC_Player::GetMinigameHandler() const
 UPlayerStats* AICC_Player::GetStats() const
 {
 	return Stats;
+}
+
+const FInventory AICC_Player::GetPlayerInventory() const
+{
+    return PlayerInventory;
+}
+
+void AICC_Player::SetPlayerInventory(const FInventory &Inventory)
+{
+	PlayerInventory = Inventory;
+}
+
+UInventoryManager *AICC_Player::GetInventoryManager() const
+{
+    return InventoryManager;
+}
+
+UInGameMenu* AICC_Player::GetInGameMenu() const
+{
+	return InGameMenu;
+}
+
+UInventoryHUD* AICC_Player::GetInventoryHUD() const
+{
+	return InventoryHUD;
+}
+
+
+void AICC_Player::SetIsPickedUp(const bool& IsPicked)
+{
+	bReadyToPickUp = IsPicked;
+}
+
+bool AICC_Player::IsPickedUp() const
+{
+	return bReadyToPickUp;
 }
 
 
@@ -225,6 +279,11 @@ void AICC_Player::Input_Interact(const FInputActionValue& InputActionValue)
 	{
 		return;
 	}
+
+	if (IsPickedUp())
+	{
+		// Onpickedup
+	}
 	
 	DebugHelper::LogSuccess("Interacting with something");
 }
@@ -233,17 +292,17 @@ void AICC_Player::Input_Interact(const FInputActionValue& InputActionValue)
 void AICC_Player::Input_Scroll(const FInputActionValue &InputActionValue)
 {
 	// if player is not fighting there's no need to call this bindings
-	if (!bIsInFight)
-	{
-		DebugHelper::LogError("Can't get scroll is in fight = false");
-		return;
-	}
+	// if (!bIsInFight)
+	// {
+	// 	DebugHelper::LogError("Can't get scroll is in fight = false");
+	// 	return;
+	// }
 
-	if (!Hud->IsSelectingTarget())
-	{
-		DebugHelper::LogError("You can't do that yet");
-		return;
-	}
+	// if (!Hud->IsSelectingTarget())
+	// {
+	// 	DebugHelper::LogError("You can't do that yet");
+	// 	return;
+	// }
 	
 	DebugHelper::LogSuccess("Scrolling something");
 	
@@ -260,14 +319,182 @@ void AICC_Player::Input_Scroll(const FInputActionValue &InputActionValue)
 		Hud->ScrollTargetSelection(Scroll);
 		DebugHelper::LogSuccess("Selecting target ");
 	}
-	else
+
+	if(Scroll && !Hud->IsBulletSelectionOver())
 	{
-		if(Scroll && !Hud->IsBulletSelectionOver())
-		{
-			Hud->ScrollBulletSelection(Scroll);
-		}
+		Hud->ScrollBulletSelection(Scroll);
 	}
 }
 
+void AICC_Player::Input_OpenInventory(const FInputActionValue& InputActionValue)
+{
+	ToggleInventory();
+}
+
+void AICC_Player::Input_OpenCrafting(const FInputActionValue &InputActionValue)
+{
+
+	if (InGameMenu->IsDisabled())
+	{
+		return;
+	}
+	
+	if (const bool Pressed = InputActionValue.Get<bool>() && CraftingCounter == 0)
+	{
+		DebugHelper::LogSuccess("Opening Crafting");
+		InGameMenu->SetMenuOpen(true);
+		//bIsInGameMenuOpen = true;
+		ToggleCraftingHUD();
+
+		FTimerHandle TimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]() {
+			CraftingCounter = 1;
+		}, 0.1f, false);
+	}
+}
+
+void AICC_Player::Input_CloseCrafting(const FInputActionValue &InputActionValue)
+{
+	if (const bool Pressed = InputActionValue.Get<bool>() && CraftingCounter == 1 && InGameMenu->IsOpen())
+	{
+		DebugHelper::LogSuccess("Closing Crafting");
+		CloseCraftingHUD();
+		CraftingCounter = 0;
+		//bIsInGameMenuOpen = false;
+		InGameMenu->SetMenuOpen(false);
+	}
+}
+
+void AICC_Player::CloseInventory()
+{
+	if (InventoryHUD && InventoryHUD->IsInViewport())
+    {
+        InventoryHUD->RemoveFromParent();
+
+        AICC_PlayerController* PC = Cast<AICC_PlayerController>(GetController());
+        if (PC)
+        {
+            PC->SetInputMode(FInputModeGameOnly());
+            PC->bShowMouseCursor = false;
+        }
+    }
+
+}
+
+void AICC_Player::ToggleInventory()
+{
+	if (!InventoryHUD)
+    {
+        InventoryHUD = CreateWidget<UInventoryHUD>(GetWorld(), InventoryHUDClass);
+
+        if (InventoryHUD)
+        {
+            InventoryHUD->AddToViewport();
+
+            InventoryHUD->UpdateInventoryDisplay(PlayerInventory); // aggiorna manualmente
+
+            AICC_PlayerController* PC = Cast<AICC_PlayerController>(GetController());
+            if (PC)
+            {
+                PC->SetInputMode(FInputModeUIOnly());
+                PC->bShowMouseCursor = true;
+            }
+        }
+        return;
+    }
+
+    if (InventoryHUD->IsInViewport())
+    {
+        CloseInventory();
+    }
+    else
+    {
+        InventoryHUD->AddToViewport();
+        InventoryHUD->UpdateInventoryDisplay(PlayerInventory); //  aggiorna quando riapri
+
+        AICC_PlayerController* PC = Cast<AICC_PlayerController>(GetController());
+        if (PC)
+        {
+            PC->SetInputMode(FInputModeUIOnly());
+            PC->bShowMouseCursor = true;
+        }
+    }
+}
 
 
+void AICC_Player::ToggleCraftingHUD()
+{
+	InGameMenu->SetMenuOpen(true);
+	InGameMenu->SetVisibility(ESlateVisibility::Visible);
+	//CraftingHUD->RefreshUI();
+	Cast<AICC_PlayerController>(GetController())->bShowMouseCursor = true;
+}
+	
+	
+#pragma region BadCode
+    // if (!CraftingHUD)
+    // {
+    //     DebugHelper::LogWarning("ToggleCraftingHUD chiamato");
+    //     // CraftingHUD = CreateWidget<UCraftingHUD>(GetWorld(), CraftingHUDClass);
+    //     //
+    //     // if (CraftingHUD)
+    //     // {
+    //     //     CraftingHUD->AddToViewport();
+    //     //
+    //     //     
+    //     //     if (InventoryManager)
+    //     //     {
+    //     //         InventoryManager->LinkCraftingHUD(CraftingHUD);
+    //     //     }
+    //     //
+    //     //     if (InventoryManager && CraftingTable)
+    //     //     {
+    //     //         CraftingHUD->SetupCraftingHUD(CraftingTable, InventoryManager);
+    //     //         //CraftingTable->SetInventoryReference(&InventoryManager->GetInventory());
+    //     //     }
+    //     //
+    //     //     CraftingHUD->RefreshUI();
+    //     //
+    //     //     if (AICC_PlayerController* PC = Cast<AICC_PlayerController>(GetController()))
+    //     //     {
+    //     //         PC->SetInputMode(FInputModeUIOnly());
+    //     //         PC->bShowMouseCursor = true;
+    //     //     }
+    //     // }
+    //     // return;
+    // }
+
+    // if (CraftingHUD->IsInViewport())
+    // {
+    //     CloseCraftingHUD();
+    // }
+    // else
+    // {
+    //     CraftingHUD->AddToViewport();
+    //
+    //     // Collegamento anche in caso di riapertura
+    //     if (InventoryManager)
+    //     {
+    //         InventoryManager->LinkCraftingHUD(CraftingHUD);
+    //     }
+    //
+    //     CraftingHUD->RefreshUI();
+    //
+    //     if (AICC_PlayerController* PC = Cast<AICC_PlayerController>(GetController()))
+    //     {
+    //         PC->SetInputMode(FInputModeUIOnly());
+    //         PC->bShowMouseCursor = true;
+    //     }
+    // }
+
+#pragma endregion
+
+
+void AICC_Player::CloseCraftingHUD()
+{
+	Cast<AICC_PlayerController>(GetController())->bShowMouseCursor = false;
+	InGameMenu->SetMenuOpen(false);
+	InGameMenu->SetVisibility(ESlateVisibility::Hidden);
+	//CraftingHUD->SetVisibility(ESlateVisibility::Hidden);
+	CraftingCounter = 0;
+}
