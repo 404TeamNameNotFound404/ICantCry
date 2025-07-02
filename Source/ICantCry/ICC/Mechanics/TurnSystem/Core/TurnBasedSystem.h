@@ -24,10 +24,12 @@ public:
 	FTurn GetTurn() const;
 
 	bool GetIsPlayerTurn() const;
+	bool GetIsAITurn() const;
 	AICC_Player* TryGetCurrentPlayer() const;
 
 	void SetTurnOverlayApplied(const bool &Applied);
 	void RequestFight(const bool &Request);
+	void SetAIPlaying(const bool &Play);
 
 	/**
 	 * --------- WIP FUNCTIONS -----------
@@ -75,5 +77,7 @@ private:
 
 	UPROPERTY()
 	bool bFightStarted = false;
-	
+
+	UPROPERTY()
+	bool bAIPlayTurn = false;
 };

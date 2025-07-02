@@ -6,14 +6,12 @@
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/TextBlock.h"
-#include "Components/Overlay.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
 #include "Components/ProgressBar.h"
 #include "Components/Widget.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/CanvasPanelSlot.h"
-#include "Components/HorizontalBox.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 #include "../Source/ICantCry/ICC/Actors/Bullet/BulletData.h"
@@ -21,6 +19,8 @@
 #include "Components/CanvasPanel.h"
 #include "Components/SizeBox.h"
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
+#include "ICantCry/ICC/Mechanics/TurnSystem/BattleFlow/DamageCalculator.h"
+#include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "ICantCry/ICC/Mechanics/TurnSystem/BattleFlow/DamageCalculator.h"
 #include "../Source/ICantCry/ICC/Actors/Bullet/CircularBulletBuffer.h"
 #include "../Source/ICantCry/ICC/Actors/Bullet/RevolverSlot.h"
@@ -53,10 +53,7 @@ public:
     UPROPERTY(meta = (BindWidget)) UCanvasPanel* CanvasMiniGames;
 	UPROPERTY(meta = (BindWidget)) USizeBox* MinigameSlot;
     UPROPERTY(meta = (BindWidget)) UWidget* CanvasAmmoSelection;
-	UPROPERTY(meta = (BindWidget)) UImage* AmmoSelectionIndicator;
     UPROPERTY(meta = (BindWidget)) UCanvasPanel* CanvasStatus;
-	UPROPERTY(meta = (BindWidget)) UCanvasPanel* CanvasBulletStats;
-
 
     // Action Buttons
     UPROPERTY(meta = (BindWidget)) UButton* Shoot;
@@ -71,30 +68,14 @@ public:
     UPROPERTY(meta = (BindWidget)) UProgressBar* PlayerHealth;
     UPROPERTY(meta = (BindWidget)) UProgressBar* APBar;
 
-    // Ammo Display // Revolver magazine (CanvasFirstReloadMagazine)
-	UPROPERTY() TArray<URevolverSlot*> RevolverSlots;
-	UPROPERTY(meta = (BindWidget)) URevolverSlot* RevolverSlot0;
-	UPROPERTY(meta = (BindWidget)) URevolverSlot* RevolverSlot1;
-	UPROPERTY(meta = (BindWidget)) URevolverSlot* RevolverSlot2;
-	UPROPERTY(meta = (BindWidget)) URevolverSlot* RevolverSlot3;
-	UPROPERTY(meta = (BindWidget)) URevolverSlot* RevolverSlot4;
-	UPROPERTY(meta = (BindWidget)) URevolverSlot* RevolverSlot5;
-
-	UPROPERTY(meta = (BindWidget)) UImage* PistolMagazine_1;
-	UPROPERTY(meta = (BindWidget)) UImage* PistolMagazine_2;
-	UPROPERTY(meta = (BindWidget)) UImage* PistolMagazine_3;
-	UPROPERTY(meta = (BindWidget)) UImage* PistolMagazine_4;
-	UPROPERTY(meta = (BindWidget)) UImage* PistolMagazine_5;
-	UPROPERTY(meta = (BindWidget)) UImage* PistolMagazine_6;
-
-	UPROPERTY() TArray<UImage*> PistolMagazines;
-	
-    TArray<UBulletData*> LoadedBulletData;
-	UBulletDisplayer* GetBulletDisplayer() const;
-    
-    UPROPERTY(EditDefaultsOnly, Category = "Bullets") int32 MaxRevolverSlots = 6;
-	int32 SelectedBulletIndex = 0;
-    int32 CurrentRevolverSlot = 0;
+    // Ammo Display
+    UPROPERTY(meta = (BindWidget)) UImage* Magazine;
+    UPROPERTY(meta = (BindWidget)) UImage* Ammo_1;
+    UPROPERTY(meta = (BindWidget)) UImage* Ammo_2;
+    UPROPERTY(meta = (BindWidget)) UImage* Ammo_3;
+    UPROPERTY(meta = (BindWidget)) UImage* Ammo_4;
+    UPROPERTY(meta = (BindWidget)) UImage* Ammo_5;
+    UPROPERTY(meta = (BindWidget)) UImage* Ammo_6;
 
     // Targetting
     UPROPERTY(meta = (BindWidget)) UImage* Crosshair;
@@ -106,39 +87,17 @@ public:
 	UPROPERTY(meta = (BindWidget)) UTextBlock* TargetNameText_3;
 
     // Bullet Selection
-    //UPROPERTY(meta = (BindWidget)) TArray<UImage*> BulletIcons;
+    UPROPERTY(meta = (BindWidget)) UImage* AmmoSelectionIndicator;
+    UPROPERTY(meta = (BindWidget)) TArray<UImage*> BulletIcons;
     UPROPERTY(meta = (BindWidget)) UTextBlock* TargetText_2; // Bullet name
     UPROPERTY(meta = (BindWidget)) UTextBlock* TargetNameText_2; // Bullet name
-	UPROPERTY(meta = (BindWidget)) UTextBlock* BulletName; // canvasbulletstats
-	UPROPERTY(meta = (BindWidget)) UTextBlock* Quantity; // è il titolo 
-	UPROPERTY(meta = (BindWidget)) UTextBlock* QuantityTotal; //  è il text dove verrà scritto il numero
-	UPROPERTY(meta = (BindWidget)) UTextBlock* Description;
-
-	UFUNCTION(BlueprintCallable) void ScrollBulletSelection(float ScrollValue);
-
-	// bullet images (in the CanvasAmmoSelection)
-	UPROPERTY(meta = (BindWidget))
-    UHorizontalBox* BulletPanel;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullets")
-	TSubclassOf<class UBulletIconWidget> BulletIconWidgetClass;
-	
-
+ 
     // Bullet Data
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullets")
     TArray<TSubclassOf<UBulletData>> AvailableBulletTypes;
 
 
-	// ANIMATION 
-	UPROPERTY(EditDefaultsOnly, Category="UI Settings")
-    float SelectionAnimSpeed = 8.f;
-    
-    UPROPERTY(EditDefaultsOnly, Category="UI Settings")
-    bool bAnimateSelection = true;
-
-	UPROPERTY()
-	UBulletSelector* CurrentSelectedBullet;
-
-    
+    UFUNCTION(BlueprintCallable)void ScrollBulletSelection(int ScrollValue);
 	void UpdateTarget();
 	void ScrollTargetSelection(float ScrollValue);
 
@@ -160,33 +119,31 @@ public:
 	bool IsReadyToBattle() const;
 	ABattleHandler* GetBattleHandler() const;
 
-	UCircularBulletBuffer* GetCircularBulletBuffer() const;
-
 private:
 
     UPROPERTY() ABattleHandler*  BattleHandler = nullptr;
-	UPROPERTY() FInventory Inventory;
-	UPROPERTY() UBulletData* CurrentBulletData;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Category="Bullets")
-	TSubclassOf<UBulletDisplayer> BulletDisplayerClass;
 
 
-	// Circular Buffer
-	UPROPERTY()
-    UCircularBulletBuffer* RevolverBuffer; // represents the bullets already loaded into the revolver
-
-	
     // Game State
     UPROPERTY()
     int CurrentAP = 0;
 
     int32 CurrentEnemyIndex = 0;
-	int32 BulletQuantity;
-    
+    int32 SelectedBulletIndex = 0;
+    int32 CurrentRevolverSlot = 0;
+    UPROPERTY(EditDefaultsOnly, Category = "Bullets") int32 MaxRevolverSlots = 6;
 
     TArray<AActor*> Enemies; // non ha senso sta variabile qua , abbiamo la queue sul battle handler
-    
+    TArray<UImage*> RevolverSlots;
+    TArray<UBulletData*> LoadedBulletData;
+    UPROPERTY() UBulletData* CurrentBulletData; 
+
+	UPROPERTY(meta = (BindWidget))
+	UImage* Bullet_1;
+	UPROPERTY(meta = (BindWidget))
+	UImage* Bullet_2;
+	UPROPERTY(meta = (BindWidget))
+	UImage* Bullet_3;
 	
 	// select the target before shooting
 	UPROPERTY()
@@ -203,24 +160,16 @@ private:
     UFUNCTION() void OnReloadPressed();
     UFUNCTION() void OnPassPressed();
     
-
+    // Targetting
+    
+    UFUNCTION() void UpdateCrosshair(); // questo si puo rimuovere visto che gestisco internamente da AMob la selezione
     
     // Bullet Management
     UFUNCTION() void UpdateBulletSelection();
-	UFUNCTION() void UpdateBulletInfo(UBulletData* BulletData); // Aggiorna le informazioni testuali del proiettile
-	UFUNCTION() void UpdateBulletStats(UBulletData* BulletData);   // Aggiorna le statistiche del proiettile
-	UFUNCTION() void UpdateBulletIcons(const TArray<FInventoryItem>& InventoryItems); // Aggiorna le icone dei proiettili disponibili
+	UFUNCTION() void UpdateBulletInfo(UBulletData* BulletData);
     UFUNCTION() void UpdateTargetInfo(const FString& EnemyName, UBulletData* BulletData = nullptr); 
-	UFUNCTION() void RefreshBulletUI(); // Aggiorna l'intera UI dei proiettili
-    UFUNCTION()	void SetSelectedBullet(int32 Index);
-	UFUNCTION() void UpdateRevolverUI(); // Aggiorna l'UI del revolver
-    UFUNCTION() void ConfirmBulletSelection(); // Conferma la selezione del proiettile
+    UFUNCTION() void ConfirmBulletSelection();
     UFUNCTION() void SwitchToBattleUI();
-	UFUNCTION() void SwitchToBattlePhase();
-
-	UFUNCTION()
-    void CleanRef();
-	
 
 	/*
 	 *-------------------------------------------------------
@@ -242,11 +191,6 @@ private:
 
 	UPROPERTY()
 	FDamage Damage;
-
-	UPROPERTY()
-	UBulletDisplayer* Displayer;
-	
-	void ReflectBullets();
 
 	/*
 	 *-------------------------------------------------------

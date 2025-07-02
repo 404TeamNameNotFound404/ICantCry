@@ -5,7 +5,6 @@
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
 #include "EngineUtils.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
-#include "ICantCry/ICC/Mechanics/UI/BulletDisplay/BulletDisplayer.h"
 
 void UBattleHUD::NativeConstruct()
 {
@@ -27,7 +26,6 @@ void UBattleHUD::NativeConstruct()
     if (Crosshair) Crosshair->SetVisibility(ESlateVisibility::Hidden);
     if (CanvasMainBattlePanel) CanvasMainBattlePanel->SetVisibility(ESlateVisibility::Hidden);
     if (CanvasStatus) CanvasStatus->SetVisibility(ESlateVisibility::Hidden);
-    if (CanvasBulletStats) CanvasBulletStats->SetVisibility(ESlateVisibility::Visible);
     if (ShootBoost) ShootBoost->SetVisibility(ESlateVisibility::Hidden);
 
     //VISIBLE
@@ -39,14 +37,11 @@ void UBattleHUD::NativeConstruct()
 
     //LOAD BULLET DATA
     LoadedBulletData.Empty();
-    for (const TSubclassOf<UBulletData>& BulletClass : AvailableBulletTypes)
+    for (TSubclassOf<UBulletData> BulletClass : AvailableBulletTypes)
     {
-         if (BulletClass)
+        if (BulletClass)
         {
-            if (UBulletData* BulletData = NewObject<UBulletData>(this, BulletClass))
-            {
-                LoadedBulletData.Add(BulletData);
-            }
+            LoadedBulletData.Add(NewObject<UBulletData>(this, BulletClass));
         }
     }
 
@@ -55,61 +50,21 @@ void UBattleHUD::NativeConstruct()
     CurrentRevolverSlot = 0;
     UpdateBulletSelection();
 
-
-    // Init CircularBuffer
-    RevolverBuffer = NewObject<UCircularBulletBuffer>(this);
-
-    if (RevolverBuffer)
+    // AMMO SELECTION
+    for (UImage* Icon : BulletIcons)
     {
-        RevolverBuffer->Initialize(MaxRevolverSlots);
-    }
-
-
-    // INIT REVOLVER SLOTS
-    RevolverSlots = {
-        RevolverSlot0,
-        RevolverSlot1,
-        RevolverSlot2,
-        RevolverSlot3,
-        RevolverSlot4,
-        RevolverSlot5
-    };
-
-    PistolMagazines =
-    {
-        PistolMagazine_1,
-        PistolMagazine_2,
-        PistolMagazine_3,
-        PistolMagazine_4,
-        PistolMagazine_5,
-        PistolMagazine_6
-    };
-
-    DebugHelper::LogError("Revolver size " + FString::FromInt(RevolverSlots.Num()));
-
-    // init all hidden slots before showing
-    for (URevolverSlot* RevolverSlot : RevolverSlots)
-    {
-        if (RevolverSlot)
+        if (Icon) 
         {
-            RevolverSlot->SetFilled(false);
+            Icon->SetVisibility(ESlateVisibility::Visible);
+            Icon->SetOpacity(0.5f); // reduced opacity for unselected
         }
-
-        RevolverSlot->SetVisibility(ESlateVisibility::Visible);
-
-        DebugHelper::LogError("Called");
     }
-
-
-    if (!BulletPanel || !BulletIconWidgetClass)
-    {
-        UE_LOG(LogTemp, Error, TEXT("BattleHUD initialization failed - missing required widgets"));
-        return;
-    }
-
-
-    SetSelectedBullet(0);
     
+    // Evidenzia il proiettile selezionato iniziale
+    if (BulletIcons.IsValidIndex(SelectedBulletIndex))
+    {
+        BulletIcons[SelectedBulletIndex]->SetOpacity(1.0f);
+    }
 
     //FIND ENEMY IN THE LEVEL
     UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Enemy"), Enemies); // Questo non credo serva piu visto che Enemies è vuoto
@@ -121,6 +76,7 @@ void UBattleHUD::NativeConstruct()
 		break;
 	}
 
+    DebugHelper::LogError("Lenght bullet icon " + FString::FromInt(BulletIcons.Num()));
 
     for (TActorIterator<AMinigameHandler> It(GetWorld()); It; ++It)
     {
@@ -129,21 +85,18 @@ void UBattleHUD::NativeConstruct()
     }
 
     CurrentEnemyIndex = 0;
+
+    GameInstance = Cast<UICantCryGameInstance>(UGameplayStatics::GetGameInstance(this));
+    checkf(GameInstance, TEXT("Game instance is null at constructor battle hud"));
+    PlayerHealth->SetPercent(GameInstance->GetPlayerStats()->CurrentHealth);
+}
     
     RefreshBulletUI();
 
     FTimerHandle TimerHandle;
 
-    GetWorld()->GetTimerManager().SetTimer(
-    TimerHandle,                 
-    this,                      
-    &UBattleHUD::ReflectBullets,  
-    0.4f,                            
-    false                            
-);
-}
 
-    
+
 // TARGET
 void UBattleHUD::IncreaseAP(int Amount)
 {
@@ -163,19 +116,8 @@ void UBattleHUD::UpdateAPBar()
 
 void UBattleHUD::OnShootPressed()
 {
-    if (!GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn())
-    {
-        return;
-    }
-
-    bBulletSetupFinished = true;
-    CanvasMiniGames->SetVisibility(ESlateVisibility::Visible);
-    Displayer->SetVisibility(ESlateVisibility::Hidden);
     TargetText->SetVisibility(ESlateVisibility::Visible);
     TargetNameText->SetVisibility(ESlateVisibility::Visible);
-    CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
-    CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
-    CanvasStatus->SetVisibility(ESlateVisibility::Visible);
     bShootFired = true;
     IncreaseAP(1);
     bTargetSelection = true;
@@ -189,39 +131,18 @@ void UBattleHUD::OnShootBoostPressed()
 
 void UBattleHUD::OnFocusPressed()
 {
-    if (!GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn())
-    {
-        return;
-    }
-    
     DebugHelper::LogWarning("attack and defense increased!");
     IncreaseAP(1);
     BattleHandler->GetTurnBasedSystem()->EndTurn();
     BattleHandler->GetTurnBasedSystem()->StartNextTurn();
     DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
     BattleHandler->GetTurnBasedSystem()->SetTurnOverlayApplied(false);
-    CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
     bTargetSelection = false;
 }
 
 void UBattleHUD::OnReloadPressed()
 {
-    if (!GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn())
-    {
-        return;
-    }
-    
-    bBulletSetupFinished = false;
-    bShootFired = false;
-    bTargetSelection = false;
     IncreaseAP(1);
-    CanvasAmmoSelection->SetVisibility(ESlateVisibility::Visible);
-    TargetText->SetVisibility(ESlateVisibility::Hidden);
-    TargetNameText->SetVisibility(ESlateVisibility::Hidden);
-    CanvasBulletStats->SetVisibility(ESlateVisibility::Visible);
-    CanvasStatus->SetVisibility(ESlateVisibility::Hidden);
-    Displayer->SetVisibility(ESlateVisibility::Visible);
-    Displayer->Refresh();
 }
 
 void UBattleHUD::OnPassPressed()
@@ -236,8 +157,9 @@ void UBattleHUD::OnPassPressed()
     DebugHelper::LogSuccess("Player passed the turn");
     BattleHandler->GetTurnBasedSystem()->EndTurn();
     BattleHandler->GetTurnBasedSystem()->StartNextTurn();
-    DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
+	DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
     BattleHandler->GetTurnBasedSystem()->SetTurnOverlayApplied(false);
+    DebugHelper::RemoveOverlayMaterialFromStaticMesh(BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
     bTargetSelection = false;
 }
 
@@ -348,47 +270,43 @@ void UBattleHUD::SetSelectedBullet(int32 Index)
 
 void UBattleHUD::UpdateBulletSelection() 
 {
-    if (!CanvasAmmoSelection || !BulletPanel || !bBulletSetupFinished) 
+    if (!CanvasAmmoSelection || !LoadedBulletData.IsValidIndex(SelectedBulletIndex) || !bBulletSetupFinished) 
     {
         return;
     }
-
-    // Ottieni tutti i widget figli del BulletPanel
-    TArray<UWidget*> Children = BulletPanel->GetAllChildren();
     
-    // Aggiorna l'opacità e lo stato di ogni icona
-    for (int32 i = 0; i < Children.Num(); i++)
+    for (int32 i = 0; i < BulletIcons.Num(); i++)
     {
-        UBulletIconWidget* BulletIconWidget = Cast<UBulletIconWidget>(Children[i]);
-        if (BulletIconWidget)
+        if (BulletIcons[i])
         {
-            // Imposta l'opacità in base alla selezione
-            BulletIconWidget->SetRenderOpacity(i == SelectedBulletIndex ? 1.0f : 0.5f);
-            
-            // Aggiorna l'indicatore di selezione se esiste
-            if (AmmoSelectionIndicator && i == SelectedBulletIndex)
+            BulletIcons[i]->SetOpacity(i == SelectedBulletIndex ? 1.0f : 0.5f);
+            BulletIcons[i]->SetVisibility(ESlateVisibility::Visible);
+
+            // Aggiorna l'icona dal BulletData corrispondente
+            if (LoadedBulletData.IsValidIndex(i) && LoadedBulletData[i]->Icon)
             {
-                if (UCanvasPanelSlot* IconSlot = Cast<UCanvasPanelSlot>(BulletIconWidget->Slot))
-                {
-                    UCanvasPanelSlot* IndicatorSlot = Cast<UCanvasPanelSlot>(AmmoSelectionIndicator->Slot);
-                    if (IndicatorSlot)
-                    {
-                        IndicatorSlot->SetPosition(IconSlot->GetPosition());
-                    }
-                }
+                BulletIcons[i]->SetBrushFromTexture(LoadedBulletData[i]->Icon);
             }
         }
     }
 
-    // Aggiorna le informazioni del proiettile selezionato
-    if (LoadedBulletData.IsValidIndex(SelectedBulletIndex))
+    if (AmmoSelectionIndicator && BulletIcons.IsValidIndex(SelectedBulletIndex))
     {
-        UpdateBulletStats(LoadedBulletData[SelectedBulletIndex]);
-        UpdateBulletInfo(LoadedBulletData[SelectedBulletIndex]);
+        const UCanvasPanelSlot* IconSlot = Cast<UCanvasPanelSlot>(BulletIcons[SelectedBulletIndex]->Slot);
+        UCanvasPanelSlot* IndicatorSlot = Cast<UCanvasPanelSlot>(AmmoSelectionIndicator->Slot);
+        
+        if (IconSlot && IndicatorSlot)
+        {
+            IndicatorSlot->SetPosition(IconSlot->GetPosition());
+        }
     }
 
-    // Mostra il nome del proiettile selezionato
-    if (TargetNameText_2 && LoadedBulletData.IsValidIndex(SelectedBulletIndex))
+    // Update bullet info
+    UpdateBulletInfo(LoadedBulletData[SelectedBulletIndex]);
+
+
+    // show the name of the selected bullet in the canvasstatus
+    if (TargetNameText_2 && LoadedBulletData[SelectedBulletIndex])
     {
         TargetNameText_2->SetText(FText::FromString(LoadedBulletData[SelectedBulletIndex]->BulletName));
     }
@@ -396,141 +314,61 @@ void UBattleHUD::UpdateBulletSelection()
 
 void UBattleHUD::UpdateBulletInfo(UBulletData* BulletData)
 {
-    if (!BulletData || !TargetNameText_2)
-        return;
+    if (!BulletData || !TargetNameText) return;
 
-    TargetNameText_2->SetText(FText::FromString(BulletData->BulletName));
+    FString InfoString = FString::Printf(TEXT("BULLET: %s\nPOWER: %d\nEFFECT: %s"), 
+        *BulletData->BulletName,
+        BulletData->Power,
+        *BulletData->Effect);
+
+    TargetNameText->SetText(FText::FromString(InfoString));
 }
-
-
-
-void UBattleHUD::UpdateBulletStats(UBulletData *BulletData)
-{
-    if (!BulletData || !CanvasBulletStats) 
-    {
-        return;
-    }
-
-    CanvasBulletStats->SetVisibility(ESlateVisibility::Visible);
-
-    if (BulletName) 
-    {
-        BulletName->SetText(FText::FromString(BulletData->BulletName));
-    }
-
-    BulletQuantity = Inventory.GetBulletQuantity(BulletData);
-
-    if (QuantityTotal)
-    {
-        QuantityTotal->SetText(FText::AsNumber(BulletQuantity));
-    }
-        
-
-
-    if (Description) 
-    {
-        FString Desc = FString::Printf(TEXT("Power: %d\nEffect: %s"),
-        BulletData->Power, *BulletData->Effect);
-        Description->SetText(FText::FromString(Desc));
-    }
-}
-
-void UBattleHUD::UpdateBulletIcons(const TArray<FInventoryItem> &InventoryItems)
-{
-    if (!BulletPanel || !BulletIconWidgetClass) return;
-
-    BulletPanel->ClearChildren();
-
-    for (const FInventoryItem& Item : InventoryItems)
-    {
-        if (Item.ItemType == EItemType::Bullet && Item.Bullet.GetBulletData()->Icon)
-        {
-            UBulletIconWidget* NewIcon = CreateWidget<UBulletIconWidget>(this, BulletIconWidgetClass);
-            if (NewIcon)
-            {
-                NewIcon->SetIcon(Item.Bullet.GetBulletData()->Icon);
-                NewIcon->SetQuantity(Item.Quantity);
-                BulletPanel->AddChild(NewIcon);
-            }
-        }
-    }
-}
-
 
 void UBattleHUD::ConfirmBulletSelection() // this is for the confirm button  
 {
-    
-    // if (!CanvasAmmoSelection->IsVisible() || RevolverBuffer->IsFull())
-    // {
-    //     return;
-    // }
-    
-    //
-    //
+    /*
+     * Commento tutto questo perche non mi fa andare avanti , array dei bullet non funziona ,
+     * la selezione del index del bullet non funziona perche hai scritto una formula dove moltiplichi il modulo per 0 (perche array di bulleticon è vuoto)
+     * io intanto lo commento il resto che vedi sotto non commentato non lo toccare se no non parte la fight poi
+     */
     // if (!LoadedBulletData.IsValidIndex(SelectedBulletIndex))
     // {
-    //     UE_LOG(LogTemp, Error, TEXT("Invalid bullet selection index"));
+    //     DebugHelper::LogError("!LoadedBulletData.IsValidIndex(SelectedBulletIndex)");
     //     return;
     // }
     //
-    // UBulletData* SelectedBullet = LoadedBulletData[SelectedBulletIndex];
-    // if (Inventory.GetBulletQuantity(SelectedBullet) <= 0)
+    // if (CurrentRevolverSlot >= RevolverSlots.Num())
     // {
-    //     UE_LOG(LogTemp, Warning, TEXT("No bullets left to add"));
+    //     DebugHelper::LogError("CurrentRevolverSlot >= RevolverSlots.Num()");
     //     return;
     // }
-
-    // // Aggiunge al revolver e rimuove dall'inventario
-    // RevolverBuffer->AddBullet(SelectedBullet);
-    // Inventory.RemoveBullet(SelectedBullet, 1);
-
-    // Aggiorna l'UI
-    // UpdateRevolverUI();
-    // SetSelectedBullet(SelectedBulletIndex);
-
-    // // Se il revolver è pieno, passa alla fase di battaglia
-    // if (RevolverBuffer->IsFull())
+    //
+    // const UBulletData* CurrentBullet = LoadedBulletData[SelectedBulletIndex];
+    //
+    // // update icon in the revolver slot
+    // if (RevolverSlots[CurrentRevolverSlot] && CurrentBullet->Icon)
     // {
-    //     SwitchToBattlePhase();
+    //     RevolverSlots[CurrentRevolverSlot]->SetBrushFromTexture(CurrentBullet->Icon);
+    //     RevolverSlots[CurrentRevolverSlot]->SetVisibility(ESlateVisibility::Visible);
+    //     CurrentRevolverSlot++;
     // }
-
-    CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
-    Displayer->SetVisibility(ESlateVisibility::Hidden);
-    SwitchToBattlePhase();
+    //
+    // // if the revolver is full, go to battle ui
+    // if (CurrentRevolverSlot >= MaxRevolverSlots) // CurrentRevolverSlot >= RevolverSlots.Num()
+    // {
+    //     // Hide ammo selection UI
+    //     if (CanvasAmmoSelection) CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
+    //     if (ConfirmButton) ConfirmButton->SetVisibility(ESlateVisibility::Hidden);
+    //     SwitchToBattleUI();
+    // }
+    
+    if (CanvasAmmoSelection) CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
+    if (ConfirmButton) ConfirmButton->SetVisibility(ESlateVisibility::Hidden);
+    SwitchToBattleUI();
+    bBulletSetupFinished = true;
+    bStartFight = true;
+    BattleHandler->GetTurnBasedSystem()->RequestFight(true);
 }
-
-
-void UBattleHUD::UpdateRevolverUI() 
-{
-
-    if (!RevolverBuffer)
-    {
-        return;
-    }
-       
-
-    // resets the visual state to show only the bullets that are actually present
-    for (URevolverSlot* RevolverSlot : RevolverSlots)
-    {
-        if (RevolverSlot)
-        {
-            RevolverSlot->SetFilled(false);
-        }
-    }
-
-    // show only bullet loaded
-    for (int32 i = 0; i < RevolverBuffer->GetCount(); i++)
-    {
-        int32 BufferIndex = (RevolverBuffer->GetTailIndex() + i) % RevolverBuffer->GetCapacity();
-        UBulletData* Bullet = RevolverBuffer->PeekAt(BufferIndex);
-        
-        if (Bullet && Bullet->Icon && RevolverSlots.IsValidIndex(i))
-        {
-            RevolverSlots[i]->SetFilled(true, Bullet->Icon);
-        }
-    }
-}
-
 
 void UBattleHUD::SwitchToBattleUI()
 {
@@ -547,71 +385,31 @@ void UBattleHUD::SwitchToBattleUI()
     UpdateAPBar();
 }
 
-void UBattleHUD::SwitchToBattlePhase()
+void UBattleHUD::ScrollBulletSelection(int ScrollValue)
 {
-    if (CanvasAmmoSelection) CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
-    if (ConfirmButton) ConfirmButton->SetVisibility(ESlateVisibility::Hidden);
-    if (CanvasBulletStats) CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
-    
-    SwitchToBattleUI();
-    bBulletSetupFinished = true;
-    bStartFight = true;
-    BattleHandler->GetTurnBasedSystem()->RequestFight(true);
-}
+    // if(!BattleHandler) 
+    // {
+    //     return;
+    // }
 
-
-void UBattleHUD::CleanRef()
-{
-    RevolverBuffer = nullptr;
-    BattleHandler = nullptr;
-      
-    LoadedBulletData.Empty();
-}
-
-void UBattleHUD::ReflectBullets()
-{
-    Displayer = CreateWidget<UBulletDisplayer>(GetWorld(), BulletDisplayerClass);
-    BulletPanel->AddChild(Displayer);
-}
-
-UBulletDisplayer* UBattleHUD::GetBulletDisplayer() const
-{
-    return Displayer;
-}
-
-void UBattleHUD::ScrollBulletSelection(float ScrollValue)
-{
-    UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
-    CanvasBulletStats->SetVisibility(ESlateVisibility::Visible);
-    
-    if (Instance->GetInventory().BulletsStored.IsEmpty()) 
+    if (FMath::IsNearlyZero(static_cast<float>(ScrollValue)))
     {
         return;
     }
-
-    TArray<FBullet> Bullets;
-    Instance->GetInventory().BulletsStored.GenerateValueArray(Bullets);
-
-    const int Direction = (ScrollValue > 0) ? 1 : (ScrollValue < 0 ? -1 : 0);
-    const int32 NewIndex = (SelectedBulletIndex + Direction + Bullets.Num()) % Bullets.Num();
-
-    if (Displayer && Displayer->GetBullets().IsValidIndex(NewIndex))
-    {
-        CurrentSelectedBullet = Displayer->GetBullets()[NewIndex];
-        DebugHelper::LogSuccess("Scrolling " + CurrentSelectedBullet->GetBullet().GetBulletData()->BulletName);
-
-        CurrentSelectedBullet->DisplayBulletInfo();
-        
-        FVector2D AbsPos = CurrentSelectedBullet->GetCachedGeometry().GetAbsolutePosition();
-        FVector2D LocalPos = AmmoSelectionIndicator->GetParent()->GetCachedGeometry().AbsoluteToLocal(AbsPos);
-
-        if (UCanvasPanelSlot* IndicatorSlot = Cast<UCanvasPanelSlot>(AmmoSelectionIndicator->Slot))
-        {
-            IndicatorSlot->SetPosition(LocalPos);
-        }
-    }
     
-    SelectedBulletIndex = NewIndex;
+    const int32 Direction = (ScrollValue > 0) ? 1 : -1;
+    SelectedBulletIndex = (SelectedBulletIndex + Direction + BulletIcons.Num()) % BulletIcons.Num(); 
+
+    FWidgetTransform Transform;
+
+    Transform.Translation = BulletIcons[SelectedBulletIndex]->GetRenderTransform().Translation;
+
+    Transform.Angle  = AmmoSelectionIndicator->GetRenderTransform().Angle;
+
+    Transform.Scale = AmmoSelectionIndicator->GetRenderTransform().Scale;
+
+    AmmoSelectionIndicator->SetRenderTransform(Transform);
+
 }
 
 void UBattleHUD::SetSelectTarget(const bool& Enable)
@@ -627,13 +425,6 @@ bool UBattleHUD::GetSelectTarget() const
 void UBattleHUD::Engage()
 {
     bTargetSelection = false;
-
-    if (GetCircularBulletBuffer()->IsEmpty())
-    {
-        DebugHelper::LogWarning("Revolver is empty can't shoot target");
-        return;
-    }
-    
     UICantCryGameInstance* PersistentInstance = Cast<UICantCryGameInstance>(GetGameInstance());
     checkf(PersistentInstance, TEXT("Instance is null at void UBattleHUD::UpdateTarget()"));
     AMob* SelectedEnemy = Cast<AMob>(BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex]);
@@ -650,6 +441,17 @@ void UBattleHUD::Engage()
     checkf(MinigameHandler, TEXT("Minigame handler is null at UBattleHUD::Engage"));
     MinigameHandler->StartMinigame(true);
     EngageBtn->SetVisibility(ESlateVisibility::Hidden);
+    // DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(SelectedEnemy->StaticMesh);
+}
+
+AMob* UBattleHUD::GetCurrentPlayingEmotion() const
+{
+    return CurrentActiveAI;
+}
+
+void UBattleHUD::SetCurrentPlayingEmotion(AMob* Current)
+{
+    CurrentActiveAI = Current;
     CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
 }
 
@@ -716,11 +518,6 @@ bool UBattleHUD::IsReadyToBattle() const
 ABattleHandler* UBattleHUD::GetBattleHandler() const
 {
     return BattleHandler;
-}
-
-UCircularBulletBuffer* UBattleHUD::GetCircularBulletBuffer() const
-{
-    return RevolverBuffer;
 }
 
 

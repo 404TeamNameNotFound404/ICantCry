@@ -30,11 +30,19 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stats")
 	float Experience;
+
+	/**
+	 * Read-only property used for player progress bar
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Stats")
+	float MaxHealth = 50;
+
 	/**
 	 * Current Health
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stats")
-	float CurrentHealth;
+	float CurrentHealth = MaxHealth;
+	
 	/**
 	 * Attack Power
 	 */
@@ -70,10 +78,5 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Modifiers")
 	float ApModifier = 1.0f;
 
-	/**
-	 * Weakness modifier
-	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Modifiers")
-	float WeaknessModifier = 0.0f;
 	
 };

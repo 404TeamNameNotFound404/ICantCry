@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "ICantCry/ICC/Actors/ICC_Actor.h"
+#include "ICantCry/ICC/Actors/AI/Mob.h"
 #include "Turn.generated.h"
 
 USTRUCT(BlueprintType)
@@ -23,4 +24,6 @@ struct FTurn
 	FTurn();
 	void PopulateQueue(UWorld* World);
 	void AssignFirstTurn();
+	
+	AMob* GetMobInQueue() const;
 };

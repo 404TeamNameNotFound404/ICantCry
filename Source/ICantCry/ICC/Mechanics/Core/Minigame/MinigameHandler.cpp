@@ -47,11 +47,12 @@ void AMinigameHandler::StartMinigame(const bool& EnableAttack)
 		}
 		
 		//CurrentMinigameDisplayed->AddToViewport();
-		Player->GetBattleHUD()->MinigameSlot->AddChild(CurrentMinigameDisplayed);
+		Player->GetBattleHUD()->MinigameScaleSlot->AddChild(CurrentMinigameDisplayed);
 		Player->GetBattleHUD()->HideInfo();
 		Player->EnableMinigameInput(true);
 		Player->SetActiveMinigameUserWidget(CastedWidget);
 		CurrentMinigameDisplayed->SetKeyboardFocus();
+		bPlayerMinigameEnded = false;
 	}
 
 	
@@ -68,11 +69,17 @@ void AMinigameHandler::StartMinigame(const bool& EnableAttack)
 		}
 		
 		//CurrentMinigameDisplayed->AddToViewport();
-		Player->GetBattleHUD()->MinigameSlot->AddChild(CurrentMinigameDisplayed);
+		Player->GetBattleHUD()->MinigameScaleSlot->AddChild(CurrentMinigameDisplayed);
 		Player->GetBattleHUD()->HideInfo();
 		Player->EnableMinigameInput(true);
 		Player->SetActiveMinigameUserWidget(CastedWidget);
 		CurrentMinigameDisplayed->SetKeyboardFocus();
+		Player->GetBattleHUD()->GetCurrentPlayingEmotion()->SetMinigameHasStarted(true);
+		
+		AMob::SetMinigameStarted(true);
+		AMob::MinigameEnded = false;
+		Player->GetBattleHUD()->GetCurrentPlayingEmotion()->SetMinigameEnd(false);
+		Player->GetBattleHUD()->GetCurrentPlayingEmotion()->SetIsBusy(true);
 	}
 }
 
@@ -91,6 +98,22 @@ void AMinigameHandler::EndMinigame()
 	// Controller->SetInputMode(InputMode);
 	Controller->bShowMouseCursor = true;
 	Player->EnableMinigameInput(false);
+
+	AMob::SetMinigameStarted(false);
+	AMob::MinigameEnded = true;
+	Player->GetBattleHUD()->GetCurrentPlayingEmotion()->SetMinigameHasStarted(false);
+	Player->GetBattleHUD()->GetCurrentPlayingEmotion()->SetMinigameEnd(true);
+	bPlayerMinigameEnded = true;
+}
+
+AICC_Player* AMinigameHandler::GetBattlePlayer() const
+{
+	return Player;
+}
+
+bool AMinigameHandler::IsPlayerMinigameEnded() const
+{
+	return bPlayerMinigameEnded;
 }
 
 

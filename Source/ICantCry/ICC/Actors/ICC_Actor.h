@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "ICantCry/ICC/Actors/StatusTracker/StatusTracker.h"
 #include "ICC_Actor.generated.h"
 
 UCLASS()
@@ -14,5 +15,11 @@ class ICANTCRY_API AICC_Actor : public ACharacter
 public:
 	// Sets default values for this character's properties
 	AICC_Actor();
+
+	UStatusTracker* GetStatusTracker() const;
+
+protected:
+	UPROPERTY()
+	UStatusTracker* StatusTracker;
 	
 };

@@ -2,8 +2,8 @@
 #include "AttackMinigame.h"
 
 #include "Components/PanelWidget.h"
-#include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
+#include "Kismet/GameplayStatics.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 
 void UAttackMinigame::NativeConstruct()
@@ -15,13 +15,13 @@ void UAttackMinigame::MoveSlider(const FVector2D& Position)
 {
 	checkf(Slider, TEXT("Slider in UDefenceMinigame::MoveSlider is null"));
 	StartingSliderPosition = Slider->GetRenderTransform().Translation;
-	
-	if (bStopSlider)
-	{
-		DebugHelper::LogMessage(5, FColor::Black, "Bar Stopped at " + Slider->GetRenderTransform().Translation.ToString());
-		return;
-	}
-	
+
+    if (bStopSlider)
+    {
+        DebugHelper::LogMessage(5, FColor::Black, "Bar Stopped at " + Slider->GetRenderTransform().Translation.ToString());
+        return;
+    }
+    
 	FVector2D CurrentPosition = Slider->GetRenderTransform().Translation;
 	CurrentPosition.Y = 0;
 	FVector2D DeltaMove = Position * Speed * GetWorld()->GetDeltaSeconds();

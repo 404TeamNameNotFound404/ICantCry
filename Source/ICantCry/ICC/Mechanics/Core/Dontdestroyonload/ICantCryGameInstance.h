@@ -5,7 +5,6 @@
 #include "ICantCry/ICC/Mechanics/Core/Data/PersistentData.h"
 #include "ICantCry/ICC/Mechanics/Core/Data/PlayerStats.h"
 #include "ICantCry/ICC/Mechanics/TurnSystem/BattleFlow/DamageCalculator.h"
-#include "ICantCry/ICC/Inventory/Inventory.h"
 #include "ICantCryGameInstance.generated.h"
 
 class AICC_Player;
@@ -26,9 +25,6 @@ public:
 	void RecreatePlayer(UWorld* World,FVector& PreviousPosition, FRotator& PreviousRotation, float& CurrentHp, float& CurrentAp) const;
 	void StoreBeginPlayerTransform(const FVector& BeginPosition, const FRotator& BeginOrientation) const;
 	void SavePlayerTransform(const FVector& LastPosition, const FRotator& LastOrientation) const;
-
-	AICC_Player* GetCurrentPlayer() const;
-	void SetPersistentPlayer(AICC_Player* Player);
 	
 	/**
 	 * Load the previous position before loading something else
@@ -39,10 +35,13 @@ public:
 	UPlayerStats* GetPlayerStats() const;
 	FDamage GetCurrentDamageData() const;
 	void SetPlayerStats(UPlayerStats* Stats);
+	void SetCurrentPlayer(AICC_Player* NewPlayer);
+	AICC_Player* GetCurrentPlayer() const;
 	void SetDamageData(const FDamage& Damage);
 
 	void SetInventory(const FInventory& Inv);
 	FInventory& GetInventory();
+
 	
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))
@@ -61,5 +60,8 @@ private:
 
 	UPROPERTY()
 	AICC_Player* PersistentPlayer = nullptr;
+
+	UPROPERTY()
+	AICC_Player* CurrentPlayer = nullptr;
 	
 };

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/Image.h"
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameUserWidget.h"
+#include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "AttackMinigame.generated.h"
 
 /**
@@ -63,4 +64,16 @@ private:
 
 	UPROPERTY()
 	FVector2D StartingSliderPosition;
+
+	UPROPERTY()
+	int MovementDirection = 1;
+
+	UPROPERTY()
+	float BorderLeft = 0.0f;
+
+	UPROPERTY()
+	float BorderRight = 950.0f;
+
+	UPROPERTY()
+	UICantCryGameInstance* GameInstance;
 };

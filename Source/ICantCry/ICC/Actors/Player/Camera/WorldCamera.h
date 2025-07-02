@@ -29,11 +29,23 @@ public:
 	 * Move the camera to the next waypoint statically (no distance interpolation)
 	 */
 	void MoveToNextWaypoint();
+
+	void MoveToThePreviousWaypoint();
+
+	/**
+	 * Snap to the current Waypoint 
+	 */
+	void SnapToFixedWaypoint(AActor* Waypoint);
 	
 	bool IsDefaultCamera();
+
 	void SetbDefaultCamera(const bool& bCondition);
-	int GetWaypointIndex() const;
-	void SetWaypointIndex(int index);
+	
+	UPROPERTY()
+	bool bIsPlatformTouched = false;
+
+	AActor* GetPreviousWaypoint() const;
+	AActor* GetCurrentWaypoint() const;
 
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))

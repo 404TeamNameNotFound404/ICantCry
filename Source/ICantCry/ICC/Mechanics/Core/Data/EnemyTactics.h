@@ -14,15 +14,33 @@ class ICANTCRY_API UEnemyTactics : public UDataAsset
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Moves")
-	float Moves;
+	/**
+	 * Number of moves AI can make during it's turn (not done yet)
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Moves")
+	float Moves = 1.0f;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Moves")
+	/**
+	 * Minigame power
+	 */
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category="Moves")
 	float MinigamePower = 1.0f;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Actions")
+	/**
+	 * Modifier
+	 */
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category="Actions")
 	int32 ActionPointsModifier = 1;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Actions")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category="Actions")
 	int32 WeaknessModifier = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Actions")
+	int32 MovePower = 1.0f;
+
+	/**
+	 * Used to restore AI health through 'Heal' Task
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Parameters")
+	float HealingPoint = 5.0f;
 };
