@@ -109,5 +109,10 @@ void UBulletDisplayer::RemoveBullet()
 	}
 	
 	RefreshBullets();
+	
+	AMob* Target = Player->GetBattleHUD()->GetSelectedEmotion();
+	const float Damage = Instance->GetCurrentDamageData().CalculateDamage(true);
+	Target->GetData()->Health -= Damage;
+	Target->GetHealthBar()->SetCurrentHealth(Target->GetData()->Health);
 }
 

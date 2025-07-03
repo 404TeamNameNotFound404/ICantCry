@@ -600,6 +600,7 @@ void UBattleHUD::Engage()
     UICantCryGameInstance* PersistentInstance = Cast<UICantCryGameInstance>(GetGameInstance());
     checkf(PersistentInstance, TEXT("Instance is null at void UBattleHUD::UpdateTarget()"));
     AMob* SelectedEnemy = Cast<AMob>(BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex]);
+    SelectedTarget = SelectedEnemy;
     checkf(SelectedEnemy, TEXT("SelectedEnemy is null at UBattleHUD::Engage"));
     CurrentBulletData = GetCircularBulletBuffer()->PeekAt(GetCircularBulletBuffer()->GetTailIndex()); // this will take the first bullet avaiable
     checkf(CurrentBulletData, TEXT("Assigned CurrentBulletData invalid"))
@@ -619,6 +620,11 @@ void UBattleHUD::Engage()
 AMob* UBattleHUD::GetCurrentPlayingEmotion() const
 {
     return CurrentActiveAI;
+}
+
+AMob* UBattleHUD::GetSelectedEmotion() const
+{
+    return SelectedTarget;
 }
 
 void UBattleHUD::SetCurrentPlayingEmotion(AMob* Current)

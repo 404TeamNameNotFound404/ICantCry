@@ -130,6 +130,7 @@ public:
 	bool GetSelectTarget() const;
 
 	AMob* GetCurrentPlayingEmotion() const;
+	AMob* GetSelectedEmotion() const;
 	
 	/**
 	 * Proceed to the battle phase
@@ -261,6 +262,10 @@ private:
 
 	UPROPERTY()
 	AMob* CurrentActiveAI = nullptr;
+
+	UPROPERTY()
+	AMob* SelectedTarget = nullptr;
+	
 
 	/**
 	 *-----------------------------

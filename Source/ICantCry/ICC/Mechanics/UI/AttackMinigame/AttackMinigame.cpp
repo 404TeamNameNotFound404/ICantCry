@@ -75,25 +75,25 @@ void UAttackMinigame::HandleScore()
 		case EMinigameThreshold::Bad:
 			DebugHelper::LogError("Bad minigame score!");
 		    Instance->GetPlayerStats()->MinigameModifier = 0.5f;
-		    Instance->GetCurrentDamageData().CalculateDamage(true);
+		    //Instance->GetCurrentDamageData().CalculateDamage(true);
 		    Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 			break;
 		case EMinigameThreshold::Good:
 			DebugHelper::LogWarning("Good minigame score!");
 		    Instance->GetPlayerStats()->MinigameModifier = 1.0f;
-		    Instance->GetCurrentDamageData().CalculateDamage(true);
+		    //Instance->GetCurrentDamageData().CalculateDamage(true);
 		    Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 			break;
 		case EMinigameThreshold::Perfect:
 			DebugHelper::LogSuccess("Perfect minigame score!");
 		    Instance->GetPlayerStats()->MinigameModifier = 1.5f;
-		    Instance->GetCurrentDamageData().CalculateDamage(true);
+		    //Instance->GetCurrentDamageData().CalculateDamage(true);
 		    Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 			break;
 		default:
 			DebugHelper::LogMessage(3, FColor::FromHex("ADB2D4"),"Unknown minigame score!");
 		    Instance->GetPlayerStats()->MinigameModifier = 0.5f;
-		    Instance->GetCurrentDamageData().CalculateDamage(true);
+		    //Instance->GetCurrentDamageData().CalculateDamage(true);
 		    Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 			break;
 	}
