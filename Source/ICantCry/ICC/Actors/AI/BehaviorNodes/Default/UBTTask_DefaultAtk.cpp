@@ -18,9 +18,10 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 
 	AICC_Player* Target = Cast<AICC_Player>(BlackBoard->GetValueAsObject("Target"));
 	AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner());
+	AMob* Self = Cast<AMob>(BlackBoard->GetValueAsObject("SelfActor"));
 	checkf(Controller, TEXT("AI Controller is invalid at EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask"));
 
-	checkf(Target, TEXT("Target is invalid at EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask"));
+	checkf(Target, TEXT("Target is invalid at EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask %s "), *Self->GetData()->GetName());
 
 
 	bool Attacked = BlackBoard->GetValueAsBool("Attacked?");

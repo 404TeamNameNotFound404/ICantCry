@@ -396,6 +396,7 @@ void AMob::PlayTurn()
 	
 	AIController->GetBlackboardComponent()->SetValueAsInt("AiId", AI_Id);
 	AIController->GetBlackboardComponent()->SetValueAsObject("Target", DebugPlayer);
+	AIController->GetBlackboardComponent()->SetValueAsObject("SelfActor", this);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsBuffed?", bIsBuffedAtk);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsDefenceDebuffed?", bIsDebuffedDefence);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsDefenceBuffed?", bBuffDefence);
@@ -411,7 +412,6 @@ void AMob::PlayTurn()
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsBuffOtherAtk?", bBuffOtherAtk);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsHealing?", bHeal);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsHealingOther?", bHealOther);
-	
 	
 	GetWorld()->GetTimerManager().SetTimer(BehaviorTreeTimerHandle, [this]()
 	{

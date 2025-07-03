@@ -158,9 +158,6 @@ void UBattleHUD::NativeConstruct()
     
 }
 
-
-
-
 // TARGET
 void UBattleHUD::IncreaseAP(int Amount)
 {
@@ -184,9 +181,15 @@ void UBattleHUD::OnShootPressed()
     {
         return;
     }
-    
+
+    CanvasMiniGames->SetVisibility(ESlateVisibility::Visible);
+    Displayer->SetVisibility(ESlateVisibility::Hidden);
     TargetText->SetVisibility(ESlateVisibility::Visible);
     TargetNameText->SetVisibility(ESlateVisibility::Visible);
+    CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
+    CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
+    CanvasStatus->SetVisibility(ESlateVisibility::Visible);
+    
     bShootFired = true;
     IncreaseAP(1);
     bTargetSelection = true;
@@ -539,31 +542,39 @@ void UBattleHUD::SwitchToBattleUI()
     UpdateAPBar();
 }
 
-void UBattleHUD::ScrollBulletSelection(int ScrollValue)
+void UBattleHUD::ScrollBulletSelection(float ScrollValue)
 {
-    // if(!BattleHandler) 
-    // {
-    //     return;
-    // }
-
-    if (FMath::IsNearlyZero(static_cast<float>(ScrollValue)))
+    UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+    CanvasBulletStats->SetVisibility(ESlateVisibility::Visible);
+    
+    if (Instance->GetInventory().BulletsStored.IsEmpty()) 
     {
         return;
     }
+
+    TArray<FBullet> Bullets;
+    Instance->GetInventory().BulletsStored.GenerateValueArray(Bullets);
+
+    const int Direction = (ScrollValue > 0) ? 1 : (ScrollValue < 0 ? -1 : 0);
+    const int32 NewIndex = (SelectedBulletIndex + Direction + Bullets.Num()) % Bullets.Num();
+
+    if (Displayer && Displayer->GetBullets().IsValidIndex(NewIndex))
+    {
+        CurrentSelectedBullet = Displayer->GetBullets()[NewIndex];
+        DebugHelper::LogSuccess("Scrolling " + CurrentSelectedBullet->GetBullet().GetBulletData()->BulletName);
+
+        CurrentSelectedBullet->DisplayBulletInfo();
+        
+        FVector2D AbsPos = CurrentSelectedBullet->GetCachedGeometry().GetAbsolutePosition();
+        FVector2D LocalPos = AmmoSelectionIndicator->GetParent()->GetCachedGeometry().AbsoluteToLocal(AbsPos);
+
+        if (UCanvasPanelSlot* IndicatorSlot = Cast<UCanvasPanelSlot>(AmmoSelectionIndicator->Slot))
+        {
+            IndicatorSlot->SetPosition(LocalPos);
+        }
+    }
     
-    const int32 Direction = (ScrollValue > 0) ? 1 : -1;
-    SelectedBulletIndex = (SelectedBulletIndex + Direction + BulletIcons.Num()) % BulletIcons.Num(); 
-
-    FWidgetTransform Transform;
-
-    Transform.Translation = BulletIcons[SelectedBulletIndex]->GetRenderTransform().Translation;
-
-    Transform.Angle  = AmmoSelectionIndicator->GetRenderTransform().Angle;
-
-    Transform.Scale = AmmoSelectionIndicator->GetRenderTransform().Scale;
-
-    AmmoSelectionIndicator->SetRenderTransform(Transform);
-
+    SelectedBulletIndex = NewIndex;
 }
 
 void UBattleHUD::SetSelectTarget(const bool& Enable)
@@ -578,6 +589,8 @@ bool UBattleHUD::GetSelectTarget() const
 
 void UBattleHUD::Engage()
 {
+    bTargetSelection = false;
+    
     if (GetCircularBulletBuffer()->IsEmpty())
     {
         DebugHelper::LogWarning("Revolver is empty can't shoot target");
@@ -594,7 +607,6 @@ void UBattleHUD::Engage()
     Damage.EnemyData = SelectedEnemy->GetData();
     Damage.AIMoves = SelectedEnemy->GetTactics();
     Damage.PlayerStats = PersistentInstance->GetPlayerStats();
-
     checkf(Damage.PlayerStats, TEXT("Stats null"));
     PersistentInstance->SetDamageData(Damage);
     DebugHelper::LogMessage(3, FColor::White, "Targeting " + SelectedEnemy->GetActorLabel());
@@ -602,26 +614,6 @@ void UBattleHUD::Engage()
     MinigameHandler->StartMinigame(true);
     EngageBtn->SetVisibility(ESlateVisibility::Hidden);
     CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
-    
-    // bTargetSelection = false;
-    // UICantCryGameInstance* PersistentInstance = Cast<UICantCryGameInstance>(GetGameInstance());
-    // checkf(PersistentInstance, TEXT("Instance is null at void UBattleHUD::UpdateTarget()"));
-    // AMob* SelectedEnemy = Cast<AMob>(BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex]);
-    // checkf(SelectedEnemy, TEXT("SelectedEnemy is null at UBattleHUD::Engage"));
-    // CurrentBulletData = GetCircularBulletBuffer()->PeekAt(GetCircularBulletBuffer()->GetTailIndex()); // this will take the first bullet avaiable
-    // checkf(CurrentBulletData, TEXT("Assigned CurrentBulletData invalid"))
-    // Damage.BulletData = CurrentBulletData; 
-    // Damage.EnemyData = SelectedEnemy->GetData();
-    // Damage.AIMoves = SelectedEnemy->GetTactics();
-    // Damage.PlayerStats = PersistentInstance->GetPlayerStats();
-    // PersistentInstance->SetDamageData(Damage);
-    //
-    // DebugHelper::LogMessage(3, FColor::White, "Targeting " + SelectedEnemy->GetActorLabel());
-    // checkf(MinigameHandler, TEXT("Minigame handler is null at UBattleHUD::Engage"));
-    // MinigameHandler->StartMinigame(true);
-    // EngageBtn->SetVisibility(ESlateVisibility::Hidden);
-    // // DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(SelectedEnemy->StaticMesh);
-    // CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
 }
 
 AMob* UBattleHUD::GetCurrentPlayingEmotion() const

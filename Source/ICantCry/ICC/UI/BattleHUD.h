@@ -122,7 +122,7 @@ public:
 	TArray<UBulletData*> LoadedBulletData;
 	UBulletDisplayer* GetBulletDisplayer() const;
 	
-    UFUNCTION(BlueprintCallable)void ScrollBulletSelection(int ScrollValue);
+    UFUNCTION(BlueprintCallable)void ScrollBulletSelection(float ScrollValue);
 	void UpdateTarget();
 	void ScrollTargetSelection(float ScrollValue);
 
