@@ -61,6 +61,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Battle System", Blueprintable)
 	bool bIsInFight = false;
 
+	bool IsAlive() const;
 
 	void EnableMinigameInput(const bool& Enable);
 	void SetActiveMinigameUserWidget(UMinigameUserWidget* Minigame);

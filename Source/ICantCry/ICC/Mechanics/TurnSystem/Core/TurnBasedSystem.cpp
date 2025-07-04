@@ -41,7 +41,7 @@ void UTurnBasedSystem::Start(UWorld* World)
 	DebugHelper::LogSuccess("Fight started right after");
 	
 	//EnemySpawnManager->SpawnRandomEnemy();
-
+	
 	Turn.AssignFirstTurn();
 	
 	if (Turn.Queue.IsValidIndex(Turn.CurrentTurn))
@@ -206,26 +206,47 @@ void UTurnBasedSystem::Flow()
 	{
 		return;
 	}
-	
-	/* TODO ADD A WAY TO SPEED UP THE BATTLE USING BATTLE FLOW IN PLAYER STATS
-	* In case of AI death
-	* Remove its index from the array and if array is empty victory condition is achieved
-	*/
 
-	if (Turn.Queue.Num() <= 1 && Turn.Queue[0] == CurrentPlayer) // 
+	for (int32 i = Turn.Queue.Num() - 1; i >= 0; --i) // backwards to safely remove
 	{
-		/*
-		 * Victory
-		 * TODO IMPLEMENT VICTORY AND GAIN EXPERIENCE
-		 */
+		AICC_Actor* Actor = Turn.Queue[i];
+		AMob* Mob = Cast<AMob>(Actor);
+
+		if (Mob && !Mob->IsAlive())
+		{
+			Turn.Queue.RemoveAt(i);
+			DebugHelper::LogWarning("Mob removed from queue due to death.");
+		}
 	}
-/*
-	else if (CurrentPlayer->Death())
+
+	if (Turn.Queue.Num() == 1 && Turn.Queue[0] == CurrentPlayer)
 	{
-		GameOver!
-		TODO ADD GAME OVER
+		DebugHelper::LogSuccess("Victory! All enemies defeated.");
+
+		bFightStarted = false;
+		bIsPlayerTurn = false;
+		bIsAiTurn = false;
+		
+		ABattleHandler::GetBattleInfoInstance()->SetInfo(FText::FromString("Victory!"));
+		
+		//TODO ADD VICTORY SCREEN
+		return;
 	}
-*/
+
+
+	if (!CurrentPlayer->IsAlive()) 
+	{
+		DebugHelper::LogError("Player died! Game Over.");
+
+		bFightStarted = false;
+		bIsPlayerTurn = false;
+		bIsAiTurn = false;
+		
+		ABattleHandler::GetBattleInfoInstance()->SetInfo(FText::FromString("Game Over"));
+
+		//TODO ADD GAMEOVER SCREEN
+	}
+	
 }
 
 

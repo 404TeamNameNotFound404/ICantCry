@@ -71,6 +71,11 @@ void AMob::BeginPlay()
 // Called every frame
 void AMob::Tick(float DeltaTime)
 {
+	if (!IsAlive())
+	{
+		return;
+	}
+	
 	Super::Tick(DeltaTime);
 }
 
@@ -376,6 +381,16 @@ void AMob::PlayTurn()
 		return;
 	}
 
+	// For some reason after the merge the 'DebugPlayer' couldn't be found, so I just iterate again if it does not find it at the 'BeginPlay'
+	if (!DebugPlayer)
+	{
+		for (TActorIterator<AICC_Player> It(GetWorld()); It; ++It)
+		{
+			DebugPlayer = *It;
+			break;
+		}
+	}
+
 	bIsBuffedAtk = false;
 	bIsDebuffedDefence = false;
 	bIsLow = false;
@@ -430,6 +445,19 @@ void AMob::PlaySecondTurn()
 		DebugHelper::LogError(TEXT("Skipping execution—this AI is not the active turn."));
 		return;
 	}
+}
+
+bool AMob::IsAlive()
+{
+	if (GetData()->Health <= 0)
+	{
+		Destroy();
+		GetData()->Alive = false;
+		return false;
+	}
+
+	GetData()->Alive = true;
+	return true;
 }
 
 void AMob::EndTurn()

@@ -483,42 +483,6 @@ void UBattleHUD::UpdateBulletInfo(UBulletData* BulletData)
 
 void UBattleHUD::ConfirmBulletSelection() // this is for the confirm button  
 {
-    /*
-     * Commento tutto questo perche non mi fa andare avanti , array dei bullet non funziona ,
-     * la selezione del index del bullet non funziona perche hai scritto una formula dove moltiplichi il modulo per 0 (perche array di bulleticon è vuoto)
-     * io intanto lo commento il resto che vedi sotto non commentato non lo toccare se no non parte la fight poi
-     */
-    // if (!LoadedBulletData.IsValidIndex(SelectedBulletIndex))
-    // {
-    //     DebugHelper::LogError("!LoadedBulletData.IsValidIndex(SelectedBulletIndex)");
-    //     return;
-    // }
-    //
-    // if (CurrentRevolverSlot >= RevolverSlots.Num())
-    // {
-    //     DebugHelper::LogError("CurrentRevolverSlot >= RevolverSlots.Num()");
-    //     return;
-    // }
-    //
-    // const UBulletData* CurrentBullet = LoadedBulletData[SelectedBulletIndex];
-    //
-    // // update icon in the revolver slot
-    // if (RevolverSlots[CurrentRevolverSlot] && CurrentBullet->Icon)
-    // {
-    //     RevolverSlots[CurrentRevolverSlot]->SetBrushFromTexture(CurrentBullet->Icon);
-    //     RevolverSlots[CurrentRevolverSlot]->SetVisibility(ESlateVisibility::Visible);
-    //     CurrentRevolverSlot++;
-    // }
-    //
-    // // if the revolver is full, go to battle ui
-    // if (CurrentRevolverSlot >= MaxRevolverSlots) // CurrentRevolverSlot >= RevolverSlots.Num()
-    // {
-    //     // Hide ammo selection UI
-    //     if (CanvasAmmoSelection) CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
-    //     if (ConfirmButton) ConfirmButton->SetVisibility(ESlateVisibility::Hidden);
-    //     SwitchToBattleUI();
-    // }
-    
     if (CanvasAmmoSelection) CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
     if (ConfirmButton) ConfirmButton->SetVisibility(ESlateVisibility::Hidden);
     SwitchToBattleUI();

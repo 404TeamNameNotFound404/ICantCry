@@ -225,6 +225,8 @@ public:
 	void PlayTurn();
 
 	void PlaySecondTurn();
+
+	bool IsAlive();
 	
 	void EndTurn();
 	static bool MinigameEnded;

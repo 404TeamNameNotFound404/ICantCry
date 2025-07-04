@@ -103,6 +103,11 @@ void AICC_Player::BeginPlay()
 // Called every frame
 void AICC_Player::Tick(float DeltaTime)
 {
+	if (!IsAlive())
+	{
+		return;
+	}
+	
 	Super::Tick(DeltaTime);
 }
 
@@ -134,6 +139,11 @@ AWorldCamera* AICC_Player::GetWorldCamera() const
 UCameraComponent* AICC_Player::GetCamera() const
 {
 	return Camera;
+}
+
+bool AICC_Player::IsAlive() const
+{
+	return Stats->CurrentHealth > 0;
 }
 
 void AICC_Player::EnableMinigameInput(const bool& Enable)
