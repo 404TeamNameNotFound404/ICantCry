@@ -16,17 +16,23 @@ void UAttackMinigame::MoveSlider(const FVector2D& Position)
 {
 	checkf(Slider, TEXT("Slider in UDefenceMinigame::MoveSlider is null"));
 	StartingSliderPosition = Slider->GetRenderTransform().Translation;
-
-    if (bStopSlider)
-    {
-        DebugHelper::LogMessage(5, FColor::Black, "Bar Stopped at " + Slider->GetRenderTransform().Translation.ToString());
-        return;
-    }
-    
+	
 	FVector2D CurrentPosition = Slider->GetRenderTransform().Translation;
 	CurrentPosition.Y = 0;
-	FVector2D DeltaMove = Position * Speed * GetWorld()->GetDeltaSeconds();
+	FVector2D DeltaMove = Position * Speed * GetWorld()->GetDeltaSeconds() * MovementDirection;
 	FVector2D NewPosition = CurrentPosition + DeltaMove;
+
+	if (NewPosition.X > BorderRight)
+	{
+		NewPosition.X = BorderRight;
+		MovementDirection *= -1; 
+	}
+	else if (NewPosition.X < BorderLeft)
+	{
+		NewPosition.X = BorderLeft;
+		MovementDirection *= -1;
+	}
+	
 	NewPosition.Y = 0;
 	Slider->SetRenderTranslation(NewPosition);
 }

@@ -4,6 +4,7 @@
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "EngineUtils.h"
 #include "FunctionalUIScreenshotTest.h"
+#include "ICantCry/ICC/Mechanics/TurnSystem/Core/BattleHandler.h"
 #include "ICantCry/ICC/Actors/AI/Mob.h"
 
 UTurnBasedSystem::UTurnBasedSystem() : MaxAITurnTime(10.0f), bIsAiTurn(false), bIsPlayerTurn(false),
@@ -19,7 +20,6 @@ static AMob* CurrentMob = nullptr;
 
 void UTurnBasedSystem::Start(UWorld* World)
 {
-	
 	for (TActorIterator<AEnemySpawnManager> It(World); It; ++It)
 	{
 		EnemySpawnManager = *It;
@@ -32,41 +32,56 @@ void UTurnBasedSystem::Start(UWorld* World)
 		CurrentPlayer = *It;
 		break;
 	}
+
+	for (TActorIterator<ABattleHandler> It(World); It; ++It)
+	{
+		BattleHandler = *It;
+		break;
+	}
 	
 	bFightStarted = true;
+	//EnemySpawnManager->SpawnRandomEnemy();
+
+	FTimerHandle DelayHandle;
+	World->GetTimerManager().SetTimer(DelayHandle, [this, World]()
+	{
+		if (EnemySpawnManager)
+		{
+			EnemySpawnManager->SpawnRandomEnemy();
+			Turn.PopulateQueue(World);
+		}
+	}, 0.5f, false);
 	
 	CurrentPlayer->GetBattleHUD()->ShowHUD();
-	Turn.PopulateQueue(World);
+	//Turn.PopulateQueue(World);
 	
 	DebugHelper::LogSuccess("Fight started right after");
 	
-	//EnemySpawnManager->SpawnRandomEnemy();
-	
-	Turn.AssignFirstTurn();
-	
-	if (Turn.Queue.IsValidIndex(Turn.CurrentTurn))
-	{
-		AICC_Actor* Who = Turn.Queue[Turn.CurrentTurn];
-		// if first to play is Emotion / AI
-		if (Who->IsA(AMob::StaticClass()))
-		{
-			AMob* Mob = Cast<AMob>(Who);
-			bIsAiTurn = true;
-			bIsPlayerTurn = false;
-			CurrentPlayer->GetBattleHUD()->SetCurrentPlayingEmotion(Mob);
-			Mob->PlayTurn();
-		}
-		//otherwise is player playing
-		else
-		{
-			bIsAiTurn = false;
-			bIsPlayerTurn = true;
-			AICC_Player* Player = Cast<AICC_Player>(Who);
-			DebugHelper::AddTurnMaterialOverlayToStaticMesh(Player->DebugMesh);
-			CurrentPlayer = Player;
-			ABattleHandler::GetBattleInfoInstance()->SetInfo(FText::FromString("Your Turn"));
-		}
-	}
+	// Turn.AssignFirstTurn();
+	//
+	// if (Turn.Queue.IsValidIndex(Turn.CurrentTurn))
+	// {
+	// 	AICC_Actor* Who = Turn.Queue[Turn.CurrentTurn];
+	// 	// if first to play is Emotion / AI
+	// 	if (Who->IsA(AMob::StaticClass()))
+	// 	{
+	// 		AMob* Mob = Cast<AMob>(Who);
+	// 		bIsAiTurn = true;
+	// 		bIsPlayerTurn = false;
+	// 		CurrentPlayer->GetBattleHUD()->SetCurrentPlayingEmotion(Mob);
+	// 		Mob->PlayTurn();
+	// 	}
+	// 	//otherwise is player playing
+	// 	else
+	// 	{
+	// 		bIsAiTurn = false;
+	// 		bIsPlayerTurn = true;
+	// 		AICC_Player* Player = Cast<AICC_Player>(Who);
+	// 		DebugHelper::AddTurnMaterialOverlayToStaticMesh(Player->DebugMesh);
+	// 		CurrentPlayer = Player;
+	// 		BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Your Turn"));
+	// 	}
+	// }
 }
 
 void UTurnBasedSystem::Update(UWorld* World)
@@ -81,6 +96,37 @@ void UTurnBasedSystem::Update(UWorld* World)
 		DebugHelper::LogError("World is null! at UTurnBasedSystem::Update");
 		return;
 	}
+
+	if (!bInit)
+	{
+		Turn.AssignFirstTurn();
+	
+		if (Turn.Queue.IsValidIndex(Turn.CurrentTurn))
+		{
+			AICC_Actor* Who = Turn.Queue[Turn.CurrentTurn];
+			// if first to play is Emotion / AI
+			if (Who->IsA(AMob::StaticClass()))
+			{
+				AMob* Mob = Cast<AMob>(Who);
+				bIsAiTurn = true;
+				bIsPlayerTurn = false;
+				CurrentPlayer->GetBattleHUD()->SetCurrentPlayingEmotion(Mob);
+				Mob->PlayTurn();
+			}
+			//otherwise is player playing
+			else
+			{
+				bIsAiTurn = false;
+				bIsPlayerTurn = true;
+				AICC_Player* Player = Cast<AICC_Player>(Who);
+				DebugHelper::AddTurnMaterialOverlayToStaticMesh(Player->DebugMesh);
+				CurrentPlayer = Player;
+				BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Your Turn"));
+			}
+		}
+
+		bInit = true;
+	}
 	
 	if (bIsAiTurn)
 	{
@@ -91,7 +137,8 @@ void UTurnBasedSystem::Update(UWorld* World)
 			checkf(Mob, TEXT("Mob invalid at UTurnBasedSystem::Update"))
 			DebugHelper::LogWarning(Mob->GetActorLabel() + " Turn");
 			AICC_AIController* AIController = Cast<AICC_AIController>(Mob->GetController());
-			Mob->GetBattleHandler()->GetBattleInfo()->SetTurnInfo(FText::FromString(Mob->GetActorLabel() + " Turn\n AI Controller id : " + AIController->GetActorLabel()));
+			//BattleHandler->GetBattleInfo()->SetTurnInfo(FText::FromString(Mob->GetActorLabel() + " Turn\n AI Controller id : " + AIController->GetActorLabel()));
+			//Mob->GetBattleHandler()->GetBattleInfo()->SetTurnInfo(FText::FromString(Mob->GetActorLabel() + " Turn\n AI Controller id : " + AIController->GetActorLabel()));
 			CurrentPlayer->GetBattleHUD()->SetCurrentPlayingEmotion(Mob);
 			Mob->PlayTurn();
 			//Mob->PlaySecondTurn();
@@ -103,7 +150,7 @@ void UTurnBasedSystem::Update(UWorld* World)
 	if (bIsPlayerTurn && CurrentPlayer)
 	{
 		DebugHelper::AddTurnMaterialOverlayToStaticMesh(CurrentPlayer->DebugMesh);
-		ABattleHandler::GetBattleInfoInstance()->SetInfo(FText::FromString("Your Turn"));
+		BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Your Turn"));
 		
 		if (CurrentPlayer->GetBattleHUD()->IsShootFired())
 		{
@@ -221,13 +268,12 @@ void UTurnBasedSystem::Flow()
 
 	if (Turn.Queue.Num() == 1 && Turn.Queue[0] == CurrentPlayer)
 	{
-		DebugHelper::LogSuccess("Victory! All enemies defeated.");
 
 		bFightStarted = false;
 		bIsPlayerTurn = false;
 		bIsAiTurn = false;
 		
-		ABattleHandler::GetBattleInfoInstance()->SetInfo(FText::FromString("Victory!"));
+		BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Victory!"));
 		
 		//TODO ADD VICTORY SCREEN
 		return;
@@ -236,13 +282,12 @@ void UTurnBasedSystem::Flow()
 
 	if (!CurrentPlayer->IsAlive()) 
 	{
-		DebugHelper::LogError("Player died! Game Over.");
 
 		bFightStarted = false;
 		bIsPlayerTurn = false;
 		bIsAiTurn = false;
 		
-		ABattleHandler::GetBattleInfoInstance()->SetInfo(FText::FromString("Game Over"));
+		BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Game Over"));
 
 		//TODO ADD GAMEOVER SCREEN
 	}
@@ -262,8 +307,9 @@ void UTurnBasedSystem::SetAIPlaying(const bool& Play)
 
 void UTurnBasedSystem::ExitBattle()
 {
-	ABattleHandler::GetBattleInfoInstance()->RemoveFromParent();
+	BattleHandler->GetBattleInfo()->RemoveFromParent();
 	CurrentPlayer->GetInGameMenu()->SetDisabled(false);
 	bRequestFight = false;
+	bInit = false;
 }
 

@@ -26,6 +26,8 @@ void FTurn::PopulateQueue(UWorld* World)
 		}
 		
 		Queue.Add(*It);
+
+		DebugHelper::LogMessage(10, FColor::Black, It->GetActorLabel() + " joined the fun");
 	}
 
 	

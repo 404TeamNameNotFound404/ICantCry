@@ -255,7 +255,7 @@ void UBattleHUD::OnPassPressed()
     BattleHandler->GetTurnBasedSystem()->SetTurnOverlayApplied(false);
     DebugHelper::RemoveOverlayMaterialFromStaticMesh(BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
     bTargetSelection = false;
-    ABattleHandler::GetBattleInfoInstance()->ClearInfo();
+    BattleHandler->GetBattleInfo()->ClearInfo();
 }
 
 void UBattleHUD::ScrollTargetSelection(float ScrollValue)

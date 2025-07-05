@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "EnemySpawnManager.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
+#include "Algo/RandomShuffle.h"
+#include "EngineUtils.h"
 
 
 // Sets default values
@@ -14,122 +14,114 @@ AEnemySpawnManager::AEnemySpawnManager()
 
 }
 
-void AEnemySpawnManager::SpawnRandomEnemy()
-{
-	
-	if (EnemyList.Num() == 0)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No Data Asset "));
-		return;
-	}
-
-	
-	if (SpawnPoints.Num() == 0)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No spawn point"));
-		return;
-	}
-
-	// RIFAI I RANDOM IN MODO TALE CHE NON SPAWNI SOLO UN ENEMY MA POSSONO SPAWNARE 1 O PIù ENEMY CONTEMPORANEAMENTE
-	// RIFAI I RANDOM IN MODO TALE CHE IN BASE ALLA QUANTITA DI ENEMY SPAWNATA, DEVONO VENERIRE MESSI SU UNO O PIU SPAWN 
-	// FAI TUTTO NEL METODO SpawnOneEnemy
-	
-	//get random enemy
-	int32 EnemyIndex = FMath::RandRange(0, EnemyList.Num() - 1);
-    TSubclassOf<AMob> SelectedEnemyClass = EnemyList[EnemyIndex];
-
-	// Get a random spawn point
-	int32 SpawnIndex = FMath::RandRange(0, SpawnPoints.Num() - 1);
-	const FVector SpawnLocation = SpawnPoints[SpawnIndex]->GetActorLocation();
-	const FRotator SpawnRotation = SpawnPoints[SpawnIndex]->GetActorRotation(); 
-
-	// Spawn enemy 
-	//AMob* SpawnedEnemy = GetWorld()->SpawnActor<AMob>(SelectedEnemyClass, SpawnLocation, SpawnRotation);
-
-	//
-	CounterEnemyIndex = FMath::RandRange(1,3);
-
-	// switch(CounterEnemyIndex)
-	// {
-	// 	case 1: 
-	// 		SpawnOneEnemy(SelectedEnemyClass, SpawnLocation, SpawnRotation);
-	// 		break;
-
-		
-		
-	// }
-
-	
-}
-
-// IN THE IA CLASS( ENEMY CLASS) ADD THIS 
-// Reference to Enemy Data Asset
-// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data")
-// UEnemyDatas* EnemyData;
-
-// Get EnemyData
-// UEnemyDatas* GetData() const { return EnemyData; }
-
 
 // Called when the game starts or when spawned
 void AEnemySpawnManager::BeginPlay()
 {
 	Super::BeginPlay();
-	SpawnRandomEnemy();
+
+	for (TActorIterator<AESpawner> It(GetWorld()); It; ++It)
+	{
+		SpawnPoints.Add(*It);
+		DebugHelper::LogSuccess( "Added " + It->GetActorLabel());
+	}
 	
 }
 
-// Called every frame
-void AEnemySpawnManager::Tick(float DeltaTime)
+void AEnemySpawnManager::SpawnRandomEnemy()
 {
-	Super::Tick(DeltaTime);
+	if (EnemyList.Num() == 0 || SpawnPoints.Num() == 0)
+	{
+		DebugHelper::LogError("Enemy List is 0 or Spawn points are 0");
+		return;
+	}
 
-
+	Spawn();
 }
 
-void AEnemySpawnManager::SpawnOneEnemy(TSubclassOf<AMob> Mob, FVector Position,  FRotator Rotation)
+void AEnemySpawnManager::Spawn()
 {
-	AMob* SpawnedEnemy = GetWorld()->SpawnActor<AMob>(Mob, Position, Rotation);
+	const int32 Aleatory = RandomSpawn(GetRandomSpawnType());
 
-			if (!SpawnedEnemy->GetData())
+	DebugHelper::LogMessage(5, FColor::Cyan, "Will spawn " + FString::FromInt(Aleatory) + " enemies");
+
+	TArray<AESpawner*> ValidSpawnPoints;
+	for (AESpawner* Point : SpawnPoints)
+	{
+		if (IsValid(Point))
+		{
+			ValidSpawnPoints.Add(Point);
+		}
+	}
+
+	if (Aleatory > ValidSpawnPoints.Num())
+	{
+		DebugHelper::LogError("Not enough valid spawn points!");
+		return;
+	}
+
+	Algo::RandomShuffle(ValidSpawnPoints);
+	DebugHelper::LogError("Shuffled valid spawn points count: " + FString::FromInt(ValidSpawnPoints.Num()));
+
+	for (int32 i = 0; i < Aleatory; ++i)
+	{
+		AESpawner* SpawnPoint = ValidSpawnPoints[i];
+
+		const FVector SpawnLocation = SpawnPoint->GetActorLocation();
+		const FRotator SpawnRotation = SpawnPoint->GetActorRotation();
+
+		const int32 EnemyIndex = FMath::RandRange(0, EnemyList.Num() - 1);
+		TSubclassOf<AMob> SelectedEnemyClass = EnemyList[EnemyIndex];
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+		AMob* Enemy = GetWorld()->SpawnActor<AMob>(SelectedEnemyClass, SpawnLocation, SpawnRotation, SpawnParams);
+
+		if (Enemy)
+		{
+			DebugHelper::LogWarning("Now spawning " + Enemy->GetData()->EnemyName.ToString());
+
+			AAIController* AIController = Cast<AAIController>(Enemy->GetController());
+
+			if (!AIController)
 			{
-				UE_LOG(LogTemp, Warning, TEXT(" data assets is null"));
-				return;
-			}
-
-
-			if (SpawnedEnemy)
-			{
-				DebugHelper::LogWarning("Enemy Valid");
-
-				// get enemydata
-				UEnemyDatas* Data = SpawnedEnemy->GetData();
-				
-				if (Data)
-				{
-					UE_LOG(LogTemp, Log, TEXT("Spawned enemy: %s with HP: %f and AP: %f"), 
-						*Data->EnemyName.ToString(), 
-						Data->Health, 
-						Data->AbilityPoints);
-				}
-				else
-				{
-					UE_LOG(LogTemp, Warning, TEXT("EnemyData is missing on spawned enemy!"));
-
-				}
+				DebugHelper::LogError("Enemy has no AIController even after spawn!");
 			}
 			else
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Spawn failed!"));
+				AIController->RunBehaviorTree(Enemy->GetBehaviorTree());
 			}
+		}
+		else
+		{
+			DebugHelper::LogError("Failed to spawn enemy!");
+		}
+	}
 }
 
-void AEnemySpawnManager::SpawnTwoEnemy(TSubclassOf<AMob> Mob, FVector Position,  FVector Position2, FRotator Rotation, FRotator Rotation2)
+int32 AEnemySpawnManager::RandomSpawn(const ESpawnCounter& SpawnType)
 {
-	// AMob* SpawnedEnemy = GetWorld()->SpawnActor<AMob>(Mob, Position, Rotation);
-	// AMob* SpawnedEnemy = GetWorld()->SpawnActor<AMob>(Mob, Position2,  Rotation2);
+	switch (SpawnType)
+	{
+	case One:
+		return 1;
+	case Two:
+		return 2;
+	case Three:
+		return 3;
+	default:
+		return 1;
+	}
 }
 
-void AEnemySpawnManager::SpawnThreeEnemy(TSubclassOf<AMob> Mob, FVector Position,  FVector Position2, FVector Position3, FRotator Rotation, FRotator Rotation2, FRotator Rotation3 )
+int32 AEnemySpawnManager::RandomSpawnPoint()
 {
+	return FMath::RandRange(0, SpawnPoints.Num() - 1);
+}
+
+ESpawnCounter AEnemySpawnManager::GetRandomSpawnType()
+{
+	int32 RandomIndex = FMath::RandRange(0, static_cast<int32>(ESpawnCounter::LAST) - 1);
+	return static_cast<ESpawnCounter>(RandomIndex);
 }

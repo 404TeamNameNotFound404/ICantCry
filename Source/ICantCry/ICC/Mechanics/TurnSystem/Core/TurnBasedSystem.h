@@ -6,6 +6,8 @@
 #include "TurnBasedSystem.generated.h"
 
 class AICC_Player;
+class ABattleHandler;
+
 /**
  * Manage and handle The combat
  */
@@ -70,6 +72,9 @@ private:
 	AEnemySpawnManager* EnemySpawnManager;
 
 	UPROPERTY()
+	ABattleHandler* BattleHandler;
+
+	UPROPERTY()
 	bool bTurnOverlayApplied = false;
 
 	UPROPERTY()
@@ -80,4 +85,7 @@ private:
 
 	UPROPERTY()
 	bool bAIPlayTurn = false;
+
+	UPROPERTY()
+	bool bInit = false;
 };

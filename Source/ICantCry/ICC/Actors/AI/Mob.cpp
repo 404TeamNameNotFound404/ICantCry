@@ -31,6 +31,8 @@ AMob::AMob()
 	HealthBarComponent->SetupAttachment(RootComponent);
 	HealthBarComponent->SetAbsolute(false, false, false);
 	HealthBarComponent->SetEnableGravity(false);
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+	AIControllerClass = AICC_AIController::StaticClass();
 }
 
 // Called when the game starts or when spawned
