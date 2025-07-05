@@ -191,8 +191,9 @@ private:
 	bool bSelectTarget = false;
 
     // UI Functions
-    UFUNCTION() void IncreaseAP(int Amount);
-    UFUNCTION() void UpdateAPBar();
+	void IncreaseAP(const int& Amount);
+	void DecreaseAP(const int& Amount);
+    void UpdateAPBar();
     
     // Button Handlers
     UFUNCTION() void OnShootPressed();

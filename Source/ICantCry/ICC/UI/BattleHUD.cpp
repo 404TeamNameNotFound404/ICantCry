@@ -146,6 +146,9 @@ void UBattleHUD::NativeConstruct()
     
     RefreshBulletUI();
 
+    CurrentAP = 2;
+    UpdateAPBar();
+
     FTimerHandle TimerHandle;
 
     GetWorld()->GetTimerManager().SetTimer(
@@ -159,25 +162,30 @@ void UBattleHUD::NativeConstruct()
 }
 
 // TARGET
-void UBattleHUD::IncreaseAP(int Amount)
+void UBattleHUD::IncreaseAP(const int& Amount)
 {
     CurrentAP = FMath::Clamp(CurrentAP + Amount, 0,4);
 
     UpdateAPBar();
 }
 
+void UBattleHUD::DecreaseAP(const int& Amount)
+{
+    CurrentAP = FMath::Clamp(CurrentAP - Amount, 0,4);
+    DebugHelper::LogWarning("AP decreased now " + FString::FromInt(CurrentAP));
+    UpdateAPBar();
+}
+
 void UBattleHUD::UpdateAPBar()
 {
-    if(APBar)
-    {
-        float Progress = static_cast<float>(CurrentAP) / 4.0f;
-        APBar->SetPercent(Progress);     
-    }
+    const float Progress = static_cast<float>(CurrentAP) / 4.0f;
+    APBar->SetPercent(Progress);
+    DebugHelper::LogMessage(8, FColor::FromHex("725CAD"), "AP Bar " + FString::SanitizeFloat(Progress));
 }
 
 void UBattleHUD::OnShootPressed()
 {
-    if (!GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn())
+    if (!GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn() || CurrentAP <= 0)
     {
         return;
     }
@@ -191,7 +199,7 @@ void UBattleHUD::OnShootPressed()
     CanvasStatus->SetVisibility(ESlateVisibility::Visible);
     
     bShootFired = true;
-    IncreaseAP(1);
+    DecreaseAP(1);
     bTargetSelection = true;
     DebugHelper::LogSuccess("Shoot pressed");
 }
@@ -502,7 +510,7 @@ void UBattleHUD::SwitchToBattleUI()
     if (CanvasMiniGames)
         CanvasMiniGames->SetVisibility(ESlateVisibility::Visible);
 
-    CurrentAP = 0;
+    CurrentAP = 2;
     UpdateAPBar();
 }
 
