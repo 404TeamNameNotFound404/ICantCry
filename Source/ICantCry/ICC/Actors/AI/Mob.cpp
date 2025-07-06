@@ -296,6 +296,21 @@ int AMob::GetAIId() const
 	return AI_Id;
 }
 
+void AMob::Freeze(const bool& Value)
+{
+	bFreeze = Value;
+}
+
+void AMob::AshamedState(const bool& Value)
+{
+	bAshamedStatus = Value;
+}
+
+bool AMob::IsAshamedStateOn() const
+{
+	return bAshamedStatus;
+}
+
 
 void AMob::Heal(const float& RestoredHealth)
 {
@@ -378,7 +393,7 @@ bool AMob::IsBusy() const
 
 void AMob::PlayTurn()
 {
-	if (bStopTree)
+	if (bStopTree || bFreeze)
 	{
 		return;
 	}

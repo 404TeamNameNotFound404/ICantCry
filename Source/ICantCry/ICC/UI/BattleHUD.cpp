@@ -185,8 +185,14 @@ void UBattleHUD::UpdateAPBar()
 
 void UBattleHUD::OnShootPressed()
 {
-    if (!GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn() || CurrentAP <= 0)
+    if (!GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn() || CurrentAP <= 0 || bAshamed)
     {
+        return;
+    }
+
+    if (bFreeze)
+    {
+        DecreaseAP(1);
         return;
     }
 
@@ -215,6 +221,12 @@ void UBattleHUD::OnFocusPressed()
     {
         return;
     }
+
+    if (bFreeze)
+    {
+        IncreaseAP(1);
+        return;
+    }
     
     DebugHelper::LogWarning("attack and defense increased!");
     IncreaseAP(1);
@@ -229,6 +241,12 @@ void UBattleHUD::OnReloadPressed()
 {
     if (!GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn())
     {
+        return;
+    }
+
+    if (bFreeze)
+    {
+        DecreaseAP(1);
         return;
     }
     
@@ -675,4 +693,12 @@ UCircularBulletBuffer* UBattleHUD::GetCircularBulletBuffer() const
     return RevolverBuffer;
 }
 
+void UBattleHUD::FreezedUp(const bool& Enable)
+{
+    bFreeze = Enable;
+}
 
+void UBattleHUD::Ashamed(const bool& Enable)
+{
+    bAshamed = Enable;
+}

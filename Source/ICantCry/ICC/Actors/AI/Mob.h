@@ -338,6 +338,10 @@ public:
 	int GetTreeId() const;
 	int GetAIId() const;
 
+	void Freeze(const bool& Value);
+	void AshamedState(const bool& Value);
+	bool IsAshamedStateOn() const;
+
 private:
 
 	UPROPERTY()
@@ -368,6 +372,12 @@ private:
 
 	UPROPERTY()
 	bool bMinigameEnded = false;
+
+	UPROPERTY()
+	bool bFreeze = false;
+
+	UPROPERTY()
+	bool bAshamedStatus = false;
 
 	static UICantCryGameInstance* GameRef;
 };
