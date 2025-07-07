@@ -12,11 +12,10 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "ICantCry/ICC/Actors/Player/Camera/WorldCamera.h"
-
-
-
+#include "ICantCry/ICC/Managers/InventoryManager.h"
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameUserWidget.h"
+#include "ICantCry/ICC/UI/InGameMenu.h"
 #include "ICantCry/ICC/UI/BattleHUD.h"
 #include "ICC_Player.generated.h"
 
@@ -62,6 +61,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Battle System", Blueprintable)
 	bool bIsInFight = false;
 
+	bool IsAlive() const;
 
 	void EnableMinigameInput(const bool& Enable);
 	void SetActiveMinigameUserWidget(UMinigameUserWidget* Minigame);
@@ -70,6 +70,10 @@ public:
 	UMinigameUserWidget* GetCurrentMinigameDisplayed() const;
 	AMinigameHandler* GetMinigameHandler() const;
 	UPlayerStats* GetStats() const;
+
+	const FInventory GetPlayerInventory() const;
+	void SetPlayerInventory(const FInventory& Inventory);
+	UInventoryManager* GetInventoryManager() const;
 
 	/**
 	 * Read below!!
@@ -95,6 +99,10 @@ public:
 
 	void SetIsPickedUp(const bool& IsPicked);
 	bool IsPickedUp() const;
+	
+	
+	UInGameMenu* GetInGameMenu() const;
+	UInventoryHUD* GetInventoryHUD() const;
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Movement")
@@ -138,11 +146,57 @@ private:
 
 	UPROPERTY()
 	UMinigameUserWidget* CurrentMinigameDisplayed = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	UInventoryHUD* InventoryHUD;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	UInventoryManager* InventoryManager;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UInventoryHUD> InventoryHUDClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UInGameMenu> InGameMenuClass;
 	
+	UPROPERTY()
+	UInGameMenu* InGameMenu;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	UCraftingHUD* CraftingHUD;  
+
+	UPROPERTY()
+	UCraftingTable* CraftingTable;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UCraftingHUD> CraftingHUDClass;
+
+	UPROPERTY()
+	FInventory PlayerInventory;
+
+	UPROPERTY()
+	int32 CameraCounter = 0;
+
+	UPROPERTY()
+	bool bReadyToPickUp;
+
+	/**
+ * Close the crafting / inventory counter
+ */
+	UPROPERTY()
+	int32 CraftingCounter;
 
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Interact(const FInputActionValue& InputActionValue);
 	void Input_Run(const FInputActionValue& InputActionValue);
 	void Input_Minigame(const FInputActionValue& InputActionValue);
 	void Input_Scroll(const FInputActionValue& InputActionValue);
+	void Input_OpenInventory(const FInputActionValue& InputActionValue);
+	void Input_OpenCrafting(const FInputActionValue& InputActionValue);
+	void Input_CloseCrafting(const FInputActionValue &InputActionValue);
+
+	void CloseInventory();
+	void ToggleInventory();
+	void ToggleCraftingHUD();
+	void CloseCraftingHUD();
 };

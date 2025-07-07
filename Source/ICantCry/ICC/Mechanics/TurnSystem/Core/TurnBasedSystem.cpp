@@ -4,6 +4,7 @@
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "EngineUtils.h"
 #include "FunctionalUIScreenshotTest.h"
+#include "ICantCry/ICC/Mechanics/TurnSystem/Core/BattleHandler.h"
 #include "ICantCry/ICC/Actors/AI/Mob.h"
 
 UTurnBasedSystem::UTurnBasedSystem() : MaxAITurnTime(10.0f), bIsAiTurn(false), bIsPlayerTurn(false),
@@ -19,7 +20,6 @@ static AMob* CurrentMob = nullptr;
 
 void UTurnBasedSystem::Start(UWorld* World)
 {
-	
 	for (TActorIterator<AEnemySpawnManager> It(World); It; ++It)
 	{
 		EnemySpawnManager = *It;
@@ -32,40 +32,56 @@ void UTurnBasedSystem::Start(UWorld* World)
 		CurrentPlayer = *It;
 		break;
 	}
+
+	for (TActorIterator<ABattleHandler> It(World); It; ++It)
+	{
+		BattleHandler = *It;
+		break;
+	}
 	
 	bFightStarted = true;
+	//EnemySpawnManager->SpawnRandomEnemy();
+
+	FTimerHandle DelayHandle;
+	World->GetTimerManager().SetTimer(DelayHandle, [this, World]()
+	{
+		if (EnemySpawnManager)
+		{
+			EnemySpawnManager->SpawnRandomEnemy();
+			Turn.PopulateQueue(World);
+		}
+	}, 0.5f, false);
 	
 	CurrentPlayer->GetBattleHUD()->ShowHUD();
-	Turn.PopulateQueue(World);
+	//Turn.PopulateQueue(World);
 	
 	DebugHelper::LogSuccess("Fight started right after");
 	
-	//EnemySpawnManager->SpawnRandomEnemy();
-
-	Turn.AssignFirstTurn();
-	
-	if (Turn.Queue.IsValidIndex(Turn.CurrentTurn))
-	{
-		AICC_Actor* Who = Turn.Queue[Turn.CurrentTurn];
-		// if first to play is Emotion / AI
-		if (Who->IsA(AMob::StaticClass()))
-		{
-			AMob* Mob = Cast<AMob>(Who);
-			bIsAiTurn = true;
-			bIsPlayerTurn = false;
-			
-			// Mob->PlayTurn(); //TODO ADD MOB PLAY TURN (Define the ai class)
-		}
-		//otherwise is player playing
-		else
-		{
-			bIsAiTurn = false;
-			bIsPlayerTurn = true;
-			AICC_Player* Player = Cast<AICC_Player>(Who);
-			DebugHelper::AddTurnMaterialOverlayToStaticMesh(Player->DebugMesh);
-			CurrentPlayer = Player;
-		}
-	}
+	// Turn.AssignFirstTurn();
+	//
+	// if (Turn.Queue.IsValidIndex(Turn.CurrentTurn))
+	// {
+	// 	AICC_Actor* Who = Turn.Queue[Turn.CurrentTurn];
+	// 	// if first to play is Emotion / AI
+	// 	if (Who->IsA(AMob::StaticClass()))
+	// 	{
+	// 		AMob* Mob = Cast<AMob>(Who);
+	// 		bIsAiTurn = true;
+	// 		bIsPlayerTurn = false;
+	// 		CurrentPlayer->GetBattleHUD()->SetCurrentPlayingEmotion(Mob);
+	// 		Mob->PlayTurn();
+	// 	}
+	// 	//otherwise is player playing
+	// 	else
+	// 	{
+	// 		bIsAiTurn = false;
+	// 		bIsPlayerTurn = true;
+	// 		AICC_Player* Player = Cast<AICC_Player>(Who);
+	// 		DebugHelper::AddTurnMaterialOverlayToStaticMesh(Player->DebugMesh);
+	// 		CurrentPlayer = Player;
+	// 		BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Your Turn"));
+	// 	}
+	// }
 }
 
 void UTurnBasedSystem::Update(UWorld* World)
@@ -80,26 +96,62 @@ void UTurnBasedSystem::Update(UWorld* World)
 		DebugHelper::LogError("World is null! at UTurnBasedSystem::Update");
 		return;
 	}
+
+	if (!bInit)
+	{
+		Turn.AssignFirstTurn();
+	
+		if (Turn.Queue.IsValidIndex(Turn.CurrentTurn))
+		{
+			AICC_Actor* Who = Turn.Queue[Turn.CurrentTurn];
+			// if first to play is Emotion / AI
+			if (Who->IsA(AMob::StaticClass()))
+			{
+				AMob* Mob = Cast<AMob>(Who);
+				bIsAiTurn = true;
+				bIsPlayerTurn = false;
+				CurrentPlayer->GetBattleHUD()->SetCurrentPlayingEmotion(Mob);
+				Mob->PlayTurn();
+			}
+			//otherwise is player playing
+			else
+			{
+				bIsAiTurn = false;
+				bIsPlayerTurn = true;
+				AICC_Player* Player = Cast<AICC_Player>(Who);
+				DebugHelper::AddTurnMaterialOverlayToStaticMesh(Player->DebugMesh);
+				CurrentPlayer = Player;
+				BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Your Turn"));
+			}
+		}
+
+		bInit = true;
+	}
 	
 	if (bIsAiTurn)
 	{
-		Turn.Timer += World->GetDeltaSeconds() * Variations;
-		AMob* Mob = Cast<AMob>(Turn.Queue[Turn.CurrentTurn]);
-		Mob->HighlightsSilhouette();
-		
-		if (Turn.Timer >= MaxAITurnTime) 
+		if (!bAIPlayTurn)
 		{
-			Turn.Timer = 0;
-			DebugHelper::LogError(Turn.Queue[Turn.CurrentTurn]->GetName() + " ended it's turn");
-			CurrentPlayer->GetMinigameHandler()->StartMinigame(false); /*TODO TO PLAY THE DEFENCE MINIGAME AND KEEP THE AI "WAITING" AFTER THE MINIGAME IS DONE, WE NEED TO DEFINE THE BEHAVIOUR FIRST! AND PUT IT ON THE ATTACK BEHAVIOUR*/
-			Mob->DisableSilhouette();
-			EndTurn();
-			StartNextTurn();
+			bAIPlayTurn = true; 
+			AMob* Mob = Cast<AMob>(Turn.Queue[Turn.CurrentTurn]);
+			checkf(Mob, TEXT("Mob invalid at UTurnBasedSystem::Update"))
+			DebugHelper::LogWarning(Mob->GetActorLabel() + " Turn");
+			AICC_AIController* AIController = Cast<AICC_AIController>(Mob->GetController());
+			//BattleHandler->GetBattleInfo()->SetTurnInfo(FText::FromString(Mob->GetActorLabel() + " Turn\n AI Controller id : " + AIController->GetActorLabel()));
+			//Mob->GetBattleHandler()->GetBattleInfo()->SetTurnInfo(FText::FromString(Mob->GetActorLabel() + " Turn\n AI Controller id : " + AIController->GetActorLabel()));
+			CurrentPlayer->GetBattleHUD()->SetCurrentPlayingEmotion(Mob);
+			Mob->PlayTurn();
+			//Mob->PlaySecondTurn();
 		}
+
+		Turn.Timer += World->GetDeltaSeconds() * Variations;
 	}
 
 	if (bIsPlayerTurn && CurrentPlayer)
 	{
+		DebugHelper::AddTurnMaterialOverlayToStaticMesh(CurrentPlayer->DebugMesh);
+		BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Your Turn"));
+		
 		if (CurrentPlayer->GetBattleHUD()->IsShootFired())
 		{
 			if (!CurrentPlayer->GetBattleHUD()->CanvasStatus->IsVisible())
@@ -132,7 +184,6 @@ void UTurnBasedSystem::StartNextTurn()
 			CurrentMob = Mob;
 			bIsAiTurn = true;
 			bIsPlayerTurn = false;
-			// Mob->PlayTurn(); //TODO ADD MOB PLAY TURN (Define the ai class)
 		}
 		//otherwise is player playing
 		else
@@ -155,9 +206,15 @@ void UTurnBasedSystem::StartNextTurn()
 
 void UTurnBasedSystem::EndTurn()
 {
+	if (bAIPlayTurn)
+	{
+		DebugHelper::LogError("AI Turn Ended");
+		bAIPlayTurn = false;
+	}
+
 	Turn.CurrentTurn = Turn.NextTurn;
 	Turn.NextTurn = (Turn.NextTurn + 1) % Turn.Queue.Num();
-	DebugHelper::LogWarning("Ai turn ended, " + Turn.Queue[Turn.CurrentTurn]->GetName() + " will now play");
+	DebugHelper::LogWarning("turn ended, " + Turn.Queue[Turn.CurrentTurn]->GetName() + " will now play");
 }
 
 FTurn UTurnBasedSystem::GetTurn() const
@@ -168,6 +225,11 @@ FTurn UTurnBasedSystem::GetTurn() const
 bool UTurnBasedSystem::GetIsPlayerTurn() const
 {
 	return bIsPlayerTurn;
+}
+
+bool UTurnBasedSystem::GetIsAITurn() const
+{
+	return bIsAiTurn;
 }
 
 AICC_Player* UTurnBasedSystem::TryGetCurrentPlayer() const
@@ -191,26 +253,45 @@ void UTurnBasedSystem::Flow()
 	{
 		return;
 	}
-	
-	/* TODO ADD A WAY TO SPEED UP THE BATTLE USING BATTLE FLOW IN PLAYER STATS
-	* In case of AI death
-	* Remove its index from the array and if array is empty victory condition is achieved
-	*/
 
-	if (Turn.Queue.Num() <= 1 && Turn.Queue[0] == CurrentPlayer) // 
+	for (int32 i = Turn.Queue.Num() - 1; i >= 0; --i) // backwards to safely remove
 	{
-		/*
-		 * Victory
-		 * TODO IMPLEMENT VICTORY AND GAIN EXPERIENCE
-		 */
+		AICC_Actor* Actor = Turn.Queue[i];
+		AMob* Mob = Cast<AMob>(Actor);
+
+		if (Mob && !Mob->IsAlive())
+		{
+			Turn.Queue.RemoveAt(i);
+			DebugHelper::LogWarning("Mob removed from queue due to death.");
+		}
 	}
-/*
-	else if (CurrentPlayer->Death())
+
+	if (Turn.Queue.Num() == 1 && Turn.Queue[0] == CurrentPlayer)
 	{
-		GameOver!
-		TODO ADD GAME OVER
+
+		bFightStarted = false;
+		bIsPlayerTurn = false;
+		bIsAiTurn = false;
+		
+		BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Victory!"));
+		
+		//TODO ADD VICTORY SCREEN
+		return;
 	}
-*/
+
+
+	if (!CurrentPlayer->IsAlive()) 
+	{
+
+		bFightStarted = false;
+		bIsPlayerTurn = false;
+		bIsAiTurn = false;
+		
+		BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Game Over"));
+
+		//TODO ADD GAMEOVER SCREEN
+	}
+	
 }
 
 
@@ -219,10 +300,16 @@ void UTurnBasedSystem::RequestFight(const bool& Request)
 	bRequestFight = Request;
 }
 
+void UTurnBasedSystem::SetAIPlaying(const bool& Play)
+{
+	bAIPlayTurn = Play;
+}
+
 void UTurnBasedSystem::ExitBattle()
 {
-	ABattleHandler::GetBattleInfoInstance()->RemoveFromParent();
+	BattleHandler->GetBattleInfo()->RemoveFromParent();
 	CurrentPlayer->GetInGameMenu()->SetDisabled(false);
 	bRequestFight = false;
+	bInit = false;
 }
 

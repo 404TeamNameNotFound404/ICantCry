@@ -1,27 +1,25 @@
 #include "DamageCalculator.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 
-UDamageCalculator::UDamageCalculator()
+
+FDamage::FDamage(): BulletData(nullptr), PlayerStats(nullptr), AIMoves(nullptr), EnemyData(nullptr)
 {
 }
 
-
-UDamageCalculator::UDamageCalculator(UBulletData* Data, UPlayerStats* Stats , UEnemyDatas* EnemyData ,UEnemyTactics* Moves) 
+FDamage::FDamage(UBulletData* BData, UPlayerStats* PStats, UEnemyTactics* AITactics, UEnemyDatas* EData) 
 {
-	DamageMath.BulletData = Data;
-	DamageMath.PlayerStats = Stats;
-	DamageMath.AIMoves = Moves;
-	DamageMath.EnemyData = EnemyData;
+	BulletData = BData;
+	PlayerStats = PStats;
+	AIMoves = AITactics;
+	EnemyData = EData;
 }
-
 
 int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 {
-	if (!PlayerStats || !EnemyData || !BulletData || !AIMoves) //  BulletData is null 
-	{
-		DebugHelper::LogError("PlayerStats is null in FDamage::CalculateDamage, can't do math");
-		return 0;
-	}
+	checkf(PlayerStats, TEXT("PlayerStats is null"));
+	checkf(AIMoves, TEXT("AIMoves is null"));
+	checkf(EnemyData, TEXT("E data is null"))
+	checkf(AIMoves, TEXT("Moves null"))
 	
 	if (IsPlayerAttacking)
 	{
@@ -35,8 +33,13 @@ int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 
 	if (!IsPlayerAttacking)
 	{
-		DebugHelper::LogSuccess("Calculating damage Enemy -> Player");
-		const int AIDamageResult = (((BulletData->Power / (2 - AIMoves->MinigamePower)) * (EnemyData->AttackPower / EnemyData->DefencePower))) * AIMoves->ActionPointsModifier * AIMoves->WeaknessModifier;
+		if (!PlayerStats || !EnemyData || !AIMoves)
+		{
+			DebugHelper::LogError("Player stats or EData or AIMoves are null!");
+			return 0;
+		}
+		
+		const int AIDamageResult = ((((AIMoves->MovePower / (2 - AIMoves->MinigamePower)) * (EnemyData->AttackPower / PlayerStats->DefencePower))) * AIMoves->ActionPointsModifier * AIMoves->WeaknessModifier) * PlayerStats->MinigameModifier;
 		DebugHelper::LogMessage(3, FColor::FromHex("433878"), "Damage dealt -> " + FString::FromInt(AIDamageResult));
 		return AIDamageResult;
 	}

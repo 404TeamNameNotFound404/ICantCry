@@ -2,6 +2,8 @@
 
 
 #include "EssencePickup.h"
+
+#include "ICantCry/ICC/Input/ICC_PlayerController.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 
 // Sets default values

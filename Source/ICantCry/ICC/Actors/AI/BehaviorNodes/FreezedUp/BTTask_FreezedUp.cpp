@@ -26,12 +26,15 @@ EBTNodeResult::Type UBTTask_FreezedUp::ExecuteTask(UBehaviorTreeComponent& Owner
 
 	Current->SetIsFreezedUp(true);
 	Current->SetIsAttacked(false);
+
 	
 	Blackboard->SetValueAsBool("IsFreezedUp?", Current->GetIsIsFreezedUp());
 	Blackboard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 	
 	AICC_Player* Target = Cast<AICC_Player>(Blackboard->GetValueAsObject("Target"));
 	checkf(Target, TEXT("Player invalid at UBTTask_FreezedUp::ExecuteTask"))
+	
+	Current->GetStatusTracker()->InflictStatus(EAfflictedStatus::Freezed, Target);
 
 	//TODO Implement Player->Freeze();
 

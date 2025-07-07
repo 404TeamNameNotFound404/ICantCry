@@ -24,8 +24,6 @@ public:
 
 	UBattleInfo* GetBattleInfo() const;
 
-	static UBattleInfo* GetBattleInfoInstance();
-
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UTurnBasedSystem* TurnBasedSystem;
@@ -35,6 +33,4 @@ private:
 
 	UPROPERTY()
 	UBattleInfo* BattleInfo;
-
-	static UBattleInfo* InfoBattle;
 };

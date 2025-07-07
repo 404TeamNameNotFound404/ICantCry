@@ -8,7 +8,17 @@
 #include "Math/UnrealMathUtility.h"
 #include "../Mechanics/Core/Data/EnemyDatas.h"
 #include "../Actors/AI/Mob.h"
+#include "ICantCry/ICC/Mechanics/TurnSystem/Core/ESpawner.h"
 #include "EnemySpawnManager.generated.h"
+
+UENUM()
+enum ESpawnCounter
+{
+	One,
+	Two,
+	Three,
+	LAST  UMETA(Hidden)
+};
 
 UCLASS()
 class ICANTCRY_API AEnemySpawnManager : public AActor
@@ -18,8 +28,7 @@ class ICANTCRY_API AEnemySpawnManager : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AEnemySpawnManager();
-
-	UFUNCTION(BlueprintCallable, Category = "Spawning")
+	
 	void SpawnRandomEnemy();
 
 protected:
@@ -27,26 +36,22 @@ protected:
 	virtual void BeginPlay() override;
 
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 private:
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning", meta = (AllowPrivateAccess = "true"))
 	TArray<TSubclassOf<AMob>> EnemyList;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning", meta = (AllowPrivateAccess = "true"))
-	TArray<AActor*> SpawnPoints;
+	UPROPERTY()
+	TArray<AESpawner*> SpawnPoints;
 
 	UPROPERTY()
 	int32 CounterEnemyIndex = 1;
 
-	void SpawnOneEnemy(TSubclassOf<AMob> Mob, FVector Position,  FRotator Rotation);
-	void SpawnTwoEnemy(TSubclassOf<AMob> Mob, FVector Position,  FVector Position2, FRotator Rotation, FRotator Rotation2);
-	void SpawnThreeEnemy(TSubclassOf<AMob> Mob, FVector Position,  FVector Position2, FVector Position3, FRotator Rotation, FRotator Rotation2, FRotator Rotation3 );
+	void Spawn();
 
-
-
+	int32 RandomSpawn(const ESpawnCounter& SpawnType);
+	int32 RandomSpawnPoint();
+	
+	ESpawnCounter GetRandomSpawnType();
 };

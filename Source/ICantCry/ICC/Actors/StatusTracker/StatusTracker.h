@@ -6,6 +6,17 @@
 #include "Components/ActorComponent.h"
 #include "StatusTracker.generated.h"
 
+class AICC_Actor;
+
+UENUM()
+enum EAfflictedStatus
+{
+	Freezed,
+	Burn,
+	EAShame,
+	ShieldDebuff,
+	None
+};
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ICANTCRY_API UStatusTracker : public UActorComponent
@@ -23,15 +34,17 @@ protected:
 	 */
 	UPROPERTY()
 	bool bIsOwnerAfflicted;
+
+	UPROPERTY()
+	TEnumAsByte<EAfflictedStatus> CurrentActiveStatus;
+
+	UPROPERTY()
+	int32 TurnElapsed = 0;
 	
 	// Called when the game starts
 	virtual void BeginPlay() override;
-
+	
 public:
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
-
 	/*-------------------- AI CHECKS --------------------*/
 	/*----------DO NOT WRITE ANYTHING IN THIS SPACE -------------*/
 	
@@ -40,22 +53,21 @@ public:
 	 * To be defined
 	 * @return true if status is applied
 	 */
-	bool IsAfflicted();
+	bool IsAfflicted() const;
 
 	/**
-	 * Used to set the afflicted status,
-	 * - for the AI must be set
-	 *    through player bullet / shoot
-	 * - for the player it must be set inside the AI
-	 *    behavior tree
-	 * @param Applied 
+	 * Assign Status to afflict
+	 * - For AI inside the dedicated behavior
+	 * - For Player inside the bullet
+	 * @param Status Desired Status to afflict
 	 */
-	void SetStatusApplied(const bool& Applied);
+	void InflictStatus(const EAfflictedStatus& Status, AICC_Actor* Target);
 
 	
 	/*----------DO NOT WRITE ANYTHING IN THIS SPACE -------------*/
 	/*-------------------- AI CHECKS --------------------*/
 
+	void UpdateStatus();
 
 	/*-------------------- PLAYER CHECKS --------------------**/
 	/*----------DO NOT WRITE ANYTHING IN THIS SPACE -------------*/
@@ -65,5 +77,15 @@ public:
 
 	/*-------------------- PLAYER CHECKS --------------------**/
 	/*----------DO NOT WRITE ANYTHING IN THIS SPACE -------------*/
-	
+
+
+private:
+
+	UPROPERTY()
+	int32 StatusCounter = 0;
+
+	void InflictFreeze(AICC_Actor* Target);
+	void InflictBurn(AICC_Actor* Target);
+	void InflictShieldDebuff(AICC_Actor* Target);
+	void InflictAShamed(AICC_Actor* Target);
 };

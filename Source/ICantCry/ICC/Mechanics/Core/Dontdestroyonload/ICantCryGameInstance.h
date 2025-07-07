@@ -5,6 +5,7 @@
 #include "ICantCry/ICC/Mechanics/Core/Data/PersistentData.h"
 #include "ICantCry/ICC/Mechanics/Core/Data/PlayerStats.h"
 #include "ICantCry/ICC/Mechanics/TurnSystem/BattleFlow/DamageCalculator.h"
+#include "ICantCry/ICC/Inventory/Inventory.h"
 #include "ICantCryGameInstance.generated.h"
 
 class AICC_Player;
@@ -33,15 +34,14 @@ public:
 	void LoadLastPlayerTransform();
 
 	UPlayerStats* GetPlayerStats() const;
-	FDamage GetCurrentDamageData() const;
+	FDamage& GetCurrentDamageData();
 	void SetPlayerStats(UPlayerStats* Stats);
-	void SetCurrentPlayer(AICC_Player* NewPlayer);
+	void SetPersistentPlayer(AICC_Player* Player);
 	AICC_Player* GetCurrentPlayer() const;
 	void SetDamageData(const FDamage& Damage);
 
 	void SetInventory(const FInventory& Inv);
 	FInventory& GetInventory();
-
 	
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))

@@ -15,17 +15,23 @@ UUBTTask_DefaultAtk::UUBTTask_DefaultAtk()
 EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	BlackBoard = OwnerComp.GetBlackboardComponent();
-
+	
 	AICC_Player* Target = Cast<AICC_Player>(BlackBoard->GetValueAsObject("Target"));
 	AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner());
+	AMob* Self = Cast<AMob>(BlackBoard->GetValueAsObject("SelfActor"));
 	checkf(Controller, TEXT("AI Controller is invalid at EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask"));
 
-	checkf(Target, TEXT("Target is invalid at EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask"));
+	checkf(Target, TEXT("Target is invalid at EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask %s "), *Self->GetData()->GetName());
 
 
 	bool Attacked = BlackBoard->GetValueAsBool("Attacked?");
 	AMob* Current = Target->GetBattleHUD()->GetCurrentPlayingEmotion();
 	checkf(Current, TEXT("Current is invalid at Type UUBTTask_DefaultAtk::ExecuteTask"));
+
+	if (Current->IsAshamedStateOn())
+	{
+		return EBTNodeResult::Failed;
+	}
 
 	Current->SetTreeId(0);
 	Current->SetIsAttacked(false);
@@ -35,7 +41,7 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 
 	FDecisionMaker DecisionMaker;
 
-	DecisionMaker.Clear(); // If I'm not wrong clearing before adding new states will avoid repetitions
+	//DecisionMaker.Clear(); // If I'm not wrong clearing before adding new states will avoid repetitions
 	
 	if (Current->IsEAnger())
 	{
@@ -88,7 +94,7 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 	Decision = DecisionMaker.Thought();
 
 	// Controller->MoveToActor(Target);
-	// Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " is attacking"));
+	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " is attacking"));
 
 	return EBTNodeResult::InProgress;
 }

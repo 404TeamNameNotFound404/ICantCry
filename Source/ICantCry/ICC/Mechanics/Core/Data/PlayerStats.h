@@ -78,5 +78,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Modifiers")
 	float ApModifier = 1.0f;
 
+	/**
+ * Weakness modifier
+ */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Modifiers")
+	float WeaknessModifier = 0.0f;
+
 	
 };

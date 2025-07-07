@@ -57,14 +57,26 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet Properties")
     FString MinigameType;
-
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet Properties")
+	FString Description;
+	
 	// for UI
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	UTexture2D* Icon;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet Properties")
+	TArray<TEnumAsByte<EBulletType>> WeakAgainst;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet Properties")
+	TArray<TEnumAsByte<EBulletType>> StrongAgainst;
 	
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet Properties")
+	FColor DisplayColor;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifiers")
+	TEnumAsByte<EBulletType> Type;
+	
 	/**
  * Weakness modifier
  */

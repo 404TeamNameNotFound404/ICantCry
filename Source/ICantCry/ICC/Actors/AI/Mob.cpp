@@ -12,6 +12,7 @@ FDamage AMob::Damage;
 bool AMob::MinigameEnded = false;
 bool AMob::bMinigameHasStarted = false;
 bool AMob::bStopTree = false;
+UICantCryGameInstance* AMob::GameRef;
 static AMinigameHandler* Handler;
 
 // Sets default values
@@ -30,6 +31,8 @@ AMob::AMob()
 	HealthBarComponent->SetupAttachment(RootComponent);
 	HealthBarComponent->SetAbsolute(false, false, false);
 	HealthBarComponent->SetEnableGravity(false);
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+	AIControllerClass = AICC_AIController::StaticClass();
 }
 
 // Called when the game starts or when spawned
@@ -56,6 +59,7 @@ void AMob::BeginPlay()
 		break;
 	}
 
+	GameRef = Instance;
 	Damage.BulletData = nullptr;
 	Damage.EnemyData = EnemyData;
 	Damage.PlayerStats = MinigameHandler->GetBattlePlayer()->GetStats();
@@ -69,6 +73,11 @@ void AMob::BeginPlay()
 // Called every frame
 void AMob::Tick(float DeltaTime)
 {
+	if (!IsAlive())
+	{
+		return;
+	}
+	
 	Super::Tick(DeltaTime);
 }
 
@@ -287,6 +296,21 @@ int AMob::GetAIId() const
 	return AI_Id;
 }
 
+void AMob::Freeze(const bool& Value)
+{
+	bFreeze = Value;
+}
+
+void AMob::AshamedState(const bool& Value)
+{
+	bAshamedStatus = Value;
+}
+
+bool AMob::IsAshamedStateOn() const
+{
+	return bAshamedStatus;
+}
+
 
 void AMob::Heal(const float& RestoredHealth)
 {
@@ -355,7 +379,6 @@ void AMob::DealDamage()
 	Player->GetStats()->CurrentHealth = FMath::Clamp(Player->GetStats()->CurrentHealth, 0.0f, Player->GetStats()->MaxHealth);
 	const float HealthPercentage = Player->GetStats()->CurrentHealth / Player->GetStats()->MaxHealth;
 	Player->GetBattleHUD()->PlayerHealth->SetPercent(HealthPercentage);
-	
 }
 
 void AMob::SetIsBusy(const bool& Value)
@@ -370,9 +393,19 @@ bool AMob::IsBusy() const
 
 void AMob::PlayTurn()
 {
-	if (bStopTree)
+	if (bStopTree || bFreeze)
 	{
 		return;
+	}
+
+	// For some reason after the merge the 'DebugPlayer' couldn't be found, so I just iterate again if it does not find it at the 'BeginPlay'
+	if (!DebugPlayer)
+	{
+		for (TActorIterator<AICC_Player> It(GetWorld()); It; ++It)
+		{
+			DebugPlayer = *It;
+			break;
+		}
 	}
 
 	bIsBuffedAtk = false;
@@ -395,6 +428,7 @@ void AMob::PlayTurn()
 	
 	AIController->GetBlackboardComponent()->SetValueAsInt("AiId", AI_Id);
 	AIController->GetBlackboardComponent()->SetValueAsObject("Target", DebugPlayer);
+	AIController->GetBlackboardComponent()->SetValueAsObject("SelfActor", this);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsBuffed?", bIsBuffedAtk);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsDefenceDebuffed?", bIsDebuffedDefence);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsDefenceBuffed?", bBuffDefence);
@@ -410,7 +444,6 @@ void AMob::PlayTurn()
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsBuffOtherAtk?", bBuffOtherAtk);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsHealing?", bHeal);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsHealingOther?", bHealOther);
-	
 	
 	GetWorld()->GetTimerManager().SetTimer(BehaviorTreeTimerHandle, [this]()
 	{
@@ -429,6 +462,19 @@ void AMob::PlaySecondTurn()
 		DebugHelper::LogError(TEXT("Skipping execution—this AI is not the active turn."));
 		return;
 	}
+}
+
+bool AMob::IsAlive()
+{
+	if (GetData()->Health <= 0)
+	{
+		Destroy();
+		GetData()->Alive = false;
+		return false;
+	}
+
+	GetData()->Alive = true;
+	return true;
 }
 
 void AMob::EndTurn()

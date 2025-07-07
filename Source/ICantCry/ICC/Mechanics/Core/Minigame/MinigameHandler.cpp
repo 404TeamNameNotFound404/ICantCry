@@ -47,7 +47,7 @@ void AMinigameHandler::StartMinigame(const bool& EnableAttack)
 		}
 		
 		//CurrentMinigameDisplayed->AddToViewport();
-		Player->GetBattleHUD()->MinigameScaleSlot->AddChild(CurrentMinigameDisplayed);
+		Player->GetBattleHUD()->MinigameSlot->AddChild(CurrentMinigameDisplayed);
 		Player->GetBattleHUD()->HideInfo();
 		Player->EnableMinigameInput(true);
 		Player->SetActiveMinigameUserWidget(CastedWidget);
@@ -69,7 +69,7 @@ void AMinigameHandler::StartMinigame(const bool& EnableAttack)
 		}
 		
 		//CurrentMinigameDisplayed->AddToViewport();
-		Player->GetBattleHUD()->MinigameScaleSlot->AddChild(CurrentMinigameDisplayed);
+		Player->GetBattleHUD()->MinigameSlot->AddChild(CurrentMinigameDisplayed);
 		Player->GetBattleHUD()->HideInfo();
 		Player->EnableMinigameInput(true);
 		Player->SetActiveMinigameUserWidget(CastedWidget);
@@ -101,8 +101,21 @@ void AMinigameHandler::EndMinigame()
 
 	AMob::SetMinigameStarted(false);
 	AMob::MinigameEnded = true;
-	Player->GetBattleHUD()->GetCurrentPlayingEmotion()->SetMinigameHasStarted(false);
-	Player->GetBattleHUD()->GetCurrentPlayingEmotion()->SetMinigameEnd(true);
+
+	if (Player->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn())
+	{
+		Player->GetBattleHUD()->GetSelectedEmotion()->SetMinigameHasStarted(false);
+		Player->GetBattleHUD()->GetSelectedEmotion()->SetMinigameEnd(true);
+		bPlayerMinigameEnded = true;
+	}
+	
+	if (Player->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->GetIsAITurn())
+	{
+		Player->GetBattleHUD()->GetCurrentPlayingEmotion()->SetMinigameHasStarted(false);
+		Player->GetBattleHUD()->GetCurrentPlayingEmotion()->SetMinigameEnd(true);
+		bPlayerMinigameEnded = true;
+	}
+	
 	bPlayerMinigameEnded = true;
 }
 

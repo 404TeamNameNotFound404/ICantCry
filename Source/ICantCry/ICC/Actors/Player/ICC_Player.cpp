@@ -12,6 +12,7 @@
 #include "ICantCry/ICC/Input/Tags/ICC_InputTags.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
+#include "ICantCry/ICC/UI/InventoryHUD.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -57,6 +58,15 @@ void AICC_Player::BeginPlay()
 	GetCapsuleComponent()->SetCapsuleRadius(90.0f);
 	GetCapsuleComponent()->SetCapsuleSize(90.0f, 200.0f);
 	OldSpeed = GetCharacterMovement()->MaxWalkSpeed;
+	
+	InGameMenu = CreateWidget<UInGameMenu>(GetWorld(), InGameMenuClass);
+	InGameMenu->AddToViewport();
+	InGameMenu->SetVisibility(ESlateVisibility::Hidden);
+
+	InventoryManager = NewObject<UInventoryManager>(this);
+	InventoryManager->Initialize(InventoryHUD);
+	InventoryManager->LinkCraftingHUD(CraftingHUD);
+	InGameMenu->InstantiateTable(this);
 
 	if (!WorldCamera)
 	{
@@ -83,10 +93,6 @@ void AICC_Player::BeginPlay()
 		break;
 	}
 	
-	
-	// DontDestroyOnLoad->SetPlayerStats(Stats);
-	//DontDestroyOnLoad->SetCurrentPlayer(this);
-
 	DontDestroyOnLoad->SetPlayerStats(Stats);
 	DontDestroyOnLoad->GetInventory().StarterPack();
 	DontDestroyOnLoad->SetPersistentPlayer(this);
@@ -97,6 +103,11 @@ void AICC_Player::BeginPlay()
 // Called every frame
 void AICC_Player::Tick(float DeltaTime)
 {
+	if (!IsAlive())
+	{
+		return;
+	}
+	
 	Super::Tick(DeltaTime);
 }
 
@@ -128,6 +139,11 @@ AWorldCamera* AICC_Player::GetWorldCamera() const
 UCameraComponent* AICC_Player::GetCamera() const
 {
 	return Camera;
+}
+
+bool AICC_Player::IsAlive() const
+{
+	return Stats->CurrentHealth > 0;
 }
 
 void AICC_Player::EnableMinigameInput(const bool& Enable)
@@ -329,6 +345,107 @@ void AICC_Player::Input_Scroll(const FInputActionValue &InputActionValue)
 		}
 	}
 }
+
+void AICC_Player::Input_OpenInventory(const FInputActionValue& InputActionValue)
+{
+	ToggleInventory();
+}
+
+void AICC_Player::CloseInventory()
+{
+}
+
+void AICC_Player::ToggleInventory()
+{
+	if (!InventoryHUD)
+	{
+		InventoryHUD = CreateWidget<UInventoryHUD>(GetWorld(), InventoryHUDClass);
+
+		if (InventoryHUD)
+		{
+			InventoryHUD->AddToViewport();
+
+			InventoryHUD->UpdateInventoryDisplay(PlayerInventory); // aggiorna manualmente
+
+			AICC_PlayerController* PC = Cast<AICC_PlayerController>(GetController());
+			if (PC)
+			{
+				PC->SetInputMode(FInputModeUIOnly());
+				PC->bShowMouseCursor = true;
+			}
+		}
+		return;
+	}
+
+	if (InventoryHUD->IsInViewport())
+	{
+		CloseInventory();
+	}
+	else
+	{
+		InventoryHUD->AddToViewport();
+		InventoryHUD->UpdateInventoryDisplay(PlayerInventory); //  aggiorna quando riapri
+
+		AICC_PlayerController* PC = Cast<AICC_PlayerController>(GetController());
+		if (PC)
+		{
+			PC->SetInputMode(FInputModeUIOnly());
+			PC->bShowMouseCursor = true;
+		}
+	}
+}
+
+void AICC_Player::ToggleCraftingHUD()
+{
+	InGameMenu->SetMenuOpen(true);
+	InGameMenu->SetVisibility(ESlateVisibility::Visible);
+	//CraftingHUD->RefreshUI();
+	Cast<AICC_PlayerController>(GetController())->bShowMouseCursor = true;
+}
+
+void AICC_Player::CloseCraftingHUD()
+{
+	Cast<AICC_PlayerController>(GetController())->bShowMouseCursor = false;
+	InGameMenu->SetMenuOpen(false);
+	InGameMenu->SetVisibility(ESlateVisibility::Hidden);
+	//CraftingHUD->SetVisibility(ESlateVisibility::Hidden);
+	CraftingCounter = 0;
+}
+
+void AICC_Player::Input_OpenCrafting(const FInputActionValue& InputActionValue)
+{
+	if (InGameMenu->IsDisabled())
+	{
+		return;
+	}
+	
+	if (const bool Pressed = InputActionValue.Get<bool>() && CraftingCounter == 0)
+	{
+		DebugHelper::LogSuccess("Opening Crafting");
+		InGameMenu->SetMenuOpen(true);
+		//bIsInGameMenuOpen = true;
+		ToggleCraftingHUD();
+
+		FTimerHandle TimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]() {
+			CraftingCounter = 1;
+		}, 0.1f, false);
+	}
+}
+
+void AICC_Player::Input_CloseCrafting(const FInputActionValue& InputActionValue)
+{
+	if (const bool Pressed = InputActionValue.Get<bool>() && CraftingCounter == 1 && InGameMenu->IsOpen())
+	{
+		DebugHelper::LogSuccess("Closing Crafting");
+		CloseCraftingHUD();
+		CraftingCounter = 0;
+		//bIsInGameMenuOpen = false;
+		InGameMenu->SetMenuOpen(false);
+	}
+}
+
+
 
 
 

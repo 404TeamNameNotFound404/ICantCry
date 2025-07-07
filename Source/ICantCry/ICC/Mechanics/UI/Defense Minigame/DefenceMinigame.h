@@ -70,9 +70,6 @@ private:
 	UImage* MediumScore;
 	UPROPERTY(meta = (BindWidget))
 	UImage* PerfectScore;
-
-	UPROPERTY()
-	UICantCryGameInstance* Instance = nullptr;
 	
 	virtual void HandleScore() override;
 };

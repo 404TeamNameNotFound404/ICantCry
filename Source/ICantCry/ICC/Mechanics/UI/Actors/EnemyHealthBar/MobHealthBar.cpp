@@ -26,6 +26,9 @@ float UMobHealthBar::GetCurrentHealth() const
 void UMobHealthBar::SetCurrentHealth(const float& Variation)
 {
 	CurrentHealth = Variation;
+	Info->Health = FMath::Clamp(Info->Health, 0.0f, Info->MaxHealth);
+	const float Percentage = Info->Health / Info->MaxHealth;
+	HealthBar->SetPercent(Percentage);
 }
 
 void UMobHealthBar::Restore(const float& RestoredHealth)

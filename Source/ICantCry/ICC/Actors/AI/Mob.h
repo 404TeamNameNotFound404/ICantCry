@@ -225,9 +225,12 @@ public:
 	void PlayTurn();
 
 	void PlaySecondTurn();
+
+	bool IsAlive();
 	
 	void EndTurn();
 	static bool MinigameEnded;
+	static FDamage Damage;
 
 
 	/**
@@ -335,6 +338,10 @@ public:
 	int GetTreeId() const;
 	int GetAIId() const;
 
+	void Freeze(const bool& Value);
+	void AshamedState(const bool& Value);
+	bool IsAshamedStateOn() const;
+
 private:
 
 	UPROPERTY()
@@ -342,8 +349,6 @@ private:
 
 	UPROPERTY()
 	bool bEnableSilhouette = false;
-	
-	static FDamage Damage;
 
 	/**
 	 * Check if AI is performing attack
@@ -367,4 +372,12 @@ private:
 
 	UPROPERTY()
 	bool bMinigameEnded = false;
+
+	UPROPERTY()
+	bool bFreeze = false;
+
+	UPROPERTY()
+	bool bAshamedStatus = false;
+
+	static UICantCryGameInstance* GameRef;
 };

@@ -13,9 +13,12 @@ void UDefenceMinigame::NativeConstruct()
 
 EMinigameThreshold UDefenceMinigame::CheckBar()
 {
-	const float DistanceToFirst = FVector2D::Distance(Slider->GetRenderTransform().Translation, WorseScore->GetRenderTransform().Translation);
-	const float DistanceToSecond = FVector2D::Distance(Slider->GetRenderTransform().Translation, MediumScore->GetRenderTransform().Translation);
-	const float DistanceToParry = FVector2D::Distance(Slider->GetRenderTransform().Translation, PerfectScore->GetRenderTransform().Translation);
+	const float DistanceToFirst = FVector2D::Distance(Slider->GetRenderTransform().Translation,
+	                                                  WorseScore->GetRenderTransform().Translation);
+	const float DistanceToSecond = FVector2D::Distance(Slider->GetRenderTransform().Translation,
+	                                                   MediumScore->GetRenderTransform().Translation);
+	const float DistanceToParry = FVector2D::Distance(Slider->GetRenderTransform().Translation,
+	                                                  PerfectScore->GetRenderTransform().Translation);
 
 	if (DistanceToParry >= PerfectThreshold)
 	{
@@ -32,8 +35,8 @@ EMinigameThreshold UDefenceMinigame::CheckBar()
 		DebugHelper::LogMessage(3, FColor::FromHex("88304E"), "Bad threshold hit");
 		return EMinigameThreshold::Bad;
 	}
-	
-	return EMinigameThreshold::Miss; 
+
+	return EMinigameThreshold::Miss;
 }
 
 void UDefenceMinigame::HandleScore()
@@ -41,29 +44,29 @@ void UDefenceMinigame::HandleScore()
 	const EMinigameThreshold Result = CheckBar();
 	Instance = Cast<UICantCryGameInstance>(GetGameInstance());
 	checkf(Instance, TEXT("Instance not found UDefenceMinigame::HandleScore()"));
-	
+
 	switch (Result)
 	{
 	case EMinigameThreshold::Bad:
-			DebugHelper::LogMessage(3, FColor::FromHex("640D5F"),"33% damage reduction");
-		    Instance->GetPlayerStats()->MinigameModifier = 0.5f;
-		    Instance->GetCurrentDamageData().CalculateDamage(false);
-			break;
-		case EMinigameThreshold::Good:
-			DebugHelper::LogMessage(3, FColor::FromHex("D91656"), "66% reduction");
-		    Instance->GetPlayerStats()->MinigameModifier = 1.0f;
-		    Instance->GetCurrentDamageData().CalculateDamage(false);
-			break;
-		case EMinigameThreshold::Perfect:
-			DebugHelper::LogMessage(3, FColor::FromHex("EB5B00"),"Perfect parry");
-		    Instance->GetPlayerStats()->MinigameModifier = 1.5f;
-		    Instance->GetCurrentDamageData().CalculateDamage(false);
+		DebugHelper::LogMessage(3, FColor::FromHex("640D5F"), "33% damage reduction");
+		Instance->GetPlayerStats()->MinigameModifier = 0.70f;;
+		AMob::DealDamage();
 		break;
-		default:
-			DebugHelper::LogError("You suck! miss");
-		    Instance->GetPlayerStats()->MinigameModifier = 0.0f;
-		    Instance->GetCurrentDamageData().CalculateDamage(false);
-			break;
+	case EMinigameThreshold::Good:
+		DebugHelper::LogMessage(3, FColor::FromHex("D91656"), "66% reduction");
+		Instance->GetPlayerStats()->MinigameModifier = 0.33f;
+		AMob::DealDamage();
+		break;
+	case EMinigameThreshold::Perfect:
+		DebugHelper::LogMessage(3, FColor::FromHex("EB5B00"), "Perfect parry");
+		Instance->GetPlayerStats()->MinigameModifier = 0.0f;
+		AMob::DealDamage();
+		break;
+	default:
+		DebugHelper::LogError("You suck! miss");
+		Instance->GetPlayerStats()->MinigameModifier = 1.0f;
+		AMob::DealDamage();
+		break;
 	}
 }
 
@@ -76,7 +79,7 @@ void UDefenceMinigame::MoveSlider(const FVector2D& Position)
 	{
 		return;
 	}
-	
+
 	FVector2D CurrentPosition = Slider->GetRenderTransform().Translation;
 	CurrentPosition.Y = 0;
 	FVector2D DeltaMove = Position * Speed * GetWorld()->GetDeltaSeconds();
@@ -84,10 +87,10 @@ void UDefenceMinigame::MoveSlider(const FVector2D& Position)
 	NewPosition.Y = 0;
 	const FVector2D LeftBarrierPosition = LeftSeparator->GetRenderTransform().Translation;
 
-	if (const float Distance = FVector2D::Distance(LeftBarrierPosition , CurrentPosition); Distance >= DistanceThreshold)
+	if (const float Distance = FVector2D::Distance(LeftBarrierPosition, CurrentPosition); Distance >= DistanceThreshold)
 	{
 		return;
 	}
-	
+
 	Slider->SetRenderTranslation(NewPosition);
 }
