@@ -185,14 +185,15 @@ void UBattleHUD::UpdateAPBar()
 
 void UBattleHUD::OnShootPressed()
 {
-    if (!GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn() || CurrentAP <= 0 || bAshamed)
+    if (!GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn() || CurrentAP <= 0)
     {
         return;
     }
 
-    if (bFreeze)
+    if (GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->IsFreezed())
     {
         DecreaseAP(1);
+        BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UnfreezeChance();
         return;
     }
 
@@ -222,7 +223,7 @@ void UBattleHUD::OnFocusPressed()
         return;
     }
 
-    if (bFreeze)
+    if (GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->IsFreezed())
     {
         IncreaseAP(1);
         return;
@@ -244,7 +245,7 @@ void UBattleHUD::OnReloadPressed()
         return;
     }
 
-    if (bFreeze)
+    if (GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->IsFreezed())
     {
         DecreaseAP(1);
         return;
@@ -623,6 +624,11 @@ void UBattleHUD::SetCurrentPlayingEmotion(AMob* Current)
     CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
 }
 
+UBulletData* UBattleHUD::GetCurrentBulletData() const
+{
+    return CurrentBulletData;
+}
+
 void UBattleHUD::ShowHUD() 
 {
     AddToViewport();
@@ -691,14 +697,4 @@ ABattleHandler* UBattleHUD::GetBattleHandler() const
 UCircularBulletBuffer* UBattleHUD::GetCircularBulletBuffer() const
 {
     return RevolverBuffer;
-}
-
-void UBattleHUD::FreezedUp(const bool& Enable)
-{
-    bFreeze = Enable;
-}
-
-void UBattleHUD::Ashamed(const bool& Enable)
-{
-    bAshamed = Enable;
 }

@@ -48,5 +48,11 @@ struct FDecisionMaker
 	 */
 	void Clear();
 
+private:
+	UPROPERTY()
+	EDecision LastDecision = EDecision::None;
+
+	bool CanRepeat(const EDecision& Decision);
+
 };
 

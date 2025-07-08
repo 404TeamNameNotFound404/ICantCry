@@ -100,19 +100,7 @@ void UStatusTracker::UpdateStatus()
 		case Freezed:
 			bIsOwnerAfflicted = false;
 			StatusCounter = 0;
-			if (Target->IsA(AICC_Player::StaticClass()))
-			{
-				const AICC_Player* Player = Cast<AICC_Player>(Target);
-				DebugHelper::LogWarning("Player is freezed now");
-				Player->GetBattleHUD()->FreezedUp(false);
-			}
-
-			if (Target->IsA(AMob::StaticClass()))
-			{
-				AMob* Emotion = Cast<AMob>(GetOwner());
-				DebugHelper::LogWarning(Emotion->GetData()->EnemyName.ToString() + " is freezed now");
-				Emotion->Freeze(false);
-			}
+			Target->Freeze(false);
 			break;
 		case Burn:
 			bIsOwnerAfflicted = false;
@@ -121,19 +109,7 @@ void UStatusTracker::UpdateStatus()
 		case EAShame:
 			bIsOwnerAfflicted = false;
 			StatusCounter = 0;
-			if (Target->IsA(AICC_Player::StaticClass()))
-			{
-				const AICC_Player* Player = Cast<AICC_Player>(Target);
-				DebugHelper::LogWarning("Player is freezed now");
-				Player->GetBattleHUD()->Ashamed(false);
-			}
-
-			if (Target->IsA(AMob::StaticClass()))
-			{
-				AMob* Emotion = Cast<AMob>(GetOwner());
-				DebugHelper::LogWarning(Emotion->GetData()->EnemyName.ToString() + " is freezed now");
-				Emotion->AshamedState(false);
-			}
+			Target->Ashamed(false);
 			break;
 		case ShieldDebuff:
 			bIsOwnerAfflicted = false;
@@ -147,28 +123,32 @@ void UStatusTracker::UpdateStatus()
 	}
 }
 
+void UStatusTracker::UnfreezeChance()
+{
+	constexpr float ChanceToFreeze = 0.25f;
+	const float AleatoryChance = FMath::FRand();
+	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+
+	DebugHelper::LogWarning("Attempting to auto freeze");
+
+	if (AleatoryChance <= ChanceToFreeze)
+	{
+		Target->Freeze(false);
+		bIsOwnerAfflicted = false;
+		CurrentActiveStatus = None;
+		StatusCounter = 0;
+	}
+}
+
 void UStatusTracker::InflictFreeze(AICC_Actor* Target)
 {
-
-	if (Target->IsA(AICC_Player::StaticClass()))
-	{
-		const AICC_Player* Player = Cast<AICC_Player>(Target);
-		DebugHelper::LogWarning("Player is freezed now");
-		Player->GetBattleHUD()->FreezedUp(true);
-	}
-
-	if (Target->IsA(AMob::StaticClass()))
-	{
-		AMob* Emotion = Cast<AMob>(Target);
-		checkf(Emotion, TEXT("Emotion is invalid at InflictFreeze status tracker"))
-		DebugHelper::LogWarning(Emotion->GetData()->EnemyName.ToString() + " is freezed now");
-		Emotion->Freeze(true);
-	}
+	Target->Freeze(true);
 }
 
 void UStatusTracker::InflictBurn(AICC_Actor* Target)
 {
 	// no buff for the next 3 actions for both AI and player
+	
 }
 
 void UStatusTracker::InflictShieldDebuff(AICC_Actor* Target)
@@ -178,21 +158,10 @@ void UStatusTracker::InflictShieldDebuff(AICC_Actor* Target)
 
 void UStatusTracker::InflictAShamed(AICC_Actor* Target)
 {
-	// both player and AI can't target for attack
+	// AI can't target for attack
 
-	if (Target->IsA(AICC_Player::StaticClass()))
-	{
-		const AICC_Player* Player = Cast<AICC_Player>(Target);
-		DebugHelper::LogWarning("Player is freezed now");
-		Player->GetBattleHUD()->Ashamed(true);
-	}
-
-	if (Target->IsA(AMob::StaticClass()))
-	{
-		AMob* Emotion = Cast<AMob>(Target);
-		checkf(Emotion, TEXT("Emotion is invalid at inflict ashamed status tracker"))
-		DebugHelper::LogWarning(Emotion->GetData()->EnemyName.ToString() + " is freezed now");
-		Emotion->AshamedState(true);
-	}
+	Target->Ashamed(true);
+	DebugHelper::LogMessage(5, FColor::FromHex("FE7743"), Target->GetActorLabel() + " can't perform attack");
+	
 }
 

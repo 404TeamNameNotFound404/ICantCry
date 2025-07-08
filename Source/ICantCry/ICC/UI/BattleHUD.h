@@ -148,9 +148,8 @@ public:
 	bool IsReadyToBattle() const;
 	ABattleHandler* GetBattleHandler() const;
 	UCircularBulletBuffer* GetCircularBulletBuffer() const;
-	void FreezedUp(const bool& Enable);
-	void Ashamed(const bool& Enable);
 	void SetCurrentPlayingEmotion(AMob* Current);
+	UBulletData* GetCurrentBulletData() const;
 
 private:
 
@@ -249,20 +248,7 @@ private:
 
 	UPROPERTY()
 	FDamage Damage;
-
-	/**
-	 * Freezed up boolean, if true
-	 * player is unable to make its move
-	 */
-	UPROPERTY()
-	bool bFreeze = false;
-
-	/**
-	 *Ashamed Status
-	 * 
-	 */
-	UPROPERTY()
-	bool bAshamed = false;
+	
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullets", meta=(AllowPrivateAccess="true"))
 	TSubclassOf<class UBulletIconWidget> BulletIconWidgetClass;

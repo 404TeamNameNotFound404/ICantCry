@@ -28,9 +28,11 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 	AMob* Current = Target->GetBattleHUD()->GetCurrentPlayingEmotion();
 	checkf(Current, TEXT("Current is invalid at Type UUBTTask_DefaultAtk::ExecuteTask"));
 
-	if (Current->IsAshamedStateOn())
+	if (Current->IsAshamed())
 	{
-		return EBTNodeResult::Failed;
+		Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " skipped the turn (Ashamed)"));
+		Current->GetBattleHandler()->GetTurnBasedSystem()->EndTurn();
+		return EBTNodeResult::Succeeded;
 	}
 
 	Current->SetTreeId(0);
@@ -41,7 +43,7 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 
 	FDecisionMaker DecisionMaker;
 
-	//DecisionMaker.Clear(); // If I'm not wrong clearing before adding new states will avoid repetitions
+	DecisionMaker.Clear(); // If I'm not wrong clearing before adding new states will avoid repetitions
 	
 	if (Current->IsEAnger())
 	{
