@@ -105,6 +105,7 @@ void UStatusTracker::UpdateStatus()
 		case Burn:
 			bIsOwnerAfflicted = false;
 			StatusCounter = 0;
+			Target->Burn(false);
 			break;
 		case EAShame:
 			bIsOwnerAfflicted = false;
@@ -114,6 +115,7 @@ void UStatusTracker::UpdateStatus()
 		case ShieldDebuff:
 			bIsOwnerAfflicted = false;
 			StatusCounter = 0;
+			Target->ShieldDebuff(false);
 			break;
 		default:
 			bIsOwnerAfflicted = false;
@@ -125,13 +127,12 @@ void UStatusTracker::UpdateStatus()
 
 void UStatusTracker::UnfreezeChance()
 {
-	constexpr float ChanceToFreeze = 0.25f;
 	const float AleatoryChance = FMath::FRand();
 	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
 
 	DebugHelper::LogWarning("Attempting to auto freeze");
 
-	if (AleatoryChance <= ChanceToFreeze)
+	if (constexpr float ChanceToFreeze = 0.25f; AleatoryChance <= ChanceToFreeze)
 	{
 		Target->Freeze(false);
 		bIsOwnerAfflicted = false;
@@ -148,12 +149,15 @@ void UStatusTracker::InflictFreeze(AICC_Actor* Target)
 void UStatusTracker::InflictBurn(AICC_Actor* Target)
 {
 	// no buff for the next 3 actions for both AI and player
-	
+
+	Target->Burn(true);
 }
 
 void UStatusTracker::InflictShieldDebuff(AICC_Actor* Target)
 {
 	// For 3 debuffs received by the enemy (player) /  Enemies turns (enemy), the target cannot be de-buffed
+
+	Target->ShieldDebuff(true);
 }
 
 void UStatusTracker::InflictAShamed(AICC_Actor* Target)

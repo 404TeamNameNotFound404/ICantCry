@@ -74,7 +74,11 @@ void UBattleHUD::NativeConstruct()
         PistolMagazine_6
     };
 
-    DebugHelper::LogError("Revolver size " + FString::FromInt(RevolverSlots.Num()));
+    ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+    ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+
+    ApIncreaseOnShoot->OnClicked.AddDynamic(this, &UBattleHUD::IncreaseShootPower);
+    ApDecreaseOnShoot->OnClicked.AddDynamic(this, &UBattleHUD::DecreaseShootPower);
 
     // init all hidden slots before showing
     for (URevolverSlot* RevolverSlot : RevolverSlots)
@@ -209,6 +213,9 @@ void UBattleHUD::OnShootPressed()
     DecreaseAP(1);
     bTargetSelection = true;
     DebugHelper::LogSuccess("Shoot pressed");
+
+    ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Visible);
+    ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Visible);
 }
 
 void UBattleHUD::OnShootBoostPressed()
@@ -435,6 +442,28 @@ void UBattleHUD::UpdateRevolverUI()
             RevolverSlots[i]->SetFilled(true, Bullet->Icon);
         }
     }
+}
+
+void UBattleHUD::IncreaseShootPower()
+{
+    if (CurrentAP <= 0)
+    {
+        return;
+    }
+
+    int32 Boost = CurrentAP - 1;
+    DecreaseAP(1);
+    GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStats()->ApModifier = 1.0f + (Boost * 0.5f);
+}
+
+void UBattleHUD::DecreaseShootPower()
+{
+    if (CurrentAP >= 4)
+    {
+        return;
+    }
+
+    IncreaseAP(1);
 }
 
 void UBattleHUD::SetSelectedBullet(int32 Index)

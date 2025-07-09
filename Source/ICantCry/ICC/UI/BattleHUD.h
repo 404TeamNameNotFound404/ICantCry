@@ -116,6 +116,9 @@ public:
 	UPROPERTY(meta = (BindWidget)) UImage* PistolMagazine_6;
 	UPROPERTY(meta = (BindWidget)) UCanvasPanel* CanvasBulletStats;
 
+	UPROPERTY(meta=(BindWidget)) UButton* ApIncreaseOnShoot;
+	UPROPERTY(meta=(BindWidget)) UButton* ApDecreaseOnShoot;
+
 	UPROPERTY() TArray<UImage*> PistolMagazines;
 
 	UPROPERTY()
@@ -252,6 +255,12 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullets", meta=(AllowPrivateAccess="true"))
 	TSubclassOf<class UBulletIconWidget> BulletIconWidgetClass;
+
+	UFUNCTION()
+	void IncreaseShootPower();
+
+	UFUNCTION()
+	void DecreaseShootPower();
 
 	
 

@@ -81,6 +81,8 @@ void UAttackMinigame::HandleScore()
 		DebugHelper::LogError("Bad minigame score!");
 		Instance->GetPlayerStats()->MinigameModifier = 0.5f;
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
+		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 
 		if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->Type == EBulletType::Shame)
 		{
@@ -92,6 +94,8 @@ void UAttackMinigame::HandleScore()
 		DebugHelper::LogWarning("Good minigame score!");
 		Instance->GetPlayerStats()->MinigameModifier = 1.0f;
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
+		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->Type == EBulletType::Shame)
 		{
 			Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion()->GetStatusTracker()->InflictStatus(
@@ -102,6 +106,8 @@ void UAttackMinigame::HandleScore()
 		DebugHelper::LogSuccess("Perfect minigame score!");
 		Instance->GetPlayerStats()->MinigameModifier = 1.5f;
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
+		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->Type == EBulletType::Shame)
 		{
 			Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion()->GetStatusTracker()->InflictStatus(
@@ -112,6 +118,8 @@ void UAttackMinigame::HandleScore()
 		DebugHelper::LogMessage(3, FColor::FromHex("ADB2D4"), "Unknown minigame score!");
 		Instance->GetPlayerStats()->MinigameModifier = 0.5f;
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
+		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->Type == EBulletType::Shame)
 		{
 			Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion()->GetStatusTracker()->InflictStatus(
