@@ -56,7 +56,15 @@ void UBulletDisplayer::Refresh()
 
 	for (auto& Bullet : Instance->GetInventory().BulletsStored)
 	{
+		
 		FBullet& B = Bullet.Value;
+
+		if (B.GetQuantity() <= 0)
+		{
+			DebugHelper::LogWarning( B.GetBulletData()->BulletName + " is 0");
+			break;
+		}
+		
 		UBulletSelector* Item = CreateWidget<UBulletSelector>(GetWorld(), BulletButtonItemClass);
 		Item->Setup(B, B.GetQuantity());
 		Item->SetPadding(FMargin(2,2));
@@ -110,7 +118,14 @@ void UBulletDisplayer::RemoveBullet()
 	
 	RefreshBullets();
 	
-	AMob* Target = Player->GetBattleHUD()->GetSelectedEmotion();
+	//AMob* Target = Player->GetBattleHUD()->GetSelectedEmotion();
+
+	if (BulletType == FearEV || BulletType == JoyEv || BulletType == CalmEV || BulletType == AngerEV)
+	{
+		return;
+	}
+	
+	AMob* Target = Cast<AMob>(Player->GetBattleHUD()->GetSelectedActor());
 	const float Damage = Instance->GetCurrentDamageData().CalculateDamage(true);
 	Target->GetData()->Health -= Damage;
 	Target->GetHealthBar()->SetCurrentHealth(Target->GetData()->Health);

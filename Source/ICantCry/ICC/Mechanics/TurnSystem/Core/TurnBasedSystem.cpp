@@ -40,7 +40,6 @@ void UTurnBasedSystem::Start(UWorld* World)
 	}
 	
 	bFightStarted = true;
-	//EnemySpawnManager->SpawnRandomEnemy();
 
 	FTimerHandle DelayHandle;
 	World->GetTimerManager().SetTimer(DelayHandle, [this, World]()
@@ -53,35 +52,8 @@ void UTurnBasedSystem::Start(UWorld* World)
 	}, 0.5f, false);
 	
 	CurrentPlayer->GetBattleHUD()->ShowHUD();
-	//Turn.PopulateQueue(World);
 	
 	DebugHelper::LogSuccess("Fight started right after");
-	
-	// Turn.AssignFirstTurn();
-	//
-	// if (Turn.Queue.IsValidIndex(Turn.CurrentTurn))
-	// {
-	// 	AICC_Actor* Who = Turn.Queue[Turn.CurrentTurn];
-	// 	// if first to play is Emotion / AI
-	// 	if (Who->IsA(AMob::StaticClass()))
-	// 	{
-	// 		AMob* Mob = Cast<AMob>(Who);
-	// 		bIsAiTurn = true;
-	// 		bIsPlayerTurn = false;
-	// 		CurrentPlayer->GetBattleHUD()->SetCurrentPlayingEmotion(Mob);
-	// 		Mob->PlayTurn();
-	// 	}
-	// 	//otherwise is player playing
-	// 	else
-	// 	{
-	// 		bIsAiTurn = false;
-	// 		bIsPlayerTurn = true;
-	// 		AICC_Player* Player = Cast<AICC_Player>(Who);
-	// 		DebugHelper::AddTurnMaterialOverlayToStaticMesh(Player->DebugMesh);
-	// 		CurrentPlayer = Player;
-	// 		BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Your Turn"));
-	// 	}
-	// }
 }
 
 void UTurnBasedSystem::Update(UWorld* World)

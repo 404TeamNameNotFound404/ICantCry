@@ -194,15 +194,28 @@ void FInventory::StarterPack()
 	SadnessData->Icon = SadnessIcon;
 	SadnessData->Type = EBulletType::Sadness;
 	SadnessData->Power = 12.0f;
-	SadnessData->DisplayColor = FColor::Red;
+	SadnessData->DisplayColor = FColor::Cyan;
 	SadnessData->Description = "Sadness starter pack test";
 
 	Sadness.SetBulletData(SadnessData);
 	Sadness.SetQuantity(3);
 
+	UTexture2D* AngerIcon = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass(), nullptr, TEXT("/Game/StarterContent/Textures/T_Fire_Tiled_D")));
+	FBullet Anger;
+	UBulletData* AngerData = NewObject<UBulletData>();
+	AngerData->BulletName = "Anger";
+	AngerData->Icon = AngerIcon;
+	AngerData->Type = EBulletType::AngerEV;
+	AngerData->Power = 0.0f;
+	AngerData->DisplayColor = FColor::Red;
+	AngerData->Description = "Anger starter pack debug";
+
+	Anger.SetBulletData(AngerData);
+	Anger.SetQuantity(2);
         
 	BulletsStored.Add(Data->Type, Indifference);
 	BulletsStored.Add(SadnessData->Type, Sadness);
+	BulletsStored.Add(AngerData->Type, Anger);
 }
 
 void FInventory::AddCraftedBullet(FBullet& Bullet)

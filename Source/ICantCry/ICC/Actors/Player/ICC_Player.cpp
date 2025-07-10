@@ -316,11 +316,11 @@ void AICC_Player::Input_Scroll(const FInputActionValue &InputActionValue)
 		return;
 	}
 
-	if (!Hud->IsSelectingTarget())
-	{
-		DebugHelper::LogError("You can't do that yet");
-		return;
-	}
+	// if (!Hud->IsSelectingTarget())
+	// {
+	// 	DebugHelper::LogError("You can't do that yet");
+	// 	return;
+	// }
 	
 	DebugHelper::LogSuccess("Scrolling something");
 	
@@ -341,6 +341,7 @@ void AICC_Player::Input_Scroll(const FInputActionValue &InputActionValue)
 	{
 		if(Scroll && !Hud->IsBulletSelectionOver())
 		{
+			DebugHelper::LogSuccess("Scrolling over bullets ");
 			Hud->ScrollBulletSelection(Scroll);
 		}
 	}

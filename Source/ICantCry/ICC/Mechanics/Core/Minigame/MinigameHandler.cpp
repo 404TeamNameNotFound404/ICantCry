@@ -104,8 +104,10 @@ void AMinigameHandler::EndMinigame()
 
 	if (Player->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn())
 	{
-		Player->GetBattleHUD()->GetSelectedEmotion()->SetMinigameHasStarted(false);
-		Player->GetBattleHUD()->GetSelectedEmotion()->SetMinigameEnd(true);
+		// Player->GetBattleHUD()->GetSelectedEmotion()->SetMinigameHasStarted(false);
+		// Player->GetBattleHUD()->GetSelectedEmotion()->SetMinigameEnd(true);
+		Cast<AMob>(Player->GetBattleHUD()->GetSelectedActor())->SetMinigameHasStarted(false);
+		Cast<AMob>(Player->GetBattleHUD()->GetSelectedActor())->SetMinigameEnd(true);
 		bPlayerMinigameEnded = true;
 	}
 	

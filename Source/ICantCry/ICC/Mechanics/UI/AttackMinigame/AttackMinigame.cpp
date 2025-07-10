@@ -86,8 +86,8 @@ void UAttackMinigame::HandleScore()
 
 		if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->Type == EBulletType::Shame)
 		{
-			Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion()->GetStatusTracker()->InflictStatus(
-				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion());
+			Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
+				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
 		}
 		break;
 	case EMinigameThreshold::Good:
@@ -98,8 +98,10 @@ void UAttackMinigame::HandleScore()
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->Type == EBulletType::Shame)
 		{
-			Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion()->GetStatusTracker()->InflictStatus(
-				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion());
+			// Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion()->GetStatusTracker()->InflictStatus(
+			// 	EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion());
+			Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
+				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
 		}
 		break;
 	case EMinigameThreshold::Perfect:
@@ -110,8 +112,10 @@ void UAttackMinigame::HandleScore()
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->Type == EBulletType::Shame)
 		{
-			Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion()->GetStatusTracker()->InflictStatus(
-				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion());
+			// Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion()->GetStatusTracker()->InflictStatus(
+			// 	EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion());
+			Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
+				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
 		}
 		break;
 	default:
@@ -122,8 +126,10 @@ void UAttackMinigame::HandleScore()
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->Type == EBulletType::Shame)
 		{
-			Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion()->GetStatusTracker()->InflictStatus(
-				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion());
+			// Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion()->GetStatusTracker()->InflictStatus(
+			// 	EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion());
+			Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
+				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
 		}
 		break;
 	}

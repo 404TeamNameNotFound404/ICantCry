@@ -73,6 +73,7 @@ public:
 	/*----------DO NOT WRITE ANYTHING IN THIS SPACE -------------*/
 
 	void UnfreezeChance();
+	void BuffAttack();
 
 	/*-------------------- PLAYER CHECKS --------------------**/
 	/*----------DO NOT WRITE ANYTHING IN THIS SPACE -------------*/

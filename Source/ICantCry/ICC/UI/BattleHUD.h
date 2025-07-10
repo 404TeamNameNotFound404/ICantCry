@@ -134,6 +134,7 @@ public:
 
 	AMob* GetCurrentPlayingEmotion() const;
 	AMob* GetSelectedEmotion() const;
+	AICC_Actor* GetSelectedActor() const;
 	
 	/**
 	 * Proceed to the battle phase
@@ -254,8 +255,14 @@ private:
 	
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullets", meta=(AllowPrivateAccess="true"))
-	TSubclassOf<class UBulletIconWidget> BulletIconWidgetClass;
+	TSubclassOf<UBulletIconWidget> BulletIconWidgetClass;
 
+	/**
+	 * Additional ap point used to boost the player's shoot
+	 */
+	UPROPERTY()
+	int32 ApPowerBoost = 0;
+	
 	UFUNCTION()
 	void IncreaseShootPower();
 
@@ -276,7 +283,11 @@ private:
 
 	UPROPERTY()
 	AMob* SelectedTarget = nullptr;
-	
+
+	UPROPERTY()
+	AICC_Actor* SelectedActorTarget = nullptr;
+
+	void PrepareToEngage();
 
 	/**
 	 *-----------------------------

@@ -141,6 +141,24 @@ void UStatusTracker::UnfreezeChance()
 	}
 }
 
+void UStatusTracker::BuffAttack() // TODO Status turn track
+{
+	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+
+	if (Target->IsA(AICC_Player::StaticClass()))
+	{
+		AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+		Player->GetStats()->AttackPower += Player->GetStats()->AttackPower * 1.25f;
+		DebugHelper::LogWarning("Attack buffed " + FString::SanitizeFloat(Player->GetStats()->AttackPower));
+	}
+
+	if (Target->IsA(AMob::StaticClass()))
+	{
+		AMob* Mob = Cast<AMob>(GetOwner());
+		Mob->GetData()->AttackPower = Mob->GetData()->AttackPower * 1.25f;
+	}
+}
+
 void UStatusTracker::InflictFreeze(AICC_Actor* Target)
 {
 	Target->Freeze(true);
