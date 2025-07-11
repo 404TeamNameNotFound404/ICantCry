@@ -67,6 +67,7 @@ void AMob::BeginPlay()
 	Handler = MinigameHandler;
 	Memory.DefaultBattleLocation = GetActorLocation();
 	Memory.DefaultBattleOrientation = GetActorRotation();
+	Memory.InitialAttackPower = GetData()->AttackPower;
 	EnemyData->Alive = true;
 }
 

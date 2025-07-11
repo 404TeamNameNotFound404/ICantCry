@@ -100,4 +100,6 @@ void UUUBTTask_Retreat::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8*
 
 	Current->GetBattleHandler()->GetTurnBasedSystem()->EndTurn();
 	Current->GetBattleHandler()->GetTurnBasedSystem()->StartNextTurn();
+	Current->GetStatusTracker()->UpdateStatus();
+	Current->GetStatusTracker()->UpdateBuffStatus();
 }

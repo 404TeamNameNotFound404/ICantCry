@@ -3,6 +3,7 @@
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "ICantCry/ICC/Actors/AI/Mob.h"
+#include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -79,18 +80,27 @@ void UDefenceMinigame::MoveSlider(const FVector2D& Position)
 	{
 		return;
 	}
-
+	
 	FVector2D CurrentPosition = Slider->GetRenderTransform().Translation;
 	CurrentPosition.Y = 0;
 	FVector2D DeltaMove = Position * Speed * GetWorld()->GetDeltaSeconds();
 	FVector2D NewPosition = CurrentPosition + DeltaMove;
 	NewPosition.Y = 0;
 	const FVector2D LeftBarrierPosition = LeftSeparator->GetRenderTransform().Translation;
-
-	if (const float Distance = FVector2D::Distance(LeftBarrierPosition, CurrentPosition); Distance >= DistanceThreshold)
+	
+	if (const float Distance = FVector2D::Distance(LeftBarrierPosition , CurrentPosition); Distance >= DistanceThreshold)
 	{
+		Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+		checkf(Instance, TEXT("Instance not found UDefenceMinigame::HandleScore()"));
+		this->RemoveFromParent();
+		Instance->GetPlayerStats()->MinigameModifier = 1.0f;
+		AMob::DealDamage();
+		AMob::MinigameEnded = true;
+		AMob::SetMinigameStarted(false);
+		DebugHelper::LogError("You hit late!");
+		Instance->GetCurrentPlayer()->GetMinigameHandler()->EndMinigame();
 		return;
 	}
-
+	
 	Slider->SetRenderTranslation(NewPosition);
 }

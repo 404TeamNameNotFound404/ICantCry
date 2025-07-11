@@ -155,6 +155,8 @@ public:
 	void SetCurrentPlayingEmotion(AMob* Current);
 	UBulletData* GetCurrentBulletData() const;
 
+	void RestoreHealth();
+
 private:
 
     UPROPERTY() ABattleHandler*  BattleHandler = nullptr;

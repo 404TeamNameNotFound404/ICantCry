@@ -47,6 +47,11 @@ bool UStatusTracker::IsAfflicted() const
 	return bIsOwnerAfflicted;
 }
 
+bool UStatusTracker::IsBuffed() const
+{
+	return bIsOwnerAlreadyBuffed;
+}
+
 
 void UStatusTracker::InflictStatus(const EAfflictedStatus& Status, AICC_Actor* Target)
 {
@@ -79,11 +84,38 @@ void UStatusTracker::InflictStatus(const EAfflictedStatus& Status, AICC_Actor* T
 	}
 }
 
+void UStatusTracker::BuffWith(const EBuffStatus& BuffStatus)
+{
+	if (bIsOwnerAlreadyBuffed)
+	{
+		return;
+	}
+	
+	CurrentBuffedStatus = BuffStatus;
+	BuffStatusCounter = 0;
+	bIsOwnerAlreadyBuffed = true;
+
+	switch (BuffStatus)
+	{
+	case AtkBuff:
+		BuffAttack();
+		break;
+	case DefBuff:
+		BuffDefence();
+		break;
+	case LowHealth:
+		break;
+	default:
+		break;
+	}
+}
+
 
 void UStatusTracker::UpdateStatus()
 {
 	if (!bIsOwnerAfflicted)
 	{
+		DebugHelper::LogError("No debuff status found");
 		return;
 	}
 	
@@ -125,6 +157,52 @@ void UStatusTracker::UpdateStatus()
 	}
 }
 
+void UStatusTracker::UpdateBuffStatus()
+{
+	if (!bIsOwnerAlreadyBuffed)
+	{
+		DebugHelper::LogError("No buff status found");
+		return;
+	}
+
+	BuffStatusCounter += 1;
+
+	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+
+	DebugHelper::LogMessage(6, FColor::Blue, "Buff Status counter " + FString::FromInt(BuffStatusCounter));
+
+	if (BuffStatusCounter < 3)
+	{
+		return; // I don't need to check further if counter is not 3 (3 turns elapsed)
+	}
+
+	switch (CurrentBuffedStatus)
+	{
+	case AtkBuff:
+		if (Target->IsA(AICC_Player::StaticClass()))
+		{
+			AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+			Player->GetStats()->AttackPower = 1;
+			BuffStatusCounter = 0;
+			bIsOwnerAlreadyBuffed = false;
+		}
+		if (Target->IsA(AMob::StaticClass()))
+		{
+			AMob* Emotion = Cast<AMob>(GetOwner());
+			Emotion->GetData()->AttackPower = Emotion->GetAIMemory().InitialAttackPower;
+			BuffStatusCounter = 0;
+			bIsOwnerAlreadyBuffed = false;
+		}
+		break;
+	case DefBuff:
+		break;
+	case LowHealth:
+		break;
+	default:
+		break;
+	}
+}
+
 void UStatusTracker::UnfreezeChance()
 {
 	const float AleatoryChance = FMath::FRand();
@@ -141,47 +219,86 @@ void UStatusTracker::UnfreezeChance()
 	}
 }
 
-void UStatusTracker::BuffAttack() // TODO Status turn track
+void UStatusTracker::BuffAttack()
 {
 	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
-
+	
 	if (Target->IsA(AICC_Player::StaticClass()))
 	{
 		AICC_Player* Player = Cast<AICC_Player>(GetOwner());
-		Player->GetStats()->AttackPower += Player->GetStats()->AttackPower * 1.25f;
+		Player->GetStats()->AttackPower += FMath::FloorToInt(Player->GetStats()->AttackPower * 1.25f);
 		DebugHelper::LogWarning("Attack buffed " + FString::SanitizeFloat(Player->GetStats()->AttackPower));
 	}
 
 	if (Target->IsA(AMob::StaticClass()))
 	{
 		AMob* Mob = Cast<AMob>(GetOwner());
-		Mob->GetData()->AttackPower = Mob->GetData()->AttackPower * 1.25f;
+		Mob->GetData()->AttackPower = FMath::FloorToInt(Mob->GetData()->AttackPower * 1.25f);
+	}
+}
+
+void UStatusTracker::BuffDefence()
+{
+	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+	
+	if (Target->IsA(AICC_Player::StaticClass()))
+	{
+		AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+		Player->GetStats()->DefencePower += FMath::FloorToInt(Player->GetStats()->DefencePower * 1.25f);
+		DebugHelper::LogWarning("Defence buffed " + FString::SanitizeFloat(Player->GetStats()->AttackPower));
+	}
+
+	if (Target->IsA(AMob::StaticClass()))
+	{
+		AMob* Mob = Cast<AMob>(GetOwner());
+		Mob->GetData()->DefencePower = FMath::FloorToInt(Mob->GetData()->DefencePower * 1.25f);
+	}
+}
+
+void UStatusTracker::Heal()
+{
+	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+	
+	if (Target->IsA(AICC_Player::StaticClass()))
+	{
+		AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+		Player->GetBattleHUD()->RestoreHealth();
+		bIsOwnerAlreadyBuffed = false;
+		DebugHelper::LogWarning("Defence buffed " + FString::SanitizeFloat(Player->GetStats()->AttackPower));
+	}
+
+	if (Target->IsA(AMob::StaticClass()))
+	{
+		AMob* Mob = Cast<AMob>(GetOwner());
+		Mob->GetHealthBar()->Restore(Mob->GetData()->AttackPower); // maybe add a RestorePower?
+		bIsOwnerAlreadyBuffed = false;
 	}
 }
 
 void UStatusTracker::InflictFreeze(AICC_Actor* Target)
 {
+	bIsOwnerAfflicted = true;
 	Target->Freeze(true);
 }
 
 void UStatusTracker::InflictBurn(AICC_Actor* Target)
 {
 	// no buff for the next 3 actions for both AI and player
-
+	bIsOwnerAfflicted = true;
 	Target->Burn(true);
 }
 
 void UStatusTracker::InflictShieldDebuff(AICC_Actor* Target)
 {
 	// For 3 debuffs received by the enemy (player) /  Enemies turns (enemy), the target cannot be de-buffed
-
+	bIsOwnerAfflicted = true;
 	Target->ShieldDebuff(true);
 }
 
 void UStatusTracker::InflictAShamed(AICC_Actor* Target)
 {
 	// AI can't target for attack
-
+	bIsOwnerAfflicted = true;
 	Target->Ashamed(true);
 	DebugHelper::LogMessage(5, FColor::FromHex("FE7743"), Target->GetActorLabel() + " can't perform attack");
 	

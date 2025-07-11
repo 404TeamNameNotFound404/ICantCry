@@ -239,6 +239,8 @@ void UBattleHUD::OnFocusPressed()
     DebugHelper::LogWarning("attack and defense increased!");
     IncreaseAP(1);
     BattleHandler->GetTurnBasedSystem()->EndTurn();
+    GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateStatus();
+    GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateBuffStatus();
     BattleHandler->GetTurnBasedSystem()->StartNextTurn();
     DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
     BattleHandler->GetTurnBasedSystem()->SetTurnOverlayApplied(false);
@@ -290,6 +292,8 @@ void UBattleHUD::OnPassPressed()
     DebugHelper::RemoveOverlayMaterialFromStaticMesh(BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
     bTargetSelection = false;
     BattleHandler->GetBattleInfo()->ClearInfo();
+    GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateStatus();
+    GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateBuffStatus();
 }
 
 void UBattleHUD::ScrollTargetSelection(float ScrollValue)
@@ -329,6 +333,11 @@ void UBattleHUD::UpdateTarget()
         AICC_Actor* TargetEnemy = BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex];
         static AMob* PreviousTargetEnemy = nullptr; 
         static bool bOverlayMaterialApplied = false;
+
+        if (GetCircularBulletBuffer()->IsEmpty())
+        {
+            return;
+        }
         
         CurrentBulletData = GetCircularBulletBuffer()->PeekAt(GetCircularBulletBuffer()->GetTailIndex());
         
@@ -679,7 +688,7 @@ void UBattleHUD::Engage()
             break;
         }
     case AngerEV:
-        PersistentInstance->GetCurrentPlayer()->GetStatusTracker()->BuffAttack();
+        PersistentInstance->GetCurrentPlayer()->GetStatusTracker()->BuffWith(EBuffStatus::AtkBuff);
         EngageBtn->SetVisibility(ESlateVisibility::Hidden);
         CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
         GetBulletDisplayer()->RemoveBullet();
@@ -770,6 +779,20 @@ void UBattleHUD::SetCurrentPlayingEmotion(AMob* Current)
 UBulletData* UBattleHUD::GetCurrentBulletData() const
 {
     return CurrentBulletData;
+}
+
+void UBattleHUD::RestoreHealth()
+{
+    AICC_Player* Player = GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer();
+
+    if (!CurrentBulletData || CurrentBulletData->Type != EBulletType::JoyEv)
+    {
+        return;
+    }
+    
+    Player->GetStats()->CurrentHealth += CurrentBulletData->Power;
+    const float Percentage =  Player->GetStats()->CurrentHealth / Player->GetStats()->MaxHealth;
+    PlayerHealth->SetPercent(Percentage);
 }
 
 void UBattleHUD::ShowHUD() 
