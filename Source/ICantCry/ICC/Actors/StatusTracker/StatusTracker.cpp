@@ -4,6 +4,7 @@
 #include "ICantCry/ICC/Actors/ICC_Actor.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Actors/AI/Mob.h"
+#include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 
 
@@ -64,6 +65,8 @@ void UStatusTracker::InflictStatus(const EAfflictedStatus& Status, AICC_Actor* T
 	CurrentActiveStatus = Status;
 	StatusCounter = 0;
 	bIsOwnerAfflicted = true;
+
+	DebugHelper::LogMessage(6, FColor::Black, "Inflicting a status to " + Target->GetActorLabel());
 	
 	switch (Status)
 	{
@@ -86,7 +89,7 @@ void UStatusTracker::InflictStatus(const EAfflictedStatus& Status, AICC_Actor* T
 
 void UStatusTracker::BuffWith(const EBuffStatus& BuffStatus)
 {
-	if (bIsOwnerAlreadyBuffed)
+	if (bIsOwnerAlreadyBuffed || !bCanBuff)
 	{
 		return;
 	}
@@ -104,6 +107,7 @@ void UStatusTracker::BuffWith(const EBuffStatus& BuffStatus)
 		BuffDefence();
 		break;
 	case LowHealth:
+		Heal();
 		break;
 	default:
 		break;
@@ -138,6 +142,7 @@ void UStatusTracker::UpdateStatus()
 			bIsOwnerAfflicted = false;
 			StatusCounter = 0;
 			Target->Burn(false);
+			bCanBuff = true;
 			break;
 		case EAShame:
 			bIsOwnerAfflicted = false;
@@ -159,7 +164,7 @@ void UStatusTracker::UpdateStatus()
 
 void UStatusTracker::UpdateBuffStatus()
 {
-	if (!bIsOwnerAlreadyBuffed)
+	if (!bIsOwnerAlreadyBuffed || !bCanBuff)
 	{
 		DebugHelper::LogError("No buff status found");
 		return;
@@ -182,7 +187,8 @@ void UStatusTracker::UpdateBuffStatus()
 		if (Target->IsA(AICC_Player::StaticClass()))
 		{
 			AICC_Player* Player = Cast<AICC_Player>(GetOwner());
-			Player->GetStats()->AttackPower = 1;
+			UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+			Player->GetStats()->AttackPower = Instance->GetPersistentData()->InitialAttackPower;
 			BuffStatusCounter = 0;
 			bIsOwnerAlreadyBuffed = false;
 		}
@@ -195,8 +201,25 @@ void UStatusTracker::UpdateBuffStatus()
 		}
 		break;
 	case DefBuff:
+		if (Target->IsA(AICC_Player::StaticClass()))
+		{
+			AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+			UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+			Player->GetStats()->DefencePower = Instance->GetPersistentData()->InitialDefencePower;
+			BuffStatusCounter = 0;
+			bIsOwnerAlreadyBuffed = false;
+		}
+		if (Target->IsA(AMob::StaticClass()))
+		{
+			AMob* Emotion = Cast<AMob>(GetOwner());
+			Emotion->GetData()->DefencePower = Emotion->GetAIMemory().InitialDefencePower;
+			BuffStatusCounter = 0;
+			bIsOwnerAlreadyBuffed = false;
+		}
 		break;
 	case LowHealth:
+		BuffStatusCounter = 0;
+		bIsOwnerAlreadyBuffed = false;
 		break;
 	default:
 		break;
@@ -233,7 +256,7 @@ void UStatusTracker::BuffAttack()
 	if (Target->IsA(AMob::StaticClass()))
 	{
 		AMob* Mob = Cast<AMob>(GetOwner());
-		Mob->GetData()->AttackPower = FMath::FloorToInt(Mob->GetData()->AttackPower * 1.25f);
+		Mob->GetTactics()->MovePower = FMath::FloorToInt(Mob->GetTactics()->MovePower * 1.25f);
 	}
 }
 
@@ -264,7 +287,6 @@ void UStatusTracker::Heal()
 		AICC_Player* Player = Cast<AICC_Player>(GetOwner());
 		Player->GetBattleHUD()->RestoreHealth();
 		bIsOwnerAlreadyBuffed = false;
-		DebugHelper::LogWarning("Defence buffed " + FString::SanitizeFloat(Player->GetStats()->AttackPower));
 	}
 
 	if (Target->IsA(AMob::StaticClass()))
@@ -286,6 +308,8 @@ void UStatusTracker::InflictBurn(AICC_Actor* Target)
 	// no buff for the next 3 actions for both AI and player
 	bIsOwnerAfflicted = true;
 	Target->Burn(true);
+	bCanBuff = false;
+	DebugHelper::LogWarning(Target->GetActorLabel() + " in envy burned state\nCan buff " + FString::FromInt(bCanBuff));
 }
 
 void UStatusTracker::InflictShieldDebuff(AICC_Actor* Target)

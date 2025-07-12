@@ -30,9 +30,10 @@ EBTNodeResult::Type UBTTask_EnvyBurned::ExecuteTask(UBehaviorTreeComponent& Owne
 	Blackboard->SetValueAsBool("IsEnvyBurnedState?", Current->GetIsIsEnvyBurned());
 	Blackboard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 	
-	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " in EnvyBurned state!"));
-
-	//TODO Implement EnvyBurned Status see issue #58 on Git
+	AICC_Player* Target = Cast<AICC_Player>(Blackboard->GetValueAsObject("Target"));
+	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Target->GetActorLabel() + " in EnvyBurned state!"));
+	
+	Target->GetStatusTracker()->InflictStatus(EAfflictedStatus::Burn, Target);
 	
 	return EBTNodeResult::InProgress;
 }

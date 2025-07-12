@@ -73,6 +73,11 @@ UPlayerStats* UICantCryGameInstance::GetPlayerStats() const
 	return PlayerStats;
 }
 
+UPersistentData* UICantCryGameInstance::GetPersistentData() const
+{
+	return PersistentData;
+}
+
 FDamage& UICantCryGameInstance::GetCurrentDamageData()
 {
 	return StoredDamage;

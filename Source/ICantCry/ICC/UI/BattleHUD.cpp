@@ -718,8 +718,10 @@ void UBattleHUD::Engage()
             break;
         }
     case JoyEv:
+        PersistentInstance->GetCurrentPlayer()->GetStatusTracker()->BuffWith(EBuffStatus::LowHealth);
         EngageBtn->SetVisibility(ESlateVisibility::Hidden);
         CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
+        GetBulletDisplayer()->RemoveBullet();
         break;
     case Anxiety:
         {
@@ -748,6 +750,7 @@ void UBattleHUD::Engage()
     case Shame:
         {
             PrepareToEngage();
+            GetSelectedActor()->GetStatusTracker()->InflictStatus(EAfflictedStatus::EAShame, Cast<AMob>(GetSelectedActor()));
             break;
         }
     default:
@@ -793,6 +796,7 @@ void UBattleHUD::RestoreHealth()
     Player->GetStats()->CurrentHealth += CurrentBulletData->Power;
     const float Percentage =  Player->GetStats()->CurrentHealth / Player->GetStats()->MaxHealth;
     PlayerHealth->SetPercent(Percentage);
+    DebugHelper::LogWarning("Healed " + FString::SanitizeFloat(Percentage));
 }
 
 void UBattleHUD::ShowHUD() 

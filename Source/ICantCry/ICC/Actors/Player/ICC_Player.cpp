@@ -97,6 +97,9 @@ void AICC_Player::BeginPlay()
 	DontDestroyOnLoad->GetInventory().StarterPack();
 	DontDestroyOnLoad->SetPersistentPlayer(this);
 
+	DontDestroyOnLoad->GetPersistentData()->InitialAttackPower = GetStats()->AttackPower;
+	DontDestroyOnLoad->GetPersistentData()->InitialDefencePower = GetStats()->DefencePower;
+
 	bIsInFight = false;
 }
 

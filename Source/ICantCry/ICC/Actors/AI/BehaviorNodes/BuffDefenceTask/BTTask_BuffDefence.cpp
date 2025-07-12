@@ -35,7 +35,8 @@ EBTNodeResult::Type UBTTask_BuffDefence::ExecuteTask(UBehaviorTreeComponent& Own
 	//TODO ADD a counter for the buff (must last 3 turns)
 
 
-	Current->GetData()->DefencePower *= 0.20f; // still assuming a 20% increase
+	//Current->GetData()->DefencePower *= 0.20f; // still assuming a 20% increase
+	Current->GetStatusTracker()->BuffWith(EBuffStatus::DefBuff);
 
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(

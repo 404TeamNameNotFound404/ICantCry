@@ -114,6 +114,9 @@ private:
 	UPROPERTY()
 	int32 BuffStatusCounter = 0;
 
+	UPROPERTY()
+	bool bCanBuff = true;
+
 	void InflictFreeze(AICC_Actor* Target);
 	void InflictBurn(AICC_Actor* Target);
 	void InflictShieldDebuff(AICC_Actor* Target);

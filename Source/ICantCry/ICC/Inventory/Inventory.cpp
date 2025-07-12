@@ -212,10 +212,38 @@ void FInventory::StarterPack()
 
 	Anger.SetBulletData(AngerData);
 	Anger.SetQuantity(2);
+
+	UTexture2D* JoyIcon = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass(), nullptr, TEXT("/Game/StarterContent/Textures/T_Fire_Tiled_D")));
+	FBullet JoyEv;
+	UBulletData* JoyEvData = NewObject<UBulletData>();
+	JoyEvData->BulletName = "Joy Ev";
+	JoyEvData->Icon = JoyIcon;
+	JoyEvData->Type = EBulletType::JoyEv;
+	JoyEvData->Power = 10.0f;
+	JoyEvData->DisplayColor = FColor::Yellow;
+	JoyEvData->Description = "Joy (Ev)";
+
+	JoyEv.SetBulletData(JoyEvData);
+	JoyEv.SetQuantity(2);
+
+	UTexture2D* ShameIcon = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass(), nullptr, TEXT("/Game/StarterContent/Textures/T_Fire_Tiled_D")));
+	FBullet Shame;
+	UBulletData* ShameData = NewObject<UBulletData>();
+	ShameData->BulletName = "Shame";
+	ShameData->Icon = ShameIcon;
+	ShameData->Type = EBulletType::Shame;
+	ShameData->Power = 3.0f;
+	ShameData->DisplayColor = FColor::White;
+	ShameData->Description = "Shame debug";
+
+	Shame.SetBulletData(ShameData);
+	Shame.SetQuantity(4);
         
 	BulletsStored.Add(Data->Type, Indifference);
 	BulletsStored.Add(SadnessData->Type, Sadness);
 	BulletsStored.Add(AngerData->Type, Anger);
+	BulletsStored.Add(JoyEvData->Type, JoyEv);
+	BulletsStored.Add(ShameData->Type, Shame);
 }
 
 void FInventory::AddCraftedBullet(FBullet& Bullet)

@@ -68,6 +68,7 @@ void AMob::BeginPlay()
 	Memory.DefaultBattleLocation = GetActorLocation();
 	Memory.DefaultBattleOrientation = GetActorRotation();
 	Memory.InitialAttackPower = GetData()->AttackPower;
+	Memory.InitialDefencePower = GetData()->DefencePower;
 	EnemyData->Alive = true;
 }
 

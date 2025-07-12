@@ -34,6 +34,7 @@ public:
 	void LoadLastPlayerTransform();
 
 	UPlayerStats* GetPlayerStats() const;
+	UPersistentData* GetPersistentData() const;
 	FDamage& GetCurrentDamageData();
 	void SetPlayerStats(UPlayerStats* Stats);
 	void SetPersistentPlayer(AICC_Player* Player);

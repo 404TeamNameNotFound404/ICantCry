@@ -26,8 +26,11 @@ public:
 	UPROPERTY(VisibleInstanceOnly,BlueprintReadOnly,Category="Player Data")
 	float PlayerHp;
 
-	// UPROPERTY(VisibleInstanceOnly,BlueprintReadOnly,Category="Player Data")
-	// float AbilityPoints;
+	UPROPERTY(VisibleInstanceOnly,BlueprintReadOnly,Category="Player Data")
+	float InitialAttackPower;
+
+	UPROPERTY(VisibleInstanceOnly,BlueprintReadOnly,Category="Player Data")
+	float InitialDefencePower;
 
 	// Storing the Rewards Data Container independently to be as clean as possible 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category="Rewards")
