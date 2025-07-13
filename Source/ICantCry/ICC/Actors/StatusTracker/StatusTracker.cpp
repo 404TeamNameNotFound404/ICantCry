@@ -56,7 +56,7 @@ bool UStatusTracker::IsBuffed() const
 
 void UStatusTracker::InflictStatus(const EAfflictedStatus& Status, AICC_Actor* Target)
 {
-	if (bIsOwnerAfflicted)
+	if (bIsOwnerAfflicted || !bCanDebuff)
 	{
 		DebugHelper::LogError("A status has already been inflicted");
 		return;
@@ -117,7 +117,7 @@ void UStatusTracker::BuffWith(const EBuffStatus& BuffStatus)
 
 void UStatusTracker::UpdateStatus()
 {
-	if (!bIsOwnerAfflicted)
+	if (!bIsOwnerAfflicted || !bCanDebuff)
 	{
 		DebugHelper::LogError("No debuff status found");
 		return;
@@ -153,6 +153,15 @@ void UStatusTracker::UpdateStatus()
 			bIsOwnerAfflicted = false;
 			StatusCounter = 0;
 			Target->ShieldDebuff(false);
+			bCanDebuff = true;
+			break;
+		case DebuffAtk:
+			bIsOwnerAfflicted = false;
+			StatusCounter = 0;
+			break;
+		case DebuffDef:
+			bIsOwnerAfflicted = false;
+			StatusCounter = 0;
 			break;
 		default:
 			bIsOwnerAfflicted = false;
@@ -249,14 +258,14 @@ void UStatusTracker::BuffAttack()
 	if (Target->IsA(AICC_Player::StaticClass()))
 	{
 		AICC_Player* Player = Cast<AICC_Player>(GetOwner());
-		Player->GetStats()->AttackPower += FMath::FloorToInt(Player->GetStats()->AttackPower * 1.25f);
+		Player->GetStats()->AttackPower += FMath::FloorToInt(Player->GetStats()->AttackPower * Player->GetBattleData()->BuffAtkIncrement);
 		DebugHelper::LogWarning("Attack buffed " + FString::SanitizeFloat(Player->GetStats()->AttackPower));
 	}
 
 	if (Target->IsA(AMob::StaticClass()))
 	{
 		AMob* Mob = Cast<AMob>(GetOwner());
-		Mob->GetTactics()->MovePower = FMath::FloorToInt(Mob->GetTactics()->MovePower * 1.25f);
+		Mob->GetTactics()->MovePower = FMath::FloorToInt(Mob->GetTactics()->MovePower * Mob->GetBattleData()->EmotionAtkBuffIncrement);
 	}
 }
 
@@ -267,14 +276,14 @@ void UStatusTracker::BuffDefence()
 	if (Target->IsA(AICC_Player::StaticClass()))
 	{
 		AICC_Player* Player = Cast<AICC_Player>(GetOwner());
-		Player->GetStats()->DefencePower += FMath::FloorToInt(Player->GetStats()->DefencePower * 1.25f);
+		Player->GetStats()->DefencePower += FMath::FloorToInt(Player->GetStats()->DefencePower * Player->GetBattleData()->BuffDefIncrement);
 		DebugHelper::LogWarning("Defence buffed " + FString::SanitizeFloat(Player->GetStats()->AttackPower));
 	}
 
 	if (Target->IsA(AMob::StaticClass()))
 	{
 		AMob* Mob = Cast<AMob>(GetOwner());
-		Mob->GetData()->DefencePower = FMath::FloorToInt(Mob->GetData()->DefencePower * 1.25f);
+		Mob->GetData()->DefencePower = FMath::FloorToInt(Mob->GetData()->DefencePower * Mob->GetBattleData()->EmotionDefBuffIncrement);
 	}
 }
 
@@ -294,6 +303,40 @@ void UStatusTracker::Heal()
 		AMob* Mob = Cast<AMob>(GetOwner());
 		Mob->GetHealthBar()->Restore(Mob->GetData()->AttackPower); // maybe add a RestorePower?
 		bIsOwnerAlreadyBuffed = false;
+	}
+}
+
+void UStatusTracker::DebuffAtkF()
+{
+	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+
+	if (Target->IsA(AICC_Player::StaticClass()))
+	{
+		AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+		Player->GetStats()->AttackPower -= Player->GetStats()->AttackPower * Player->GetBattleData()->DebuffAtkMalus;
+	}
+
+	if (Target->IsA(AMob::StaticClass()))
+	{
+		AMob* Mob = Cast<AMob>(GetOwner());
+		Mob->GetData()->AttackPower -= Mob->GetData()->AttackPower * Mob->GetBattleData()->EmotionAtkDebuffMalus;
+	}
+}
+
+void UStatusTracker::DebuffDefF()
+{
+	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+
+	if (Target->IsA(AICC_Player::StaticClass()))
+	{
+		AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+		Player->GetStats()->DefencePower -= Player->GetStats()->DefencePower * Player->GetBattleData()->DebuffDefMalus;
+	}
+
+	if (Target->IsA(AMob::StaticClass()))
+	{
+		AMob* Mob = Cast<AMob>(GetOwner());
+		Mob->GetData()->DefencePower -= Mob->GetData()->DefencePower * Mob->GetBattleData()->EmotionDefDebuffMalus;
 	}
 }
 
@@ -317,6 +360,7 @@ void UStatusTracker::InflictShieldDebuff(AICC_Actor* Target)
 	// For 3 debuffs received by the enemy (player) /  Enemies turns (enemy), the target cannot be de-buffed
 	bIsOwnerAfflicted = true;
 	Target->ShieldDebuff(true);
+	bCanDebuff = false;
 }
 
 void UStatusTracker::InflictAShamed(AICC_Actor* Target)

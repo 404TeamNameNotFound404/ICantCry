@@ -186,6 +186,11 @@ UPlayerStats* AICC_Player::GetStats() const
 	return Stats;
 }
 
+UBattleData* AICC_Player::GetBattleData() const
+{
+	return BattleData;
+}
+
 int32 AICC_Player::GetWorldCameraCounter() const
 {
 	return CameraCounter;

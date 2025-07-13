@@ -34,6 +34,7 @@ EBTNodeResult::Type UBTTask_DebuffAtk::ExecuteTask(UBehaviorTreeComponent& Owner
 	//TODO ADD a counter for the buff (must last 3 turns)
 
 	//Target->GetStats()->DefencePower *= 0.80f; // Reducing by 20%
+	
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(
 		FText::FromString(Current->GetActorLabel() + " De-buffed " + Target->GetActorLabel() + " atk"));

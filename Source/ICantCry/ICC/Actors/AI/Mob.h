@@ -13,6 +13,7 @@
 #include "ICantCry/ICC/Mechanics/TurnSystem/BattleFlow/DamageCalculator.h"
 #include "Niagara/Public/NiagaraComponent.h"
 #include "ICantCry/ICC/Actors/AI/Memory/EmotionMemory.h"
+#include "ICantCry/ICC/Mechanics/Core/Data/BattleData.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "Mob.generated.h"
 
@@ -43,6 +44,9 @@ protected:
 	// Reference to Enemy Data Asset
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data",  meta = (AllowPrivateAccess = "true"))
 	UEnemyDatas* EnemyData;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data",  meta = (AllowPrivateAccess = "true"))
+	UBattleData* BattleData;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data",  meta = (AllowPrivateAccess = "true"))
 	UEnemyTactics* Moves;
@@ -189,6 +193,13 @@ public:
 	 * @return Get the AIMoves
 	 */
 	UEnemyTactics* GetTactics() const;
+
+	/**
+	 * Battle Data simple data asset used to edit buff and debuff increment values 
+	 * 
+	 * @return Battle Data
+	 */
+	UBattleData* GetBattleData() const;
 
 	/**
 	 * Debug only

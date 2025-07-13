@@ -93,6 +93,11 @@ UEnemyTactics* AMob::GetTactics() const
 	return Moves;
 }
 
+UBattleData* AMob::GetBattleData() const
+{
+	return BattleData;
+}
+
 UBehaviorTree* AMob::GetBehaviorTree() const
 {
 	if (!Tree)

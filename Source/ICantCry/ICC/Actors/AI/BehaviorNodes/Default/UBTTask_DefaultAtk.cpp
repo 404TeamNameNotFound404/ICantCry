@@ -81,7 +81,7 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 	if (Current->IsECalm())
 	{
 		DecisionMaker.DecisionMap.Add(EDecision::DebuffShieldItSelf, 0.60);
-		DecisionMaker.DecisionMap.Add(EDecision::DebuffShieldOther, 0.10);
+		DecisionMaker.DecisionMap.Add(EDecision::DebuffShieldOther, 0.15);
 		DecisionMaker.DecisionMap.Add(EDecision::BuffDefence, 0.10);
 		DecisionMaker.DecisionMap.Add(EDecision::BuffOtherDefence, 0.20);
 	}
@@ -89,7 +89,7 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 	Decision = DecisionMaker.Thought();
 
 	// Controller->MoveToActor(Target);
-	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " is attacking"));
+	//Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " is attacking"));
 
 	return EBTNodeResult::InProgress;
 }
@@ -199,14 +199,14 @@ void UUBTTask_DefaultAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 	if (Decision == EDecision::DebuffShieldItSelf && Current->IsECalm())
 	{
 		Current->SetDebuffShield(true);
-		BlackBoard->SetValueAsBool("IsShieldDebuffed??", Current->GetIsIsEnvyBurned());
+		BlackBoard->SetValueAsBool("IsShieldDebuffed??", Current->GetIsDebuffShield());
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
 
 	if (Decision == EDecision::DebuffShieldOther && Current->IsECalm())
 	{
 		Current->SetDebuffOtherShield(true);
-		BlackBoard->SetValueAsBool("IsOtherShieldDebuffed??", Current->GetIsIsEnvyBurned());
+		BlackBoard->SetValueAsBool("IsOtherShieldDebuffed??", Current->GetIsDebuffOtherShield());
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
 	

@@ -39,7 +39,8 @@ EBTNodeResult::Type UBTTask_BuffOtherAtk::ExecuteTask(UBehaviorTreeComponent& Ow
 	AMob* TargetToBuff = Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetMobInQueue();
 	checkf(TargetToBuff, TEXT("TargetToBuff is invalid Type UBTTask_BuffDefence::ExecuteTask"))
 
-	TargetToBuff->GetData()->AttackPower *= 0.20f; // still assuming a 20% increase
+	// TargetToBuff->GetData()->AttackPower *= 0.20f; // still assuming a 20% increase
+	TargetToBuff->GetStatusTracker()->BuffWith(EBuffStatus::AtkBuff);
 	
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(

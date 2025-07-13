@@ -15,6 +15,8 @@ enum EAfflictedStatus
 	Burn,
 	EAShame,
 	ShieldDebuff,
+	DebuffAtk,
+	DebuffDef,
 	None
 };
 
@@ -117,6 +119,9 @@ private:
 	UPROPERTY()
 	bool bCanBuff = true;
 
+	UPROPERTY()
+	bool bCanDebuff = true;
+
 	void InflictFreeze(AICC_Actor* Target);
 	void InflictBurn(AICC_Actor* Target);
 	void InflictShieldDebuff(AICC_Actor* Target);
@@ -127,4 +132,7 @@ private:
 	 * Used for joy ev / ai 
 	 */
 	void Heal();
+
+	void DebuffAtkF();
+	void DebuffDefF();
 };
