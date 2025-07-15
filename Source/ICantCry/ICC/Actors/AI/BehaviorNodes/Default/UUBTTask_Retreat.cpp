@@ -11,6 +11,7 @@ UUUBTTask_Retreat::UUUBTTask_Retreat()
 	NodeName = TEXT("Retreat");
 	bNotifyTick = true;
 	bNotifyTaskFinished = true;
+	bCreateNodeInstance = true;
 }
 
 EBTNodeResult::Type UUUBTTask_Retreat::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)

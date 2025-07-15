@@ -95,13 +95,24 @@ public:
 	/*----------DO NOT WRITE ANYTHING IN THIS SPACE -------------*/
 	/*-------------------- AI CHECKS --------------------*/
 
+	/**
+ * Update the malus status counting 3 turns starting from the turn Player / AI
+ * activated the buff
+ */
 	void UpdateStatus();
 
+	/**
+	 * Update the buff status counting 3 turns starting from the turn Player / AI
+	 * activated the buff
+	 */
 	void UpdateBuffStatus();
 
 	/*-------------------- PLAYER CHECKS --------------------**/
 	/*----------DO NOT WRITE ANYTHING IN THIS SPACE -------------*/
 
+	/**
+	 * Attempt to unfreeze each player turn (25% chance)
+	 */
 	void UnfreezeChance();
 
 	/*-------------------- PLAYER CHECKS --------------------**/

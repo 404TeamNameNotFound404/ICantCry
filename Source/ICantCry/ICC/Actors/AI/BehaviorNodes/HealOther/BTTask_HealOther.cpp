@@ -40,6 +40,12 @@ EBTNodeResult::Type UBTTask_HealOther::ExecuteTask(UBehaviorTreeComponent& Owner
 
 	AMob* CurrentToBuff = Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetMobInQueue();
 	checkf(CurrentToBuff, TEXT("Invalid"));
+	
+	if (Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetEmotionsInBattle().Num() <= 1)
+	{
+		DebugHelper::LogError(Current->GetActorLabel() +  " is alone can't buff");
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+	}
 
 	if (CurrentToBuff->GetData()->Health < CurrentToBuff->GetData()->MaxHealth)
 	{

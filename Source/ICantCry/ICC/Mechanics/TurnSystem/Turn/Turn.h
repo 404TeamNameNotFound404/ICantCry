@@ -20,10 +20,23 @@ struct FTurn
 	
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Turn System", meta = (AllowPrivateAccess = "true"))
 	TArray<AICC_Actor*> Queue;
+	
 
 	FTurn();
 	void PopulateQueue(UWorld* World);
 	void AssignFirstTurn();
 	
 	AMob* GetMobInQueue() const;
+	
+	/**
+* Array that keeps in track how many emotions are in the game
+* This array is only meant to be used in order to prevent
+* emotions from buff other emotion if they're alone
+*/
+	TArray<AMob*> GetEmotionsInBattle() const;
+
+private:
+
+	UPROPERTY()
+	TArray<AMob*> EmotionsInBattle;
 };

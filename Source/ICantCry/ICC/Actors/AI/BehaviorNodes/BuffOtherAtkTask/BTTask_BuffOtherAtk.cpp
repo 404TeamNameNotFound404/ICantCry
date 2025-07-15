@@ -34,7 +34,12 @@ EBTNodeResult::Type UBTTask_BuffOtherAtk::ExecuteTask(UBehaviorTreeComponent& Ow
 	BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 
 	//TODO ADD a counter for the buff (must last 3 turns)
-	
+
+	if (Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetEmotionsInBattle().Num() <= 1)
+	{
+		DebugHelper::LogError(Current->GetActorLabel() +  " is alone can't buff");
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+	}
 
 	AMob* TargetToBuff = Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetMobInQueue();
 	checkf(TargetToBuff, TEXT("TargetToBuff is invalid Type UBTTask_BuffDefence::ExecuteTask"))

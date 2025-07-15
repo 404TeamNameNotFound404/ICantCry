@@ -226,7 +226,7 @@ void UTurnBasedSystem::Flow()
 		return;
 	}
 
-	for (int32 i = Turn.Queue.Num() - 1; i >= 0; --i) // backwards to safely remove
+	for (int32 i = Turn.Queue.Num() - 1; i >= 0; --i) 
 	{
 		AICC_Actor* Actor = Turn.Queue[i];
 		AMob* Mob = Cast<AMob>(Actor);
@@ -235,6 +235,17 @@ void UTurnBasedSystem::Flow()
 		{
 			Turn.Queue.RemoveAt(i);
 			DebugHelper::LogWarning("Mob removed from queue due to death.");
+		}
+	}
+
+	for (int32 i = Turn.GetEmotionsInBattle().Num() - 1; i >= 0; --i)
+	{
+		AICC_Actor* Actor = Turn.Queue[i];
+		AMob* Mob = Cast<AMob>(Actor);
+
+		if (Mob && !Mob->IsAlive())
+		{
+			Turn.GetEmotionsInBattle().RemoveAt(i);
 		}
 	}
 
