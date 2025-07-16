@@ -16,27 +16,30 @@ void UICantCryGameInstance::Shutdown()
 	//TODO SAVE GAME DATA
 }
 
-void UICantCryGameInstance::RecreatePlayer(UWorld* World,FVector& PreviousPosition, FRotator& PreviousRotation, float& CurrentHp,
-	float& CurrentAp) const
+void UICantCryGameInstance::RecreatePlayer() const
 {
-	PreviousPosition = PersistentData->PlayerPosition;
-	PreviousRotation = PersistentData->PlayerOrientation;
-	CurrentHp = PersistentData->PlayerHp;
-	//CurrentAp = PersistentData->AbilityPoints;
-	
-	checkf(World, TEXT("World is null in UICantCryGameInstance::RecreatePlayer "));
+	checkf(GetWorld(), TEXT("World is null in UICantCryGameInstance::RecreatePlayer "));
 
-	AICC_Player* Player = World->SpawnActor<AICC_Player>(AICC_Player::StaticClass(), PreviousPosition, PreviousRotation);
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	checkf(Player, TEXT("Player is null in UICantCryGameInstance::RecreatePlayer"));
-
-	APlayerController* PlayerController = Player->GetController<APlayerController>();
+	AICC_PlayerController* PlayerController = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
 	
 	checkf(PlayerController, TEXT("Player controller is null in UICantCryGameInstance::RecreatePlayer"));
+	
+	if (APawn* ExistingPawn = PlayerController->GetPawn())
+	{
+		DebugHelper::LogWarning("Destroying the previous pawn");
+		ExistingPawn->Destroy();
+	}
 
+	AICC_Player* Player = GetWorld()->SpawnActor<AICC_Player>(PlayerBp, PersistentData->PlayerPosition, PersistentData->PlayerOrientation, SpawnParams);
+
+	checkf(Player, TEXT("Player is null in UICantCryGameInstance::RecreatePlayer"));
+	
 	PlayerController->Possess(Player);
 	
-	DebugHelper::LogSuccess("Player recreated successfully");
+	DebugHelper::LogSuccess("Player recreated successfully at " + PersistentData->PlayerPosition.ToString());
 }
 
 void UICantCryGameInstance::StoreBeginPlayerTransform(const FVector& BeginPosition, const FRotator& BeginOrientation) const

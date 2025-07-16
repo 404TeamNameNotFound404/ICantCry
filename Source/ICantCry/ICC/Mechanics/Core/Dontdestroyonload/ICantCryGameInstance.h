@@ -23,7 +23,7 @@ public:
 	virtual void Init() override;
 	virtual void Shutdown() override;
 
-	void RecreatePlayer(UWorld* World,FVector& PreviousPosition, FRotator& PreviousRotation, float& CurrentHp, float& CurrentAp) const;
+	void RecreatePlayer() const;
 	void StoreBeginPlayerTransform(const FVector& BeginPosition, const FRotator& BeginOrientation) const;
 	void SavePlayerTransform(const FVector& LastPosition, const FRotator& LastOrientation) const;
 	
@@ -56,6 +56,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))
 	FInventory Inventory;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))
+	TSubclassOf<AICC_Player> PlayerBp;
 	
 	UWorld* TryGetWorld() const;
 
