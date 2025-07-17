@@ -35,15 +35,14 @@ EBTNodeResult::Type UBTTask_DebuffOtherShield::ExecuteTask(UBehaviorTreeComponen
 
 	AMob* TargetToBuff = Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetMobInQueue();
 	checkf(TargetToBuff, TEXT("TargetToBuff is invalid Type at UBTTask_DebuffOtherShield::ExecuteTask"))
-
+	
 	
 	if (Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetEmotionsInBattle().Num() <= 1)
 	{
 		DebugHelper::LogError(Current->GetActorLabel() +  " is alone can't buff");
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
-
-	//TODO  Debuff TargetToBuff shield
+	
 	TargetToBuff->GetStatusTracker()->InflictStatus(EAfflictedStatus::ShieldDebuff, TargetToBuff);
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " de-buffed " + TargetToBuff->GetActorLabel() + " shield"));

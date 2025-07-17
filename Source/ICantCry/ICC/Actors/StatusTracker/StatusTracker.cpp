@@ -251,6 +251,61 @@ void UStatusTracker::UnfreezeChance()
 	}
 }
 
+FString UStatusTracker::GetStatusName(const EAfflictedStatus& Status) const
+{
+	switch (Status)
+	{
+	case Freezed:
+		return "Freezed";
+	case Burn:
+		return "Envy Burned";
+	case EAShame:
+		return "Ashamed";
+	case ShieldDebuff:
+		return "DebuffShield";
+	case DebuffAtk:
+		return "Debuff Atk";
+	case DebuffDef:
+		return "Debuff Def";
+	case None:
+		return "None";
+	default:
+		return "";
+	}
+}
+
+FString UStatusTracker::GetBuffName(const EBuffStatus& Buff) const
+{
+	switch (Buff)
+	{
+	case AtkBuff:
+		return "Atk Buff";
+	case DefBuff:
+		return "Def Buff";
+	case LowHealth:
+		return "Low Health";
+	default:
+		return "";
+	}
+}
+
+void UStatusTracker::BuffFlow(const EBuffStatus& NewBuffStatus)
+{
+	/**
+	 * check if Another buff is applied and the AI is buffed the current buff is replaced with the new one
+	 * - check If AI / Player is buffed and is being target by a debuff the current buff removed and the debuff is not applied
+	 */
+
+	if (!bIsOwnerAlreadyBuffed)
+	{
+		return;
+	}
+	
+	BuffWith(NewBuffStatus);
+	DebugHelper::LogMessage(7, FColor::Orange, "Old buff " + GetBuffName(CurrentBuffedStatus) + "Removed " + "New buff assigned " + GetBuffName(NewBuffStatus));
+	CurrentBuffedStatus = NewBuffStatus;
+}
+
 void UStatusTracker::BuffAttack()
 {
 	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());

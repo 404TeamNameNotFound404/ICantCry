@@ -114,10 +114,18 @@ public:
 	 * Attempt to unfreeze each player turn (25% chance)
 	 */
 	void UnfreezeChance();
+	
+	/**
+* Handles the status rules:
+*  check if Another buff is applied and the AI is buffed the current buff is replaced with the new one
+*/
+	void BuffFlow(const EBuffStatus& NewBuffStatus);
 
 	/*-------------------- PLAYER CHECKS --------------------**/
 	/*----------DO NOT WRITE ANYTHING IN THIS SPACE -------------*/
 
+	FString GetStatusName(const EAfflictedStatus& Status) const;
+	FString GetBuffName(const EBuffStatus& Buff) const;
 
 private:
 
