@@ -80,6 +80,8 @@ void UStatusTracker::InflictStatus(const EAfflictedStatus& Status, AICC_Actor* T
 	case ShieldDebuff:
 		InflictShieldDebuff(Target);
 		break;
+	case None:
+		break;
 	default:
 		break;
 	}
@@ -106,6 +108,8 @@ void UStatusTracker::BuffWith(const EBuffStatus& BuffStatus)
 		break;
 	case LowHealth:
 		Heal();
+		break;
+	case NoBuff:
 		break;
 	default:
 		break;
@@ -161,6 +165,10 @@ void UStatusTracker::UpdateStatus()
 		StatusCounter = 0;
 		break;
 	case DebuffDef:
+		bIsOwnerAfflicted = false;
+		StatusCounter = 0;
+		break;
+	case None:
 		bIsOwnerAfflicted = false;
 		StatusCounter = 0;
 		break;
@@ -230,6 +238,10 @@ void UStatusTracker::UpdateBuffStatus()
 		BuffStatusCounter = 0;
 		bIsOwnerAlreadyBuffed = false;
 		break;
+	case NoBuff:
+		BuffStatusCounter = 0;
+		bIsOwnerAlreadyBuffed = false;
+		break;
 	default:
 		break;
 	}
@@ -284,6 +296,8 @@ FString UStatusTracker::GetBuffName(const EBuffStatus& Buff) const
 		return "Def Buff";
 	case LowHealth:
 		return "Low Health";
+	case NoBuff:
+		return "No Buff";
 	default:
 		return "";
 	}
@@ -291,11 +305,6 @@ FString UStatusTracker::GetBuffName(const EBuffStatus& Buff) const
 
 void UStatusTracker::BuffFlow(const EBuffStatus& NewBuffStatus)
 {
-	/**
-	 * check if Another buff is applied and the AI is buffed the current buff is replaced with the new one
-	 * - check If AI / Player is buffed and is being target by a debuff the current buff removed and the debuff is not applied
-	 */
-
 	if (!bIsOwnerAlreadyBuffed)
 	{
 		return;
@@ -304,6 +313,18 @@ void UStatusTracker::BuffFlow(const EBuffStatus& NewBuffStatus)
 	BuffWith(NewBuffStatus);
 	DebugHelper::LogMessage(7, FColor::Orange, "Old buff " + GetBuffName(CurrentBuffedStatus) + "Removed " + "New buff assigned " + GetBuffName(NewBuffStatus));
 	CurrentBuffedStatus = NewBuffStatus;
+}
+
+void UStatusTracker::MalusFlow()
+{
+	if (!bIsOwnerAfflicted || CurrentActiveStatus == EAfflictedStatus::None)
+	{
+		return;
+	}
+
+	DebugHelper::LogMessage(9, FColor::Green, "Malus flow called");
+	
+	RevertInflictedMalus();
 }
 
 void UStatusTracker::BuffAttack()
@@ -397,6 +418,61 @@ void UStatusTracker::DebuffDefF()
 		AMob* Mob = Cast<AMob>(GetOwner());
 		Mob->GetData()->DefencePower -= Mob->GetData()->DefencePower * Mob->GetBattleData()->EmotionDefDebuffMalus;
 	}
+}
+
+void UStatusTracker::RevertInflictedMalus()
+{
+	if (!bIsOwnerAlreadyBuffed)
+	{
+		return;
+	}
+
+	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+	
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+	
+	switch (CurrentBuffedStatus)
+	{
+	case AtkBuff:
+		if (Target->IsA(AICC_Player::StaticClass()))
+		{
+			AICC_Player* Player = Cast<AICC_Player>(Target);
+			checkf(Player, TEXT("Player invalid at revert inflicted malus atkbuff"))
+			Player->GetStats()->AttackPower = Instance->GetPersistentData()->InitialAttackPower;
+		}
+		if (Target->IsA(AMob::StaticClass()))
+		{
+			AMob* Emotion = Cast<AMob>(Target);
+			checkf(Emotion, TEXT("Emotion invalid at revert inflicted malus atkbuff"))
+			Emotion->GetData()->AttackPower = Emotion->GetAIMemory().InitialAttackPower;
+		}
+		break;
+	case DefBuff:
+		if (Target->IsA(AICC_Player::StaticClass()))
+		{
+			AICC_Player* Player = Cast<AICC_Player>(Target);
+			checkf(Player, TEXT("Player invalid at revert inflicted malus defbuff"))
+			Player->GetStats()->DefencePower = Instance->GetPersistentData()->InitialDefencePower;
+		}
+		if (Target->IsA(AMob::StaticClass()))
+		{
+			AMob* Emotion = Cast<AMob>(Target);
+			checkf(Emotion, TEXT("Emotion invalid at revert inflicted malus defbuff"))
+			Emotion->GetData()->DefencePower = Emotion->GetAIMemory().InitialDefencePower;
+		}
+		break;
+	case LowHealth:
+		break;
+	case NoBuff:
+		break;
+	default:
+		break;
+	}
+	
+	BuffStatusCounter = 0;
+	bIsOwnerAlreadyBuffed = false;
+	CurrentBuffedStatus = EBuffStatus::NoBuff;
+	DebugHelper::LogMessage(8, FColor::Orange, "Current buff " + GetBuffName(CurrentBuffedStatus) + " is now removed");
 }
 
 void UStatusTracker::InflictFreeze(AICC_Actor* Target)

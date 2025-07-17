@@ -33,7 +33,8 @@ EBTNodeResult::Type UBTTask_DebuffDef::ExecuteTask(UBehaviorTreeComponent& Owner
 	AICC_Player* Target = Cast<AICC_Player>(Blackboard->GetValueAsObject("Target"));
 
 	checkf(Target, TEXT("Player invalid at UBTTask_DebuffDef::ExecuteTask"))
-	
+
+	Target->GetStatusTracker()->MalusFlow();
 	Target->GetStatusTracker()->InflictStatus(EAfflictedStatus::DebuffDef, Target);
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " de-buffed " + Target->GetActorLabel() + " def"));

@@ -25,7 +25,8 @@ enum EBuffStatus
 {
 	AtkBuff,
 	DefBuff,
-	LowHealth
+	LowHealth,
+	NoBuff
 };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -121,6 +122,12 @@ public:
 */
 	void BuffFlow(const EBuffStatus& NewBuffStatus);
 
+
+	/**
+	 * Check If AI / Player is buffed and is being target by a debuff the current buff removed and the debuff is not applied
+	 */
+	void MalusFlow();
+
 	/*-------------------- PLAYER CHECKS --------------------**/
 	/*----------DO NOT WRITE ANYTHING IN THIS SPACE -------------*/
 
@@ -154,4 +161,9 @@ private:
 
 	void DebuffAtkF();
 	void DebuffDefF();
+
+	/**
+	 * Rollback the current status state
+	 */
+	void RevertInflictedMalus();
 };
