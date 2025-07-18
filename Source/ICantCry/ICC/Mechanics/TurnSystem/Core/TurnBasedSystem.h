@@ -3,6 +3,7 @@
 #include "UObject/Object.h"
 #include "../Turn/Turn.h"
 #include "../../../Managers/EnemySpawnManager.h"
+#include "ICantCry/ICC/Mechanics/UI/BattleVisualization/Victory/VictoryVisualizer.h"
 #include "TurnBasedSystem.generated.h"
 
 class AICC_Player;
@@ -32,6 +33,10 @@ public:
 	void SetTurnOverlayApplied(const bool &Applied);
 	void RequestFight(const bool &Request);
 	void SetAIPlaying(const bool &Play);
+
+	TArray<AICC_Actor*> GetCopyQueue() const;
+
+	void SpawnBattleVictory(UWorld* World);
 
 	/**
 	 * --------- WIP FUNCTIONS -----------
@@ -88,4 +93,10 @@ private:
 
 	UPROPERTY()
 	bool bInit = false;
+
+	UPROPERTY()
+	TArray<AICC_Actor*> CopyQueue;
+
+	UPROPERTY()
+	UVictoryVisualizer* VictoryVisualizer;
 };

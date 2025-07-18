@@ -25,11 +25,12 @@ public:
 	UBattleInfo* GetBattleInfo() const;
 
 private:
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UTurnBasedSystem* TurnBasedSystem;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category= "Battle Info" ,meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UBattleInfo> BattleInfoWidget ;
+
 
 	UPROPERTY()
 	UBattleInfo* BattleInfo;

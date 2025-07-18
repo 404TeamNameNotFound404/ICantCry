@@ -48,12 +48,15 @@ void UTurnBasedSystem::Start(UWorld* World)
 		{
 			EnemySpawnManager->SpawnRandomEnemy();
 			Turn.PopulateQueue(World);
+			TryGetCurrentPlayer()->GetBattleHUD()->SpawnVisualizer();
+			TryGetCurrentPlayer()->GetBattleHUD()->SpawnGameOverVisualizer();
 		}
 	}, 0.5f, false);
 	
-	CurrentPlayer->GetBattleHUD()->ShowHUD();
 	
+	CurrentPlayer->GetBattleHUD()->ShowHUD();
 	DebugHelper::LogSuccess("Fight started right after");
+	
 }
 
 void UTurnBasedSystem::Update(UWorld* World)
@@ -72,6 +75,11 @@ void UTurnBasedSystem::Update(UWorld* World)
 	if (!bInit)
 	{
 		Turn.AssignFirstTurn();
+		
+		// VictoryVisualizer->Setup(Turn.Queue);
+		// //VictoryVisualizer->AddToViewport();
+		// TryGetCurrentPlayer()->GetBattleHUD()->CanvasMiniGames->AddChild(VictoryVisualizer);
+		// VictoryVisualizer->SetVisibility(ESlateVisibility::Hidden);
 	
 		if (Turn.Queue.IsValidIndex(Turn.CurrentTurn))
 		{
@@ -157,7 +165,6 @@ void UTurnBasedSystem::StartNextTurn()
 		//otherwise is player playing
 		else
 		{
-			DebugHelper::LogMessage(3, FColor::FromHex("4D55CC"), "Player turn!");
 			bIsAiTurn = false;
 			bIsPlayerTurn = true;
 			AICC_Player* Player = Cast<AICC_Player>(Who);
@@ -183,7 +190,6 @@ void UTurnBasedSystem::EndTurn()
 
 	Turn.CurrentTurn = Turn.NextTurn;
 	Turn.NextTurn = (Turn.NextTurn + 1) % Turn.Queue.Num();
-	DebugHelper::LogWarning("turn ended, " + Turn.Queue[Turn.CurrentTurn]->GetName() + " will now play");
 }
 
 FTurn UTurnBasedSystem::GetTurn() const
@@ -235,16 +241,16 @@ void UTurnBasedSystem::Flow()
 		}
 	}
 
-	for (int32 i = Turn.GetEmotionsInBattle().Num() - 1; i >= 0; --i)
-	{
-		AICC_Actor* Actor = Turn.Queue[i];
-		AMob* Mob = Cast<AMob>(Actor);
-
-		if (Mob && !Mob->IsAlive())
-		{
-			Turn.GetEmotionsInBattle().RemoveAt(i);
-		}
-	}
+	// for (int32 i = Turn.GetEmotionsInBattle().Num() - 1; i >= 0; --i)
+	// {
+	// 	AICC_Actor* Actor = Turn.Queue[i];
+	// 	AMob* Mob = Cast<AMob>(Actor);
+	//
+	// 	if (Mob && !Mob->IsAlive())
+	// 	{
+	// 		Turn.GetEmotionsInBattle().RemoveAt(i);
+	// 	}
+	// }
 
 	if (Turn.Queue.Num() == 1 && Turn.Queue[0] == CurrentPlayer)
 	{
@@ -256,6 +262,9 @@ void UTurnBasedSystem::Flow()
 		BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Victory!"));
 		
 		//TODO ADD VICTORY SCREEN
+		//VictoryVisualizer->SetVisibility(ESlateVisibility::Visible);
+		TryGetCurrentPlayer()->GetBattleHUD()->DisplayVictoryVisualizer();
+
 		return;
 	}
 
@@ -266,10 +275,10 @@ void UTurnBasedSystem::Flow()
 		bFightStarted = false;
 		bIsPlayerTurn = false;
 		bIsAiTurn = false;
-		
 		BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Game Over"));
 
 		//TODO ADD GAMEOVER SCREEN
+		TryGetCurrentPlayer()->GetBattleHUD()->DisplayGameOverVisualizer();
 	}
 	
 }
@@ -285,6 +294,10 @@ void UTurnBasedSystem::SetAIPlaying(const bool& Play)
 	bAIPlayTurn = Play;
 }
 
+void UTurnBasedSystem::SpawnBattleVictory(UWorld* World)
+{
+}
+
 void UTurnBasedSystem::ExitBattle()
 {
 	BattleHandler->GetBattleInfo()->RemoveFromParent();
@@ -293,3 +306,8 @@ void UTurnBasedSystem::ExitBattle()
 	bInit = false;
 }
 
+
+TArray<AICC_Actor*> UTurnBasedSystem::GetCopyQueue() const
+{
+	return CopyQueue;
+}

@@ -5,6 +5,7 @@
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
 #include "EngineUtils.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
+#include "ICantCry/ICC/Mechanics/UI/BattleVisualization/GameOver/GameOverVisualizer.h"
 
 void UBattleHUD::NativeConstruct()
 {
@@ -367,7 +368,7 @@ void UBattleHUD::UpdateTarget()
         
         if (PreviousTargetEnemy && PreviousTargetEnemy != Current)
         {
-            DebugHelper::RemoveOverlayMaterialFromStaticMesh(PreviousTargetEnemy->StaticMesh);
+            //DebugHelper::RemoveOverlayMaterialFromStaticMesh(PreviousTargetEnemy->StaticMesh);
             
             bOverlayMaterialApplied = false;
         }
@@ -516,6 +517,17 @@ void UBattleHUD::PrepareToEngage()
     MinigameHandler->StartMinigame(true);
     EngageBtn->SetVisibility(ESlateVisibility::Hidden);
     CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void UBattleHUD::SpawnVisualizer()
+{
+    TSubclassOf<UVictoryVisualizer> VictoryVisualizerClass = LoadClass<UVictoryVisualizer>(this,TEXT("/Game/ICC/BluePrints/UI/Battle/BP_Victory.BP_Victory_C"));
+    checkf(VictoryVisualizerClass, TEXT("VictoryVisualizerClass path invalid"))
+    VictoryVisualizer = CreateWidget<UVictoryVisualizer>(GetWorld(), VictoryVisualizerClass);
+    checkf(VictoryVisualizer, TEXT("Invalid victory visualizer"))
+    VictoryVisualizer->Setup(GetBattleHandler()->GetTurnBasedSystem()->GetTurn().Queue);
+    VisualizerSlot->AddChild(VictoryVisualizer);
+    VictoryVisualizer->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UBattleHUD::SetSelectedBullet(int32 Index)
@@ -797,6 +809,26 @@ void UBattleHUD::RestoreHealth()
     const float Percentage =  Player->GetStats()->CurrentHealth / Player->GetStats()->MaxHealth;
     PlayerHealth->SetPercent(Percentage);
     DebugHelper::LogWarning("Healed " + FString::SanitizeFloat(Percentage));
+}
+
+void UBattleHUD::DisplayVictoryVisualizer()
+{
+    VictoryVisualizer->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UBattleHUD::SpawnGameOverVisualizer()
+{
+    TSubclassOf<UGameOverVisualizer> GameOverVisualizerClass = LoadClass<UGameOverVisualizer>(this,TEXT("/Game/ICC/BluePrints/UI/Battle/WBP_GameOver.WBP_GameOver_C"));
+    checkf(GameOverVisualizerClass, TEXT("GameOverVisualizerClass path invalid"))
+    GameOverVisualizer = CreateWidget<UGameOverVisualizer>(GetWorld(), GameOverVisualizerClass);
+    checkf(GameOverVisualizer, TEXT("Invalid GameOverVisualizer"))
+    VisualizerGameOverSlot->AddChild(GameOverVisualizer);
+    GameOverVisualizer->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void UBattleHUD::DisplayGameOverVisualizer()
+{
+    GameOverVisualizer->SetVisibility(ESlateVisibility::Visible);
 }
 
 void UBattleHUD::ShowHUD() 

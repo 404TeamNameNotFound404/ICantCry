@@ -4,15 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
 #include "Components/ProgressBar.h"
-#include "Components/Widget.h"
-#include "Components/CanvasPanelSlot.h"
-#include "Components/CanvasPanelSlot.h"
-#include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 #include "../Source/ICantCry/ICC/Actors/Bullet/BulletData.h"
 #include "../Mechanics/TurnSystem/Core/BattleHandler.h"
@@ -21,13 +16,13 @@
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
 #include "ICantCry/ICC/Mechanics/TurnSystem/BattleFlow/DamageCalculator.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
-#include "ICantCry/ICC/Mechanics/TurnSystem/BattleFlow/DamageCalculator.h"
 #include "../Source/ICantCry/ICC/Actors/Bullet/CircularBulletBuffer.h"
 #include "../Source/ICantCry/ICC/Actors/Bullet/RevolverSlot.h"
 #include "../Inventory/Inventory.h"
-#include "Blueprint/UserWidget.h"
 #include "../Inventory/BulletIconWidget.h"
+#include "ICantCry/ICC/Mechanics/UI/BattleVisualization/GameOver/GameOverVisualizer.h"
 #include "ICantCry/ICC/Mechanics/UI/BulletDisplay/BulletDisplayer.h"
+#include "ICantCry/ICC/Mechanics/UI/BattleVisualization/Victory/VictoryVisualizer.h"
 #include "BattleHUD.generated.h"
 
 /**
@@ -157,6 +152,12 @@ public:
 
 	void RestoreHealth();
 
+	void SpawnVisualizer();
+	void DisplayVictoryVisualizer();
+
+	void SpawnGameOverVisualizer();
+	void DisplayGameOverVisualizer();
+
 private:
 
     UPROPERTY() ABattleHandler*  BattleHandler = nullptr;
@@ -191,6 +192,12 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	UHorizontalBox* BulletPanel;
+
+	UPROPERTY(meta=(BindWidget))
+	USizeBox* VisualizerSlot;
+
+	UPROPERTY(meta=(BindWidget))
+	USizeBox* VisualizerGameOverSlot;
 	
 	// select the target before shooting
 	UPROPERTY()
@@ -299,6 +306,12 @@ private:
 
 	UPROPERTY()
 	bool bStartFight = false;
+
+	UPROPERTY()
+	UVictoryVisualizer* VictoryVisualizer = nullptr;
+
+	UPROPERTY()
+	UGameOverVisualizer* GameOverVisualizer = nullptr;
 	
 	/**
 	 * -----------------------------------
