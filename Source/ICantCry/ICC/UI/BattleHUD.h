@@ -158,6 +158,8 @@ public:
 	void SpawnGameOverVisualizer();
 	void DisplayGameOverVisualizer();
 
+	UVictoryVisualizer* GetVictoryVisualizer() const;
+
 private:
 
     UPROPERTY() ABattleHandler*  BattleHandler = nullptr;

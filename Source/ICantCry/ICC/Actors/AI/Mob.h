@@ -20,6 +20,21 @@
 
 class ABattleHandler;
 
+UENUM()
+enum EMobType
+{
+	MobAnger,
+	MobShame,
+	MobJoy,
+	MobDisgust,
+	MobFear,
+	MobJealousy,
+	MobSadness,
+	MobAnxiety,
+	MobCalm
+};
+
+
 UCLASS(Blueprintable)
 class ICANTCRY_API AMob : public AICC_Actor
 {
@@ -54,6 +69,9 @@ protected:
 
 	UPROPERTY()
 	AICC_AIController* AIController;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
+	TEnumAsByte<EMobType> Type;
 	
 
 	//----------------
@@ -248,6 +266,8 @@ public:
 	static FDamage Damage;
 
 	FEmotionStat& GetStats();
+
+	EMobType GetMobType() const;
 
 
 	/**

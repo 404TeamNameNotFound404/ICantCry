@@ -5,6 +5,7 @@
 AEShame::AEShame()
 {
 	bIsEShame = true;
+	Type = EMobType::MobShame;
 }
 
 // Called when the game starts or when spawned

@@ -5,6 +5,7 @@
 AECalm::AECalm()
 {
 	bIsECalm = true;
+	Type = EMobType::MobCalm;
 }
 
 // Called when the game starts or when spawned

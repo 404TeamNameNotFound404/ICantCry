@@ -5,6 +5,7 @@ AESadness::AESadness()
 	bIsESadness = true;
 	bIsHealer = false;
 	bEAnger = false;
+	Type = EMobType::MobSadness;
 }
 
 // Called when the game starts or when spawned

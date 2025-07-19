@@ -492,6 +492,11 @@ FEmotionStat& AMob::GetStats()
 	return Stats;
 }
 
+EMobType AMob::GetMobType() const
+{
+	return Type;
+}
+
 
 bool AMob::IsMinigameStarted()
 {

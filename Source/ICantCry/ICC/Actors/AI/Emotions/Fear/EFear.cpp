@@ -8,6 +8,7 @@
 AEFear::AEFear()
 {
 	bIsEFear = true;
+	Type = EMobType::MobFear;
 }
 
 // Called when the game starts or when spawned

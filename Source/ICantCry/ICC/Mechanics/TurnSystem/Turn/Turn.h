@@ -27,18 +27,6 @@ struct FTurn
 	void AssignFirstTurn();
 	
 	AMob* GetMobInQueue() const;
-	
-	/**
-* Array that keeps in track how many emotions are in the game
-* This array is only meant to be used in order to prevent
-* emotions from buff other emotion if they're alone
-*/
-	TArray<AMob*> GetEmotionsInBattle() const;
 
 	bool CantBuffOthers();
-
-private:
-
-	UPROPERTY()
-	TArray<AMob*> EmotionsInBattle;
 };

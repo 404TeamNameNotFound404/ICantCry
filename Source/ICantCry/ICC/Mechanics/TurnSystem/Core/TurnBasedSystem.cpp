@@ -50,6 +50,7 @@ void UTurnBasedSystem::Start(UWorld* World)
 			Turn.PopulateQueue(World);
 			TryGetCurrentPlayer()->GetBattleHUD()->SpawnVisualizer();
 			TryGetCurrentPlayer()->GetBattleHUD()->SpawnGameOverVisualizer();
+			CopyQueue = Turn.Queue;
 		}
 	}, 0.5f, false);
 	
@@ -241,17 +242,6 @@ void UTurnBasedSystem::Flow()
 		}
 	}
 
-	// for (int32 i = Turn.GetEmotionsInBattle().Num() - 1; i >= 0; --i)
-	// {
-	// 	AICC_Actor* Actor = Turn.Queue[i];
-	// 	AMob* Mob = Cast<AMob>(Actor);
-	//
-	// 	if (Mob && !Mob->IsAlive())
-	// 	{
-	// 		Turn.GetEmotionsInBattle().RemoveAt(i);
-	// 	}
-	// }
-
 	if (Turn.Queue.Num() == 1 && Turn.Queue[0] == CurrentPlayer)
 	{
 
@@ -263,8 +253,14 @@ void UTurnBasedSystem::Flow()
 		
 		//TODO ADD VICTORY SCREEN
 		//VictoryVisualizer->SetVisibility(ESlateVisibility::Visible);
-		TryGetCurrentPlayer()->GetBattleHUD()->DisplayVictoryVisualizer();
 
+		if (!bVictory)
+		{
+			TryGetCurrentPlayer()->GetBattleHUD()->DisplayVictoryVisualizer();
+			TryGetCurrentPlayer()->GetBattleHUD()->GetVictoryVisualizer()->AfterBattle(CopyQueue);
+			bVictory = true;
+		}
+		
 		return;
 	}
 
@@ -304,6 +300,7 @@ void UTurnBasedSystem::ExitBattle()
 	CurrentPlayer->GetInGameMenu()->SetDisabled(false);
 	bRequestFight = false;
 	bInit = false;
+	bVictory = false;
 }
 
 

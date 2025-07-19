@@ -10,6 +10,14 @@ void UVictoryVisualizer::NativeConstruct()
 	Super::NativeConstruct();
 
 	BackToWorld->OnClicked.AddDynamic(this, &UVictoryVisualizer::ReturnToWorld);
+
+	DropSystem = NewObject<UDropSystem>();
+	checkf(DropSystem, TEXT("Drop system appears to be null"))
+
+	EssenceDrop0->SetText(FText::FromString(""));
+	EssenceDrop1->SetText(FText::FromString(""));
+	EssenceDrop2->SetText(FText::FromString(""));
+	EssenceDrop3->SetText(FText::FromString(""));
 }
 
 void UVictoryVisualizer::Setup(const TArray<AICC_Actor*>& Queue)
@@ -34,7 +42,7 @@ void UVictoryVisualizer::Setup(const TArray<AICC_Actor*>& Queue)
 
 		if (TextIndex >= EmotionsSlayed.Num())
 		{
-			break; // Prevent out-of-bounds access
+			break; 
 		}
 
 		if (EmotionsSlayed[TextIndex])
@@ -48,9 +56,36 @@ void UVictoryVisualizer::Setup(const TArray<AICC_Actor*>& Queue)
 	MainText->SetText(FText::FromString("Victory"));
 	ExpLabel->SetText(FText::FromString("Exp."));
 
+	// const int32 ExpGained = CalculateExp(Queue);
+	// ExpInt->SetText(FText::FromString(FString::FromInt(ExpGained)));
+	EmotionSlayedLabel->SetText(FText::FromString("E.E"));
+}
+
+void UVictoryVisualizer::AfterBattle(const TArray<AICC_Actor*>& Queue)
+{
+	DropSystem->Drop(GetWorld(), this, Queue);
 	const int32 ExpGained = CalculateExp(Queue);
 	ExpInt->SetText(FText::FromString(FString::FromInt(ExpGained)));
-	EmotionSlayedLabel->SetText(FText::FromString("E.E"));
+}
+
+UTextBlock* UVictoryVisualizer::GetEssenceDrop0() const
+{
+	return EssenceDrop0;
+}
+
+UTextBlock* UVictoryVisualizer::GetEssenceDrop1() const
+{
+	return EssenceDrop1;
+}
+
+UTextBlock* UVictoryVisualizer::GetEssenceDrop2() const
+{
+	return EssenceDrop2;
+}
+
+UTextBlock* UVictoryVisualizer::GetEssenceDrop3() const
+{
+	return EssenceDrop3;
 }
 
 

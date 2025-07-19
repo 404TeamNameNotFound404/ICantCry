@@ -8,6 +8,7 @@
 AEDisgust::AEDisgust()
 {
 	bIsEDisgust = true;
+	Type = EMobType::MobDisgust;
 }
 
 // Called when the game starts or when spawned

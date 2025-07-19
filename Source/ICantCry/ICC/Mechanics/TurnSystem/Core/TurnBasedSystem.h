@@ -95,6 +95,9 @@ private:
 	bool bInit = false;
 
 	UPROPERTY()
+	bool bVictory = false;
+
+	UPROPERTY()
 	TArray<AICC_Actor*> CopyQueue;
 
 	UPROPERTY()

@@ -3,6 +3,7 @@
 AEJoy::AEJoy()
 {
 	bIsHealer = true;
+	Type = EMobType::MobJoy;
 }
 
 

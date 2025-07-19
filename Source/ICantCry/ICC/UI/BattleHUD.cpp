@@ -831,6 +831,11 @@ void UBattleHUD::DisplayGameOverVisualizer()
     GameOverVisualizer->SetVisibility(ESlateVisibility::Visible);
 }
 
+UVictoryVisualizer* UBattleHUD::GetVictoryVisualizer() const
+{
+    return VictoryVisualizer;
+}
+
 void UBattleHUD::ShowHUD() 
 {
     AddToViewport();

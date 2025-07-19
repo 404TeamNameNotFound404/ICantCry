@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "ICantCry/ICC/Mechanics/UI/BattleVisualization/BattleVisualizer.h"
 #include "Components/Button.h"
+#include "ICantCry/ICC/Mechanics/TurnSystem/DropSystem/DropSystem.h"
 #include "VictoryVisualizer.generated.h"
 
 /**
@@ -40,6 +41,18 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UButton* BackToWorld;
 
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* EssenceDrop0;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* EssenceDrop1;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* EssenceDrop2;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* EssenceDrop3;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<UTextBlock*> EmotionsSlayed;
 
@@ -49,9 +62,18 @@ protected:
 public:
 	void Setup(const TArray<AICC_Actor*>& Queue);
 
+	void AfterBattle(const TArray<AICC_Actor*>& Queue);
+
+	UTextBlock* GetEssenceDrop0() const;
+	UTextBlock* GetEssenceDrop1() const;
+	UTextBlock* GetEssenceDrop2() const;
+	UTextBlock* GetEssenceDrop3() const;
 
 private:
 	int32 CalculateExp(const TArray<AICC_Actor*>& Queue);
 
 	UFUNCTION() void ReturnToWorld();
+
+	UPROPERTY()
+	UDropSystem* DropSystem;
 };

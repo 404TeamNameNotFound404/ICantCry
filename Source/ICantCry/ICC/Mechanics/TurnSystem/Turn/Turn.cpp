@@ -26,13 +26,7 @@ void FTurn::PopulateQueue(UWorld* World)
 		}
 		
 		Queue.Add(*It);
-
-		if (It->IsA(AMob::StaticClass()))
-		{
-			AMob* Emotion = Cast<AMob>(*It);
-			EmotionsInBattle.Add(Emotion);
-		}
-
+		
 		DebugHelper::LogMessage(10, FColor::Black, It->GetActorLabel() + " joined the fun");
 	}
 
@@ -73,11 +67,6 @@ AMob* FTurn::GetMobInQueue() const
 	}
 
 	return nullptr;
-}
-
-TArray<AMob*> FTurn::GetEmotionsInBattle() const
-{
-	return EmotionsInBattle;
 }
 
 bool FTurn::CantBuffOthers()
