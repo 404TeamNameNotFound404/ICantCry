@@ -35,6 +35,8 @@ struct FTurn
 */
 	TArray<AMob*> GetEmotionsInBattle() const;
 
+	bool CantBuffOthers();
+
 private:
 
 	UPROPERTY()

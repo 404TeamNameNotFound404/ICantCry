@@ -79,3 +79,28 @@ TArray<AMob*> FTurn::GetEmotionsInBattle() const
 {
 	return EmotionsInBattle;
 }
+
+bool FTurn::CantBuffOthers()
+{
+	if (Queue.IsEmpty())
+	{
+		return false;
+	}
+
+	int32 MobCount = 0;
+
+	for (AICC_Actor* Actor : Queue)
+	{
+		if (Actor->IsA(AICC_Player::StaticClass()))
+		{
+			continue;
+		}
+		
+		if (Actor->IsA(AMob::StaticClass()))
+		{
+			++MobCount;
+		}
+	}
+
+	return MobCount <= 1;
+}
