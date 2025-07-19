@@ -15,6 +15,7 @@
 #include "ICantCry/ICC/Actors/AI/Memory/EmotionMemory.h"
 #include "ICantCry/ICC/Mechanics/Core/Data/BattleData.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
+#include "ICantCry/ICC/Actors/AI/Emotions/EmotionStats/FEmotionStat.h"
 #include "Mob.generated.h"
 
 class ABattleHandler;
@@ -62,6 +63,9 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Behaviors", meta = (AllowPrivateAccess = "true"))
 	UBehaviorTree* Tree;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Battle", meta = (AllowPrivateAccess = "true"))
+	FEmotionStat Stats;
 
 	/**
 	 * Variable used to determinate if Emotion is 'Joy'
@@ -242,6 +246,8 @@ public:
 	void EndTurn();
 	static bool MinigameEnded;
 	static FDamage Damage;
+
+	FEmotionStat& GetStats();
 
 
 	/**

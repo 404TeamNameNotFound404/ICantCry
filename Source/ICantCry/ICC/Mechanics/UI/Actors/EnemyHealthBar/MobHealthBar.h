@@ -8,6 +8,8 @@
 #include "Components/ProgressBar.h"
 #include "MobHealthBar.generated.h"
 
+class AMob;
+
 /**
  * Enemy Health bar
  */
@@ -21,7 +23,7 @@ public:
 	float GetCurrentHealth() const;
 	void SetCurrentHealth(const float& Variation);
 
-	void FillData();
+	void FillData2(AMob* Mob);
 
 	UPROPERTY()
 	UEnemyDatas* Info;
@@ -40,5 +42,8 @@ protected:
 
 	UPROPERTY()
 	float CurrentHealth;
+
+	UPROPERTY()
+	AMob* Owner = nullptr;
 	
 };

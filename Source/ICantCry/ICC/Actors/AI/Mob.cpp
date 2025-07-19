@@ -70,6 +70,8 @@ void AMob::BeginPlay()
 	Memory.InitialAttackPower = GetData()->AttackPower;
 	Memory.InitialDefencePower = GetData()->DefencePower;
 	EnemyData->Alive = true;
+	Stats.Health = GetData()->MaxHealth;
+	Stats.bAlive = true;
 }
 
 // Called every frame
@@ -426,7 +428,7 @@ void AMob::PlayTurn()
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsShieldDebuffed?", bDebuffShield);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsOtherShieldDebuffed?", bDebuffOtherShield);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsBuffedOtherDef?", bBuffOtherDefence);
-	AIController->GetBlackboardComponent()->SetValueAsBool("IsAlive?", GetData()->Alive);
+	AIController->GetBlackboardComponent()->SetValueAsBool("IsAlive?", GetStats().bAlive);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsEnvyBurnedState?", bEnvyBurned);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsAshamedState?", bIsAshamedState);
 	AIController->GetBlackboardComponent()->SetValueAsBool("Attacked?", bAttacked);
@@ -457,15 +459,24 @@ void AMob::PlaySecondTurn()
 
 bool AMob::IsAlive()
 {
-	if (GetData()->Health <= 0)
+	if (Stats.Health <= 0)
 	{
 		Destroy();
-		GetData()->Alive = false;
+		Stats.bAlive = false;
 		return false;
 	}
 
-	GetData()->Alive = true;
+	Stats.bAlive = true;
 	return true;
+	// if (GetData()->Health <= 0)
+	// {
+	// 	Destroy();
+	// 	GetData()->Alive = false;
+	// 	return false;
+	// }
+	//
+	// GetData()->Alive = true;
+	// return true;
 }
 
 void AMob::EndTurn()
@@ -475,6 +486,11 @@ void AMob::EndTurn()
 	AIController->BrainComponent->StopLogic("End Turn");
 }
 
+
+FEmotionStat& AMob::GetStats()
+{
+	return Stats;
+}
 
 
 bool AMob::IsMinigameStarted()

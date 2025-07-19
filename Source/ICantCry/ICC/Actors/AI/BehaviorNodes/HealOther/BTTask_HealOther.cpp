@@ -47,9 +47,14 @@ EBTNodeResult::Type UBTTask_HealOther::ExecuteTask(UBehaviorTreeComponent& Owner
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
 
-	if (CurrentToBuff->GetData()->Health < CurrentToBuff->GetData()->MaxHealth)
+	// if (CurrentToBuff->GetData()->Health < CurrentToBuff->GetData()->MaxHealth)
+	// {
+	// 	CurrentToBuff->Heal(Current->GetData()->Health *= 0.20f);
+	// }
+
+	if (CurrentToBuff->GetStats().Health < CurrentToBuff->GetData()->MaxHealth)
 	{
-		CurrentToBuff->Heal(Current->GetData()->Health *= 0.20f);
+		CurrentToBuff->Heal(CurrentToBuff->GetStats().Health *= 0.20f);
 	}
 	
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " heals " + CurrentToBuff->GetActorLabel()));

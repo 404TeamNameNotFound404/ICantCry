@@ -127,7 +127,9 @@ void UBulletDisplayer::RemoveBullet()
 	
 	AMob* Target = Cast<AMob>(Player->GetBattleHUD()->GetSelectedActor());
 	const float Damage = Instance->GetCurrentDamageData().CalculateDamage(true);
-	Target->GetData()->Health -= Damage;
-	Target->GetHealthBar()->SetCurrentHealth(Target->GetData()->Health);
+	// Target->GetData()->Health -= Damage;
+	// Target->GetHealthBar()->SetCurrentHealth(Target->GetData()->Health);
+	Target->GetStats().Health -= Damage;
+	Target->GetHealthBar()->SetCurrentHealth(Target->GetStats().Health);
 }
 

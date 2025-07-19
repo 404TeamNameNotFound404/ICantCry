@@ -85,4 +85,7 @@ int32 UVictoryVisualizer::CalculateExp(const TArray<AICC_Actor*>& Queue)
 void UVictoryVisualizer::ReturnToWorld()
 {
 	// TODO LOAD THE SCENE AND Call 'RecreatePlayer' via UICantCryGameInstance
+	//UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	//Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->ExitBattle();
+	DebugHelper::LogSuccess("ReturnToWorld");
 }

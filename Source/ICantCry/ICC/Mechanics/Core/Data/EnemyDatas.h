@@ -22,9 +22,6 @@ public:
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
 	float MaxHealth = 50;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float Health = MaxHealth;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float AbilityPoints = 1.0f;
