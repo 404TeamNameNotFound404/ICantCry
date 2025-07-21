@@ -55,9 +55,7 @@ void UVictoryVisualizer::Setup(const TArray<AICC_Actor*>& Queue)
 
 	MainText->SetText(FText::FromString("Victory"));
 	ExpLabel->SetText(FText::FromString("Exp."));
-
-	// const int32 ExpGained = CalculateExp(Queue);
-	// ExpInt->SetText(FText::FromString(FString::FromInt(ExpGained)));
+	
 	EmotionSlayedLabel->SetText(FText::FromString("E.E"));
 }
 

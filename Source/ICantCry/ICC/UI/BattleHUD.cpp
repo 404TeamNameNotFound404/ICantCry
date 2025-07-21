@@ -266,7 +266,6 @@ void UBattleHUD::OnReloadPressed()
     bBulletSetupFinished = false;
     bShootFired = false;
     bTargetSelection = false;
-    IncreaseAP(1);
     CanvasAmmoSelection->SetVisibility(ESlateVisibility::Visible);
     TargetText->SetVisibility(ESlateVisibility::Hidden);
     TargetNameText->SetVisibility(ESlateVisibility::Hidden);
@@ -283,7 +282,9 @@ void UBattleHUD::OnPassPressed()
         DebugHelper::LogError("You can't pass it's not player turn");
         return;
     }
-    
+
+    Displayer->SetVisibility(ESlateVisibility::Hidden);
+    CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
     IncreaseAP(1);
     DebugHelper::LogSuccess("Player passed the turn");
     BattleHandler->GetTurnBasedSystem()->EndTurn();
@@ -645,7 +646,7 @@ void UBattleHUD::ScrollBulletSelection(float ScrollValue)
     if (Displayer && Displayer->GetBullets().IsValidIndex(NewIndex))
     {
         CurrentSelectedBullet = Displayer->GetBullets()[NewIndex];
-        DebugHelper::LogSuccess("Scrolling " + CurrentSelectedBullet->GetBullet().GetBulletData()->BulletName);
+        DebugHelper::LogSuccess("Scrolling " + CurrentSelectedBullet->GetBulletPtr()->GetBulletData()->BulletName);
 
         CurrentSelectedBullet->DisplayBulletInfo();
         

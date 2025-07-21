@@ -19,7 +19,7 @@ void UDropSystem::Drop(UWorld* World, UVictoryVisualizer* VictoryVisualizer, con
 	Indifference.EssenceType = EEssenceType::Indifference;
 
 	Instance->GetCurrentPlayer()->GetInventoryManager()->AddEssence2(Indifference);
-	VictoryVisualizer->GetEssenceDrop0()->SetText(FText::FromString(Indifference.EssenceName + " " + FString::FromInt(Indifference.Quantity)));
+	VictoryVisualizer->GetEssenceDrop0()->SetText(FText::FromString(Indifference.EssenceName + " x" + FString::FromInt(Indifference.Quantity)));
 	
 	if (Queue.IsEmpty())
 	{
@@ -97,7 +97,7 @@ void UDropSystem::Drop(UWorld* World, UVictoryVisualizer* VictoryVisualizer, con
 		}
 
 		Instance->GetCurrentPlayer()->GetInventoryManager()->AddEssence2(MobEssence);
-		Slots[Index]->SetText(FText::FromString(MobEssence.EssenceName + " " + FString::FromInt(MobEssence.Quantity)));
+		Slots[Index]->SetText(FText::FromString(MobEssence.EssenceName + " x" + FString::FromInt(MobEssence.Quantity)));
 		Index++;
 	}
 
