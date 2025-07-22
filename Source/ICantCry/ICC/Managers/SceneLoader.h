@@ -3,39 +3,21 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "UObject/NoExportTypes.h"
 #include "Kismet/GameplayStatics.h"
-#include "TimerManager.h"
 #include "SceneLoader.generated.h"
 
+/**
+ * 
+ */
 UCLASS()
-class ICANTCRY_API ASceneLoader : public AActor
+class ICANTCRY_API USceneLoader : public UObject
 {
 	GENERATED_BODY()
+
+public:
+
+    // to load a level 
+    static void LoadSceneByName(UObject* WorldContextObject, const FName& SceneName);
 	
-public:	
-	// Sets default values for this actor's properties
-	ASceneLoader();
-
-	// Change Scenes
-	UFUNCTION(BlueprintCallable, Category = "Scene Loading")
-	void LoadScene(FName SceneName);
-
-	// UFUNCTION(BlueprintCallable, Category = "Scene Loading")
-	// void OnSceneLoaded();
-
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-private:
-
-	UPROPERTY(EditAnywhere, Category = "Scene Loading") //( add scenes in editor )
-	TArray<FName> AvailableScenes;
-
-	FTimerHandle TimerHandle_LoadScene;
-
 };
