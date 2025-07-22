@@ -812,6 +812,14 @@ void UBattleHUD::RestoreHealth()
     DebugHelper::LogWarning("Healed " + FString::SanitizeFloat(Percentage));
 }
 
+void UBattleHUD::ResetHealth()
+{
+    AICC_Player* Player = GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer();
+    Player->GetStats()->CurrentHealth = Player->GetStats()->MaxHealth;
+    const float Percentage =  Player->GetStats()->CurrentHealth / Player->GetStats()->MaxHealth;
+    PlayerHealth->SetPercent(Percentage);
+}
+
 void UBattleHUD::DisplayVictoryVisualizer()
 {
     VictoryVisualizer->SetVisibility(ESlateVisibility::Visible);

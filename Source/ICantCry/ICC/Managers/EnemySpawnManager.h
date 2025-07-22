@@ -6,9 +6,9 @@
 #include "GameFramework/Actor.h"
 #include "Engine/World.h"
 #include "Math/UnrealMathUtility.h"
-#include "../Mechanics/Core/Data/EnemyDatas.h"
 #include "../Actors/AI/Mob.h"
 #include "ICantCry/ICC/Mechanics/TurnSystem/Core/ESpawner.h"
+#include "ICantCry/ICC/Mechanics/TurnSystem/BattleMemory/FBattleMemory.h"
 #include "EnemySpawnManager.generated.h"
 
 UENUM()
@@ -30,6 +30,12 @@ public:
 	AEnemySpawnManager();
 	
 	void SpawnRandomEnemy();
+
+	void RespawnEnemy(TSubclassOf<AMob> Class, const FVector& Location, const FRotator& Rotation);
+
+	void ResetBattle(AMob* Emotion);
+
+	FBattleMemory& GetMemory() { return Memory; }
 
 protected:
 	// Called when the game starts or when spawned
@@ -54,4 +60,7 @@ private:
 	int32 RandomSpawnPoint();
 	
 	ESpawnCounter GetRandomSpawnType();
+
+	UPROPERTY()
+	FBattleMemory Memory;
 };

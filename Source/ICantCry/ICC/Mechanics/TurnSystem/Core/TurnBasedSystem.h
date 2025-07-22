@@ -3,6 +3,7 @@
 #include "UObject/Object.h"
 #include "../Turn/Turn.h"
 #include "../../../Managers/EnemySpawnManager.h"
+#include "ICantCry/ICC/Mechanics/TurnSystem/BattleMemory/FBattleMemory.h"
 #include "ICantCry/ICC/Mechanics/UI/BattleVisualization/Victory/VictoryVisualizer.h"
 #include "TurnBasedSystem.generated.h"
 
@@ -21,10 +22,11 @@ public:
 	UTurnBasedSystem();
 	
 	void Start(UWorld* World);
+	void Start2(UWorld* World, FBattleMemory* Memory = nullptr);
 	void Update(UWorld* World);
 	void StartNextTurn();
 	void EndTurn();
-	FTurn GetTurn() const;
+	FTurn& GetTurn();
 
 	bool GetIsPlayerTurn() const;
 	bool GetIsAITurn() const;
@@ -43,6 +45,7 @@ public:
 	 */
 
 	void ExitBattle();
+	void Reload();
 	
 	/**
      * --------- WIP FUNCTIONS -----------

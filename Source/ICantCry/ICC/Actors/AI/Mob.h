@@ -192,9 +192,6 @@ protected:
 
 	UPROPERTY()
 	int Bt_Id;
-
-	UPROPERTY()
-	int AI_Id;
 	
 	//------
 
@@ -247,6 +244,10 @@ public:
 	 */
 	void DisableSilhouette();
 
+	void SetIsRespawned(const bool& Value);
+	bool IsRespawned() const;
+	void ReinizializeTree();
+
 	void StartDefenceMinigame();
 	virtual void Heal(const float& RestoredHealth);
 
@@ -257,7 +258,8 @@ public:
 
 	void PlayTurn();
 
-	void PlaySecondTurn();
+	void SetIsReadyToPlay(const bool& Value);
+	bool IsAIReadyToPlay() const;
 
 	bool IsAlive();
 	
@@ -373,7 +375,6 @@ public:
 	bool GetPlayerDebuffAttack() const;
 	bool GetBuffOtherDefence() const;
 	int GetTreeId() const;
-	int GetAIId() const;
 
 private:
 
@@ -405,6 +406,15 @@ private:
 
 	UPROPERTY()
 	bool bMinigameEnded = false;
+
+	/**
+	 * Is ready to play turn or not
+	 */
+	UPROPERTY()
+	bool bIsReady = false;
+
+	UPROPERTY()
+	bool bRespawned = false;
 
 	static UICantCryGameInstance* GameRef;
 };

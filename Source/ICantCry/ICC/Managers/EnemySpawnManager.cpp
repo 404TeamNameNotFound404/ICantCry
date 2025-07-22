@@ -2,7 +2,9 @@
 #include "EnemySpawnManager.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "Algo/RandomShuffle.h"
+#include "ICantCry/ICC/Actors/AI/ICC_AIController.h"
 #include "EngineUtils.h"
+#include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 
 
 // Sets default values
@@ -37,6 +39,58 @@ void AEnemySpawnManager::SpawnRandomEnemy()
 	}
 
 	Spawn();
+}
+
+void AEnemySpawnManager::RespawnEnemy(TSubclassOf<AMob> Class, const FVector& Location, const FRotator& Rotation)
+{
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	AMob* Emotion = GetWorld()->SpawnActor<AMob>(
+		Class,
+		Location,
+		Rotation,
+		SpawnParams);
+	
+	if (!Emotion->GetController())
+	{
+		FActorSpawnParameters AISP;
+		AISP.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		AICC_AIController* Controller = GetWorld()->SpawnActor<AICC_AIController>(Emotion->AIControllerClass, Emotion->GetActorLocation(), Emotion->GetActorRotation(), AISP);
+    
+		Controller->Possess(Emotion);
+	}
+
+	Emotion->SetIsRespawned(true);
+}
+
+void AEnemySpawnManager::ResetBattle(AMob* Emotion)
+{
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(Emotion->GetGameInstance());
+
+	if (!Emotion->IsAlive())
+	{
+		Emotion->SetIsReadyToPlay(true);
+		Emotion->SetActorHiddenInGame(false);
+		Emotion->SetActorEnableCollision(true);
+		Emotion->SetActorTickEnabled(true);
+		Emotion->GetStats().bAlive = true;
+		Emotion->GetStats().Health = Emotion->GetData()->MaxHealth;
+		Emotion->GetHealthBar()->Restore(Emotion->GetData()->MaxHealth);
+
+		AICC_AIController* AIController = Cast<AICC_AIController>(Emotion->GetController());
+		checkf(AIController, TEXT("AIController is null in ResetEnemy"));
+		AIController->Possess(Emotion);
+		AIController->BrainComponent->RestartLogic();
+		//AIController->RunBehaviorTree(Emotion->GetBehaviorTree());
+		DebugHelper::LogMessage(10, FColor::Purple, Emotion->GetActorLabel() + " respawned");
+	}
+	
+	Emotion->GetStats().Health = Emotion->GetData()->MaxHealth;
+	Emotion->GetHealthBar()->Restore(Emotion->GetData()->MaxHealth);
+	
+	Instance->GetCurrentPlayer()->GetStats()->CurrentHealth = Emotion->GetData()->MaxHealth;
+	Instance->GetCurrentPlayer()->GetBattleHUD()->ResetHealth();
 }
 
 void AEnemySpawnManager::Spawn()
@@ -77,12 +131,15 @@ void AEnemySpawnManager::Spawn()
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
 		AMob* Enemy = GetWorld()->SpawnActor<AMob>(SelectedEnemyClass, SpawnLocation, SpawnRotation, SpawnParams);
+		Memory.Register(SelectedEnemyClass, SpawnLocation, SpawnRotation);
+		Memory.EmotionsSpawned.Add(Enemy);
 
 		if (Enemy)
 		{
 			DebugHelper::LogWarning("Now spawning " + Enemy->GetData()->EnemyName.ToString());
 
-			AAIController* AIController = Cast<AAIController>(Enemy->GetController());
+			//AAIController* AIController = Cast<AAIController>(Enemy->GetController());
+			AICC_AIController* AIController = Cast<AICC_AIController>(Enemy->GetController());
 
 			if (!AIController)
 			{

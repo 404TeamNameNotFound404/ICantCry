@@ -60,6 +60,46 @@ void UTurnBasedSystem::Start(UWorld* World)
 	
 }
 
+void UTurnBasedSystem::Start2(UWorld* World, FBattleMemory* Memory)
+{
+	for (TActorIterator<AEnemySpawnManager> It(World); It; ++It)
+	{
+		EnemySpawnManager = *It;
+		DebugHelper::LogSuccess("EnemySpawnManager FOUND");
+		break;
+	}
+
+	for (TActorIterator<AICC_Player> It(World); It; ++It)
+	{
+		CurrentPlayer = *It;
+		break;
+	}
+
+	for (TActorIterator<ABattleHandler> It(World); It; ++It)
+	{
+		BattleHandler = *It;
+		break;
+	}
+	
+	bFightStarted = true;
+
+	FTimerHandle DelayHandle;
+	World->GetTimerManager().SetTimer(DelayHandle, [this, World, Memory]()
+	{
+		EnemySpawnManager->SpawnRandomEnemy();
+		Turn.PopulateQueue(World);
+		//CopyQueue = Turn.Queue;
+		Memory->LastStoredQueue = Turn.Queue;
+		
+		TryGetCurrentPlayer()->GetBattleHUD()->SpawnVisualizer();
+		TryGetCurrentPlayer()->GetBattleHUD()->SpawnGameOverVisualizer();
+	}, 0.5f, false);
+	
+	
+	CurrentPlayer->GetBattleHUD()->ShowHUD();
+	DebugHelper::LogSuccess("Fight started right after");
+}
+
 void UTurnBasedSystem::Update(UWorld* World)
 {
 	if (!bRequestFight)
@@ -76,11 +116,6 @@ void UTurnBasedSystem::Update(UWorld* World)
 	if (!bInit)
 	{
 		Turn.AssignFirstTurn();
-		
-		// VictoryVisualizer->Setup(Turn.Queue);
-		// //VictoryVisualizer->AddToViewport();
-		// TryGetCurrentPlayer()->GetBattleHUD()->CanvasMiniGames->AddChild(VictoryVisualizer);
-		// VictoryVisualizer->SetVisibility(ESlateVisibility::Hidden);
 	
 		if (Turn.Queue.IsValidIndex(Turn.CurrentTurn))
 		{
@@ -92,7 +127,11 @@ void UTurnBasedSystem::Update(UWorld* World)
 				bIsAiTurn = true;
 				bIsPlayerTurn = false;
 				CurrentPlayer->GetBattleHUD()->SetCurrentPlayingEmotion(Mob);
-				Mob->PlayTurn();
+				
+				if (Mob->IsAIReadyToPlay())
+				{
+					Mob->PlayTurn();
+				}
 			}
 			//otherwise is player playing
 			else
@@ -119,7 +158,11 @@ void UTurnBasedSystem::Update(UWorld* World)
 			DebugHelper::LogWarning(Mob->GetActorLabel() + " Turn");
 			AICC_AIController* AIController = Cast<AICC_AIController>(Mob->GetController());
 			CurrentPlayer->GetBattleHUD()->SetCurrentPlayingEmotion(Mob);
-			Mob->PlayTurn();
+			
+			if (Mob->IsAIReadyToPlay())
+			{
+				Mob->PlayTurn();
+			}
 		}
 
 		Turn.Timer += World->GetDeltaSeconds() * Variations;
@@ -193,7 +236,7 @@ void UTurnBasedSystem::EndTurn()
 	Turn.NextTurn = (Turn.NextTurn + 1) % Turn.Queue.Num();
 }
 
-FTurn UTurnBasedSystem::GetTurn() const
+FTurn& UTurnBasedSystem::GetTurn()
 {
     return Turn;
 }
@@ -250,14 +293,11 @@ void UTurnBasedSystem::Flow()
 		bIsAiTurn = false;
 		
 		BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Victory!"));
-		
-		//TODO ADD VICTORY SCREEN
-		//VictoryVisualizer->SetVisibility(ESlateVisibility::Visible);
 
 		if (!bVictory)
 		{
 			TryGetCurrentPlayer()->GetBattleHUD()->DisplayVictoryVisualizer();
-			TryGetCurrentPlayer()->GetBattleHUD()->GetVictoryVisualizer()->AfterBattle(CopyQueue);
+			TryGetCurrentPlayer()->GetBattleHUD()->GetVictoryVisualizer()->AfterBattle(EnemySpawnManager->GetMemory().LastStoredQueue);
 			bVictory = true;
 		}
 		
@@ -272,8 +312,7 @@ void UTurnBasedSystem::Flow()
 		bIsPlayerTurn = false;
 		bIsAiTurn = false;
 		BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Game Over"));
-
-		//TODO ADD GAMEOVER SCREEN
+		
 		TryGetCurrentPlayer()->GetBattleHUD()->DisplayGameOverVisualizer();
 	}
 	
@@ -299,6 +338,13 @@ void UTurnBasedSystem::ExitBattle()
 	BattleHandler->GetBattleInfo()->RemoveFromParent();
 	CurrentPlayer->GetInGameMenu()->SetDisabled(false);
 	bRequestFight = false;
+	bInit = false;
+	bVictory = false;
+}
+
+void UTurnBasedSystem::Reload()
+{
+	bRequestFight = true;
 	bInit = false;
 	bVictory = false;
 }

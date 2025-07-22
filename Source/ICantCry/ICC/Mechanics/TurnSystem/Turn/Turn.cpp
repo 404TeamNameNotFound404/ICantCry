@@ -33,6 +33,22 @@ void FTurn::PopulateQueue(UWorld* World)
 	
 }
 
+void FTurn::RejoinQueue(const TArray<AMob*>& Emotions)
+{
+	for (AMob* Mob : Emotions)
+	{
+		AICC_Actor* AsActor = Cast<AICC_Actor>(Mob);
+
+		if (Queue.Contains(AsActor))
+		{
+			continue;
+		}
+
+		Queue.Emplace(AsActor);
+		DebugHelper::LogMessage(10, FColor::Orange, Mob->GetActorLabel() + " rejoined the fun");
+	}
+}
+
 void FTurn::AssignFirstTurn()
 {
 	if (Queue.IsEmpty())

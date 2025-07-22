@@ -151,6 +151,10 @@ public:
 	UBulletData* GetCurrentBulletData() const;
 
 	void RestoreHealth();
+	/**
+	 *Reset Health back to full
+	 */
+	void ResetHealth();
 
 	void SpawnVisualizer();
 	void DisplayVictoryVisualizer();

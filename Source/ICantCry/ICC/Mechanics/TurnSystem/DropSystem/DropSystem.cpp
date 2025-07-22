@@ -38,10 +38,11 @@ void UDropSystem::Drop(UWorld* World, UVictoryVisualizer* VictoryVisualizer, con
 
 		AMob* Emotion = Cast<AMob>(Entity);
 
-		if (!Emotion || Index >= Slots.Num())
+		if (!Emotion || Emotion->IsAlive() || Index >= Slots.Num())
 		{
 			continue;
 		}
+
 
 		FEssence MobEssence;
 
@@ -99,7 +100,7 @@ void UDropSystem::Drop(UWorld* World, UVictoryVisualizer* VictoryVisualizer, con
 		Instance->GetCurrentPlayer()->GetInventoryManager()->AddEssence2(MobEssence);
 		Slots[Index]->SetText(FText::FromString(MobEssence.EssenceName + " x" + FString::FromInt(MobEssence.Quantity)));
 		Index++;
+		DebugHelper::LogMessage(8, FColor::Orange, "Dropped " + MobEssence.EssenceName); 
 	}
-
-	DebugHelper::LogMessage(8, FColor::Orange, "Dropped"); 
+	
 }

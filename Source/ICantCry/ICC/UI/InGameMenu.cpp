@@ -2,6 +2,7 @@
 #include "InGameMenu.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "ICantCry/ICC/Inventory/CraftingTable.h"
+#include "ICantCry/ICC/UI/InventoryHUD.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 
 

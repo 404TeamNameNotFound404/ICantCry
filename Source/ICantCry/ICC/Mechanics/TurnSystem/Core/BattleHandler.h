@@ -3,6 +3,7 @@
 #include "GameFramework/Actor.h"
 #include "TurnBasedSystem.h"
 #include "ICantCry/ICC/Mechanics/UI/BattleNotifiers/BattleInfo.h"
+#include "ICantCry/ICC/Managers/EnemySpawnManager.h"
 #include "BattleHandler.generated.h"
 
 UCLASS(Blueprintable)
@@ -24,6 +25,8 @@ public:
 
 	UBattleInfo* GetBattleInfo() const;
 
+	AEnemySpawnManager* GetEnemySpawnManager();
+
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UTurnBasedSystem* TurnBasedSystem;
@@ -34,4 +37,7 @@ private:
 
 	UPROPERTY()
 	UBattleInfo* BattleInfo;
+
+	UPROPERTY()
+	AEnemySpawnManager* SpawnManager;
 };

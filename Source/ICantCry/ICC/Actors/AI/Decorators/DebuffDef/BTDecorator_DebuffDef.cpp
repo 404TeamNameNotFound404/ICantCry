@@ -15,12 +15,9 @@ bool UBTDecorator_DebuffDef::CalculateRawConditionValue(UBehaviorTreeComponent& 
 {
 	UBlackboardComponent* Blackboard = OwnerComp.GetBlackboardComponent();
 	const bool bDeBuff = Blackboard->GetValueAsBool("IsDefenceDebuffed?");
-	DebugHelper::LogError("De-buffer condition is met");
 
 	AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner());
 	AMob* Current = Cast<AMob>(Controller->GetPawn());
-
-	UE_LOG(LogTemp, Warning, TEXT("Debuff decorator correctly joined"));
 	
 	return bDeBuff;
 }

@@ -17,6 +17,7 @@ void AICC_AIController::OnPossess(APawn* InPawn)
 			UBlackboardComponent* BlackBoardCmp;
 			UseBlackboard(BT->BlackboardAsset, BlackBoardCmp);
 			Blackboard = BlackBoardCmp;
+			RunBehaviorTree(BT);
 		}
 	}
 }

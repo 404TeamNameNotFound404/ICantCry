@@ -24,6 +24,7 @@ struct FTurn
 
 	FTurn();
 	void PopulateQueue(UWorld* World);
+	void RejoinQueue(const TArray<AMob*>& Emotions);
 	void AssignFirstTurn();
 	
 	AMob* GetMobInQueue() const;
