@@ -164,6 +164,8 @@ public:
 
 	UVictoryVisualizer* GetVictoryVisualizer() const;
 
+	void SetBulletSetupFinished(const bool& Value);
+
 private:
 
     UPROPERTY() ABattleHandler*  BattleHandler = nullptr;

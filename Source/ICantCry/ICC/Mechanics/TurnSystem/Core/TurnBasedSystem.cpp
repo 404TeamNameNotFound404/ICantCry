@@ -308,7 +308,6 @@ void UTurnBasedSystem::Flow()
 
 	if (!CurrentPlayer->IsAlive()) 
 	{
-
 		bFightStarted = false;
 		bIsPlayerTurn = false;
 		bIsAiTurn = false;
@@ -351,6 +350,8 @@ void UTurnBasedSystem::Reload()
 	bInit = false;
 	bVictory = false;
 	Instance->GetInventory().BulletsStored = EnemySpawnManager->GetMemory().InBattleBullets;
+	Instance->GetCurrentPlayer()->GetBattleHUD()->SetBulletSetupFinished(false);
+	Turn.CurrentTurn = 0;
 }
 
 

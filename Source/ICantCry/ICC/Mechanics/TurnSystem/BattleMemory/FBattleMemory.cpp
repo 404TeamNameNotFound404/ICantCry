@@ -26,5 +26,7 @@ void FBattleMemory::Clear()
 	InBattleBullets.Empty();
 	EmotionsSpawned.Empty();
 	EmotionsSpawnedClasses.Empty();
+	Locations.Empty();
+	Orientations.Empty();
 }
 

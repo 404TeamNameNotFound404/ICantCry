@@ -848,6 +848,11 @@ UVictoryVisualizer* UBattleHUD::GetVictoryVisualizer() const
     return VictoryVisualizer;
 }
 
+void UBattleHUD::SetBulletSetupFinished(const bool& Value)
+{
+    bBulletSetupFinished = Value;
+}
+
 void UBattleHUD::ShowHUD() 
 {
     AddToViewport();

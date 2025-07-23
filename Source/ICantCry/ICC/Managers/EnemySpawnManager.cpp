@@ -80,8 +80,8 @@ void AEnemySpawnManager::ResetBattle(AMob* Emotion)
 
 		AICC_AIController* AIController = Cast<AICC_AIController>(Emotion->GetController());
 		checkf(AIController, TEXT("AIController is null in ResetEnemy"));
-		AIController->Possess(Emotion);
 		AIController->BrainComponent->RestartLogic();
+		AIController->Possess(Emotion);
 		//AIController->RunBehaviorTree(Emotion->GetBehaviorTree());
 		DebugHelper::LogMessage(10, FColor::Purple, Emotion->GetActorLabel() + " respawned");
 	}
