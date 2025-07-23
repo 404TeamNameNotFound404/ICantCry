@@ -245,6 +245,8 @@ void UBattleHUD::OnFocusPressed()
     BattleHandler->GetTurnBasedSystem()->StartNextTurn();
     DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
     BattleHandler->GetTurnBasedSystem()->SetTurnOverlayApplied(false);
+    Displayer->SetVisibility(ESlateVisibility::Hidden);
+    CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
     bTargetSelection = false;
 }
 
@@ -296,6 +298,7 @@ void UBattleHUD::OnPassPressed()
     BattleHandler->GetBattleInfo()->ClearInfo();
     GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateStatus();
     GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateBuffStatus();
+    Displayer->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UBattleHUD::ScrollTargetSelection(float ScrollValue)

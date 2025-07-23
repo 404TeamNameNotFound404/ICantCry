@@ -83,14 +83,15 @@ void UTurnBasedSystem::Start2(UWorld* World, FBattleMemory* Memory)
 	
 	bFightStarted = true;
 
+	Instance = Cast<UICantCryGameInstance>(World->GetGameInstance());
+	checkf(Instance, TEXT("Instance is null at start2"))
+	
 	FTimerHandle DelayHandle;
 	World->GetTimerManager().SetTimer(DelayHandle, [this, World, Memory]()
 	{
 		EnemySpawnManager->SpawnRandomEnemy();
 		Turn.PopulateQueue(World);
-		//CopyQueue = Turn.Queue;
-		Memory->LastStoredQueue = Turn.Queue;
-		
+		Memory->Load(Turn.Queue, Instance->GetInventory().BulletsStored);
 		TryGetCurrentPlayer()->GetBattleHUD()->SpawnVisualizer();
 		TryGetCurrentPlayer()->GetBattleHUD()->SpawnGameOverVisualizer();
 	}, 0.5f, false);
@@ -340,6 +341,8 @@ void UTurnBasedSystem::ExitBattle()
 	bRequestFight = false;
 	bInit = false;
 	bVictory = false;
+	Turn.Queue.Empty();
+	EnemySpawnManager->GetMemory().Clear();
 }
 
 void UTurnBasedSystem::Reload()
@@ -347,6 +350,7 @@ void UTurnBasedSystem::Reload()
 	bRequestFight = true;
 	bInit = false;
 	bVictory = false;
+	Instance->GetInventory().BulletsStored = EnemySpawnManager->GetMemory().InBattleBullets;
 }
 
 

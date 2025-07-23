@@ -5,6 +5,7 @@
 #include "../../../Managers/EnemySpawnManager.h"
 #include "ICantCry/ICC/Mechanics/TurnSystem/BattleMemory/FBattleMemory.h"
 #include "ICantCry/ICC/Mechanics/UI/BattleVisualization/Victory/VictoryVisualizer.h"
+#include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "TurnBasedSystem.generated.h"
 
 class AICC_Player;
@@ -105,4 +106,7 @@ private:
 
 	UPROPERTY()
 	UVictoryVisualizer* VictoryVisualizer;
+
+	UPROPERTY()
+	UICantCryGameInstance* Instance;
 };

@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "ICantCry/ICC/Actors/ICC_Actor.h"
 #include "ICantCry/ICC/Actors/AI/Mob.h"
+#include "ICantCry/ICC/Actors/Bullet/BulletData.h"
+#include "ICantCry/ICC/Actors/Bullet/Bullet.h"
 #include "FBattleMemory.generated.h"
 
 USTRUCT(BlueprintType)
@@ -20,6 +22,9 @@ struct FBattleMemory
 
 	UPROPERTY()
 	TArray<AMob*> EmotionsSpawned;
+
+	UPROPERTY()
+	TMap<TEnumAsByte<EBulletType>, FBullet> InBattleBullets;
 	
 	UPROPERTY()
 	TArray<FVector> Locations;
@@ -30,6 +35,8 @@ struct FBattleMemory
 	FBattleMemory();
 
 	void Register(TSubclassOf<AMob> EmotionClass, const FVector& Location, const FRotator& Orientation);
+	void Load(const TArray<AICC_Actor*>& Queue, const TMap<TEnumAsByte<EBulletType>, FBullet>& Bullets);
+	void Clear();
 	
 };
 

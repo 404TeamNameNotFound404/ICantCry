@@ -14,3 +14,17 @@ void FBattleMemory::Register(TSubclassOf<AMob> EmotionClass, const FVector& Loca
 	Orientations.Add(Orientation);
 }
 
+void FBattleMemory::Load(const TArray<AICC_Actor*>& Queue, const TMap<TEnumAsByte<EBulletType>, FBullet>& Bullets)
+{
+	LastStoredQueue = Queue;
+	InBattleBullets = Bullets;
+}
+
+void FBattleMemory::Clear()
+{
+	LastStoredQueue.Empty();
+	InBattleBullets.Empty();
+	EmotionsSpawned.Empty();
+	EmotionsSpawnedClasses.Empty();
+}
+
