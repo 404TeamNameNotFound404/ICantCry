@@ -109,6 +109,31 @@ void AICC_Player::Tick(float DeltaTime)
 	}
 	
 	Super::Tick(DeltaTime);
+
+	// --- Sistema di conteggio passi ---
+    const FVector CurrentLocation = GetActorLocation();
+    const float CurrentSpeed = GetVelocity().Size();
+
+    // Se il player è in movimento
+    if (CurrentSpeed <= 0)
+    {
+        const float DistanceMoved = FVector::Dist(PreviousLocation, CurrentLocation);
+        StepDistanceAccumulator += DistanceMoved;
+
+        const float StepThreshold = 100.0f; // 1 metro
+
+        if (StepDistanceAccumulator >= StepThreshold)
+        {
+            int32 StepsTaken = FMath::FloorToInt(StepDistanceAccumulator / StepThreshold);
+            StepCounter += StepsTaken;
+            StepDistanceAccumulator -= StepsTaken * StepThreshold;
+        }
+    }
+    else
+    {
+        // Il player è fermo: aggiorno la posizione solo ora
+        PreviousLocation = CurrentLocation;
+    }
 }
 
 // Called to bind functionality to input
@@ -443,6 +468,23 @@ void AICC_Player::Input_CloseCrafting(const FInputActionValue& InputActionValue)
 		//bIsInGameMenuOpen = false;
 		InGameMenu->SetMenuOpen(false);
 	}
+}
+
+
+int32 AICC_Player::GetStepCounter() const
+{
+    return StepCounter;
+}
+
+bool AICC_Player::IsSprinting() const
+{
+    return GetCharacterMovement()->MaxWalkSpeed == RunSpeed;
+}
+
+void AICC_Player::ResetStepCounter()
+{
+    StepCounter = 0;
+    StepDistanceAccumulator = 0.0f;
 }
 
 
