@@ -3,9 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
+#include "SceneLoader.h"
 #include "../Actors/Player/ICC_Player.h"
-#include "../Managers/SceneLoader.h"
 #include "EncounterManager.generated.h"
 
 UENUM(BlueprintType)
@@ -25,11 +24,11 @@ public:
     
     // Inizializza il sistema di incontri casuali
     UFUNCTION(BlueprintCallable, Category = "Encounter")
-    void Initialize(); 
+    void Initialize(UWorld* World); 
 
     // Riduce il valore di threshold in base al movimento del giocatore
     UFUNCTION(BlueprintCallable, Category = "Encounter")
-    void UpdateThreshold();
+    void UpdateThreshold(UWorld* World);
 
     UFUNCTION(BlueprintCallable, Category = "Encounter")
     void SetPlayerLocationMultiplier(EPlayerLocation NewLocation);
@@ -38,7 +37,8 @@ protected:
 
     UEncounterManager();
 
-    class AICC_Player* PlayerRef; 
+    UPROPERTY()
+    TWeakObjectPtr<AICC_Player> PlayerRef; 
 
     // Soglia iniziale random tra 50 e 200
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Encounter")
@@ -61,9 +61,12 @@ protected:
 
     // Evento Blueprint per innescare una battaglia
     UFUNCTION(Category = "Encounter")
-    void StartBattle();
+    void StartBattle(UWorld* World);
 
     UFUNCTION(Category = "Encounter")
     void Reset();
-	
+
+    UPROPERTY()
+	int32 LastStepCounter = 0;
+    
 };
