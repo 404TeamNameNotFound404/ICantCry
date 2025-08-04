@@ -16,5 +16,11 @@ struct FEmotionMemory
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Emotion Memory")
 	FVector AttackLocation;
 
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Emotion Memory")
+	float InitialDefencePower = 0.0f;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Emotion Memory")
+	float InitialAttackPower = 0.0f;
+
 	FEmotionMemory(); 
 };

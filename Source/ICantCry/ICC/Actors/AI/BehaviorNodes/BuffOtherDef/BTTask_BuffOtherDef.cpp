@@ -32,12 +32,20 @@ EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& Ow
 
 	//TODO ADD a counter for the buff (must last 3 turns)
 	
+	if (Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().CantBuffOthers())
+	{
+		DebugHelper::LogError(Current->GetActorLabel() +  " is alone can't buff");
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+		return EBTNodeResult::Succeeded;
+	}
 
 	AMob* TargetToBuff = Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetMobInQueue();
 	checkf(TargetToBuff, TEXT("TargetToBuff is invalid Type UBTTask_BuffDefence::ExecuteTask"))
 
-	TargetToBuff->GetData()->DefencePower *= 0.20f; // still assuming a 20% increase
+	// check first if 'TargetToBuff' has active buff , if so it removes it to apply the new one
+	TargetToBuff->GetStatusTracker()->BuffFlow(EBuffStatus::DefBuff);
 	
+	TargetToBuff->GetStatusTracker()->BuffWith(EBuffStatus::DefBuff);
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(
 		FText::FromString(Current->GetActorLabel() + " buffed " + TargetToBuff->GetActorLabel() + " def"));

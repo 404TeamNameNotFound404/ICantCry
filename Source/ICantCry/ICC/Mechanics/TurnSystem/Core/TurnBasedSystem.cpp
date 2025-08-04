@@ -40,7 +40,6 @@ void UTurnBasedSystem::Start(UWorld* World)
 	}
 	
 	bFightStarted = true;
-	//EnemySpawnManager->SpawnRandomEnemy();
 
 	FTimerHandle DelayHandle;
 	World->GetTimerManager().SetTimer(DelayHandle, [this, World]()
@@ -49,39 +48,57 @@ void UTurnBasedSystem::Start(UWorld* World)
 		{
 			EnemySpawnManager->SpawnRandomEnemy();
 			Turn.PopulateQueue(World);
+			TryGetCurrentPlayer()->GetBattleHUD()->SpawnVisualizer();
+			TryGetCurrentPlayer()->GetBattleHUD()->SpawnGameOverVisualizer();
+			CopyQueue = Turn.Queue;
 		}
 	}, 0.5f, false);
 	
-	CurrentPlayer->GetBattleHUD()->ShowHUD();
-	//Turn.PopulateQueue(World);
 	
+	CurrentPlayer->GetBattleHUD()->ShowHUD();
 	DebugHelper::LogSuccess("Fight started right after");
 	
-	// Turn.AssignFirstTurn();
-	//
-	// if (Turn.Queue.IsValidIndex(Turn.CurrentTurn))
-	// {
-	// 	AICC_Actor* Who = Turn.Queue[Turn.CurrentTurn];
-	// 	// if first to play is Emotion / AI
-	// 	if (Who->IsA(AMob::StaticClass()))
-	// 	{
-	// 		AMob* Mob = Cast<AMob>(Who);
-	// 		bIsAiTurn = true;
-	// 		bIsPlayerTurn = false;
-	// 		CurrentPlayer->GetBattleHUD()->SetCurrentPlayingEmotion(Mob);
-	// 		Mob->PlayTurn();
-	// 	}
-	// 	//otherwise is player playing
-	// 	else
-	// 	{
-	// 		bIsAiTurn = false;
-	// 		bIsPlayerTurn = true;
-	// 		AICC_Player* Player = Cast<AICC_Player>(Who);
-	// 		DebugHelper::AddTurnMaterialOverlayToStaticMesh(Player->DebugMesh);
-	// 		CurrentPlayer = Player;
-	// 		BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Your Turn"));
-	// 	}
-	// }
+}
+
+void UTurnBasedSystem::Start2(UWorld* World, FBattleMemory* Memory)
+{
+	for (TActorIterator<AEnemySpawnManager> It(World); It; ++It)
+	{
+		EnemySpawnManager = *It;
+		DebugHelper::LogSuccess("EnemySpawnManager FOUND");
+		break;
+	}
+
+	for (TActorIterator<AICC_Player> It(World); It; ++It)
+	{
+		CurrentPlayer = *It;
+		break;
+	}
+
+	for (TActorIterator<ABattleHandler> It(World); It; ++It)
+	{
+		BattleHandler = *It;
+		break;
+	}
+	
+	bFightStarted = true;
+
+	Instance = Cast<UICantCryGameInstance>(World->GetGameInstance());
+	checkf(Instance, TEXT("Instance is null at start2"))
+	
+	FTimerHandle DelayHandle;
+	World->GetTimerManager().SetTimer(DelayHandle, [this, World, Memory]()
+	{
+		EnemySpawnManager->SpawnRandomEnemy();
+		Turn.PopulateQueue(World);
+		Memory->Load(Turn.Queue, Instance->GetInventory().BulletsStored);
+		TryGetCurrentPlayer()->GetBattleHUD()->SpawnVisualizer();
+		TryGetCurrentPlayer()->GetBattleHUD()->SpawnGameOverVisualizer();
+	}, 0.5f, false);
+	
+	
+	CurrentPlayer->GetBattleHUD()->ShowHUD();
+	DebugHelper::LogSuccess("Fight started right after");
 }
 
 void UTurnBasedSystem::Update(UWorld* World)
@@ -111,7 +128,11 @@ void UTurnBasedSystem::Update(UWorld* World)
 				bIsAiTurn = true;
 				bIsPlayerTurn = false;
 				CurrentPlayer->GetBattleHUD()->SetCurrentPlayingEmotion(Mob);
-				Mob->PlayTurn();
+				
+				if (Mob->IsAIReadyToPlay())
+				{
+					Mob->PlayTurn();
+				}
 			}
 			//otherwise is player playing
 			else
@@ -137,11 +158,12 @@ void UTurnBasedSystem::Update(UWorld* World)
 			checkf(Mob, TEXT("Mob invalid at UTurnBasedSystem::Update"))
 			DebugHelper::LogWarning(Mob->GetActorLabel() + " Turn");
 			AICC_AIController* AIController = Cast<AICC_AIController>(Mob->GetController());
-			//BattleHandler->GetBattleInfo()->SetTurnInfo(FText::FromString(Mob->GetActorLabel() + " Turn\n AI Controller id : " + AIController->GetActorLabel()));
-			//Mob->GetBattleHandler()->GetBattleInfo()->SetTurnInfo(FText::FromString(Mob->GetActorLabel() + " Turn\n AI Controller id : " + AIController->GetActorLabel()));
 			CurrentPlayer->GetBattleHUD()->SetCurrentPlayingEmotion(Mob);
-			Mob->PlayTurn();
-			//Mob->PlaySecondTurn();
+			
+			if (Mob->IsAIReadyToPlay())
+			{
+				Mob->PlayTurn();
+			}
 		}
 
 		Turn.Timer += World->GetDeltaSeconds() * Variations;
@@ -188,7 +210,6 @@ void UTurnBasedSystem::StartNextTurn()
 		//otherwise is player playing
 		else
 		{
-			DebugHelper::LogMessage(3, FColor::FromHex("4D55CC"), "Player turn!");
 			bIsAiTurn = false;
 			bIsPlayerTurn = true;
 			AICC_Player* Player = Cast<AICC_Player>(Who);
@@ -214,10 +235,9 @@ void UTurnBasedSystem::EndTurn()
 
 	Turn.CurrentTurn = Turn.NextTurn;
 	Turn.NextTurn = (Turn.NextTurn + 1) % Turn.Queue.Num();
-	DebugHelper::LogWarning("turn ended, " + Turn.Queue[Turn.CurrentTurn]->GetName() + " will now play");
 }
 
-FTurn UTurnBasedSystem::GetTurn() const
+FTurn& UTurnBasedSystem::GetTurn()
 {
     return Turn;
 }
@@ -254,7 +274,7 @@ void UTurnBasedSystem::Flow()
 		return;
 	}
 
-	for (int32 i = Turn.Queue.Num() - 1; i >= 0; --i) // backwards to safely remove
+	for (int32 i = Turn.Queue.Num() - 1; i >= 0; --i) 
 	{
 		AICC_Actor* Actor = Turn.Queue[i];
 		AMob* Mob = Cast<AMob>(Actor);
@@ -274,22 +294,26 @@ void UTurnBasedSystem::Flow()
 		bIsAiTurn = false;
 		
 		BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Victory!"));
+
+		if (!bVictory)
+		{
+			TryGetCurrentPlayer()->GetBattleHUD()->DisplayVictoryVisualizer();
+			TryGetCurrentPlayer()->GetBattleHUD()->GetVictoryVisualizer()->AfterBattle(EnemySpawnManager->GetMemory().LastStoredQueue);
+			bVictory = true;
+		}
 		
-		//TODO ADD VICTORY SCREEN
 		return;
 	}
 
 
 	if (!CurrentPlayer->IsAlive()) 
 	{
-
 		bFightStarted = false;
 		bIsPlayerTurn = false;
 		bIsAiTurn = false;
-		
 		BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Game Over"));
-
-		//TODO ADD GAMEOVER SCREEN
+		
+		TryGetCurrentPlayer()->GetBattleHUD()->DisplayGameOverVisualizer();
 	}
 	
 }
@@ -305,11 +329,33 @@ void UTurnBasedSystem::SetAIPlaying(const bool& Play)
 	bAIPlayTurn = Play;
 }
 
+void UTurnBasedSystem::SpawnBattleVictory(UWorld* World)
+{
+}
+
 void UTurnBasedSystem::ExitBattle()
 {
 	BattleHandler->GetBattleInfo()->RemoveFromParent();
 	CurrentPlayer->GetInGameMenu()->SetDisabled(false);
 	bRequestFight = false;
 	bInit = false;
+	bVictory = false;
+	Turn.Queue.Empty();
+	EnemySpawnManager->GetMemory().Clear();
 }
 
+void UTurnBasedSystem::Reload()
+{
+	bRequestFight = true;
+	bInit = false;
+	bVictory = false;
+	Instance->GetInventory().BulletsStored = EnemySpawnManager->GetMemory().InBattleBullets;
+	Instance->GetCurrentPlayer()->GetBattleHUD()->SetBulletSetupFinished(false);
+	Turn.CurrentTurn = 0;
+}
+
+
+TArray<AICC_Actor*> UTurnBasedSystem::GetCopyQueue() const
+{
+	return CopyQueue;
+}

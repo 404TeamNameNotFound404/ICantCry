@@ -97,6 +97,9 @@ void AICC_Player::BeginPlay()
 	DontDestroyOnLoad->GetInventory().StarterPack();
 	DontDestroyOnLoad->SetPersistentPlayer(this);
 
+	DontDestroyOnLoad->GetPersistentData()->InitialAttackPower = GetStats()->AttackPower;
+	DontDestroyOnLoad->GetPersistentData()->InitialDefencePower = GetStats()->DefencePower;
+
 	bIsInFight = false;
 }
 
@@ -206,6 +209,11 @@ AMinigameHandler* AICC_Player::GetMinigameHandler() const
 UPlayerStats* AICC_Player::GetStats() const
 {
 	return Stats;
+}
+
+UBattleData* AICC_Player::GetBattleData() const
+{
+	return BattleData;
 }
 
 int32 AICC_Player::GetWorldCameraCounter() const
@@ -341,11 +349,11 @@ void AICC_Player::Input_Scroll(const FInputActionValue &InputActionValue)
 		return;
 	}
 
-	if (!Hud->IsSelectingTarget())
-	{
-		DebugHelper::LogError("You can't do that yet");
-		return;
-	}
+	// if (!Hud->IsSelectingTarget())
+	// {
+	// 	DebugHelper::LogError("You can't do that yet");
+	// 	return;
+	// }
 	
 	DebugHelper::LogSuccess("Scrolling something");
 	
@@ -366,6 +374,7 @@ void AICC_Player::Input_Scroll(const FInputActionValue &InputActionValue)
 	{
 		if(Scroll && !Hud->IsBulletSelectionOver())
 		{
+			DebugHelper::LogSuccess("Scrolling over bullets ");
 			Hud->ScrollBulletSelection(Scroll);
 		}
 	}

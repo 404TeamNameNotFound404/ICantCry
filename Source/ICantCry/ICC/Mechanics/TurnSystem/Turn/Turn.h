@@ -20,10 +20,14 @@ struct FTurn
 	
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Turn System", meta = (AllowPrivateAccess = "true"))
 	TArray<AICC_Actor*> Queue;
+	
 
 	FTurn();
 	void PopulateQueue(UWorld* World);
+	void RejoinQueue(const TArray<AMob*>& Emotions);
 	void AssignFirstTurn();
 	
 	AMob* GetMobInQueue() const;
+
+	bool CantBuffOthers();
 };

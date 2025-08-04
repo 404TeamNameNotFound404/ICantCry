@@ -16,13 +16,19 @@ enum class ERecipeType : uint8
 	Base UMETA(DisplayName = "Base Blueprint"),
 	Gold UMETA(DisplayName = "Gold Blueprint"),
 	Anger,
+	AngerEv,
 	Sadness,
 	Anxiety,
 	Shame,
 	Disgust,
 	Joy,
+	JoyEv,
+	FearEv,
 	Fear,
 	Calm,
+	CalmEv,
+	Jealousy,
+	JealousyEv,
 	Indifference
 };
 
@@ -92,12 +98,26 @@ public:
 			return FString("Disgust");
 		case ERecipeType::Joy:
 			return FString("Joy");
+		case ERecipeType::JoyEv:
+			return FString("Joy (Ev)");
 		case ERecipeType::Fear:
 			return FString("Fear");
+		case ERecipeType::FearEv:
+			return FString("Fear (Ev)");
 		case ERecipeType::Calm:
 			return FString("Calm");
-			default:
+		case ERecipeType::AngerEv:
+			return FString("Anger (Ev)");
+		case ERecipeType::CalmEv:
+			return FString("Calm (Ev)");
+		case ERecipeType::Jealousy:
+			return FString("Jealousy");
+		case ERecipeType::JealousyEv:
+			return FString("Jealousy (Ev)");
+		case ERecipeType::Indifference:
 			return FString("Indifference");
+		default:
+			return FString("None");
 		}
 	}
 

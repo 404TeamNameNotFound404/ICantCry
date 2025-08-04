@@ -5,9 +5,10 @@
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 
 
-void UBulletSelector::Setup(const FBullet& NewBullet, int32 InQuantity)
+void UBulletSelector::Setup(FBullet& NewBullet, int32 InQuantity)
 {
 	BulletRef = NewBullet;
+	BulletRefPtr = &NewBullet;
 	
 	const UBulletData* Data = NewBullet.GetBulletData();
 	
@@ -29,6 +30,11 @@ void UBulletSelector::DisplayBulletInfo()
 FBullet& UBulletSelector::GetBullet()
 {
 	return BulletRef;
+}
+
+FBullet* UBulletSelector::GetBulletPtr()
+{
+	return BulletRefPtr;
 }
 
 void UBulletSelector::Refresh()
@@ -104,16 +110,26 @@ void UBulletSelector::NativeConstruct()
 
 void UBulletSelector::AddToRevolver()
 {
-	DebugHelper::LogSuccess("Bullet " +  BulletRef.GetBulletData()->BulletName + " inserted");
+	DebugHelper::LogSuccess("Bullet " +  BulletRefPtr->GetBulletData()->BulletName + " inserted");
 
-	if (BulletRef.GetQuantity() <= 0)
+	if (BulletRefPtr->GetQuantity() <= 0)
 	{
 		DebugHelper::LogWarning(BulletRef.GetBulletData()->BulletName + " is empty");
 		return;
 	}
+
+	if (Player->GetBattleHUD()->GetCircularBulletBuffer()->IsFull())
+	{
+		DebugHelper::LogWarning("Revolver is already full");
+		return;
+	}
 	
-	Player->GetBattleHUD()->GetCircularBulletBuffer()->AddBullet(BulletRef.GetBulletData());
+	//Player->GetBattleHUD()->GetCircularBulletBuffer()->AddBullet(BulletRef.GetBulletData());
+	Player->GetBattleHUD()->GetCircularBulletBuffer()->AddBullet(BulletRefPtr->GetBulletData());
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+
+	BulletRefPtr->SetQuantity(BulletRefPtr->GetQuantity() - 1);
+	DebugHelper::LogMessage(8, FColor::Red, "Decreasing quantity of " + BulletRefPtr->GetBulletData()->BulletName + ": " + FString::FromInt(BulletRefPtr->GetQuantity()));
 	
 	const TArray<URevolverSlot*>& Slots = Player->GetBattleHUD()->RevolverSlots;
 	const TArray<UImage*>& PistolMagazines = Player->GetBattleHUD()->PistolMagazines;

@@ -33,7 +33,9 @@ EBTNodeResult::Type UBTTask_Buff::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 
 	//TODO ADD a counter for the buff (must last 3 turns)
 
-	Current->GetTactics()->MovePower *= 1.2f;
+	Current->GetStatusTracker()->BuffFlow(EBuffStatus::AtkBuff);
+	// Current->GetTactics()->MovePower *= 1.2f;
+	Current->GetStatusTracker()->BuffWith(EBuffStatus::AtkBuff);
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(
 		FText::FromString(Current->GetActorLabel() + " buffed it's atk"));

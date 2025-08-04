@@ -26,11 +26,27 @@ void FTurn::PopulateQueue(UWorld* World)
 		}
 		
 		Queue.Add(*It);
-
+		
 		DebugHelper::LogMessage(10, FColor::Black, It->GetActorLabel() + " joined the fun");
 	}
 
 	
+}
+
+void FTurn::RejoinQueue(const TArray<AMob*>& Emotions)
+{
+	for (AMob* Mob : Emotions)
+	{
+		AICC_Actor* AsActor = Cast<AICC_Actor>(Mob);
+
+		if (Queue.Contains(AsActor))
+		{
+			continue;
+		}
+
+		Queue.Emplace(AsActor);
+		DebugHelper::LogMessage(10, FColor::Orange, Mob->GetActorLabel() + " rejoined the fun");
+	}
 }
 
 void FTurn::AssignFirstTurn()
@@ -67,4 +83,29 @@ AMob* FTurn::GetMobInQueue() const
 	}
 
 	return nullptr;
+}
+
+bool FTurn::CantBuffOthers()
+{
+	if (Queue.IsEmpty())
+	{
+		return false;
+	}
+
+	int32 MobCount = 0;
+
+	for (AICC_Actor* Actor : Queue)
+	{
+		if (Actor->IsA(AICC_Player::StaticClass()))
+		{
+			continue;
+		}
+		
+		if (Actor->IsA(AMob::StaticClass()))
+		{
+			++MobCount;
+		}
+	}
+
+	return MobCount <= 1;
 }

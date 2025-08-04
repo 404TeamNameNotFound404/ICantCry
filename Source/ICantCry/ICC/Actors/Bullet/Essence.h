@@ -11,13 +11,18 @@ enum class EEssenceType : uint8
 {
     Indifference,
     Anger,
+    AngerEv,
     Fear,
+    FearEv,
     Disgust,
     Sadness,
     Joy,
+    JoyEv,
     Anxiety,
     Calm,
+    CalmEV,
     Jealousy,
+    JealousyEv,
     Shame
 };
 
@@ -73,6 +78,16 @@ public:
                 return "Jealousy";
             case EEssenceType::Shame:
                 return "Shame";
+            case EEssenceType::AngerEv:
+                return "Anger (Ev)";
+            case EEssenceType::FearEv:
+                return "Fear (Ev)";;
+            case EEssenceType::JoyEv:
+                return "Joy (Ev)";
+            case EEssenceType::CalmEV:
+               return "Calm (Ev)";
+            case EEssenceType::JealousyEv:
+                return "Jealousy (Ev)";
             default:
                 return "";
         }

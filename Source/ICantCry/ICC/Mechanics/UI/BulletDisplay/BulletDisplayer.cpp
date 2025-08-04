@@ -56,13 +56,23 @@ void UBulletDisplayer::Refresh()
 
 	for (auto& Bullet : Instance->GetInventory().BulletsStored)
 	{
+		
 		FBullet& B = Bullet.Value;
+		
 		UBulletSelector* Item = CreateWidget<UBulletSelector>(GetWorld(), BulletButtonItemClass);
 		Item->Setup(B, B.GetQuantity());
+
+		if (B.GetQuantity() <= 0)
+		{
+			DebugHelper::LogWarning( B.GetBulletData()->BulletName + " is 0");
+			continue;
+		}
+		
 		Item->SetPadding(FMargin(2,2));
 		Main->AddChild(Item);
 		Item->SetIsFocusable(true);
 		Bullets.Add(Item);
+		DebugHelper::LogMessage(4, FColor::Purple, B.GetBulletData()->BulletName + " added");
 	}
 
 	DebugHelper::LogWarning("Refreshing avaiable bullets");
@@ -109,10 +119,15 @@ void UBulletDisplayer::RemoveBullet()
 	}
 	
 	RefreshBullets();
+
+	if (BulletType == FearEV || BulletType == JoyEv || BulletType == CalmEV || BulletType == AngerEV)
+	{
+		return;
+	}
 	
-	AMob* Target = Player->GetBattleHUD()->GetSelectedEmotion();
+	AMob* Target = Cast<AMob>(Player->GetBattleHUD()->GetSelectedActor());
 	const float Damage = Instance->GetCurrentDamageData().CalculateDamage(true);
-	Target->GetData()->Health -= Damage;
-	Target->GetHealthBar()->SetCurrentHealth(Target->GetData()->Health);
+	Target->GetStats().Health -= Damage;
+	Target->GetHealthBar()->SetCurrentHealth(Target->GetStats().Health);
 }
 

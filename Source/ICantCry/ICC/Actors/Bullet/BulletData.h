@@ -20,14 +20,19 @@ UENUM(BlueprintType)
 enum EBulletType
 {
 	Indifference,
-	Anger,
-	Fear,
+	AngerDv,
+	AngerEV,
+	FearDv,
+	FearEV,
 	Disgust,
 	Sadness,
-	Joy,
+	JoyDv,
+	JoyEv,
 	Anxiety,
-	Calm,
-	Jealousy,
+	CalmDv,
+	CalmEV,
+	JealousyDv,
+	JealousyEV,
 	Shame
 };
 

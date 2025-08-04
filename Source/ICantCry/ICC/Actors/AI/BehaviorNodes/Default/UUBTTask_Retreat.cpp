@@ -11,6 +11,9 @@ UUUBTTask_Retreat::UUUBTTask_Retreat()
 	NodeName = TEXT("Retreat");
 	bNotifyTick = true;
 	bNotifyTaskFinished = true;
+	bCreateNodeInstance = true;
+	bRetreated = false;
+	bTimerStarted = false;
 }
 
 EBTNodeResult::Type UUUBTTask_Retreat::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -34,7 +37,8 @@ EBTNodeResult::Type UUUBTTask_Retreat::ExecuteTask(UBehaviorTreeComponent& Owner
 	FAIMoveRequest Request;
 	Request.SetGoalLocation(Current->GetAIMemory().DefaultBattleLocation);
 	Controller->MoveTo(Request);
-	
+	bRetreated = false;
+	bTimerStarted = false;
 	
 	return EBTNodeResult::InProgress;
 }
@@ -100,4 +104,6 @@ void UUUBTTask_Retreat::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8*
 
 	Current->GetBattleHandler()->GetTurnBasedSystem()->EndTurn();
 	Current->GetBattleHandler()->GetTurnBasedSystem()->StartNextTurn();
+	Current->GetStatusTracker()->UpdateStatus();
+	Current->GetStatusTracker()->UpdateBuffStatus();
 }

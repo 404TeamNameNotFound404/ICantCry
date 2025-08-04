@@ -13,10 +13,27 @@
 #include "ICantCry/ICC/Mechanics/TurnSystem/BattleFlow/DamageCalculator.h"
 #include "Niagara/Public/NiagaraComponent.h"
 #include "ICantCry/ICC/Actors/AI/Memory/EmotionMemory.h"
+#include "ICantCry/ICC/Mechanics/Core/Data/BattleData.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
+#include "ICantCry/ICC/Actors/AI/Emotions/EmotionStats/FEmotionStat.h"
 #include "Mob.generated.h"
 
 class ABattleHandler;
+
+UENUM()
+enum EMobType
+{
+	MobAnger,
+	MobShame,
+	MobJoy,
+	MobDisgust,
+	MobFear,
+	MobJealousy,
+	MobSadness,
+	MobAnxiety,
+	MobCalm
+};
+
 
 UCLASS(Blueprintable)
 class ICANTCRY_API AMob : public AICC_Actor
@@ -45,10 +62,16 @@ protected:
 	UEnemyDatas* EnemyData;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data",  meta = (AllowPrivateAccess = "true"))
+	UBattleData* BattleData;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data",  meta = (AllowPrivateAccess = "true"))
 	UEnemyTactics* Moves;
 
 	UPROPERTY()
 	AICC_AIController* AIController;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
+	TEnumAsByte<EMobType> Type;
 	
 
 	//----------------
@@ -58,6 +81,9 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Behaviors", meta = (AllowPrivateAccess = "true"))
 	UBehaviorTree* Tree;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Battle", meta = (AllowPrivateAccess = "true"))
+	FEmotionStat Stats;
 
 	/**
 	 * Variable used to determinate if Emotion is 'Joy'
@@ -166,9 +192,6 @@ protected:
 
 	UPROPERTY()
 	int Bt_Id;
-
-	UPROPERTY()
-	int AI_Id;
 	
 	//------
 
@@ -189,6 +212,13 @@ public:
 	 * @return Get the AIMoves
 	 */
 	UEnemyTactics* GetTactics() const;
+
+	/**
+	 * Battle Data simple data asset used to edit buff and debuff increment values 
+	 * 
+	 * @return Battle Data
+	 */
+	UBattleData* GetBattleData() const;
 
 	/**
 	 * Debug only
@@ -214,6 +244,10 @@ public:
 	 */
 	void DisableSilhouette();
 
+	void SetIsRespawned(const bool& Value);
+	bool IsRespawned() const;
+	void ReinizializeTree();
+
 	void StartDefenceMinigame();
 	virtual void Heal(const float& RestoredHealth);
 
@@ -224,13 +258,18 @@ public:
 
 	void PlayTurn();
 
-	void PlaySecondTurn();
+	void SetIsReadyToPlay(const bool& Value);
+	bool IsAIReadyToPlay() const;
 
 	bool IsAlive();
 	
 	void EndTurn();
 	static bool MinigameEnded;
 	static FDamage Damage;
+
+	FEmotionStat& GetStats();
+
+	EMobType GetMobType() const;
 
 
 	/**
@@ -336,11 +375,6 @@ public:
 	bool GetPlayerDebuffAttack() const;
 	bool GetBuffOtherDefence() const;
 	int GetTreeId() const;
-	int GetAIId() const;
-
-	void Freeze(const bool& Value);
-	void AshamedState(const bool& Value);
-	bool IsAshamedStateOn() const;
 
 private:
 
@@ -373,11 +407,14 @@ private:
 	UPROPERTY()
 	bool bMinigameEnded = false;
 
+	/**
+	 * Is ready to play turn or not
+	 */
 	UPROPERTY()
-	bool bFreeze = false;
+	bool bIsReady = false;
 
 	UPROPERTY()
-	bool bAshamedStatus = false;
+	bool bRespawned = false;
 
 	static UICantCryGameInstance* GameRef;
 };

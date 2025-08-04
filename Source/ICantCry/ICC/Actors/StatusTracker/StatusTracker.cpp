@@ -4,6 +4,7 @@
 #include "ICantCry/ICC/Actors/ICC_Actor.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Actors/AI/Mob.h"
+#include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 
 
@@ -37,9 +38,7 @@ UStatusTracker::UStatusTracker()
 void UStatusTracker::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
-
 
 
 bool UStatusTracker::IsAfflicted() const
@@ -47,19 +46,26 @@ bool UStatusTracker::IsAfflicted() const
 	return bIsOwnerAfflicted;
 }
 
+bool UStatusTracker::IsBuffed() const
+{
+	return bIsOwnerAlreadyBuffed;
+}
+
 
 void UStatusTracker::InflictStatus(const EAfflictedStatus& Status, AICC_Actor* Target)
 {
-	if (bIsOwnerAfflicted)
+	if (bIsOwnerAfflicted || !bCanDebuff)
 	{
 		DebugHelper::LogError("A status has already been inflicted");
 		return;
 	}
-	
+
 	CurrentActiveStatus = Status;
 	StatusCounter = 0;
 	bIsOwnerAfflicted = true;
-	
+
+	DebugHelper::LogMessage(6, FColor::Black, "Inflicting a status to " + Target->GetActorLabel());
+
 	switch (Status)
 	{
 	case Freezed:
@@ -74,6 +80,37 @@ void UStatusTracker::InflictStatus(const EAfflictedStatus& Status, AICC_Actor* T
 	case ShieldDebuff:
 		InflictShieldDebuff(Target);
 		break;
+	case None:
+		break;
+	default:
+		break;
+	}
+}
+
+void UStatusTracker::BuffWith(const EBuffStatus& BuffStatus)
+{
+	if (bIsOwnerAlreadyBuffed || !bCanBuff)
+	{
+		return;
+	}
+
+	CurrentBuffedStatus = BuffStatus;
+	BuffStatusCounter = 0;
+	bIsOwnerAlreadyBuffed = true;
+
+	switch (BuffStatus)
+	{
+	case AtkBuff:
+		BuffAttack();
+		break;
+	case DefBuff:
+		BuffDefence();
+		break;
+	case LowHealth:
+		Heal();
+		break;
+	case NoBuff:
+		break;
 	default:
 		break;
 	}
@@ -82,117 +119,389 @@ void UStatusTracker::InflictStatus(const EAfflictedStatus& Status, AICC_Actor* T
 
 void UStatusTracker::UpdateStatus()
 {
-	if (!bIsOwnerAfflicted)
+	if (!bIsOwnerAfflicted || !bCanDebuff)
 	{
+		DebugHelper::LogError("No debuff status found");
 		return;
 	}
-	
+
 	StatusCounter += 1;
-	
+
 	DebugHelper::LogWarning("Status Counter " + FString::FromInt(StatusCounter));
 
 	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
 
-	if (StatusCounter >= 3)
+	if (StatusCounter < 3)
 	{
-		switch (CurrentActiveStatus)
-		{
-		case Freezed:
-			bIsOwnerAfflicted = false;
-			StatusCounter = 0;
-			if (Target->IsA(AICC_Player::StaticClass()))
-			{
-				const AICC_Player* Player = Cast<AICC_Player>(Target);
-				DebugHelper::LogWarning("Player is freezed now");
-				Player->GetBattleHUD()->FreezedUp(false);
-			}
-
-			if (Target->IsA(AMob::StaticClass()))
-			{
-				AMob* Emotion = Cast<AMob>(GetOwner());
-				DebugHelper::LogWarning(Emotion->GetData()->EnemyName.ToString() + " is freezed now");
-				Emotion->Freeze(false);
-			}
-			break;
-		case Burn:
-			bIsOwnerAfflicted = false;
-			StatusCounter = 0;
-			break;
-		case EAShame:
-			bIsOwnerAfflicted = false;
-			StatusCounter = 0;
-			if (Target->IsA(AICC_Player::StaticClass()))
-			{
-				const AICC_Player* Player = Cast<AICC_Player>(Target);
-				DebugHelper::LogWarning("Player is freezed now");
-				Player->GetBattleHUD()->Ashamed(false);
-			}
-
-			if (Target->IsA(AMob::StaticClass()))
-			{
-				AMob* Emotion = Cast<AMob>(GetOwner());
-				DebugHelper::LogWarning(Emotion->GetData()->EnemyName.ToString() + " is freezed now");
-				Emotion->AshamedState(false);
-			}
-			break;
-		case ShieldDebuff:
-			bIsOwnerAfflicted = false;
-			StatusCounter = 0;
-			break;
-		default:
-			bIsOwnerAfflicted = false;
-			StatusCounter = 0;
-			break;
-		}
+		return;
+	}
+	
+	switch (CurrentActiveStatus)
+	{
+	case Freezed:
+		bIsOwnerAfflicted = false;
+		StatusCounter = 0;
+		Target->Freeze(false);
+		break;
+	case Burn:
+		bIsOwnerAfflicted = false;
+		StatusCounter = 0;
+		Target->Burn(false);
+		bCanBuff = true;
+		break;
+	case EAShame:
+		bIsOwnerAfflicted = false;
+		StatusCounter = 0;
+		Target->Ashamed(false);
+		break;
+	case ShieldDebuff:
+		bIsOwnerAfflicted = false;
+		StatusCounter = 0;
+		Target->ShieldDebuff(false);
+		bCanDebuff = true;
+		break;
+	case DebuffAtk:
+		bIsOwnerAfflicted = false;
+		StatusCounter = 0;
+		break;
+	case DebuffDef:
+		bIsOwnerAfflicted = false;
+		StatusCounter = 0;
+		break;
+	case None:
+		bIsOwnerAfflicted = false;
+		StatusCounter = 0;
+		break;
+	default:
+		bIsOwnerAfflicted = false;
+		StatusCounter = 0;
+		break;
 	}
 }
 
-void UStatusTracker::InflictFreeze(AICC_Actor* Target)
+void UStatusTracker::UpdateBuffStatus()
 {
+	if (!bIsOwnerAlreadyBuffed || !bCanBuff)
+	{
+		DebugHelper::LogError("No buff status found");
+		return;
+	}
+
+	BuffStatusCounter += 1;
+
+	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+
+	DebugHelper::LogMessage(6, FColor::Blue,  Target->GetActorLabel() + " Buff Status counter " + FString::FromInt(BuffStatusCounter));
+
+	if (BuffStatusCounter < 3)
+	{
+		return; // I don't need to check further if counter is not 3 (3 turns elapsed)
+	}
+
+	switch (CurrentBuffedStatus)
+	{
+	case AtkBuff:
+		if (Target->IsA(AICC_Player::StaticClass()))
+		{
+			AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+			UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+			Player->GetStats()->AttackPower = Instance->GetPersistentData()->InitialAttackPower;
+			BuffStatusCounter = 0;
+			bIsOwnerAlreadyBuffed = false;
+		}
+		if (Target->IsA(AMob::StaticClass()))
+		{
+			AMob* Emotion = Cast<AMob>(GetOwner());
+			Emotion->GetData()->AttackPower = Emotion->GetAIMemory().InitialAttackPower;
+			BuffStatusCounter = 0;
+			bIsOwnerAlreadyBuffed = false;
+		}
+		break;
+	case DefBuff:
+		if (Target->IsA(AICC_Player::StaticClass()))
+		{
+			AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+			UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+			Player->GetStats()->DefencePower = Instance->GetPersistentData()->InitialDefencePower;
+			BuffStatusCounter = 0;
+			bIsOwnerAlreadyBuffed = false;
+		}
+		if (Target->IsA(AMob::StaticClass()))
+		{
+			AMob* Emotion = Cast<AMob>(GetOwner());
+			Emotion->GetData()->DefencePower = Emotion->GetAIMemory().InitialDefencePower;
+			BuffStatusCounter = 0;
+			bIsOwnerAlreadyBuffed = false;
+		}
+		break;
+	case LowHealth:
+		BuffStatusCounter = 0;
+		bIsOwnerAlreadyBuffed = false;
+		break;
+	case NoBuff:
+		BuffStatusCounter = 0;
+		bIsOwnerAlreadyBuffed = false;
+		break;
+	default:
+		break;
+	}
+}
+
+void UStatusTracker::UnfreezeChance()
+{
+	const float AleatoryChance = FMath::FRand();
+	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+
+	DebugHelper::LogWarning("Attempting to auto freeze");
+
+	if (constexpr float ChanceToFreeze = 0.25f; AleatoryChance <= ChanceToFreeze)
+	{
+		Target->Freeze(false);
+		bIsOwnerAfflicted = false;
+		CurrentActiveStatus = None;
+		StatusCounter = 0;
+	}
+}
+
+FString UStatusTracker::GetStatusName(const EAfflictedStatus& Status) const
+{
+	switch (Status)
+	{
+	case Freezed:
+		return "Freezed";
+	case Burn:
+		return "Envy Burned";
+	case EAShame:
+		return "Ashamed";
+	case ShieldDebuff:
+		return "DebuffShield";
+	case DebuffAtk:
+		return "Debuff Atk";
+	case DebuffDef:
+		return "Debuff Def";
+	case None:
+		return "None";
+	default:
+		return "";
+	}
+}
+
+FString UStatusTracker::GetBuffName(const EBuffStatus& Buff) const
+{
+	switch (Buff)
+	{
+	case AtkBuff:
+		return "Atk Buff";
+	case DefBuff:
+		return "Def Buff";
+	case LowHealth:
+		return "Low Health";
+	case NoBuff:
+		return "No Buff";
+	default:
+		return "";
+	}
+}
+
+void UStatusTracker::BuffFlow(const EBuffStatus& NewBuffStatus)
+{
+	if (!bIsOwnerAlreadyBuffed)
+	{
+		return;
+	}
+	
+	BuffWith(NewBuffStatus);
+	DebugHelper::LogMessage(7, FColor::Orange, "Old buff " + GetBuffName(CurrentBuffedStatus) + "Removed " + "New buff assigned " + GetBuffName(NewBuffStatus));
+	CurrentBuffedStatus = NewBuffStatus;
+}
+
+void UStatusTracker::MalusFlow()
+{
+	if (!bIsOwnerAfflicted || CurrentActiveStatus == EAfflictedStatus::None)
+	{
+		return;
+	}
+
+	DebugHelper::LogMessage(9, FColor::Green, "Malus flow called");
+	
+	RevertInflictedMalus();
+}
+
+void UStatusTracker::BuffAttack()
+{
+	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
 
 	if (Target->IsA(AICC_Player::StaticClass()))
 	{
-		const AICC_Player* Player = Cast<AICC_Player>(Target);
-		DebugHelper::LogWarning("Player is freezed now");
-		Player->GetBattleHUD()->FreezedUp(true);
+		AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+		Player->GetStats()->AttackPower += FMath::FloorToInt(
+			Player->GetStats()->AttackPower * Player->GetBattleData()->BuffAtkIncrement);
+		DebugHelper::LogWarning("Attack buffed " + FString::SanitizeFloat(Player->GetStats()->AttackPower));
 	}
 
 	if (Target->IsA(AMob::StaticClass()))
 	{
-		AMob* Emotion = Cast<AMob>(Target);
-		checkf(Emotion, TEXT("Emotion is invalid at InflictFreeze status tracker"))
-		DebugHelper::LogWarning(Emotion->GetData()->EnemyName.ToString() + " is freezed now");
-		Emotion->Freeze(true);
+		AMob* Mob = Cast<AMob>(GetOwner());
+		Mob->GetTactics()->MovePower = FMath::FloorToInt(
+			Mob->GetTactics()->MovePower * Mob->GetBattleData()->EmotionAtkBuffIncrement);
 	}
+}
+
+void UStatusTracker::BuffDefence()
+{
+	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+
+	if (Target->IsA(AICC_Player::StaticClass()))
+	{
+		AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+		Player->GetStats()->DefencePower += FMath::FloorToInt(
+			Player->GetStats()->DefencePower * Player->GetBattleData()->BuffDefIncrement);
+		DebugHelper::LogWarning("Defence buffed " + FString::SanitizeFloat(Player->GetStats()->AttackPower));
+	}
+
+	if (Target->IsA(AMob::StaticClass()))
+	{
+		AMob* Mob = Cast<AMob>(GetOwner());
+		Mob->GetData()->DefencePower = FMath::FloorToInt(
+			Mob->GetData()->DefencePower * Mob->GetBattleData()->EmotionDefBuffIncrement);
+	}
+}
+
+void UStatusTracker::Heal()
+{
+	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+
+	if (Target->IsA(AICC_Player::StaticClass()))
+	{
+		AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+		Player->GetBattleHUD()->RestoreHealth();
+		bIsOwnerAlreadyBuffed = false;
+	}
+
+	if (Target->IsA(AMob::StaticClass()))
+	{
+		AMob* Mob = Cast<AMob>(GetOwner());
+		Mob->GetHealthBar()->Restore(Mob->GetData()->AttackPower); // maybe add a RestorePower?
+		bIsOwnerAlreadyBuffed = false;
+	}
+}
+
+void UStatusTracker::DebuffAtkF()
+{
+	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+
+	if (Target->IsA(AICC_Player::StaticClass()))
+	{
+		AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+		Player->GetStats()->AttackPower -= Player->GetStats()->AttackPower * Player->GetBattleData()->DebuffAtkMalus;
+	}
+
+	if (Target->IsA(AMob::StaticClass()))
+	{
+		AMob* Mob = Cast<AMob>(GetOwner());
+		Mob->GetData()->AttackPower -= Mob->GetData()->AttackPower * Mob->GetBattleData()->EmotionAtkDebuffMalus;
+	}
+}
+
+void UStatusTracker::DebuffDefF()
+{
+	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+
+	if (Target->IsA(AICC_Player::StaticClass()))
+	{
+		AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+		Player->GetStats()->DefencePower -= Player->GetStats()->DefencePower * Player->GetBattleData()->DebuffDefMalus;
+	}
+
+	if (Target->IsA(AMob::StaticClass()))
+	{
+		AMob* Mob = Cast<AMob>(GetOwner());
+		Mob->GetData()->DefencePower -= Mob->GetData()->DefencePower * Mob->GetBattleData()->EmotionDefDebuffMalus;
+	}
+}
+
+void UStatusTracker::RevertInflictedMalus()
+{
+	if (!bIsOwnerAlreadyBuffed)
+	{
+		return;
+	}
+
+	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+	
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+	
+	switch (CurrentBuffedStatus)
+	{
+	case AtkBuff:
+		if (Target->IsA(AICC_Player::StaticClass()))
+		{
+			AICC_Player* Player = Cast<AICC_Player>(Target);
+			checkf(Player, TEXT("Player invalid at revert inflicted malus atkbuff"))
+			Player->GetStats()->AttackPower = Instance->GetPersistentData()->InitialAttackPower;
+		}
+		if (Target->IsA(AMob::StaticClass()))
+		{
+			AMob* Emotion = Cast<AMob>(Target);
+			checkf(Emotion, TEXT("Emotion invalid at revert inflicted malus atkbuff"))
+			Emotion->GetData()->AttackPower = Emotion->GetAIMemory().InitialAttackPower;
+		}
+		break;
+	case DefBuff:
+		if (Target->IsA(AICC_Player::StaticClass()))
+		{
+			AICC_Player* Player = Cast<AICC_Player>(Target);
+			checkf(Player, TEXT("Player invalid at revert inflicted malus defbuff"))
+			Player->GetStats()->DefencePower = Instance->GetPersistentData()->InitialDefencePower;
+		}
+		if (Target->IsA(AMob::StaticClass()))
+		{
+			AMob* Emotion = Cast<AMob>(Target);
+			checkf(Emotion, TEXT("Emotion invalid at revert inflicted malus defbuff"))
+			Emotion->GetData()->DefencePower = Emotion->GetAIMemory().InitialDefencePower;
+		}
+		break;
+	case LowHealth:
+		break;
+	case NoBuff:
+		break;
+	default:
+		break;
+	}
+	
+	BuffStatusCounter = 0;
+	bIsOwnerAlreadyBuffed = false;
+	CurrentBuffedStatus = EBuffStatus::NoBuff;
+	DebugHelper::LogMessage(8, FColor::Orange, "Current buff " + GetBuffName(CurrentBuffedStatus) + " is now removed");
+}
+
+void UStatusTracker::InflictFreeze(AICC_Actor* Target)
+{
+	bIsOwnerAfflicted = true;
+	Target->Freeze(true);
 }
 
 void UStatusTracker::InflictBurn(AICC_Actor* Target)
 {
 	// no buff for the next 3 actions for both AI and player
+	bIsOwnerAfflicted = true;
+	Target->Burn(true);
+	bCanBuff = false;
+	DebugHelper::LogWarning(Target->GetActorLabel() + " in envy burned state\nCan buff " + FString::FromInt(bCanBuff));
 }
 
 void UStatusTracker::InflictShieldDebuff(AICC_Actor* Target)
 {
 	// For 3 debuffs received by the enemy (player) /  Enemies turns (enemy), the target cannot be de-buffed
+	bIsOwnerAfflicted = true;
+	Target->ShieldDebuff(true);
+	bCanDebuff = false;
 }
 
 void UStatusTracker::InflictAShamed(AICC_Actor* Target)
 {
-	// both player and AI can't target for attack
-
-	if (Target->IsA(AICC_Player::StaticClass()))
-	{
-		const AICC_Player* Player = Cast<AICC_Player>(Target);
-		DebugHelper::LogWarning("Player is freezed now");
-		Player->GetBattleHUD()->Ashamed(true);
-	}
-
-	if (Target->IsA(AMob::StaticClass()))
-	{
-		AMob* Emotion = Cast<AMob>(Target);
-		checkf(Emotion, TEXT("Emotion is invalid at inflict ashamed status tracker"))
-		DebugHelper::LogWarning(Emotion->GetData()->EnemyName.ToString() + " is freezed now");
-		Emotion->AshamedState(true);
-	}
+	// AI can't target for attack
+	bIsOwnerAfflicted = true;
+	Target->Ashamed(true);
+	DebugHelper::LogMessage(5, FColor::FromHex("FE7743"), Target->GetActorLabel() + " can't perform attack");
 }
-

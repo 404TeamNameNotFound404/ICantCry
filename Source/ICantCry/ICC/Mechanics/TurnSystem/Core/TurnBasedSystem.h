@@ -3,6 +3,9 @@
 #include "UObject/Object.h"
 #include "../Turn/Turn.h"
 #include "../../../Managers/EnemySpawnManager.h"
+#include "ICantCry/ICC/Mechanics/TurnSystem/BattleMemory/FBattleMemory.h"
+#include "ICantCry/ICC/Mechanics/UI/BattleVisualization/Victory/VictoryVisualizer.h"
+#include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "TurnBasedSystem.generated.h"
 
 class AICC_Player;
@@ -20,10 +23,11 @@ public:
 	UTurnBasedSystem();
 	
 	void Start(UWorld* World);
+	void Start2(UWorld* World, FBattleMemory* Memory = nullptr);
 	void Update(UWorld* World);
 	void StartNextTurn();
 	void EndTurn();
-	FTurn GetTurn() const;
+	FTurn& GetTurn();
 
 	bool GetIsPlayerTurn() const;
 	bool GetIsAITurn() const;
@@ -33,11 +37,16 @@ public:
 	void RequestFight(const bool &Request);
 	void SetAIPlaying(const bool &Play);
 
+	TArray<AICC_Actor*> GetCopyQueue() const;
+
+	void SpawnBattleVictory(UWorld* World);
+
 	/**
 	 * --------- WIP FUNCTIONS -----------
 	 */
 
 	void ExitBattle();
+	void Reload();
 	
 	/**
      * --------- WIP FUNCTIONS -----------
@@ -88,4 +97,16 @@ private:
 
 	UPROPERTY()
 	bool bInit = false;
+
+	UPROPERTY()
+	bool bVictory = false;
+
+	UPROPERTY()
+	TArray<AICC_Actor*> CopyQueue;
+
+	UPROPERTY()
+	UVictoryVisualizer* VictoryVisualizer;
+
+	UPROPERTY()
+	UICantCryGameInstance* Instance;
 };

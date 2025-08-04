@@ -13,6 +13,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "ICantCry/ICC/Actors/Player/Camera/WorldCamera.h"
 #include "ICantCry/ICC/Managers/InventoryManager.h"
+#include "ICantCry/ICC/Mechanics/Core/Data/BattleData.h"
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameUserWidget.h"
 #include "ICantCry/ICC/UI/InGameMenu.h"
@@ -70,6 +71,12 @@ public:
 	UMinigameUserWidget* GetCurrentMinigameDisplayed() const;
 	AMinigameHandler* GetMinigameHandler() const;
 	UPlayerStats* GetStats() const;
+	/**
+ * Battle Data simple data asset used to edit buff and debuff increment values 
+ * 
+ * @return Battle Data
+ */
+	UBattleData* GetBattleData() const;
 
 	const FInventory GetPlayerInventory() const;
 	void SetPlayerInventory(const FInventory& Inventory);
@@ -143,6 +150,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Data", meta = (AllowPrivateAccess = "true"))
 	UPlayerStats* Stats;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Data", meta = (AllowPrivateAccess = "true"))
+	UBattleData* BattleData;
 
 	UPROPERTY()
 	AMinigameHandler* MinigameHandler;

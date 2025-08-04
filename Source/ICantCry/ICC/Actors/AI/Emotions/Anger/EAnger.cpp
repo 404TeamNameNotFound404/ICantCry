@@ -9,6 +9,7 @@ AEAnger::AEAnger()
 {
 	bIsHealer = false;
 	bEAnger = true;
+	Type = EMobType::MobAnger;
 }
 
 // Called when the game starts or when spawned

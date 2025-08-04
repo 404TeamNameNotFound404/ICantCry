@@ -16,7 +16,7 @@ void UAttackMinigame::MoveSlider(const FVector2D& Position)
 {
 	checkf(Slider, TEXT("Slider in UDefenceMinigame::MoveSlider is null"));
 	StartingSliderPosition = Slider->GetRenderTransform().Translation;
-	
+
 	FVector2D CurrentPosition = Slider->GetRenderTransform().Translation;
 	CurrentPosition.Y = 0;
 	FVector2D DeltaMove = Position * Speed * GetWorld()->GetDeltaSeconds() * MovementDirection;
@@ -25,50 +25,49 @@ void UAttackMinigame::MoveSlider(const FVector2D& Position)
 	if (NewPosition.X > BorderRight)
 	{
 		NewPosition.X = BorderRight;
-		MovementDirection *= -1; 
+		MovementDirection *= -1;
 	}
 	else if (NewPosition.X < BorderLeft)
 	{
 		NewPosition.X = BorderLeft;
 		MovementDirection *= -1;
 	}
-	
+
 	NewPosition.Y = 0;
 	Slider->SetRenderTranslation(NewPosition);
 }
 
 EMinigameThreshold UAttackMinigame::CheckBar()
 {
-    const FVector2D CurrentPosition = Slider->GetCachedGeometry().GetAbsolutePosition();
-    
-    const float X = CurrentPosition.X;
-    
-    const float LeftDangerX = DangerBorderLeft->GetCachedGeometry().GetAbsolutePosition().X;
-    const float LeftSafeX = SafeAreaLeft->GetCachedGeometry().GetAbsolutePosition().X;
-    const float PerfectLeftX = PerfectAreaLeft->GetCachedGeometry().GetAbsolutePosition().X;
-    const float PerfectRightX = PerfectAreaRight->GetCachedGeometry().GetAbsolutePosition().X;
-    const float RightSafeX = SafeAreaRight->GetCachedGeometry().GetAbsolutePosition().X;
-    const float RightDangerX = DangerBorderRight->GetCachedGeometry().GetAbsolutePosition().X;
-	
-	
-    if (X >= PerfectLeftX && X <= PerfectRightX)
-    {
-        return EMinigameThreshold::Perfect;
-    }
-	
-    if ((X >= LeftSafeX && X < PerfectLeftX) || (X > PerfectRightX && X <= RightSafeX))
-    {
-        return EMinigameThreshold::Good;
-    }
-	
-    if ((X >= LeftDangerX && X < LeftSafeX) || (X > RightSafeX && X <= RightDangerX))
-    {
-        return EMinigameThreshold::Bad;
-    }
-	
-    return EMinigameThreshold::Miss;
-}
+	const FVector2D CurrentPosition = Slider->GetCachedGeometry().GetAbsolutePosition();
 
+	const float X = CurrentPosition.X;
+
+	const float LeftDangerX = DangerBorderLeft->GetCachedGeometry().GetAbsolutePosition().X;
+	const float LeftSafeX = SafeAreaLeft->GetCachedGeometry().GetAbsolutePosition().X;
+	const float PerfectLeftX = PerfectAreaLeft->GetCachedGeometry().GetAbsolutePosition().X;
+	const float PerfectRightX = PerfectAreaRight->GetCachedGeometry().GetAbsolutePosition().X;
+	const float RightSafeX = SafeAreaRight->GetCachedGeometry().GetAbsolutePosition().X;
+	const float RightDangerX = DangerBorderRight->GetCachedGeometry().GetAbsolutePosition().X;
+
+
+	if (X >= PerfectLeftX && X <= PerfectRightX)
+	{
+		return EMinigameThreshold::Perfect;
+	}
+
+	if ((X >= LeftSafeX && X < PerfectLeftX) || (X > PerfectRightX && X <= RightSafeX))
+	{
+		return EMinigameThreshold::Good;
+	}
+
+	if ((X >= LeftDangerX && X < LeftSafeX) || (X > RightSafeX && X <= RightDangerX))
+	{
+		return EMinigameThreshold::Bad;
+	}
+
+	return EMinigameThreshold::Miss;
+}
 
 
 void UAttackMinigame::HandleScore()
@@ -78,29 +77,60 @@ void UAttackMinigame::HandleScore()
 
 	switch (Result)
 	{
-		case EMinigameThreshold::Bad:
-			DebugHelper::LogError("Bad minigame score!");
-		    Instance->GetPlayerStats()->MinigameModifier = 0.5f;
-		    //Instance->GetCurrentDamageData().CalculateDamage(true);
-		    Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
-			break;
-		case EMinigameThreshold::Good:
-			DebugHelper::LogWarning("Good minigame score!");
-		    Instance->GetPlayerStats()->MinigameModifier = 1.0f;
-		    //Instance->GetCurrentDamageData().CalculateDamage(true);
-		    Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
-			break;
-		case EMinigameThreshold::Perfect:
-			DebugHelper::LogSuccess("Perfect minigame score!");
-		    Instance->GetPlayerStats()->MinigameModifier = 1.5f;
-		    //Instance->GetCurrentDamageData().CalculateDamage(true);
-		    Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
-			break;
-		default:
-			DebugHelper::LogMessage(3, FColor::FromHex("ADB2D4"),"Unknown minigame score!");
-		    Instance->GetPlayerStats()->MinigameModifier = 0.5f;
-		    //Instance->GetCurrentDamageData().CalculateDamage(true);
-		    Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
-			break;
+	case EMinigameThreshold::Bad:
+		DebugHelper::LogError("Bad minigame score!");
+		Instance->GetPlayerStats()->MinigameModifier = 0.5f;
+		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
+		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+
+		if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->Type == EBulletType::Shame)
+		{
+			Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
+				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
+		}
+		break;
+	case EMinigameThreshold::Good:
+		DebugHelper::LogWarning("Good minigame score!");
+		Instance->GetPlayerStats()->MinigameModifier = 1.0f;
+		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
+		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+		if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->Type == EBulletType::Shame)
+		{
+			// Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion()->GetStatusTracker()->InflictStatus(
+			// 	EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion());
+			Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
+				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
+		}
+		break;
+	case EMinigameThreshold::Perfect:
+		DebugHelper::LogSuccess("Perfect minigame score!");
+		Instance->GetPlayerStats()->MinigameModifier = 1.5f;
+		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
+		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+		if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->Type == EBulletType::Shame)
+		{
+			// Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion()->GetStatusTracker()->InflictStatus(
+			// 	EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion());
+			Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
+				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
+		}
+		break;
+	default:
+		DebugHelper::LogMessage(3, FColor::FromHex("ADB2D4"), "Unknown minigame score!");
+		Instance->GetPlayerStats()->MinigameModifier = 0.5f;
+		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
+		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+		if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->Type == EBulletType::Shame)
+		{
+			// Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion()->GetStatusTracker()->InflictStatus(
+			// 	EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion());
+			Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
+				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
+		}
+		break;
 	}
 }

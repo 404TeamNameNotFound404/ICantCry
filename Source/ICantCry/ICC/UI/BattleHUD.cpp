@@ -5,6 +5,7 @@
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
 #include "EngineUtils.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
+#include "ICantCry/ICC/Mechanics/UI/BattleVisualization/GameOver/GameOverVisualizer.h"
 
 void UBattleHUD::NativeConstruct()
 {
@@ -74,7 +75,11 @@ void UBattleHUD::NativeConstruct()
         PistolMagazine_6
     };
 
-    DebugHelper::LogError("Revolver size " + FString::FromInt(RevolverSlots.Num()));
+    ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+    ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+
+    ApIncreaseOnShoot->OnClicked.AddDynamic(this, &UBattleHUD::IncreaseShootPower);
+    ApDecreaseOnShoot->OnClicked.AddDynamic(this, &UBattleHUD::DecreaseShootPower);
 
     // init all hidden slots before showing
     for (URevolverSlot* RevolverSlot : RevolverSlots)
@@ -185,14 +190,15 @@ void UBattleHUD::UpdateAPBar()
 
 void UBattleHUD::OnShootPressed()
 {
-    if (!GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn() || CurrentAP <= 0 || bAshamed)
+    if (!GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn() || CurrentAP <= 0)
     {
         return;
     }
 
-    if (bFreeze)
+    if (GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->IsFreezed())
     {
         DecreaseAP(1);
+        BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UnfreezeChance();
         return;
     }
 
@@ -208,6 +214,9 @@ void UBattleHUD::OnShootPressed()
     DecreaseAP(1);
     bTargetSelection = true;
     DebugHelper::LogSuccess("Shoot pressed");
+
+    ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Visible);
+    ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Visible);
 }
 
 void UBattleHUD::OnShootBoostPressed()
@@ -222,7 +231,7 @@ void UBattleHUD::OnFocusPressed()
         return;
     }
 
-    if (bFreeze)
+    if (GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->IsFreezed())
     {
         IncreaseAP(1);
         return;
@@ -231,9 +240,13 @@ void UBattleHUD::OnFocusPressed()
     DebugHelper::LogWarning("attack and defense increased!");
     IncreaseAP(1);
     BattleHandler->GetTurnBasedSystem()->EndTurn();
+    GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateStatus();
+    GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateBuffStatus();
     BattleHandler->GetTurnBasedSystem()->StartNextTurn();
     DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
     BattleHandler->GetTurnBasedSystem()->SetTurnOverlayApplied(false);
+    Displayer->SetVisibility(ESlateVisibility::Hidden);
+    CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
     bTargetSelection = false;
 }
 
@@ -244,7 +257,7 @@ void UBattleHUD::OnReloadPressed()
         return;
     }
 
-    if (bFreeze)
+    if (GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->IsFreezed())
     {
         DecreaseAP(1);
         return;
@@ -255,7 +268,6 @@ void UBattleHUD::OnReloadPressed()
     bBulletSetupFinished = false;
     bShootFired = false;
     bTargetSelection = false;
-    IncreaseAP(1);
     CanvasAmmoSelection->SetVisibility(ESlateVisibility::Visible);
     TargetText->SetVisibility(ESlateVisibility::Hidden);
     TargetNameText->SetVisibility(ESlateVisibility::Hidden);
@@ -272,7 +284,9 @@ void UBattleHUD::OnPassPressed()
         DebugHelper::LogError("You can't pass it's not player turn");
         return;
     }
-    
+
+    Displayer->SetVisibility(ESlateVisibility::Hidden);
+    CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
     IncreaseAP(1);
     DebugHelper::LogSuccess("Player passed the turn");
     BattleHandler->GetTurnBasedSystem()->EndTurn();
@@ -282,6 +296,9 @@ void UBattleHUD::OnPassPressed()
     DebugHelper::RemoveOverlayMaterialFromStaticMesh(BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
     bTargetSelection = false;
     BattleHandler->GetBattleInfo()->ClearInfo();
+    GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateStatus();
+    GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateBuffStatus();
+    Displayer->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UBattleHUD::ScrollTargetSelection(float ScrollValue)
@@ -321,18 +338,41 @@ void UBattleHUD::UpdateTarget()
         AICC_Actor* TargetEnemy = BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex];
         static AMob* PreviousTargetEnemy = nullptr; 
         static bool bOverlayMaterialApplied = false;
+
+        if (GetCircularBulletBuffer()->IsEmpty())
+        {
+            return;
+        }
         
-        if (TargetEnemy->IsA(AICC_Player::StaticClass())) // if TargetEnemy is Player just skip it , we don't need to target ourselves right? and we all the info will be hidden for now 
+        CurrentBulletData = GetCircularBulletBuffer()->PeekAt(GetCircularBulletBuffer()->GetTailIndex());
+        
+        if (TargetEnemy->IsA(AICC_Player::StaticClass()) && CurrentBulletData->Type != FearEV && CurrentBulletData->Type != AngerEV &&
+            CurrentBulletData->Type != JoyEv)
         {
             HideInfo();
             return;
         }
+
+        if (TargetEnemy->IsA(AMob::StaticClass()) && 
+            (CurrentBulletData->Type == FearEV || 
+             CurrentBulletData->Type == AngerEV || 
+             CurrentBulletData->Type == JoyEv))
+        {
+            HideInfo();
+            return;
+        }
+
         
         AMob* Current = Cast<AMob>(TargetEnemy);
-       
+
+        if (!Current)
+        {
+            return;
+        }
+        
         if (PreviousTargetEnemy && PreviousTargetEnemy != Current)
         {
-            DebugHelper::RemoveOverlayMaterialFromStaticMesh(PreviousTargetEnemy->StaticMesh);
+            //DebugHelper::RemoveOverlayMaterialFromStaticMesh(PreviousTargetEnemy->StaticMesh);
             
             bOverlayMaterialApplied = false;
         }
@@ -434,6 +474,64 @@ void UBattleHUD::UpdateRevolverUI()
             RevolverSlots[i]->SetFilled(true, Bullet->Icon);
         }
     }
+}
+
+void UBattleHUD::IncreaseShootPower()
+{
+    if (CurrentAP <= 0)
+    {
+        return;
+    }
+
+    int32 Boost = CurrentAP - 1;
+    ApPowerBoost++;
+    DecreaseAP(1);
+    GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStats()->ApModifier = 1.0f + (Boost * 0.5f);
+    DebugHelper::LogSuccess("Shoot is boosted ap modifier now is " + FString::SanitizeFloat( GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStats()->ApModifier ));
+}
+
+void UBattleHUD::DecreaseShootPower()
+{
+    if (CurrentAP >= 4 || ApPowerBoost <= 0)
+    {
+        return;
+    }
+
+    ApPowerBoost--;
+
+    IncreaseAP(1);
+}
+
+void UBattleHUD::PrepareToEngage()
+{
+    UICantCryGameInstance* PersistentInstance = Cast<UICantCryGameInstance>(GetGameInstance());
+    checkf(PersistentInstance, TEXT("Instance is null at void UBattleHUD::UpdateTarget()"));
+    AMob* SelectedEnemy7= Cast<AMob>(BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex]);
+    checkf(SelectedEnemy7, TEXT("SelectedEnemy is null at UBattleHUD::Engage"));
+    SelectedActorTarget = SelectedEnemy7;
+    SelectedActorTarget = SelectedEnemy7;
+    Damage.BulletData = CurrentBulletData; 
+    Damage.EnemyData = Cast<AMob>(SelectedActorTarget)->GetData();
+    Damage.AIMoves =  Cast<AMob>(SelectedActorTarget)->GetTactics();
+    Damage.PlayerStats = PersistentInstance->GetPlayerStats();
+    checkf(Damage.PlayerStats, TEXT("Stats null"));
+    PersistentInstance->SetDamageData(Damage);
+    DebugHelper::LogMessage(3, FColor::White, "Targeting " + SelectedEnemy7->GetActorLabel());
+    checkf(MinigameHandler, TEXT("Minigame handler is null at UBattleHUD::Engage"));
+    MinigameHandler->StartMinigame(true);
+    EngageBtn->SetVisibility(ESlateVisibility::Hidden);
+    CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void UBattleHUD::SpawnVisualizer()
+{
+    TSubclassOf<UVictoryVisualizer> VictoryVisualizerClass = LoadClass<UVictoryVisualizer>(this,TEXT("/Game/ICC/BluePrints/UI/Battle/BP_Victory.BP_Victory_C"));
+    checkf(VictoryVisualizerClass, TEXT("VictoryVisualizerClass path invalid"))
+    VictoryVisualizer = CreateWidget<UVictoryVisualizer>(GetWorld(), VictoryVisualizerClass);
+    checkf(VictoryVisualizer, TEXT("Invalid victory visualizer"))
+    VictoryVisualizer->Setup(GetBattleHandler()->GetTurnBasedSystem()->GetTurn().Queue);
+    VisualizerSlot->AddChild(VictoryVisualizer);
+    VictoryVisualizer->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UBattleHUD::SetSelectedBullet(int32 Index)
@@ -551,7 +649,7 @@ void UBattleHUD::ScrollBulletSelection(float ScrollValue)
     if (Displayer && Displayer->GetBullets().IsValidIndex(NewIndex))
     {
         CurrentSelectedBullet = Displayer->GetBullets()[NewIndex];
-        DebugHelper::LogSuccess("Scrolling " + CurrentSelectedBullet->GetBullet().GetBulletData()->BulletName);
+        DebugHelper::LogSuccess("Scrolling " + CurrentSelectedBullet->GetBulletPtr()->GetBulletData()->BulletName);
 
         CurrentSelectedBullet->DisplayBulletInfo();
         
@@ -589,22 +687,91 @@ void UBattleHUD::Engage()
 
     UICantCryGameInstance* PersistentInstance = Cast<UICantCryGameInstance>(GetGameInstance());
     checkf(PersistentInstance, TEXT("Instance is null at void UBattleHUD::UpdateTarget()"));
-    AMob* SelectedEnemy = Cast<AMob>(BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex]);
-    SelectedTarget = SelectedEnemy;
-    checkf(SelectedEnemy, TEXT("SelectedEnemy is null at UBattleHUD::Engage"));
-    CurrentBulletData = GetCircularBulletBuffer()->PeekAt(GetCircularBulletBuffer()->GetTailIndex()); // this will take the first bullet avaiable
+   
+    CurrentBulletData = GetCircularBulletBuffer()->PeekAt(GetCircularBulletBuffer()->GetTailIndex()); // this will take the first avaiable bullet
     checkf(CurrentBulletData, TEXT("Assigned CurrentBulletData invalid"))
-    Damage.BulletData = CurrentBulletData; 
-    Damage.EnemyData = SelectedEnemy->GetData();
-    Damage.AIMoves = SelectedEnemy->GetTactics();
-    Damage.PlayerStats = PersistentInstance->GetPlayerStats();
-    checkf(Damage.PlayerStats, TEXT("Stats null"));
-    PersistentInstance->SetDamageData(Damage);
-    DebugHelper::LogMessage(3, FColor::White, "Targeting " + SelectedEnemy->GetActorLabel());
-    checkf(MinigameHandler, TEXT("Minigame handler is null at UBattleHUD::Engage"));
-    MinigameHandler->StartMinigame(true);
-    EngageBtn->SetVisibility(ESlateVisibility::Hidden);
-    CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
+    
+    switch (CurrentBulletData->Type)
+    {
+    case Indifference:
+        {
+            PrepareToEngage();
+        }
+        break;
+    case AngerDv:
+        {
+            PrepareToEngage();
+            break;
+        }
+    case AngerEV:
+        PersistentInstance->GetCurrentPlayer()->GetStatusTracker()->BuffWith(EBuffStatus::AtkBuff);
+        EngageBtn->SetVisibility(ESlateVisibility::Hidden);
+        CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
+        GetBulletDisplayer()->RemoveBullet();
+        break;
+    case FearDv:
+        {
+            PrepareToEngage();
+            break;
+        }
+    case FearEV:
+        EngageBtn->SetVisibility(ESlateVisibility::Hidden);
+        CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
+        break;
+    case Disgust:
+        {
+            PrepareToEngage();
+            break;
+        }
+    case Sadness:
+        {
+            PrepareToEngage();
+            break;
+        }
+    case JoyDv:
+        {
+            PrepareToEngage();
+            break;
+        }
+    case JoyEv:
+        PersistentInstance->GetCurrentPlayer()->GetStatusTracker()->BuffWith(EBuffStatus::LowHealth);
+        EngageBtn->SetVisibility(ESlateVisibility::Hidden);
+        CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
+        GetBulletDisplayer()->RemoveBullet();
+        break;
+    case Anxiety:
+        {
+            PrepareToEngage();
+            break;
+        }
+    case CalmDv:
+        {
+            PrepareToEngage();
+            break; 
+        }
+    case CalmEV:
+        {
+            break;
+        }
+    case JealousyDv:
+        {
+            PrepareToEngage();
+            break;
+        }
+
+    case JealousyEV:
+        {
+            break;
+        }
+    case Shame:
+        {
+            PrepareToEngage();
+            GetSelectedActor()->GetStatusTracker()->InflictStatus(EAfflictedStatus::EAShame, Cast<AMob>(GetSelectedActor()));
+            break;
+        }
+    default:
+        break;
+    }
 }
 
 AMob* UBattleHUD::GetCurrentPlayingEmotion() const
@@ -617,10 +784,73 @@ AMob* UBattleHUD::GetSelectedEmotion() const
     return SelectedTarget;
 }
 
+AICC_Actor* UBattleHUD::GetSelectedActor() const
+{
+    return SelectedActorTarget;
+}
+
 void UBattleHUD::SetCurrentPlayingEmotion(AMob* Current)
 {
     CurrentActiveAI = Current;
     CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
+}
+
+UBulletData* UBattleHUD::GetCurrentBulletData() const
+{
+    return CurrentBulletData;
+}
+
+void UBattleHUD::RestoreHealth()
+{
+    AICC_Player* Player = GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer();
+
+    if (!CurrentBulletData || CurrentBulletData->Type != EBulletType::JoyEv)
+    {
+        return;
+    }
+    
+    Player->GetStats()->CurrentHealth += CurrentBulletData->Power;
+    const float Percentage =  Player->GetStats()->CurrentHealth / Player->GetStats()->MaxHealth;
+    PlayerHealth->SetPercent(Percentage);
+    DebugHelper::LogWarning("Healed " + FString::SanitizeFloat(Percentage));
+}
+
+void UBattleHUD::ResetHealth()
+{
+    AICC_Player* Player = GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer();
+    Player->GetStats()->CurrentHealth = Player->GetStats()->MaxHealth;
+    const float Percentage =  Player->GetStats()->CurrentHealth / Player->GetStats()->MaxHealth;
+    PlayerHealth->SetPercent(Percentage);
+}
+
+void UBattleHUD::DisplayVictoryVisualizer()
+{
+    VictoryVisualizer->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UBattleHUD::SpawnGameOverVisualizer()
+{
+    TSubclassOf<UGameOverVisualizer> GameOverVisualizerClass = LoadClass<UGameOverVisualizer>(this,TEXT("/Game/ICC/BluePrints/UI/Battle/WBP_GameOver.WBP_GameOver_C"));
+    checkf(GameOverVisualizerClass, TEXT("GameOverVisualizerClass path invalid"))
+    GameOverVisualizer = CreateWidget<UGameOverVisualizer>(GetWorld(), GameOverVisualizerClass);
+    checkf(GameOverVisualizer, TEXT("Invalid GameOverVisualizer"))
+    VisualizerGameOverSlot->AddChild(GameOverVisualizer);
+    GameOverVisualizer->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void UBattleHUD::DisplayGameOverVisualizer()
+{
+    GameOverVisualizer->SetVisibility(ESlateVisibility::Visible);
+}
+
+UVictoryVisualizer* UBattleHUD::GetVictoryVisualizer() const
+{
+    return VictoryVisualizer;
+}
+
+void UBattleHUD::SetBulletSetupFinished(const bool& Value)
+{
+    bBulletSetupFinished = Value;
 }
 
 void UBattleHUD::ShowHUD() 
@@ -691,14 +921,4 @@ ABattleHandler* UBattleHUD::GetBattleHandler() const
 UCircularBulletBuffer* UBattleHUD::GetCircularBulletBuffer() const
 {
     return RevolverBuffer;
-}
-
-void UBattleHUD::FreezedUp(const bool& Enable)
-{
-    bFreeze = Enable;
-}
-
-void UBattleHUD::Ashamed(const bool& Enable)
-{
-    bAshamed = Enable;
 }

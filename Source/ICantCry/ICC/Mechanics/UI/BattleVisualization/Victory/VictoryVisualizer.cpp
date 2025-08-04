@@ -1,0 +1,124 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "VictoryVisualizer.h"
+#include "ICantCry/ICC/Actors/Player/ICC_Player.h"
+#include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
+
+void UVictoryVisualizer::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	BackToWorld->OnClicked.AddDynamic(this, &UVictoryVisualizer::ReturnToWorld);
+
+	DropSystem = NewObject<UDropSystem>();
+	checkf(DropSystem, TEXT("Drop system appears to be null"))
+
+	EssenceDrop0->SetText(FText::FromString(""));
+	EssenceDrop1->SetText(FText::FromString(""));
+	EssenceDrop2->SetText(FText::FromString(""));
+	EssenceDrop3->SetText(FText::FromString(""));
+}
+
+void UVictoryVisualizer::Setup(const TArray<AICC_Actor*>& Queue)
+{
+	EmotionsSlayed = {Em0, Em1, Em2};
+	
+	if (Queue.IsEmpty())
+	{
+		DebugHelper::LogMessage(10, FColor::Red, "Queue empty");
+		return;
+	}
+
+	int32 TextIndex = 0;
+	
+
+	for (const AICC_Actor* Entity : Queue)
+	{
+		if (!Entity || Entity->IsA(AICC_Player::StaticClass()))
+		{
+			continue;
+		}
+
+		if (TextIndex >= EmotionsSlayed.Num())
+		{
+			break; 
+		}
+
+		if (EmotionsSlayed[TextIndex])
+		{
+			EmotionsSlayed[TextIndex]->SetText(FText::FromString(Entity->GetName()));
+		}
+
+		++TextIndex;
+	}
+
+	MainText->SetText(FText::FromString("Victory"));
+	ExpLabel->SetText(FText::FromString("Exp."));
+	
+	EmotionSlayedLabel->SetText(FText::FromString("E.E"));
+}
+
+void UVictoryVisualizer::AfterBattle(const TArray<AICC_Actor*>& Queue)
+{
+	DropSystem->Drop(GetWorld(), this, Queue);
+	const int32 ExpGained = CalculateExp(Queue);
+	ExpInt->SetText(FText::FromString(FString::FromInt(ExpGained)));
+}
+
+UTextBlock* UVictoryVisualizer::GetEssenceDrop0() const
+{
+	return EssenceDrop0;
+}
+
+UTextBlock* UVictoryVisualizer::GetEssenceDrop1() const
+{
+	return EssenceDrop1;
+}
+
+UTextBlock* UVictoryVisualizer::GetEssenceDrop2() const
+{
+	return EssenceDrop2;
+}
+
+UTextBlock* UVictoryVisualizer::GetEssenceDrop3() const
+{
+	return EssenceDrop3;
+}
+
+
+int32 UVictoryVisualizer::CalculateExp(const TArray<AICC_Actor*>& Queue)
+{
+	if (Queue.IsEmpty())
+	{
+		return 0;
+	}
+
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+
+	int32 TotalExp = 0;
+
+	for (AICC_Actor* Entity : Queue)
+	{
+		if (Entity->IsA(AICC_Player::StaticClass()))
+		{
+			continue;
+		}
+
+		AMob* Emotion = Cast<AMob>(Entity);
+
+		TotalExp += Emotion->GetData()->ExpGiven;
+	}
+
+	Instance->GetPlayerStats()->Experience += TotalExp;
+
+	return TotalExp;
+}
+
+void UVictoryVisualizer::ReturnToWorld()
+{
+	// TODO LOAD THE SCENE AND Call 'RecreatePlayer' via UICantCryGameInstance
+	//UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	//Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->ExitBattle();
+	DebugHelper::LogSuccess("ReturnToWorld");
+}

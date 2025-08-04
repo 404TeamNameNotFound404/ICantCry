@@ -34,129 +34,17 @@ public:
     	return BulletData && Other.BulletData && BulletData->ID == Other.BulletData->ID; 
 	}
 	
-	UBulletData* GetBulletData() const 
-	{ 
-		return BulletData; 
-	}
-
+	UBulletData* GetBulletData() const;
 	
-	void SetBulletData(UBulletData* NewData) 
-	{ 
-		BulletData = NewData; 
-	}
+	void SetBulletData(UBulletData* NewData);
 
-	void SetQuantity(const int32& NewQuantity)
-	{
-		Quantity = NewQuantity;
-	}
+	void SetQuantity(const int32& NewQuantity);
 
-	int32 GetQuantity() const
-	{
-		return Quantity;
-	}
+	int32 GetQuantity() const;
 
-	FString GetStrongAgainstName() const
-	{
-		FString Result;
+	FString GetStrongAgainstName() const;
 
-		for (const auto& Strong : BulletData->StrongAgainst)
-		{
-			switch (Strong)
-			{
-			case Indifference:
-				Result += "Indifference, ";
-				break;
-			case Anger:
-				Result += "Anger, ";
-				break;
-			case Fear:
-				Result += "Fear, ";
-				break;
-			case Disgust:
-				Result += "Disgust, ";
-				break;
-			case Sadness:
-				Result += "Sadness, ";
-				break;
-			case Joy:
-				Result += "Joy, ";
-				break;
-			case Anxiety:
-				Result += "Anxiety, ";
-				break;
-			case Calm:
-				Result += "Calm, ";
-				break;
-			case Jealousy:
-				Result += "Jealousy, ";
-				break;
-			case Shame:
-				Result += "Shame, ";
-				break;
-			default:
-				break;
-			}
-		}
-
-	
-		if (Result.EndsWith(", "))
-		{
-			Result.LeftChopInline(2);
-		}
-
-		return Result;
-	}
-
-	FString GetWeakAgainstName() const
-	{
-		FString Result;
-
-		for (const auto& Weak : BulletData->WeakAgainst)
-		{
-			switch (Weak)
-			{
-			case Indifference:
-				Result += "Indifference, ";
-				break;
-			case Anger:
-				Result += "Anger, ";
-				break;
-			case Fear:
-				Result += "Fear, ";
-				break;
-			case Disgust:
-				Result += "Disgust, ";
-				break;
-			case Sadness:
-				Result += "Sadness, ";
-				break;
-			case Joy:
-				Result += "Joy, ";
-				break;
-			case Anxiety:
-				Result += "Anxiety, ";
-				break;
-			case Calm:
-				Result += "Calm, ";
-				break;
-			case Jealousy:
-				Result += "Jealousy, ";
-				break;
-			case Shame:
-				Result += "Shame, ";
-				break;
-			default:
-				break;
-			}
-		}
-		
-		if (Result.EndsWith(", "))
-		{
-			Result.LeftChopInline(2);
-		}
-
-		return Result;
-	}
+	FString GetWeakAgainstName() const;
 
 
 };

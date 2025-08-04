@@ -21,6 +21,7 @@ enum class EDecision : uint8
 	DebuffShieldOther UMETA(DisplayName = "Debuff Shield Other"),
 	EnvyBurned UMETA(DisplayName = "Envy Burned"),
 	None UMETA(DisplayName = "Attack"),
+	Invalid UMETA(DisplayName = "Invalid")
 };
 
 /**
@@ -47,6 +48,17 @@ struct FDecisionMaker
 	 * Clear the Decision Map in order to avoid repetitions
 	 */
 	void Clear();
+
+	/**
+	 * Clear the last decision after the end of the turn
+	 */
+	void ResetDecision();
+
+private:
+	UPROPERTY()
+	EDecision LastDecision = EDecision::None;
+
+	bool CanRepeat(const EDecision& Decision);
 
 };
 

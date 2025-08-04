@@ -21,12 +21,14 @@ class ICANTCRY_API UBulletSelector : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	void Setup(const FBullet& NewBullet, int32 InQuantity);
+	void Setup(FBullet& NewBullet, int32 InQuantity);
 
 	UFUNCTION() void DisplayBulletInfo();
 
 	//debug only
 	FBullet& GetBullet();
+
+	FBullet* GetBulletPtr();
 
 	void Refresh();
 
@@ -47,5 +49,7 @@ protected:
 
 	UPROPERTY()
 	FBullet BulletRef;
+	
+	FBullet* BulletRefPtr = nullptr;
 	
 };

@@ -4,15 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
 #include "Components/ProgressBar.h"
-#include "Components/Widget.h"
-#include "Components/CanvasPanelSlot.h"
-#include "Components/CanvasPanelSlot.h"
-#include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 #include "../Source/ICantCry/ICC/Actors/Bullet/BulletData.h"
 #include "../Mechanics/TurnSystem/Core/BattleHandler.h"
@@ -21,13 +16,13 @@
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
 #include "ICantCry/ICC/Mechanics/TurnSystem/BattleFlow/DamageCalculator.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
-#include "ICantCry/ICC/Mechanics/TurnSystem/BattleFlow/DamageCalculator.h"
 #include "../Source/ICantCry/ICC/Actors/Bullet/CircularBulletBuffer.h"
 #include "../Source/ICantCry/ICC/Actors/Bullet/RevolverSlot.h"
 #include "../Inventory/Inventory.h"
-#include "Blueprint/UserWidget.h"
 #include "../Inventory/BulletIconWidget.h"
+#include "ICantCry/ICC/Mechanics/UI/BattleVisualization/GameOver/GameOverVisualizer.h"
 #include "ICantCry/ICC/Mechanics/UI/BulletDisplay/BulletDisplayer.h"
+#include "ICantCry/ICC/Mechanics/UI/BattleVisualization/Victory/VictoryVisualizer.h"
 #include "BattleHUD.generated.h"
 
 /**
@@ -116,6 +111,9 @@ public:
 	UPROPERTY(meta = (BindWidget)) UImage* PistolMagazine_6;
 	UPROPERTY(meta = (BindWidget)) UCanvasPanel* CanvasBulletStats;
 
+	UPROPERTY(meta=(BindWidget)) UButton* ApIncreaseOnShoot;
+	UPROPERTY(meta=(BindWidget)) UButton* ApDecreaseOnShoot;
+
 	UPROPERTY() TArray<UImage*> PistolMagazines;
 
 	UPROPERTY()
@@ -131,6 +129,7 @@ public:
 
 	AMob* GetCurrentPlayingEmotion() const;
 	AMob* GetSelectedEmotion() const;
+	AICC_Actor* GetSelectedActor() const;
 	
 	/**
 	 * Proceed to the battle phase
@@ -148,9 +147,24 @@ public:
 	bool IsReadyToBattle() const;
 	ABattleHandler* GetBattleHandler() const;
 	UCircularBulletBuffer* GetCircularBulletBuffer() const;
-	void FreezedUp(const bool& Enable);
-	void Ashamed(const bool& Enable);
 	void SetCurrentPlayingEmotion(AMob* Current);
+	UBulletData* GetCurrentBulletData() const;
+
+	void RestoreHealth();
+	/**
+	 *Reset Health back to full
+	 */
+	void ResetHealth();
+
+	void SpawnVisualizer();
+	void DisplayVictoryVisualizer();
+
+	void SpawnGameOverVisualizer();
+	void DisplayGameOverVisualizer();
+
+	UVictoryVisualizer* GetVictoryVisualizer() const;
+
+	void SetBulletSetupFinished(const bool& Value);
 
 private:
 
@@ -186,6 +200,12 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	UHorizontalBox* BulletPanel;
+
+	UPROPERTY(meta=(BindWidget))
+	USizeBox* VisualizerSlot;
+
+	UPROPERTY(meta=(BindWidget))
+	USizeBox* VisualizerGameOverSlot;
 	
 	// select the target before shooting
 	UPROPERTY()
@@ -249,23 +269,22 @@ private:
 
 	UPROPERTY()
 	FDamage Damage;
-
-	/**
-	 * Freezed up boolean, if true
-	 * player is unable to make its move
-	 */
-	UPROPERTY()
-	bool bFreeze = false;
-
-	/**
-	 *Ashamed Status
-	 * 
-	 */
-	UPROPERTY()
-	bool bAshamed = false;
+	
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullets", meta=(AllowPrivateAccess="true"))
-	TSubclassOf<class UBulletIconWidget> BulletIconWidgetClass;
+	TSubclassOf<UBulletIconWidget> BulletIconWidgetClass;
+
+	/**
+	 * Additional ap point used to boost the player's shoot
+	 */
+	UPROPERTY()
+	int32 ApPowerBoost = 0;
+	
+	UFUNCTION()
+	void IncreaseShootPower();
+
+	UFUNCTION()
+	void DecreaseShootPower();
 
 	
 
@@ -281,7 +300,11 @@ private:
 
 	UPROPERTY()
 	AMob* SelectedTarget = nullptr;
-	
+
+	UPROPERTY()
+	AICC_Actor* SelectedActorTarget = nullptr;
+
+	void PrepareToEngage();
 
 	/**
 	 *-----------------------------
@@ -291,6 +314,12 @@ private:
 
 	UPROPERTY()
 	bool bStartFight = false;
+
+	UPROPERTY()
+	UVictoryVisualizer* VictoryVisualizer = nullptr;
+
+	UPROPERTY()
+	UGameOverVisualizer* GameOverVisualizer = nullptr;
 	
 	/**
 	 * -----------------------------------

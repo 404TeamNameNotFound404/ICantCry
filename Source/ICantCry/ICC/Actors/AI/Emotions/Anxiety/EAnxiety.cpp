@@ -6,6 +6,7 @@
 AEAnxiety::AEAnxiety()
 {
 	bIsEAnxiety = true;
+	Type = EMobType::MobAnxiety;
 }
 
 // Called when the game starts or when spawned

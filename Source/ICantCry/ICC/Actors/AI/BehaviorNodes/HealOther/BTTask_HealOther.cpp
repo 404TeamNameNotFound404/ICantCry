@@ -33,17 +33,31 @@ EBTNodeResult::Type UBTTask_HealOther::ExecuteTask(UBehaviorTreeComponent& Owner
 	AICC_Player* Target = Cast<AICC_Player>(Blackboard->GetValueAsObject("Target"));
 	checkf(Target, TEXT("Player invalid at UBTTask_DebuffOtherShield::ExecuteTask"))
 
+
+	if (Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().CantBuffOthers())
+	{
+		DebugHelper::LogError(Current->GetActorLabel() +  " is alone can't buff");
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+		return EBTNodeResult::Succeeded;
+	}
+	
 	AMob* TargetToBuff = Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetMobInQueue();
 	checkf(TargetToBuff, TEXT("TargetToBuff is invalid Type at UBTTask_DebuffOtherShield::ExecuteTask"))
 
 	//TODO  Debuff TargetToBuff shield
-
+	
 	AMob* CurrentToBuff = Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetMobInQueue();
 	checkf(CurrentToBuff, TEXT("Invalid"));
+	
 
-	if (CurrentToBuff->GetData()->Health < CurrentToBuff->GetData()->MaxHealth)
+	// if (CurrentToBuff->GetData()->Health < CurrentToBuff->GetData()->MaxHealth)
+	// {
+	// 	CurrentToBuff->Heal(Current->GetData()->Health *= 0.20f);
+	// }
+
+	if (CurrentToBuff->GetStats().Health < CurrentToBuff->GetData()->MaxHealth)
 	{
-		CurrentToBuff->Heal(Current->GetData()->Health *= 0.20f);
+		CurrentToBuff->Heal(CurrentToBuff->GetStats().Health *= 0.20f);
 	}
 	
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " heals " + CurrentToBuff->GetActorLabel()));

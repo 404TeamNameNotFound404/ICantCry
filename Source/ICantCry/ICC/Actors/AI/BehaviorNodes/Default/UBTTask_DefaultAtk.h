@@ -27,6 +27,9 @@ protected:
 	UBlackboardComponent* BlackBoard;
 
 	UPROPERTY()
+	FDecisionMaker DecisionMaker;
+
+	UPROPERTY()
 	bool bBusy = false;
 
 	UPROPERTY()
@@ -37,6 +40,9 @@ protected:
 
 	UPROPERTY()
 	bool bBuffed = false;
+
+	UPROPERTY()
+	bool bThought = false;
 
 	UPROPERTY()
 	float buffTimer = 0.0f;

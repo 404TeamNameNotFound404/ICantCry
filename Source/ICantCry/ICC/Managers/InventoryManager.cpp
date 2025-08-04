@@ -111,7 +111,6 @@ void UInventoryManager::AddEssence2(const FEssence& Essence)
         //DebugHelper::LogSuccess("Added indifference -> size " + FString::FromInt(ShameCounter));
         break;
     }
-    
 }
 
 void UInventoryManager::StoreEssenceInMap(const FEssence& Essence, const int32& NewQuantity)

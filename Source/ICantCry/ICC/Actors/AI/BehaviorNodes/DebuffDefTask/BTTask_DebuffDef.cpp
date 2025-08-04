@@ -34,7 +34,8 @@ EBTNodeResult::Type UBTTask_DebuffDef::ExecuteTask(UBehaviorTreeComponent& Owner
 
 	checkf(Target, TEXT("Player invalid at UBTTask_DebuffDef::ExecuteTask"))
 
-	//Target->GetStats()->DefencePower *= 0.80f; // Assuming defence is decreased by 20%
+	Target->GetStatusTracker()->MalusFlow();
+	Target->GetStatusTracker()->InflictStatus(EAfflictedStatus::DebuffDef, Target);
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " de-buffed " + Target->GetActorLabel() + " def"));
 	Current->GetBattleHandler()->GetBattleInfo()->SetTurnInfo(FText::FromString("Target def is now -> " + FString::SanitizeFloat(Target->GetStats()->DefencePower)));

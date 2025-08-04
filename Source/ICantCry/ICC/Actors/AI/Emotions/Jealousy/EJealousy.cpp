@@ -8,6 +8,7 @@
 AEJealousy::AEJealousy()
 {
 	bIsEJealousy = true;
+	Type = EMobType::MobJealousy;
 }
 
 // Called when the game starts or when spawned
