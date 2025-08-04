@@ -110,33 +110,36 @@ void AICC_Player::Tick(float DeltaTime)
 	{
 		return;
 	}
-	
+
 	Super::Tick(DeltaTime);
 
 	// --- Sistema di conteggio passi ---
-    const FVector CurrentLocation = GetActorLocation();
-    const float CurrentSpeed = GetVelocity().Size();
+	const FVector CurrentLocation = GetActorLocation();
+	const float CurrentSpeed = GetVelocity().Size();
 
-    // Se il player è in movimento
-    if (CurrentSpeed <= 0)
-    {
-        const float DistanceMoved = FVector::Dist(PreviousLocation, CurrentLocation);
-        StepDistanceAccumulator += DistanceMoved;
+	// Se il player è in movimento
+	if (CurrentSpeed > 0)
+	{
+		const float DistanceMoved = FVector::Dist(PreviousLocation, CurrentLocation);
+		StepDistanceAccumulator += DistanceMoved;
 
-        const float StepThreshold = 100.0f; // 1 metro
+		const float StepThreshold = 100.0f; // 1 meter per step
 
-        if (StepDistanceAccumulator >= StepThreshold)
-        {
-            int32 StepsTaken = FMath::FloorToInt(StepDistanceAccumulator / StepThreshold);
-            StepCounter += StepsTaken;
-            StepDistanceAccumulator -= StepsTaken * StepThreshold;
-        }
-    }
-    else
-    {
-        // Il player è fermo: aggiorno la posizione solo ora
-        PreviousLocation = CurrentLocation;
-    }
+		if (StepDistanceAccumulator >= StepThreshold)
+		{
+			int32 StepsTaken = FMath::FloorToInt(StepDistanceAccumulator / StepThreshold);
+			StepCounter += StepsTaken;
+			StepDistanceAccumulator -= StepsTaken * StepThreshold;
+
+			DebugHelper::LogSuccess(FString::Printf(TEXT("Steps taken: %d, Total steps: %d"), StepsTaken, StepCounter));
+		}
+	}
+
+	PreviousLocation = CurrentLocation;
+
+
+	// // Aggiorna sempre la posizione precedente
+	// PreviousLocation = CurrentLocation;
 }
 
 // Called to bind functionality to input

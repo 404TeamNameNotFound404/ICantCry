@@ -100,7 +100,7 @@ void UBattleHUD::NativeConstruct()
         return;
     }
 
-    SetSelectedBullet(0);
+    // SetSelectedBullet(0);
 
     //INIT BULLET SELECTION
     SelectedBulletIndex = 0;
@@ -417,6 +417,7 @@ void UBattleHUD::ReflectBullets()
 {
     Displayer = CreateWidget<UBulletDisplayer>(GetWorld(), BulletDisplayerClass);
     BulletPanel->AddChild(Displayer);
+    SetSelectedBullet(0);
 }
 
 void UBattleHUD::UpdateBulletIcons(const TArray<FInventoryItem>& InventoryItems)
@@ -537,15 +538,26 @@ void UBattleHUD::SpawnVisualizer()
 void UBattleHUD::SetSelectedBullet(int32 Index)
 {
     UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
-    
-    if (Instance->GetInventory().BulletsStored.IsEmpty()) 
+    if (!Instance || Instance->GetInventory().BulletsStored.IsEmpty())
     {
         return;
     }
 
     TArray<FBullet> Bullets;
     Instance->GetInventory().BulletsStored.GenerateValueArray(Bullets);
+
+    if (!Displayer)
+    {
+        
+        return;
+    }
     
+    if (!Displayer->GetBullets().IsValidIndex(Index))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Invalid bullet index: %d"), Index);
+        return;
+    }
+
     CurrentSelectedBullet = Displayer->GetBullets()[Index];
 }
 
