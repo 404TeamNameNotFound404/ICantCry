@@ -17,6 +17,7 @@
 #include "InventoryHUD.generated.h"
 
 class AICC_Player;
+
 /**
  * 
  */

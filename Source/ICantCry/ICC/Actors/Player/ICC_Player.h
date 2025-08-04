@@ -111,6 +111,15 @@ public:
 	UInGameMenu* GetInGameMenu() const;
 	UInventoryHUD* GetInventoryHUD() const;
 
+	UFUNCTION()
+	int32 GetStepCounter() const;
+
+	UFUNCTION()
+	bool IsSprinting() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	void ResetStepCounter();
+
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Movement")
 	float WalkSpeed;
@@ -189,6 +198,19 @@ private:
 
 	UPROPERTY()
 	bool bReadyToPickUp;
+
+	/**
+ * Encounter Manager
+ */
+	UPROPERTY()
+	FVector PreviousLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Movement")
+	float StepDistanceAccumulator = 0.0f;
+
+	UPROPERTY()
+	int32 StepCounter = 0;
+
 
 	/**
  * Close the crafting / inventory counter
