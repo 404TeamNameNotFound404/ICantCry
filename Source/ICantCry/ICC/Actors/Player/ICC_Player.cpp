@@ -82,8 +82,6 @@ void AICC_Player::BeginPlay()
 	UICantCryGameInstance* DontDestroyOnLoad = Cast<UICantCryGameInstance>(GameInstance);
 	checkf(DontDestroyOnLoad, TEXT("Dontdestroyonload is invalid at player begin play"));
 
-	DontDestroyOnLoad->StoreBeginPlayerTransform(GetActorLocation(), GetActorRotation());
-
 	// detect if battle handler are in the scene
 
 	for (TActorIterator<AMinigameHandler> It(GetWorld()); It; ++It)
@@ -96,11 +94,9 @@ void AICC_Player::BeginPlay()
 	DontDestroyOnLoad->SetPlayerStats(Stats);
 	DontDestroyOnLoad->GetInventory().StarterPack();
 	DontDestroyOnLoad->SetPersistentPlayer(this);
-
 	DontDestroyOnLoad->GetPersistentData()->InitialAttackPower = GetStats()->AttackPower;
 	DontDestroyOnLoad->GetPersistentData()->InitialDefencePower = GetStats()->DefencePower;
-
-	bIsInFight = false;
+	//bIsInFight = false;
 }
 
 // Called every frame
@@ -498,6 +494,7 @@ void AICC_Player::ResetStepCounter()
     StepCounter = 0;
     StepDistanceAccumulator = 0.0f;
 }
+
 
 
 

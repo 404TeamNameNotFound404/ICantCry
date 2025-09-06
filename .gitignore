@@ -76,6 +76,7 @@ Plugins/**/Intermediate/*
 DerivedDataCache/*
 
 
+Plugins/
 
 # Visual Studio specific
 .vscode/

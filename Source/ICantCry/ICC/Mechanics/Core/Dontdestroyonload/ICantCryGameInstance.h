@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "ICantCry/ICC/Actors/Player/ICC_PlayerMemory.h"
 #include "ICantCry/ICC/Mechanics/Core/Data/PersistentData.h"
 #include "ICantCry/ICC/Mechanics/Core/Data/PlayerStats.h"
 #include "ICantCry/ICC/Mechanics/TurnSystem/BattleFlow/DamageCalculator.h"
@@ -24,14 +25,17 @@ public:
 	virtual void Shutdown() override;
 
 	void RecreatePlayer() const;
-	void StoreBeginPlayerTransform(const FVector& BeginPosition, const FRotator& BeginOrientation) const;
-	void SavePlayerTransform(const FVector& LastPosition, const FRotator& LastOrientation) const;
-	
 	/**
-	 * Load the previous position before loading something else
+	 * Function is deprecated please use StoreBeginPlayerTransform
+	 * @param BeginPosition 
+	 * @param BeginOrientation 
 	 */
-	UFUNCTION(BlueprintCallable)
-	void LoadLastPlayerTransform();
+	[[deprecated]] void StoreBeginPlayerTransform(const FVector& BeginPosition, const FRotator& BeginOrientation) const;
+	void StoreBeginPlayerTransform(AICC_Player* Player, const FVector BeginPosition, const FRotator& BeginOrientation);
+	void StoreLastPlayerTransform(AICC_Player* Player, const FVector& LastPosition, const FRotator& LastOrientation);
+	void StoreLastPlayerTransform(const FVector& LastPosition, const FRotator& LastOrientation) const;
+	void SavePlayerTransformBegin(AICC_Player* Player, const bool& PreFight = false);
+	[[deprecated]] void SavePlayerTransform(const FVector& LastPosition, const FRotator& LastOrientation) const;
 
 	UPlayerStats* GetPlayerStats() const;
 	UPersistentData* GetPersistentData() const;
@@ -43,6 +47,10 @@ public:
 
 	void SetInventory(const FInventory& Inv);
 	FInventory& GetInventory();
+
+	bool CanRecreatePlayer() const;
+	void SetCanRecreatePlayer(const bool& Value);
+	FPlayerMemory& GetPlayerRuntimeData();
 	
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))
@@ -67,5 +75,11 @@ private:
 
 	UPROPERTY()
 	AICC_Player* CurrentPlayer = nullptr;
+
+	UPROPERTY()
+	FPlayerMemory PlayerRuntimeData;
+
+	UPROPERTY()
+	bool bCanRecreatePlayer = false;
 	
 };

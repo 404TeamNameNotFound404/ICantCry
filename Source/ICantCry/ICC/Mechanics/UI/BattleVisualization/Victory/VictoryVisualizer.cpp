@@ -4,6 +4,7 @@
 #include "VictoryVisualizer.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
+#include "ICantCry/ICC/Managers/SceneLoader.h"
 
 void UVictoryVisualizer::NativeConstruct()
 {
@@ -118,7 +119,9 @@ int32 UVictoryVisualizer::CalculateExp(const TArray<AICC_Actor*>& Queue)
 void UVictoryVisualizer::ReturnToWorld()
 {
 	// TODO LOAD THE SCENE AND Call 'RecreatePlayer' via UICantCryGameInstance
-	//UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
-	//Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->ExitBattle();
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->ExitBattle();
+	Instance->SetCanRecreatePlayer(true);
+	USceneLoader::LoadSceneByName(GetWorld(), "EncounterTest", true);
 	DebugHelper::LogSuccess("ReturnToWorld");
 }

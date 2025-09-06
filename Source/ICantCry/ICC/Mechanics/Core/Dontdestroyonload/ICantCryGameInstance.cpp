@@ -33,7 +33,7 @@ void UICantCryGameInstance::RecreatePlayer() const
 		ExistingPawn->Destroy();
 	}
 
-	AICC_Player* Player = GetWorld()->SpawnActor<AICC_Player>(PlayerBp, PersistentData->PlayerPosition, PersistentData->PlayerOrientation, SpawnParams);
+	AICC_Player* Player = GetWorld()->SpawnActor<AICC_Player>(PlayerBp, PlayerRuntimeData.CurrentLocation, PlayerRuntimeData.CurrentOrientation, SpawnParams);
 
 	checkf(Player, TEXT("Player is null in UICantCryGameInstance::RecreatePlayer"));
 	
@@ -51,6 +51,47 @@ void UICantCryGameInstance::StoreBeginPlayerTransform(const FVector& BeginPositi
 	DebugHelper::LogSuccess("Orientation saved " + BeginOrientation.ToString());
 }
 
+void UICantCryGameInstance::StoreBeginPlayerTransform(AICC_Player* Player, const FVector BeginPosition,
+	const FRotator& BeginOrientation)
+{
+	PlayerRuntimeData.InitialPosition = BeginPosition;
+	PlayerRuntimeData.InitialOrientation = BeginOrientation;
+	DebugHelper::LogSuccess("Position saved " + BeginPosition.ToString());
+	DebugHelper::LogSuccess("Orientation saved " + BeginOrientation.ToString());
+}
+
+void UICantCryGameInstance::StoreLastPlayerTransform(AICC_Player* Player, const FVector& LastPosition,
+	const FRotator& LastOrientation)
+{
+	PlayerRuntimeData.LastPositionBeforeBattle = LastPosition;
+	PlayerRuntimeData.LastOrientationBeforeBattle = LastOrientation;
+}
+
+void UICantCryGameInstance::StoreLastPlayerTransform(const FVector& LastPosition, const FRotator& LastOrientation) const
+{
+	PersistentData->PlayerPosition = LastPosition;
+	PersistentData->PlayerOrientation = LastOrientation;
+}
+
+void UICantCryGameInstance::SavePlayerTransformBegin(AICC_Player* Player, const bool& PreFight)
+{
+	if (PreFight)
+	{
+		// PersistentData->PlayerPosition = Player->PlayerMemory().LastPositionBeforeBattle;
+		// PersistentData->PlayerOrientation = Player->PlayerMemory().LastOrientationBeforeBattle;
+		PlayerRuntimeData.CurrentLocation = PlayerRuntimeData.LastPositionBeforeBattle;
+		PlayerRuntimeData.CurrentOrientation = PlayerRuntimeData.LastOrientationBeforeBattle;
+		
+		DebugHelper::LogMessage(10, FColor::Blue, "Position before joining the fun " + PlayerRuntimeData.LastPositionBeforeBattle.ToString());
+	}
+	else
+	{
+		PlayerRuntimeData.CurrentLocation = PlayerRuntimeData.InitialPosition;
+		PlayerRuntimeData.CurrentOrientation = PlayerRuntimeData.InitialOrientation;
+		DebugHelper::LogMessage(10, FColor::Cyan, "Position stored normally " + PlayerRuntimeData.InitialOrientation.ToString());
+	}
+}
+
 void UICantCryGameInstance::SavePlayerTransform(const FVector& LastPosition, const FRotator& LastOrientation) const
 {
 	PersistentData->PlayerPosition = LastPosition;
@@ -60,16 +101,6 @@ void UICantCryGameInstance::SavePlayerTransform(const FVector& LastPosition, con
 	DebugHelper::LogSuccess("New Saved Orientation " + PersistentData->PlayerOrientation.ToString());
 }
 
-void UICantCryGameInstance::LoadLastPlayerTransform()
-{
-	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-	checkf(PlayerController, TEXT("PlayerController is NULL at UICantCryGameInstance::LoadLastPlayerTransform"));
-	AICC_Player* Player = Cast<AICC_Player>(PlayerController->GetPawn());
-	checkf(Player, TEXT("Player cast is null at UICantCryGameInstance::LoadLastPlayerTransform"));
-
-	Player->SetActorLocation(PersistentData->PlayerPosition);
-	Player->SetActorRotation(PersistentData->PlayerOrientation);
-}
 
 UPlayerStats* UICantCryGameInstance::GetPlayerStats() const
 {
@@ -115,6 +146,21 @@ void UICantCryGameInstance::SetInventory(const FInventory& Inv)
 FInventory& UICantCryGameInstance::GetInventory()
 {
 	return Inventory;
+}
+
+bool UICantCryGameInstance::CanRecreatePlayer() const
+{
+	return bCanRecreatePlayer;
+}
+
+void UICantCryGameInstance::SetCanRecreatePlayer(const bool& Value)
+{
+	bCanRecreatePlayer = Value;
+}
+
+FPlayerMemory& UICantCryGameInstance::GetPlayerRuntimeData()
+{
+	return PlayerRuntimeData;
 }
 
 UWorld* UICantCryGameInstance::TryGetWorld() const
