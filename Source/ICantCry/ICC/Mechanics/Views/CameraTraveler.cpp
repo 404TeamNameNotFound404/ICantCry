@@ -38,6 +38,13 @@ void ACameraTraveler::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 	if (Player->GetWorldCamera() && Player)
 	{
 		Player->GetWorldCamera()->MoveToNextWaypoint();
+
+		if (bPlayerMustTeleport)
+		{
+			Player->SetActorLocation(DesiredTeleportLocation.Get()->GetActorLocation());
+			Player->SetActorRotation(DesiredTeleportLocation.Get()->GetActorRotation());
+		}
+		
 		DebugHelper::LogSuccess("Move to waypoint");
 	}
 	

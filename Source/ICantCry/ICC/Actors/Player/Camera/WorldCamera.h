@@ -35,7 +35,7 @@ public:
 	/**
 	 * Snap to the current Waypoint 
 	 */
-	void SnapToFixedWaypoint(AActor* Waypoint);
+	void SnapToFixedWaypoint(ACameraWaypoint* Waypoint);
 	
 	bool IsDefaultCamera();
 
@@ -67,7 +67,7 @@ private:
 	bool bEnableSmoothMovement = false;
 
 	UPROPERTY()
-	AActor* CurrentWaypoint;
+	ACameraWaypoint* CurrentWaypoint;
 
 	UPROPERTY()
 	bool bLerpStarted = false;
@@ -76,7 +76,8 @@ private:
 	float CameraSmoothBlending = 6.0f;
 
 	UPROPERTY()
-	AActor* PreviousWaypoint;
+	ACameraWaypoint* PreviousWaypoint;
 
-	AActor* FindClosestWaypoint();
+	ACameraWaypoint* FindClosestWaypoint();
+	
 };

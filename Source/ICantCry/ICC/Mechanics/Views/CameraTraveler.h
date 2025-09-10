@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "PlayerTeleportObj.h"
 #include "GameFramework/Actor.h"
 #include "Components/BoxComponent.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
@@ -39,4 +40,10 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))
 	AICC_Player* Player;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))
+	TSoftObjectPtr<APlayerTeleportObj> DesiredTeleportLocation;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))
+	bool bPlayerMustTeleport = false;
 };
