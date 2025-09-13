@@ -137,6 +137,12 @@ void FDecisionMaker::ResetDecision()
 
 bool FDecisionMaker::CanRepeat(const EDecision& Decision)
 {
-	 return Decision ==  EDecision::None;
+	if (Decision == EDecision::None)
+	{
+		return true;
+	}
+	
+	return false;
+	 //return Decision ==  EDecision::None;
 }
 
