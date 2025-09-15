@@ -1,24 +1,19 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "CameraWaypoint.h"
+#include "PlayerTeleportObj.h"
 
 
 // Sets default values
-ACameraWaypoint::ACameraWaypoint()
+APlayerTeleportObj::APlayerTeleportObj()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	PrimaryActorTick.bStartWithTickEnabled = false;
 }
 
-FVector& ACameraWaypoint::GetOffset() 
-{
-	return Offset;
-}
-
 // Called when the game starts or when spawned
-void ACameraWaypoint::BeginPlay()
+void APlayerTeleportObj::BeginPlay()
 {
 	Super::BeginPlay();
 	

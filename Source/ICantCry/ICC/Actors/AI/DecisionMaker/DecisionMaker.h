@@ -3,7 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ICantCry/ICC/Actors/AI/Mob.h"
 #include "DecisionMaker.generated.h"
+
+class UUBTTask_DefaultAtk;
 
 UENUM()
 enum class EDecision : uint8
@@ -33,6 +36,9 @@ struct FDecisionMaker
 	GENERATED_BODY()
 
 	FDecisionMaker();
+
+	void Setup(AMob* Current);
+	
 	/**
 	 * Plan the next decision based of probability and Aleatory math
 	 * Each Mob turn before performing the move, AI will calculate the chance
@@ -41,7 +47,7 @@ struct FDecisionMaker
 	 * @return Decision
 	 */
 	EDecision Thought();
-
+	
 	TMap<EDecision, float> DecisionMap;
 
 	/**

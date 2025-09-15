@@ -4,24 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "CameraWaypoint.generated.h"
+#include "PlayerTeleportObj.generated.h"
 
-UCLASS(Blueprintable)
-class ICANTCRY_API ACameraWaypoint : public AActor
+UCLASS()
+class ICANTCRY_API APlayerTeleportObj : public AActor
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this actor's properties
-	ACameraWaypoint();
-
-	FVector& GetOffset();
+	APlayerTeleportObj();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Mechanics")
-	FVector Offset = FVector::ZeroVector;
-	
 };

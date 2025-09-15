@@ -33,67 +33,8 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 	Current->SetIsAttacked(false);
 	BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
 	BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
-
-	DecisionMaker.Clear(); // If I'm not wrong clearing before adding new states will avoid repetitions
-	UBattleData* BattleData = Current->GetBattleData();
-	checkf(BattleData, TEXT("Battle data appears to be invalid"))
 	
-	if (Current->IsEAnger())
-	{
-		DecisionMaker.DecisionMap.Add(EDecision::BuffItSelf, BattleData->BuffAtkChance); // Buff atk chance in normal status
-		DecisionMaker.DecisionMap.Add(EDecision::None, BattleData->NormalAttackChance);
-	}
-
-	if (Current->IsHealer())
-	{
-		DecisionMaker.DecisionMap.Add(EDecision::HealItSelf, BattleData->HealItselfChance);
-		DecisionMaker.DecisionMap.Add(EDecision::HealOther, BattleData->HealOtherChance);
-		DecisionMaker.DecisionMap.Add(EDecision::None, BattleData->NormalAttackChance);
-	}
-
-	if (Current->IsESadness())
-	{
-		DecisionMaker.DecisionMap.Add(EDecision::DebuffDefence, BattleData->DebuffDefChance); // debuff target defence in normal status
-		DecisionMaker.DecisionMap.Add(EDecision::None, BattleData->NormalAttackChance);
-	}
-
-	if (Current->IsEDisgust())
-	{
-		DecisionMaker.DecisionMap.Add(EDecision::DebuffAtk, BattleData->DebuffAtkChance);
-		DecisionMaker.DecisionMap.Add(EDecision::None, BattleData->NormalAttackChance);
-	}
-
-	if (Current->IsEFear())
-	{
-		DecisionMaker.DecisionMap.Add(EDecision::BuffDefence, BattleData->BuffDefChance);
-		DecisionMaker.DecisionMap.Add(EDecision::BuffOtherDefence, BattleData->BuffOtherDefChance);
-		DecisionMaker.DecisionMap.Add(EDecision::None, BattleData->NormalAttackChance);
-	}
-
-	if (Current->IsEAnxiety())
-	{
-		DecisionMaker.DecisionMap.Add(EDecision::DebuffAtk, BattleData->DebuffAtkChance);
-		DecisionMaker.DecisionMap.Add(EDecision::DebuffDefence, BattleData->DebuffDefChance);
-		DecisionMaker.DecisionMap.Add(EDecision::FreezedUp, BattleData->FreezedUpChance);
-		DecisionMaker.DecisionMap.Add(EDecision::None, BattleData->NormalAttackChance);
-	}
-
-	if (Current->IsEJealousy())
-	{
-		DecisionMaker.DecisionMap.Add(EDecision::EnvyBurned, BattleData->EnvyBurnedChance);
-		DecisionMaker.DecisionMap.Add(EDecision::BuffOther, BattleData->BuffOtherAtkChance);
-		DecisionMaker.DecisionMap.Add(EDecision::None, BattleData->NormalAttackChance);
-	}
-
-	if (Current->IsECalm())
-	{
-		DecisionMaker.DecisionMap.Add(EDecision::DebuffShieldItSelf, BattleData->DebuffShieldItselfChance);
-		DecisionMaker.DecisionMap.Add(EDecision::DebuffShieldOther, BattleData->DebuffShieldOtherChance);
-		DecisionMaker.DecisionMap.Add(EDecision::BuffDefence, BattleData->BuffDefChance);
-		DecisionMaker.DecisionMap.Add(EDecision::BuffOtherDefence, BattleData->BuffOtherDefChance);
-		DecisionMaker.DecisionMap.Add(EDecision::None, BattleData->NormalAttackChance);
-	}
-	
+	DecisionMaker.Setup(Current);
 	Decision = DecisionMaker.Thought();
 	
 	return EBTNodeResult::InProgress;

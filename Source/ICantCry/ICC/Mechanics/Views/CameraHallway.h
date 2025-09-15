@@ -54,6 +54,6 @@ private:
 	TArray<ACameraTraveler*> Travelers;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))
-	AActor* FixedWaypoint;
+	ACameraWaypoint* FixedWaypoint;
 	
 };

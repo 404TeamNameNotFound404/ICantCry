@@ -19,5 +19,7 @@ public:
 
     // to load a level 
     static void LoadSceneByName(UObject* WorldContextObject, const FName& SceneName);
+
+	static void LoadSceneByName(UObject* WorldContextObject, const FName& SceneName, bool bRecreatePlayer);
 	
 };

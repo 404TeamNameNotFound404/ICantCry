@@ -33,8 +33,14 @@ void AWorldCamera::BeginPlay()
 	for (TActorIterator<ACameraWaypoint> It(GetWorld()); It; ++It)
 	{
 		Waypoints.Add(*It);
-		DebugHelper::LogMessage(3, FColor::White, "Added: " + It->GetName());
+		DebugHelper::LogMessage(3, FColor::White, "Added: " + It->GetActorLabel());
 	}
+
+	// attempt to sort the array alphabetically
+	Waypoints.Sort([](const ACameraWaypoint& A, const ACameraWaypoint& B) {
+	return A.GetActorLabel() < B.GetActorLabel();});
+
+	
 	if (Waypoints.IsEmpty()) return;
 	
 	SetActorLocation(Waypoints[WaypointIndex]->GetActorLocation());
@@ -71,7 +77,7 @@ AActor* AWorldCamera::GetCurrentWaypoint() const
 }
 
 
-AActor* AWorldCamera::FindClosestWaypoint()
+ACameraWaypoint* AWorldCamera::FindClosestWaypoint()
 {
 	if (Waypoints.Num() == 0)
 	{
@@ -79,7 +85,7 @@ AActor* AWorldCamera::FindClosestWaypoint()
 		return nullptr;
 	}
 
-	AActor* ClosestWaypoint = nullptr;
+	ACameraWaypoint* ClosestWaypoint = nullptr;
 	float MinDistance = FLT_MAX;
 
 	const FVector PlayerLocation = Player->GetActorLocation();
@@ -91,7 +97,7 @@ AActor* AWorldCamera::FindClosestWaypoint()
 		return CurrentWaypoint;
 	}
 	
-	for (AActor* Waypoint : Waypoints)
+	for (ACameraWaypoint* Waypoint : Waypoints)
 	{
 		if (!Waypoint || Waypoint == CurrentWaypoint) continue;
 
@@ -120,7 +126,7 @@ void AWorldCamera::Tick(float DeltaTime)
 		const FVector CurrentLocation = GetActorLocation();
 		const FVector TargetLocation = CurrentWaypoint->GetActorLocation();
 		
-		const FVector InterpLocation = FMath::VInterpTo(CurrentLocation, TargetLocation, DeltaTime, CameraSmoothBlending);
+		const FVector InterpLocation = FMath::VInterpTo(CurrentLocation, TargetLocation + CurrentWaypoint->GetOffset(), DeltaTime, CameraSmoothBlending);
 		SetActorLocation(InterpLocation);
 		SetActorRotation(CurrentWaypoint->GetActorRotation());
 		
@@ -135,7 +141,7 @@ void AWorldCamera::MoveToNextWaypoint()
 {
 	if (bEnableSmoothMovement)
 	{
-		if (AActor* ClosestWaypoint = FindClosestWaypoint())
+		if (ACameraWaypoint* ClosestWaypoint = FindClosestWaypoint())
 		{
 			CurrentWaypoint = ClosestWaypoint;
 			bLerpStarted = true;
@@ -143,7 +149,7 @@ void AWorldCamera::MoveToNextWaypoint()
 	}
 	else
 	{
-		if (AActor* ClosestWaypoint = FindClosestWaypoint())
+		if (ACameraWaypoint* ClosestWaypoint = FindClosestWaypoint())
 		{
 			CurrentWaypoint = ClosestWaypoint;
 			SetActorLocation(CurrentWaypoint->GetActorLocation());
@@ -154,11 +160,11 @@ void AWorldCamera::MoveToNextWaypoint()
 
 void AWorldCamera::MoveToThePreviousWaypoint()
 {
-	SetActorLocation(CurrentWaypoint->GetActorLocation());
+	SetActorLocation(CurrentWaypoint->GetActorLocation() );
 	SetActorRotation(CurrentWaypoint->GetActorRotation());
 }
 
-void AWorldCamera::SnapToFixedWaypoint(AActor* Waypoint)
+void AWorldCamera::SnapToFixedWaypoint(ACameraWaypoint* Waypoint)
 {
 	if (!Waypoint) return;
 	
@@ -168,10 +174,11 @@ void AWorldCamera::SnapToFixedWaypoint(AActor* Waypoint)
 	if (bEnableSmoothMovement)
 	{
 		bLerpStarted = true;
+		
 	}
 	else
 	{
-		SetActorLocation(CurrentWaypoint->GetActorLocation());
+		SetActorLocation(CurrentWaypoint->GetActorLocation() + CurrentWaypoint->GetOffset());
 		SetActorRotation(CurrentWaypoint->GetActorRotation());
 		DebugHelper::LogError("Moving to " + CurrentWaypoint->GetActorLabel());
 	}

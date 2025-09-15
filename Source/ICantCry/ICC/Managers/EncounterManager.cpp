@@ -93,6 +93,9 @@ void UEncounterManager::StartBattle(UWorld* World)
 {
 	DebugHelper::LogSuccess("StartBattle");
 	PlayerRef.Get()->ResetStepCounter();
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(World->GetGameInstance());
+	Instance->StoreLastPlayerTransform(PlayerRef.Get(), PlayerRef.Get()->GetActorLocation(), PlayerRef.Get()->GetActorRotation());
+	Instance->SavePlayerTransformBegin(Instance->GetCurrentPlayer(), true);
 	UtilityFunctions::LoadSceneByName(World, "RandomSpawner");
 }
 

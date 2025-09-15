@@ -7,6 +7,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ICC_PlayerMemory.h"
 #include "ICantCry/ICC/Actors/ICC_Actor.h"
 #include "ICantCry/ICC/Input/DataAssets/ICC_InputDataAsset.h"
 #include "Camera/CameraComponent.h"
