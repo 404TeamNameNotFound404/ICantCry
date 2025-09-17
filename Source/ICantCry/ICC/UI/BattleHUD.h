@@ -166,6 +166,13 @@ public:
 
 	void SetBulletSetupFinished(const bool& Value);
 
+	/**
+	 * this method bind with the quantity text box in battle hud blueprint to
+	 * update the quantity at runtime while clicking
+	 * @return runtime selected bullet quantity
+	 */
+	UFUNCTION(BlueprintPure) FText GetHoveredBulletQuantity();
+
 private:
 
     UPROPERTY() ABattleHandler*  BattleHandler = nullptr;

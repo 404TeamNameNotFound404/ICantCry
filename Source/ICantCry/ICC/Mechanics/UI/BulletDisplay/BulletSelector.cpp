@@ -20,11 +20,10 @@ void UBulletSelector::Setup(FBullet& NewBullet, int32 InQuantity)
 	}
 }
 
-void UBulletSelector::DisplayBulletInfo()
+void UBulletSelector::DisplayBulletInfo() // NB no need to display quantity here since now it's directly bind in battle hud
 {
-	Player->GetBattleHUD()->BulletName->SetText(FText::FromString( BulletRef.GetBulletData()->BulletName));
-	Player->GetBattleHUD()->Description->SetText(FText::FromString(BulletRef.GetBulletData()->Description));
-	Player->GetBattleHUD()->QuantityTotal->SetText(FText::FromString(FString::FromInt(BulletRef.GetQuantity())));
+	Player->GetBattleHUD()->BulletName->SetText(FText::FromString(BulletRefPtr->GetBulletData()->BulletName));
+	Player->GetBattleHUD()->Description->SetText(FText::FromString(BulletRefPtr->GetBulletData()->Description));
 }
 
 FBullet& UBulletSelector::GetBullet()

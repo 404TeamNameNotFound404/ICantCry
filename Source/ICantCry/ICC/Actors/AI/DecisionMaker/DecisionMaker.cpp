@@ -57,12 +57,12 @@ void FDecisionMaker::Setup(AMob* Current)
     }},
 };
 
-	DecisionMap.Empty(); // Clear previous decisions
+	DecisionMap.Empty(); 
 
 	UBattleData* BattleData = Current->GetBattleData();
 	checkf(BattleData, TEXT("Battle data appears to be invalid"));
 
-	EMobType MobType = Current->GetMobType(); // Assuming this returns the correct enum
+	EMobType MobType = Current->GetMobType(); 
 
 	if (const DecisionPopulator* Populator = EmotionDecisionMap.Find(MobType))
 	{
@@ -76,52 +76,107 @@ void FDecisionMaker::Setup(AMob* Current)
 
 EDecision FDecisionMaker::Thought()
 {
-	const float Chance = FMath::FRand(); // Random float between 0.0 and 1.0
-	float Counter = 0.0f;
-	float TotalWeight = 0.0f;
+	// const float Chance = FMath::FRand(); // Random float between 0.0 and 1.0
+	// float Counter = 0.0f;
+	// float TotalWeight = 0.0f;
+	//
+	// DebugHelper::LogMessage(6, FColor::Purple, "Chance extracted: " + FString::SanitizeFloat(Chance));
+	//
+	// TMap<EDecision, float> FilteredMap;
+	//
+	//
+	// for (const auto& Entry : DecisionMap)
+	// {
+	// 	if (Entry.Key != LastDecision || CanRepeat(Entry.Key))
+	// 	{
+	// 		FilteredMap.Add(Entry.Key, Entry.Value);
+	// 	}
+	// }
+	//
+	// const TMap<EDecision, float>& FinalMap = FilteredMap.Num() > 0 ? FilteredMap : DecisionMap;
+	//
+	//
+	// for (const auto& Entry : FinalMap)
+	// {
+	// 	TotalWeight += Entry.Value;
+	// }
+	//
+	// if (TotalWeight <= 0.0f)
+	// {
+	// 	DebugHelper::LogWarning("Total weight is zero or negative. Returning default decision.");
+	// 	return EDecision::None;
+	// }
+	//
+	// for (const auto& Entry : FinalMap)
+	// {
+	// 	const float NormalizedWeight = Entry.Value / TotalWeight;
+	// 	Counter += NormalizedWeight;
+	// 	
+	// 	DebugHelper::LogMessage(6, FColor::Magenta, "Decision " + UEnum::GetValueAsString(Entry.Key) + "| Normalized weight: " + FString::SanitizeFloat(NormalizedWeight) + " | Counter: " + FString::SanitizeFloat(Counter));
+	//
+	// 	if (Chance < Counter)
+	// 	{
+	// 		LastDecision = Entry.Key;
+	// 		return Entry.Key;
+	// 	}
+	// }
+	//
+	// return EDecision::None;
 
-	DebugHelper::LogMessage(6, FColor::Purple, "Chance extracted: " + FString::SanitizeFloat(Chance));
-
-	TMap<EDecision, float> FilteredMap;
-
+	const float Chance = FMath::FRand(); // 0.0 - 1.0
+    float Counter = 0.0f;
+    float TotalWeight = 0.0f;
 	
-	for (const auto& Entry : DecisionMap)
-	{
-		if (Entry.Key != LastDecision || CanRepeat(Entry.Key))
-		{
-			FilteredMap.Add(Entry.Key, Entry.Value);
-		}
-	}
+    TMap<EDecision, float> FilteredMap;
+    for (const auto& Entry : DecisionMap)
+    {
+        if (Entry.Key != LastDecision || CanRepeat(Entry.Key))
+            FilteredMap.Add(Entry.Key, Entry.Value);
+    }
 
-	const TMap<EDecision, float>& FinalMap = FilteredMap.Num() > 0 ? FilteredMap : DecisionMap;
-
+   
+    const TMap<EDecision, float>& FinalMap = FilteredMap.Num() > 0 ? FilteredMap : DecisionMap;
 	
-	for (const auto& Entry : FinalMap)
-	{
-		TotalWeight += Entry.Value;
-	}
+    for (const auto& Entry : FinalMap)
+        TotalWeight += Entry.Value;
 
-	if (TotalWeight <= 0.0f)
-	{
-		DebugHelper::LogWarning("Total weight is zero or negative. Returning default decision.");
-		return EDecision::None;
-	}
+    if (TotalWeight <= KINDA_SMALL_NUMBER)
+    {
+        for (const auto& Entry : DecisionMap)
+        {
+            if (Entry.Key != EDecision::None)
+            {
+                LastDecision = Entry.Key;
+                return Entry.Key;
+            }
+        }
+        return EDecision::None;
+    }
 	
-	for (const auto& Entry : FinalMap)
-	{
-		const float NormalizedWeight = Entry.Value / TotalWeight;
-		Counter += NormalizedWeight;
-		
-		DebugHelper::LogMessage(6, FColor::Magenta, "Decision " + UEnum::GetValueAsString(Entry.Key) + "| Normalized weight: " + FString::SanitizeFloat(NormalizedWeight) + " | Counter: " + FString::SanitizeFloat(Counter));
+    for (const auto& Entry : FinalMap)
+    {
+        const float NormalizedWeight = Entry.Value / TotalWeight;
+        Counter += NormalizedWeight;
 
-		if (Chance < Counter)
-		{
-			LastDecision = Entry.Key;
-			return Entry.Key;
-		}
-	}
+        DebugHelper::LogMessage(6, FColor::Magenta, "Decision " + UEnum::GetValueAsString(Entry.Key));
+
+        if (Chance < Counter)
+        {
+            LastDecision = Entry.Key;
+            return Entry.Key;
+        }
+    }
 	
-	return EDecision::None;
+    for (const auto& Entry : FinalMap)
+    {
+        if (Entry.Key != EDecision::None)
+        {
+            LastDecision = Entry.Key;
+            return Entry.Key;
+        }
+    }
+	
+    return EDecision::None;
 }
 
 
@@ -143,6 +198,5 @@ bool FDecisionMaker::CanRepeat(const EDecision& Decision)
 	}
 	
 	return false;
-	 //return Decision ==  EDecision::None;
 }
 

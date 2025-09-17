@@ -865,6 +865,16 @@ void UBattleHUD::SetBulletSetupFinished(const bool& Value)
     bBulletSetupFinished = Value;
 }
 
+FText UBattleHUD::GetHoveredBulletQuantity()
+{
+    if (!CurrentSelectedBullet)
+    {
+        return FText::FromString("0");
+    }
+	
+    return FText::FromString("Quantity: " + FString::FromInt(CurrentSelectedBullet->GetBulletPtr()->GetQuantity()));
+}
+
 void UBattleHUD::ShowHUD() 
 {
     AddToViewport();
