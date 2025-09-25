@@ -122,11 +122,7 @@ void UBattleHUD::NativeConstruct()
     {
         BulletIcons[SelectedBulletIndex]->SetOpacity(1.0f);
     }
-
-    //FIND ENEMY IN THE LEVEL
-    UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Enemy"), Enemies); // Questo non credo serva piu visto che Enemies è vuoto
-
-
+    
     for (TActorIterator<ABattleHandler> It(GetWorld()); It; ++It)
 	{
 		BattleHandler = *It;
@@ -863,6 +859,16 @@ UVictoryVisualizer* UBattleHUD::GetVictoryVisualizer() const
 void UBattleHUD::SetBulletSetupFinished(const bool& Value)
 {
     bBulletSetupFinished = Value;
+}
+
+FText UBattleHUD::GetHoveredBulletQuantity()
+{
+    if (!CurrentSelectedBullet)
+    {
+        return FText::FromString("0");
+    }
+	
+    return FText::FromString("Quantity: " + FString::FromInt(CurrentSelectedBullet->GetBulletPtr()->GetQuantity()));
 }
 
 void UBattleHUD::ShowHUD() 

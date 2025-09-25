@@ -69,7 +69,8 @@ EMinigameThreshold UAttackMinigame::CheckBar()
 	return EMinigameThreshold::Miss;
 }
 
-
+// ----------------REMINDER-------------------------------------
+// calculated at runtime depending on the type of emotions target
 void UAttackMinigame::HandleScore()
 {
 	const EMinigameThreshold Result = CheckBar();
@@ -79,7 +80,7 @@ void UAttackMinigame::HandleScore()
 	{
 	case EMinigameThreshold::Bad:
 		DebugHelper::LogError("Bad minigame score!");
-		Instance->GetPlayerStats()->MinigameModifier = 0.5f;
+		Instance->GetPlayerStats()->MinigameModifier = 0.5f;  
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);

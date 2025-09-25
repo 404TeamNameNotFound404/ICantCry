@@ -166,6 +166,13 @@ public:
 
 	void SetBulletSetupFinished(const bool& Value);
 
+	/**
+	 * this method bind with the quantity text box in battle hud blueprint to
+	 * update the quantity at runtime while clicking
+	 * @return runtime selected bullet quantity
+	 */
+	UFUNCTION(BlueprintPure) FText GetHoveredBulletQuantity();
+
 private:
 
     UPROPERTY() ABattleHandler*  BattleHandler = nullptr;
@@ -179,8 +186,7 @@ private:
     int32 SelectedBulletIndex = 0;
     int32 CurrentRevolverSlot = 0;
     UPROPERTY(EditDefaultsOnly, Category = "Bullets") int32 MaxRevolverSlots = 6;
-
-    TArray<AActor*> Enemies; // non ha senso sta variabile qua , abbiamo la queue sul battle handler
+	
     UPROPERTY() UBulletData* CurrentBulletData;
 	
 	UPROPERTY()

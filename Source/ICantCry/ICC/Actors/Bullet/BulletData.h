@@ -36,6 +36,20 @@ enum EBulletType
 	Shame
 };
 
+UENUM(BlueprintType)
+enum EEmotionType
+{
+	Emotion_Anger,
+	Emotion_Shame,
+	Emotion_Joy,
+	Emotion_Disgust,
+	Emotion_Fear,
+	Emotion_Jealousy,
+	Emotion_Sadness,
+	Emotion_Anxiety,
+	Emotion_Calm
+};
+
 
 /**
  * 
@@ -71,10 +85,10 @@ public:
 	UTexture2D* Icon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet Properties")
-	TArray<TEnumAsByte<EBulletType>> WeakAgainst;
+	TArray<TEnumAsByte<EEmotionType>> WeakAgainst;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet Properties")
-	TArray<TEnumAsByte<EBulletType>> StrongAgainst;
+	TArray<TEnumAsByte<EEmotionType>> StrongAgainst;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet Properties")
 	FColor DisplayColor;
