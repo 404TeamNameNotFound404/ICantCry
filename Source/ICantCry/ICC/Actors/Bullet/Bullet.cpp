@@ -1,17 +1,15 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Bullet.h"
 
 
 UBulletData* FBullet::GetBulletData() const
 {
-	return BulletData; 
+	return BulletData;
 }
 
 void FBullet::SetBulletData(UBulletData* NewData)
 {
-	BulletData = NewData; 
+	BulletData = NewData;
 }
 
 void FBullet::SetQuantity(const int32& NewQuantity)
@@ -32,57 +30,38 @@ FString FBullet::GetStrongAgainstName() const
 	{
 		switch (Strong)
 		{
-		case Indifference:
-			Result += "Indifference, ";
+		case Emotion_Anger:
+			Result  += " Anger";
 			break;
-		case AngerEV:
-			Result += "Anger, ";
+		case Emotion_Shame:
+			Result  += " Shame";
 			break;
-		case AngerDv:
-			Result += "Anger, ";
+		case Emotion_Joy:
+			Result  += " Joy";
 			break;
-		case FearEV:
-			Result += "FearEv, ";
+		case Emotion_Disgust:
+			Result  += " Disgust";
 			break;
-		case FearDv:
-			Result += "FearDv, ";
+		case Emotion_Fear:
+			Result  += " Fear";
 			break;
-		case Disgust:
-			Result += "Disgust, ";
+		case Emotion_Jealousy:
+			Result  += " Jealousy";
 			break;
-		case Sadness:
-			Result += "Sadness, ";
+		case Emotion_Sadness:
+			Result  += " Sadness";
 			break;
-		case JoyEv:
-			Result += "JoyEv, ";
+		case Emotion_Anxiety:
+			Result  += " Anxiety";
 			break;
-		case JoyDv:
-			Result += "JoyDv, ";
-			break;
-		case Anxiety:
-			Result += "Anxiety, ";
-			break;
-		case CalmEV:
-			Result += "CalmEv, ";
-			break;
-		case CalmDv:
-			Result += "CalmDv, ";
-			break;
-		case JealousyEV:
-			Result += "JealousyEv, ";
-			break;
-		case JealousyDv:
-			Result += "JealousyDv, ";
-			break;
-		case Shame:
-			Result += "Shame, ";
+		case Emotion_Calm:
+			Result  += " Calm";
 			break;
 		default:
 			break;
 		}
 	}
 
-	
 	if (Result.EndsWith(", "))
 	{
 		Result.LeftChopInline(2);
@@ -95,60 +74,42 @@ FString FBullet::GetWeakAgainstName() const
 {
 	FString Result;
 
-	for (const auto& Weak : BulletData->WeakAgainst)
+	for (const auto& Strong : BulletData->StrongAgainst)
 	{
-		switch (Weak)
+		switch (Strong)
 		{
-		case Indifference:
-			Result += "Indifference, ";
+		case Emotion_Anger:
+			Result  += " Anger";
 			break;
-		case AngerEV:
-			Result += "AngerEV, ";
+		case Emotion_Shame:
+			Result  += " Shame";
 			break;
-		case AngerDv:
-			Result += "AngerDV, ";
+		case Emotion_Joy:
+			Result  += " Joy";
 			break;
-		case FearEV:
-			Result += "FearEV, ";
+		case Emotion_Disgust:
+			Result  += " Disgust";
 			break;
-		case FearDv:
-			Result += "FearDv, ";
+		case Emotion_Fear:
+			Result  += " Fear";
 			break;
-		case Disgust:
-			Result += "Disgust, ";
+		case Emotion_Jealousy:
+			Result  += " Jealousy";
 			break;
-		case Sadness:
-			Result += "Sadness, ";
+		case Emotion_Sadness:
+			Result  += " Sadness";
 			break;
-		case JoyEv:
-			Result += "JoyEv, ";
+		case Emotion_Anxiety:
+			Result  += " Anxiety";
 			break;
-		case JoyDv:
-			Result += "JoyDv, ";
-			break;
-		case Anxiety:
-			Result += "Anxiety, ";
-			break;
-		case CalmDv:
-			Result += "CalmDv, ";
-			break;
-		case CalmEV:
-			Result += "CalmEV, ";
-			break;
-		case JealousyDv:
-			Result += "Jealousy, ";
-			break;
-		case JealousyEV:
-			Result += "JealousyEv, ";
-			break;
-		case Shame:
-			Result += "Shame, ";
+		case Emotion_Calm:
+			Result  += " Calm";
 			break;
 		default:
 			break;
 		}
 	}
-		
+
 	if (Result.EndsWith(", "))
 	{
 		Result.LeftChopInline(2);
@@ -156,5 +117,3 @@ FString FBullet::GetWeakAgainstName() const
 
 	return Result;
 }
-
-

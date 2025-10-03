@@ -50,7 +50,7 @@ void UDefenceMinigame::HandleScore()
 	{
 	case EMinigameThreshold::Bad:
 		DebugHelper::LogMessage(3, FColor::FromHex("640D5F"), "33% damage reduction");
-		Instance->GetPlayerStats()->MinigameModifier = 0.70f;;
+		Instance->GetPlayerStats()->MinigameModifier = 0.66f; // previously 0.70
 		AMob::DealDamage();
 		break;
 	case EMinigameThreshold::Good:

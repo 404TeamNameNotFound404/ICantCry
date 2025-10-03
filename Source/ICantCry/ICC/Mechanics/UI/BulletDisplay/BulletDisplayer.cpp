@@ -56,7 +56,6 @@ void UBulletDisplayer::Refresh()
 
 	for (auto& Bullet : Instance->GetInventory().BulletsStored)
 	{
-		
 		FBullet& B = Bullet.Value;
 		
 		UBulletSelector* Item = CreateWidget<UBulletSelector>(GetWorld(), BulletButtonItemClass);
@@ -129,5 +128,16 @@ void UBulletDisplayer::RemoveBullet()
 	const float Damage = Instance->GetCurrentDamageData().CalculateDamage(true);
 	Target->GetStats().Health -= Damage;
 	Target->GetHealthBar()->SetCurrentHealth(Target->GetStats().Health);
+}
+
+void UBulletDisplayer::InstantiateBullet(TArray<FBullet> InstantiateBullets)
+{
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	
+	for (FBullet& b : InstantiateBullets)
+	{
+		b.SetQuantity(10);
+		Instance->GetInventory().BulletsStored.Add(b.GetBulletData()->Type, b);
+	}
 }
 

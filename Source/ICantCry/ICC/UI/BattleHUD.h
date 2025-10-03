@@ -186,8 +186,7 @@ private:
     int32 SelectedBulletIndex = 0;
     int32 CurrentRevolverSlot = 0;
     UPROPERTY(EditDefaultsOnly, Category = "Bullets") int32 MaxRevolverSlots = 6;
-
-    TArray<AActor*> Enemies; // non ha senso sta variabile qua , abbiamo la queue sul battle handler
+	
     UPROPERTY() UBulletData* CurrentBulletData;
 	
 	UPROPERTY()

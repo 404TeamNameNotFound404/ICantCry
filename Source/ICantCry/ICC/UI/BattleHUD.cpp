@@ -122,11 +122,7 @@ void UBattleHUD::NativeConstruct()
     {
         BulletIcons[SelectedBulletIndex]->SetOpacity(1.0f);
     }
-
-    //FIND ENEMY IN THE LEVEL
-    UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Enemy"), Enemies); // Questo non credo serva piu visto che Enemies è vuoto
-
-
+    
     for (TActorIterator<ABattleHandler> It(GetWorld()); It; ++It)
 	{
 		BattleHandler = *It;
