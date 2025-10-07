@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/BoxComponent.h"
 #include "GameFramework/Actor.h"
+#include "ICantCry/ICC/Actors/MinigameSpawnables/Papers/Paper.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "ChallengeMinigame.generated.h"
 
@@ -49,6 +50,10 @@ public:
 	bool GetIsInArea() const;
 
 	void Exit();
+
+	static AChallengeMinigame* Singleton;
+	void PickPaper();
+	APaper* GetCurrentPaper() const;
 	
 
 private:
@@ -60,4 +65,18 @@ private:
 
 	UPROPERTY()
 	UICantCryGameInstance* Instance = nullptr;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Challenge", meta = (AllowPrivateAccess = "true"))
+	TArray<TSoftObjectPtr<AActor>> TerrainSlots;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Challenge", meta = (AllowPrivateAccess = "true"))
+	FVector LocationOffset = {0, 0, 1};
+	
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Challenge", meta = (AllowPrivateAccess = "true"))
+	TArray<TSubclassOf<APaper>> Papers;
+
+	UPROPERTY()
+	APaper* CurrentPaper = nullptr;
+
+	void InitSlots();
 };

@@ -71,6 +71,7 @@ void AMob::BeginPlay()
 	Memory.InitialAttackPower = GetData()->AttackPower;
 	Memory.InitialDefencePower = GetData()->DefencePower;
 	EnemyData->Alive = true;
+	EnemyData->Type = Type;
 	Stats.Health = GetData()->MaxHealth;
 	Stats.bAlive = true;
 }

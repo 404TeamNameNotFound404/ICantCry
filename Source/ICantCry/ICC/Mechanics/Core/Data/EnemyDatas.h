@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "ICantCry/ICC/Actors/AI/MobType.h"
 #include "EnemyDatas.generated.h"
 
 /**
@@ -40,6 +41,9 @@ public:
 	
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
 	bool Alive;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
+	TEnumAsByte<EMobType> Type;
 
 	
 };

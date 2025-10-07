@@ -14,7 +14,7 @@
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "ICantCry/ICC/UI/InventoryHUD.h"
 #include "Kismet/GameplayStatics.h"
-
+#include "ICantCry/ICC/Mechanics/ChallengeMinigames/ChallengeMinigame.h"
 
 // Sets default values
 AICC_Player::AICC_Player()
@@ -155,7 +155,7 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Inventory, ETriggerEvent::Triggered, this, &ThisClass::Input_OpenInventory);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Crafting, ETriggerEvent::Started, this, &ThisClass::Input_OpenCrafting);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_CloseCrafting, ETriggerEvent::Triggered, this, &ThisClass::Input_CloseCrafting);
-
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_LMBInteract, ETriggerEvent::Triggered, this, &ThisClass::Input_ChallengeInteraction);
 }
 
 AWorldCamera* AICC_Player::GetWorldCamera() const
@@ -478,6 +478,18 @@ void AICC_Player::Input_CloseCrafting(const FInputActionValue& InputActionValue)
 	}
 }
 
+void AICC_Player::Input_ChallengeInteraction(const FInputActionValue& InputActionValue)
+{
+	if (bIsInFight || !AChallengeMinigame::Singleton)
+	{
+		return;
+	}
+
+	if (AChallengeMinigame::Singleton->GetIsInArea())
+	{
+		AChallengeMinigame::Singleton->PickPaper();
+	}
+}
 
 int32 AICC_Player::GetStepCounter() const
 {

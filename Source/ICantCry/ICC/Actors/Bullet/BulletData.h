@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "ICantCry/ICC/Actors/AI/MobType.h"
 #include "BulletData.generated.h"
 
 
@@ -92,6 +93,17 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet Properties")
 	FColor DisplayColor;
+
+	/**
+	 * Determines the strength of the bullet based on its value.
+	 * Example: A Coefficient of 0.5 makes the bullet less effective
+	 *  while a value of 1.5 makes it super effective.
+	 */
+	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Bullet Properties")
+	// float Coefficient = 0.5f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Bullet Properties")
+	TMap<TEnumAsByte<EMobType>, float> Coefficients;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifiers")
 	TEnumAsByte<EBulletType> Type;
@@ -101,4 +113,5 @@ public:
  */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Modifiers")
 	float WeaknessModifier = 0.0f;
+
 };

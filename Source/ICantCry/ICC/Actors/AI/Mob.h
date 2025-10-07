@@ -16,23 +16,10 @@
 #include "ICantCry/ICC/Mechanics/Core/Data/BattleData.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "ICantCry/ICC/Actors/AI/Emotions/EmotionStats/FEmotionStat.h"
+#include "ICantCry/ICC/Actors/AI/MobType.h"
 #include "Mob.generated.h"
 
 class ABattleHandler;
-
-UENUM()
-enum EMobType
-{
-	MobAnger,
-	MobShame,
-	MobJoy,
-	MobDisgust,
-	MobFear,
-	MobJealousy,
-	MobSadness,
-	MobAnxiety,
-	MobCalm
-};
 
 
 UCLASS(Blueprintable)

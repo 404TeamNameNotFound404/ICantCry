@@ -227,6 +227,7 @@ private:
 	void Input_OpenInventory(const FInputActionValue& InputActionValue);
 	void Input_OpenCrafting(const FInputActionValue& InputActionValue);
 	void Input_CloseCrafting(const FInputActionValue &InputActionValue);
+	void Input_ChallengeInteraction(const FInputActionValue &InputActionValue); // Puzzle assemble minigame interaction
 
 	void CloseInventory();
 	void ToggleInventory();
