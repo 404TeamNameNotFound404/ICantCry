@@ -23,10 +23,19 @@ int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 	
 	if (IsPlayerAttacking)
 	{
+		float Coefficient = 0.5f; // fallback in case of invalid parameters
+
+		if (BulletData->Coefficients.Contains(EnemyData->Type))
+		{
+			Coefficient = BulletData->Coefficients[EnemyData->Type];
+			DebugHelper::LogWarning("Coefficient found!");
+		}
+
+		DebugHelper::LogWarning("Coefficient is " + FString::FromInt(Coefficient));
 		DebugHelper::LogSuccess("Calculating damage Player -> Enemy");
 		DebugHelper::LogMessage(10, FColor::Purple, "Power " + FString::FromInt(BulletData->Power) + "\nMinigameModifier " + FString::FromInt(PlayerStats->MinigameModifier) + "\nAttack " + FString::FromInt(PlayerStats->AttackPower) +
 			"\nDefencePower " + FString::FromInt(PlayerStats->DefencePower) + "\nAP " + FString::FromInt(PlayerStats->ApModifier) + "\nWeakness " + FString::SanitizeFloat(PlayerStats->WeaknessModifier));
-		const int Result = (((BulletData->Power / (2 - PlayerStats->MinigameModifier)) * (PlayerStats->AttackPower / PlayerStats->DefencePower))) * PlayerStats->ApModifier * BulletData->WeaknessModifier;
+		const int Result = (((BulletData->Power / (2 - PlayerStats->MinigameModifier)) * (PlayerStats->AttackPower / PlayerStats->DefencePower))) * PlayerStats->ApModifier * BulletData->WeaknessModifier * Coefficient;
 		DebugHelper::LogMessage(3, FColor::FromHex("433878"), "Damage dealt -> " + FString::FromInt(Result));
 		return Result;
 	}
