@@ -342,7 +342,7 @@ void UBattleHUD::UpdateTarget()
         
         CurrentBulletData = GetCircularBulletBuffer()->PeekAt(GetCircularBulletBuffer()->GetTailIndex());
         
-        if (TargetEnemy->IsA(AICC_Player::StaticClass()) && CurrentBulletData->Type != FearEV && CurrentBulletData->Type != AngerEV &&
+        if (TargetEnemy->IsA(AICC_Player::StaticClass()) && CurrentBulletData->Type != FearEV && CurrentBulletData->Type != AngerEv &&
             CurrentBulletData->Type != JoyEv)
         {
             HideInfo();
@@ -351,7 +351,7 @@ void UBattleHUD::UpdateTarget()
 
         if (TargetEnemy->IsA(AMob::StaticClass()) && 
             (CurrentBulletData->Type == FearEV || 
-             CurrentBulletData->Type == AngerEV || 
+             CurrentBulletData->Type == AngerEv || 
              CurrentBulletData->Type == JoyEv))
         {
             HideInfo();
@@ -522,13 +522,24 @@ void UBattleHUD::PrepareToEngage()
 
 void UBattleHUD::SpawnVisualizer()
 {
-    TSubclassOf<UVictoryVisualizer> VictoryVisualizerClass = LoadClass<UVictoryVisualizer>(this,TEXT("/Game/ICC/BluePrints/UI/Battle/BP_Victory.BP_Victory_C"));
-    checkf(VictoryVisualizerClass, TEXT("VictoryVisualizerClass path invalid"))
-    VictoryVisualizer = CreateWidget<UVictoryVisualizer>(GetWorld(), VictoryVisualizerClass);
-    checkf(VictoryVisualizer, TEXT("Invalid victory visualizer"))
-    VictoryVisualizer->Setup(GetBattleHandler()->GetTurnBasedSystem()->GetTurn().Queue);
-    VisualizerSlot->AddChild(VictoryVisualizer);
-    VictoryVisualizer->SetVisibility(ESlateVisibility::Hidden);
+    FTimerHandle DelayHudHandle;
+    GetWorld()->GetTimerManager().SetTimer(DelayHudHandle, [this]()
+    {
+        TSubclassOf<UVictoryVisualizer> VictoryVisualizerClass = LoadClass<UVictoryVisualizer>(this,TEXT("/Game/ICC/BluePrints/UI/Battle/BP_Victory.BP_Victory_C"));
+        checkf(VictoryVisualizerClass, TEXT("VictoryVisualizerClass path invalid"))
+        VictoryVisualizer = CreateWidget<UVictoryVisualizer>(GetWorld(), VictoryVisualizerClass);
+        checkf(VictoryVisualizer, TEXT("Invalid victory visualizer"))
+        VictoryVisualizer->Setup(GetBattleHandler()->GetTurnBasedSystem()->GetTurn().Queue);
+        VisualizerSlot->AddChild(VictoryVisualizer);
+        VictoryVisualizer->SetVisibility(ESlateVisibility::Hidden);
+    }, 5.0f, false);
+    // TSubclassOf<UVictoryVisualizer> VictoryVisualizerClass = LoadClass<UVictoryVisualizer>(this,TEXT("/Game/ICC/BluePrints/UI/Battle/BP_Victory.BP_Victory_C"));
+    // checkf(VictoryVisualizerClass, TEXT("VictoryVisualizerClass path invalid"))
+    // VictoryVisualizer = CreateWidget<UVictoryVisualizer>(GetWorld(), VictoryVisualizerClass);
+    // checkf(VictoryVisualizer, TEXT("Invalid victory visualizer"))
+    // VictoryVisualizer->Setup(GetBattleHandler()->GetTurnBasedSystem()->GetTurn().Queue);
+    // VisualizerSlot->AddChild(VictoryVisualizer);
+    // VictoryVisualizer->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UBattleHUD::SetSelectedBullet(int32 Index)
@@ -711,7 +722,7 @@ void UBattleHUD::Engage()
             PrepareToEngage();
             break;
         }
-    case AngerEV:
+    case AngerEv:
         PersistentInstance->GetCurrentPlayer()->GetStatusTracker()->BuffWith(EBuffStatus::AtkBuff);
         EngageBtn->SetVisibility(ESlateVisibility::Hidden);
         CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
@@ -731,7 +742,7 @@ void UBattleHUD::Engage()
             PrepareToEngage();
             break;
         }
-    case Sadness:
+    case SadnessDv:
         {
             PrepareToEngage();
             break;
@@ -767,7 +778,7 @@ void UBattleHUD::Engage()
             break;
         }
 
-    case JealousyEV:
+    case JealousyEv:
         {
             break;
         }
@@ -838,12 +849,22 @@ void UBattleHUD::DisplayVictoryVisualizer()
 
 void UBattleHUD::SpawnGameOverVisualizer()
 {
-    TSubclassOf<UGameOverVisualizer> GameOverVisualizerClass = LoadClass<UGameOverVisualizer>(this,TEXT("/Game/ICC/BluePrints/UI/Battle/WBP_GameOver.WBP_GameOver_C"));
-    checkf(GameOverVisualizerClass, TEXT("GameOverVisualizerClass path invalid"))
-    GameOverVisualizer = CreateWidget<UGameOverVisualizer>(GetWorld(), GameOverVisualizerClass);
-    checkf(GameOverVisualizer, TEXT("Invalid GameOverVisualizer"))
-    VisualizerGameOverSlot->AddChild(GameOverVisualizer);
-    GameOverVisualizer->SetVisibility(ESlateVisibility::Hidden);
+    FTimerHandle DelayHudHandle;
+    GetWorld()->GetTimerManager().SetTimer(DelayHudHandle, [this]()
+    {
+        TSubclassOf<UGameOverVisualizer> GameOverVisualizerClass = LoadClass<UGameOverVisualizer>(this,TEXT("/Game/ICC/BluePrints/UI/Battle/WBP_GameOver.WBP_GameOver_C"));
+        checkf(GameOverVisualizerClass, TEXT("GameOverVisualizerClass path invalid"))
+        GameOverVisualizer = CreateWidget<UGameOverVisualizer>(GetWorld(), GameOverVisualizerClass);
+        checkf(GameOverVisualizer, TEXT("Invalid GameOverVisualizer"))
+        VisualizerGameOverSlot->AddChild(GameOverVisualizer);
+        GameOverVisualizer->SetVisibility(ESlateVisibility::Hidden);
+    }, 5.0f, false);
+    // TSubclassOf<UGameOverVisualizer> GameOverVisualizerClass = LoadClass<UGameOverVisualizer>(this,TEXT("/Game/ICC/BluePrints/UI/Battle/WBP_GameOver.WBP_GameOver_C"));
+    // checkf(GameOverVisualizerClass, TEXT("GameOverVisualizerClass path invalid"))
+    // GameOverVisualizer = CreateWidget<UGameOverVisualizer>(GetWorld(), GameOverVisualizerClass);
+    // checkf(GameOverVisualizer, TEXT("Invalid GameOverVisualizer"))
+    // VisualizerGameOverSlot->AddChild(GameOverVisualizer);
+    // GameOverVisualizer->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UBattleHUD::DisplayGameOverVisualizer()

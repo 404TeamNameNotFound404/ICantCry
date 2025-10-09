@@ -96,8 +96,14 @@ void UTurnBasedSystem::Start2(UWorld* World, FBattleMemory* Memory)
 		TryGetCurrentPlayer()->GetBattleHUD()->SpawnGameOverVisualizer();
 	}, 0.5f, false);
 	
+
+	FTimerHandle DelayHudHandle;
+	World->GetTimerManager().SetTimer(DelayHudHandle, [this]()
+	{
+		CurrentPlayer->GetBattleHUD()->ShowHUD();
+	}, 5.f, false);
 	
-	CurrentPlayer->GetBattleHUD()->ShowHUD();
+	// CurrentPlayer->GetBattleHUD()->ShowHUD();
 	DebugHelper::LogSuccess("Fight started right after");
 }
 
