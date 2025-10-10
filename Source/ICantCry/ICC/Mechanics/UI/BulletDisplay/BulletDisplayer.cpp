@@ -118,6 +118,7 @@ void UBulletDisplayer::RemoveBullet()
 	}
 	
 	RefreshBullets();
+	Refresh();
 
 	if (BulletType == FearEV || BulletType == JoyEv || BulletType == CalmEV || BulletType == AngerEv)
 	{

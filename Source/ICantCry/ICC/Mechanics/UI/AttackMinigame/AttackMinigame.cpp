@@ -90,6 +90,7 @@ void UAttackMinigame::HandleScore()
 			Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
 				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
 		}
+		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
 		break;
 	case EMinigameThreshold::Good:
 		DebugHelper::LogWarning("Good minigame score!");
@@ -104,6 +105,7 @@ void UAttackMinigame::HandleScore()
 			Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
 				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
 		}
+		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
 		break;
 	case EMinigameThreshold::Perfect:
 		DebugHelper::LogSuccess("Perfect minigame score!");
@@ -118,6 +120,7 @@ void UAttackMinigame::HandleScore()
 			Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
 				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
 		}
+		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
 		break;
 	default:
 		DebugHelper::LogMessage(3, FColor::FromHex("ADB2D4"), "Unknown minigame score!");
@@ -132,6 +135,7 @@ void UAttackMinigame::HandleScore()
 			Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
 				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
 		}
+		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
 		break;
 	}
 }

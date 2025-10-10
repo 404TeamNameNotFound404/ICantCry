@@ -237,6 +237,7 @@ void UTurnBasedSystem::EndTurn()
 	{
 		DebugHelper::LogError("AI Turn Ended");
 		bAIPlayTurn = false;
+		Instance->GetCurrentPlayer()->GetBattleHUD()->SetApAccumulator(0);
 	}
 
 	Turn.CurrentTurn = Turn.NextTurn;
