@@ -31,6 +31,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Bullet Buffer")
 	UBulletData* RemoveBullet();
 
+	void RemoveAt(const int32& Index);
+
 	UFUNCTION(BlueprintCallable, Category = "Bullet Buffer")
 	UBulletData* PeekCurrentBullet() const;  // get the current bullet without remove it
 

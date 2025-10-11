@@ -74,6 +74,21 @@ void UBattleHUD::NativeConstruct()
         PistolMagazine_6
     };
 
+    MagazineBullets =
+    {
+        MagazineBullet0,
+        MagazineBullet1,
+        MagazineBullet2,
+        MagazineBullet3,
+        MagazineBullet4,
+        MagazineBullet5
+    };
+
+    for (UMagazineBullet* Bullet : MagazineBullets)
+    {
+        Bullet->SetRenderOpacity(0.0f);
+    }
+
     ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
     ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 
@@ -517,6 +532,13 @@ void UBattleHUD::IncreaseShootPower()
 
     ApPowerBoost++;
     ApAccumulator = FMath::Min(ApAccumulator + 1, 4);
+
+    if (ApAccumulator > CurrentAP)
+    {
+        DebugHelper::LogError("You can't add more ap than you have it current ap " + FString::FromInt(CurrentAP) + "- Accumulator " + FString::FromInt(ApAccumulator));
+        ApAccumulator = CurrentAP;
+    }
+    
     const int32 Boost = ApAccumulator;
     GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStats()->ApModifier = 1.0f + (Boost * 0.5f);
     DebugHelper::LogSuccess("Shoot is boosted ap modifier now is " + FString::SanitizeFloat( GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStats()->ApModifier ));
@@ -972,6 +994,11 @@ void UBattleHUD::UpdateAp()
 void UBattleHUD::SetApAccumulator(const int& Value)
 {
     ApAccumulator = Value;
+}
+
+FBullet* UBattleHUD::GetCurrentSelectedBullet() const
+{
+    return CurrentSelectedBullet->GetBulletPtr();
 }
 
 void UBattleHUD::ShowHUD() 

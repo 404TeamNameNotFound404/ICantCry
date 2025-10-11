@@ -111,12 +111,23 @@ public:
 	UPROPERTY(meta = (BindWidget)) UImage* PistolMagazine_4;
 	UPROPERTY(meta = (BindWidget)) UImage* PistolMagazine_5;
 	UPROPERTY(meta = (BindWidget)) UImage* PistolMagazine_6;
+
+	UPROPERTY(meta = (BindWidget)) UMagazineBullet* MagazineBullet0;
+	UPROPERTY(meta = (BindWidget)) UMagazineBullet* MagazineBullet1;
+	UPROPERTY(meta = (BindWidget)) UMagazineBullet* MagazineBullet2;
+	UPROPERTY(meta = (BindWidget)) UMagazineBullet* MagazineBullet3;
+	UPROPERTY(meta = (BindWidget)) UMagazineBullet* MagazineBullet4;
+	UPROPERTY(meta = (BindWidget)) UMagazineBullet* MagazineBullet5;
+	
 	UPROPERTY(meta = (BindWidget)) UCanvasPanel* CanvasBulletStats;
 
 	UPROPERTY() TArray<UImage*> PistolMagazines;
 
 	UPROPERTY()
 	TArray<UBulletData*> LoadedBulletData;
+
+	UPROPERTY() TArray<UMagazineBullet*> MagazineBullets;
+	
 	UBulletDisplayer* GetBulletDisplayer() const;
 	
     UFUNCTION(BlueprintCallable)void ScrollBulletSelection(float ScrollValue);
@@ -180,6 +191,8 @@ public:
 	 */
 	void UpdateAp();
 	void SetApAccumulator(const int& Value);
+
+	FBullet* GetCurrentSelectedBullet() const;
 
 private:
 

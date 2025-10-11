@@ -7,6 +7,7 @@
 #include "Components/Button.h"
 #include "Components/Image.h"
 #include "ICantCry/ICC/Actors/Bullet/Bullet.h"
+#include "ICantCry/ICC/Mechanics/UI/MagazineBullet/MagazineBullet.h"
 #include "BulletSelector.generated.h"
 
 
@@ -49,6 +50,8 @@ protected:
 
 	UPROPERTY()
 	FBullet BulletRef;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess=true)) TSubclassOf<UMagazineBullet> BulletClass;
 	
 	FBullet* BulletRefPtr = nullptr;
 	
