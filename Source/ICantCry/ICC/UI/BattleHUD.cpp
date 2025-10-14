@@ -212,6 +212,9 @@ void UBattleHUD::OnShootPressed()
         return;
     }
 
+    DisableButtonsDuringShooting();
+
+    CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Hidden);
     CanvasMiniGames->SetVisibility(ESlateVisibility::Visible);
     Displayer->SetVisibility(ESlateVisibility::Hidden);
     TargetText->SetVisibility(ESlateVisibility::Visible);
@@ -286,6 +289,7 @@ void UBattleHUD::OnFocusPressed()
     BattleHandler->GetTurnBasedSystem()->SetTurnOverlayApplied(false);
     Displayer->SetVisibility(ESlateVisibility::Hidden);
     CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
+    CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Hidden);
     bTargetSelection = false;
 }
 
@@ -301,8 +305,10 @@ void UBattleHUD::OnReloadPressed()
         DecreaseAP(1);
         return;
     }
-    
-    IncreaseAP(1);
+
+    CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Visible);
+    DecreaseAP(1);
+    UpdateAPBar();
 
     bBulletSetupFinished = false;
     bShootFired = false;
@@ -323,7 +329,7 @@ void UBattleHUD::OnPassPressed()
         DebugHelper::LogError("You can't pass it's not player turn");
         return;
     }
-
+    CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Hidden);
     Displayer->SetVisibility(ESlateVisibility::Hidden);
     CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
     IncreaseAP(1);
@@ -533,11 +539,12 @@ void UBattleHUD::IncreaseShootPower()
     ApPowerBoost++;
     ApAccumulator = FMath::Min(ApAccumulator + 1, 4);
 
-    if (ApAccumulator > CurrentAP)
+    if (ApAccumulator > CurrentAP || ApAccumulator <= CurrentAP)
     {
         DebugHelper::LogError("You can't add more ap than you have it current ap " + FString::FromInt(CurrentAP) + "- Accumulator " + FString::FromInt(ApAccumulator));
         ApAccumulator = CurrentAP;
     }
+    
     
     const int32 Boost = ApAccumulator;
     GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStats()->ApModifier = 1.0f + (Boost * 0.5f);
@@ -778,6 +785,9 @@ void UBattleHUD::Engage()
         EngageBtn->SetVisibility(ESlateVisibility::Hidden);
         CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
         GetBulletDisplayer()->RemoveBullet();
+        EnableButtonsAfterShooting();
+        DecreaseAP(1);
+        UpdateAPBar();
         break;
     case FearDv:
         {
@@ -787,6 +797,9 @@ void UBattleHUD::Engage()
     case FearEV:
         EngageBtn->SetVisibility(ESlateVisibility::Hidden);
         CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
+        EnableButtonsAfterShooting();
+        DecreaseAP(1);
+        UpdateAPBar();
         break;
     case Disgust:
         {
@@ -808,6 +821,9 @@ void UBattleHUD::Engage()
         EngageBtn->SetVisibility(ESlateVisibility::Hidden);
         CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
         GetBulletDisplayer()->RemoveBullet();
+        EnableButtonsAfterShooting();
+        DecreaseAP(1);
+        UpdateAPBar();
         break;
     case Anxiety:
         {
@@ -821,6 +837,10 @@ void UBattleHUD::Engage()
         }
     case CalmEV:
         {
+            // Debuff shield
+            EnableButtonsAfterShooting();
+            DecreaseAP(1);
+            UpdateAPBar();
             break;
         }
     case JealousyDv:
@@ -831,6 +851,10 @@ void UBattleHUD::Engage()
 
     case JealousyEv:
         {
+            // Envy Burned
+            EnableButtonsAfterShooting();
+            DecreaseAP(1);
+            UpdateAPBar();
             break;
         }
     case Shame:
@@ -999,6 +1023,22 @@ void UBattleHUD::SetApAccumulator(const int& Value)
 FBullet* UBattleHUD::GetCurrentSelectedBullet() const
 {
     return CurrentSelectedBullet->GetBulletPtr();
+}
+
+void UBattleHUD::DisableButtonsDuringShooting()
+{
+    Focus->SetIsEnabled(false);
+    Pass->SetIsEnabled(false);
+    Reload->SetIsEnabled(false);
+    Shoot->SetIsEnabled(false);
+}
+
+void UBattleHUD::EnableButtonsAfterShooting()
+{
+    Focus->SetIsEnabled(true);
+    Pass->SetIsEnabled(true);
+    Reload->SetIsEnabled(true);
+    Shoot->SetIsEnabled(true);
 }
 
 void UBattleHUD::ShowHUD() 
