@@ -81,4 +81,32 @@ public:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Task Chances")
 	float NormalAttackChance = 0.5f;
+	
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly, Category = "Drop System")
+	int AngerDropQuantity = 1;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drop System")
+	int JoyDropQuantity = 1;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drop System")
+	int FearDropQuantity = 1;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drop System")
+	int DisgustDropQuantity = 1;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drop System")
+	int AnxietyDropQuantity = 1;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drop System")
+	int SadnessDropQuantity = 1;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drop System")
+	int JealousyDropQuantity = 1;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drop System")
+	int CalmDropQuantity = 1;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drop System")
+	int ShameDropQuantity = 1;
 };

@@ -65,6 +65,31 @@ void FTurn::AssignFirstTurn()
 	DebugHelper::LogMessage(3, FColor::Blue, Queue[NextTurn]->GetName() + " will play next");
 }
 
+void FTurn::AssignFirstTurnByPriority()
+{
+	if (Queue.IsEmpty())
+	{
+		DebugHelper::LogError("Queue is empty can't assign first turn");
+		return;
+	}
+
+	Queue.Sort([](const AICC_Actor& A, const AICC_Actor& B)
+	{
+		if (A.GetSpeed() == B.GetSpeed())
+		{
+			return FMath::RandBool();
+		}
+		return A.GetSpeed() > B.GetSpeed();
+	});
+
+
+	CurrentTurn = 0;
+	NextTurn = (CurrentTurn + 1) % Queue.Num();
+
+	DebugHelper::LogSuccess(Queue[CurrentTurn]->GetName() + " will start");
+	DebugHelper::LogMessage(3, FColor::Blue, Queue[NextTurn]->GetName() + " will play next");
+}
+
 AMob* FTurn::GetMobInQueue() const
 {
 	if (Queue.IsEmpty())

@@ -52,7 +52,9 @@ public:
 
     // Action Buttons
     UPROPERTY(meta = (BindWidget)) UButton* Shoot;
-    UPROPERTY(meta = (BindWidget)) UButton* ShootBoost;
+    UPROPERTY(meta = (BindWidget)) UButton* ApIncreaseOnShoot;
+	UPROPERTY(meta = (BindWidget)) UButton* ApDecreaseOnShoot;
+	 UPROPERTY(meta = (BindWidget)) UButton* ShootBoost;
     UPROPERTY(meta = (BindWidget)) UButton* Focus;
     UPROPERTY(meta = (BindWidget)) UButton* Reload;
     UPROPERTY(meta = (BindWidget)) UButton* Pass;
@@ -109,15 +111,23 @@ public:
 	UPROPERTY(meta = (BindWidget)) UImage* PistolMagazine_4;
 	UPROPERTY(meta = (BindWidget)) UImage* PistolMagazine_5;
 	UPROPERTY(meta = (BindWidget)) UImage* PistolMagazine_6;
-	UPROPERTY(meta = (BindWidget)) UCanvasPanel* CanvasBulletStats;
 
-	UPROPERTY(meta=(BindWidget)) UButton* ApIncreaseOnShoot;
-	UPROPERTY(meta=(BindWidget)) UButton* ApDecreaseOnShoot;
+	UPROPERTY(meta = (BindWidget)) UMagazineBullet* MagazineBullet0;
+	UPROPERTY(meta = (BindWidget)) UMagazineBullet* MagazineBullet1;
+	UPROPERTY(meta = (BindWidget)) UMagazineBullet* MagazineBullet2;
+	UPROPERTY(meta = (BindWidget)) UMagazineBullet* MagazineBullet3;
+	UPROPERTY(meta = (BindWidget)) UMagazineBullet* MagazineBullet4;
+	UPROPERTY(meta = (BindWidget)) UMagazineBullet* MagazineBullet5;
+	
+	UPROPERTY(meta = (BindWidget)) UCanvasPanel* CanvasBulletStats;
 
 	UPROPERTY() TArray<UImage*> PistolMagazines;
 
 	UPROPERTY()
 	TArray<UBulletData*> LoadedBulletData;
+
+	UPROPERTY() TArray<UMagazineBullet*> MagazineBullets;
+	
 	UBulletDisplayer* GetBulletDisplayer() const;
 	
     UFUNCTION(BlueprintCallable)void ScrollBulletSelection(float ScrollValue);
@@ -173,14 +183,27 @@ public:
 	 */
 	UFUNCTION(BlueprintPure) FText GetHoveredBulletQuantity();
 
+	UFUNCTION(BlueprintPure) FText UpdateTargetSelectionInfos(); // TargetNameText Bind
+	UFUNCTION(BlueprintPure) FText UpdateEnemyName(); // TargetText Bind
+
+	/**
+	 * Update the ap after the attack is over
+	 */
+	void UpdateAp();
+	void SetApAccumulator(const int& Value);
+
+	FBullet* GetCurrentSelectedBullet() const;
+	void DisableButtonsDuringShooting();
+	void EnableButtonsAfterShooting();
+
 private:
 
     UPROPERTY() ABattleHandler*  BattleHandler = nullptr;
 
 
     // Game State
-    UPROPERTY()
-    int CurrentAP = 0;
+    UPROPERTY() int CurrentAP = 0;
+	UPROPERTY() int ApAccumulator = 0;
 
     int32 CurrentEnemyIndex = 0;
     int32 SelectedBulletIndex = 0;
@@ -311,6 +334,7 @@ private:
 	AICC_Actor* SelectedActorTarget = nullptr;
 
 	void PrepareToEngage();
+	
 
 	/**
 	 *-----------------------------

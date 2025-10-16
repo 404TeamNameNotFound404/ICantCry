@@ -96,8 +96,14 @@ void UTurnBasedSystem::Start2(UWorld* World, FBattleMemory* Memory)
 		TryGetCurrentPlayer()->GetBattleHUD()->SpawnGameOverVisualizer();
 	}, 0.5f, false);
 	
+
+	FTimerHandle DelayHudHandle;
+	World->GetTimerManager().SetTimer(DelayHudHandle, [this]()
+	{
+		CurrentPlayer->GetBattleHUD()->ShowHUD();
+	}, 5.f, false);
 	
-	CurrentPlayer->GetBattleHUD()->ShowHUD();
+	// CurrentPlayer->GetBattleHUD()->ShowHUD();
 	DebugHelper::LogSuccess("Fight started right after");
 }
 
@@ -116,7 +122,8 @@ void UTurnBasedSystem::Update(UWorld* World)
 
 	if (!bInit)
 	{
-		Turn.AssignFirstTurn();
+		//Turn.AssignFirstTurn();
+		Turn.AssignFirstTurnByPriority();
 	
 		if (Turn.Queue.IsValidIndex(Turn.CurrentTurn))
 		{
@@ -231,6 +238,7 @@ void UTurnBasedSystem::EndTurn()
 	{
 		DebugHelper::LogError("AI Turn Ended");
 		bAIPlayTurn = false;
+		Instance->GetCurrentPlayer()->GetBattleHUD()->SetApAccumulator(0);
 	}
 
 	Turn.CurrentTurn = Turn.NextTurn;

@@ -87,6 +87,11 @@ void AMob::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+int AMob::GetSpeed() const
+{
+	return Moves->Priority;
+}
+
 UEnemyDatas* AMob::GetData() const
 {
 	return EnemyData;

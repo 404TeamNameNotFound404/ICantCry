@@ -41,6 +41,8 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual int GetSpeed() const override;
+
 	/**
 	 * READ BELOW BEFORE USE!
 	 * @note This is the Static World Camera Reference not the Internal Player camera!
@@ -227,6 +229,7 @@ private:
 	void Input_OpenInventory(const FInputActionValue& InputActionValue);
 	void Input_OpenCrafting(const FInputActionValue& InputActionValue);
 	void Input_CloseCrafting(const FInputActionValue &InputActionValue);
+	void Input_ChallengeInteraction(const FInputActionValue &InputActionValue); // Puzzle assemble minigame interaction
 
 	void CloseInventory();
 	void ToggleInventory();

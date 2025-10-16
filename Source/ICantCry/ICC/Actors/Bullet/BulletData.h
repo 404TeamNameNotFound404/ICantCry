@@ -22,18 +22,19 @@ enum EBulletType
 {
 	Indifference,
 	AngerDv,
-	AngerEV,
+	AngerEv,
 	FearDv,
 	FearEV,
 	Disgust,
-	Sadness,
+	SadnessDv,
 	JoyDv,
 	JoyEv,
 	Anxiety,
 	CalmDv,
 	CalmEV,
 	JealousyDv,
-	JealousyEV,
+	JealousyEv,
+	SadnessEv,
 	Shame
 };
 
