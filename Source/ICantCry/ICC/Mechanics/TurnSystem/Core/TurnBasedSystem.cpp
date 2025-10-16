@@ -122,7 +122,8 @@ void UTurnBasedSystem::Update(UWorld* World)
 
 	if (!bInit)
 	{
-		Turn.AssignFirstTurn();
+		//Turn.AssignFirstTurn();
+		Turn.AssignFirstTurnByPriority();
 	
 		if (Turn.Queue.IsValidIndex(Turn.CurrentTurn))
 		{

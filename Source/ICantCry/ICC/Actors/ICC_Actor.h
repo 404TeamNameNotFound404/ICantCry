@@ -32,6 +32,8 @@ public:
 	bool IsShieldedDebuff() const;
 	bool IsAshamed() const;
 
+	virtual int GetSpeed() const;
+
 protected:
 	UPROPERTY()
 	UStatusTracker* StatusTracker;

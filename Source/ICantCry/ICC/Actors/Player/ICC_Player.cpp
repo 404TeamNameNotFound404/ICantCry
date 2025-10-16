@@ -158,6 +158,11 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_LMBInteract, ETriggerEvent::Triggered, this, &ThisClass::Input_ChallengeInteraction);
 }
 
+int AICC_Player::GetSpeed() const
+{
+	return Stats->Priority;
+}
+
 AWorldCamera* AICC_Player::GetWorldCamera() const
 {  
     return WorldCamera;
