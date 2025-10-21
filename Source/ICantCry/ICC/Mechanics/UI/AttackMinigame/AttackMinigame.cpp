@@ -80,7 +80,9 @@ void UAttackMinigame::HandleScore()
 	{
 	case EMinigameThreshold::Bad:
 		DebugHelper::LogError("Bad minigame score!");
-		Instance->GetPlayerStats()->MinigameModifier = 0.5f;  
+		Instance->GetPlayerStats()->MinigameModifier = 0.5f;
+		DebugHelper::AddMessageToLog("Player Minigame modifier " + FString::SanitizeFloat(Instance->GetPlayerStats()->MinigameModifier));
+		DebugHelper::AddMessageToLog("Bad minigame score!");
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
@@ -96,6 +98,8 @@ void UAttackMinigame::HandleScore()
 	case EMinigameThreshold::Good:
 		DebugHelper::LogWarning("Good minigame score!");
 		Instance->GetPlayerStats()->MinigameModifier = 1.0f;
+		DebugHelper::AddMessageToLog("Player Minigame modifier " + FString::SanitizeFloat(Instance->GetPlayerStats()->MinigameModifier));
+		DebugHelper::AddMessageToLog("Good minigame score!");
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
@@ -112,6 +116,8 @@ void UAttackMinigame::HandleScore()
 	case EMinigameThreshold::Perfect:
 		DebugHelper::LogSuccess("Perfect minigame score!");
 		Instance->GetPlayerStats()->MinigameModifier = 1.5f;
+		DebugHelper::AddMessageToLog("Player Minigame modifier " + FString::SanitizeFloat(Instance->GetPlayerStats()->MinigameModifier));
+		DebugHelper::AddMessageToLog("Perfect minigame score!");
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);

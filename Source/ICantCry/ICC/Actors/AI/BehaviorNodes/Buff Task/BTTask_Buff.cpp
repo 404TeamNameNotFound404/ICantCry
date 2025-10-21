@@ -39,6 +39,8 @@ EBTNodeResult::Type UBTTask_Buff::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(
 		FText::FromString(Current->GetActorLabel() + " buffed it's atk"));
+
+	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " buffed it's atk");
 	
 	return EBTNodeResult::InProgress;
 }
@@ -64,6 +66,7 @@ void UBTTask_Buff::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 	if (Current != Current->GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
 		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
+		DebugHelper::AddMessageToLog("It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}
@@ -76,6 +79,7 @@ void UBTTask_Buff::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 			return;
 
 		DebugHelper::LogSuccess("Buff Task Completed");
+		DebugHelper::AddMessageToLog("Buff Task Completed");
 		FinishLatentTask(*OwnerCompWeak.Get(), EBTNodeResult::Succeeded);
 	}), 1.0f, false);
 	

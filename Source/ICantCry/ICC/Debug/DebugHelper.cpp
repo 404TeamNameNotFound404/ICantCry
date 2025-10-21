@@ -2,6 +2,8 @@
 #include "DebugHelper.h"
 #include "EngineUtils.h"
 
+TArray<FString> DebugHelper::LogMessages;
+
 void DebugHelper::LogSuccess(const FString& Message)
 {
 	if (!GEngine)
@@ -179,5 +181,30 @@ void DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(UStaticMeshComponent* Ta
 
 	Target->OverlayMaterial = nullptr;
 	Target->MarkRenderStateDirty();
+}
+
+void DebugHelper::AddMessageToLog(const FString& Message)
+{
+	if (LogMessages.Num() > 0 && LogMessages.Last() == Message)
+	{
+		return;
+	}
+	
+	LogMessages.Add(Message);
+}
+
+void DebugHelper::ClearAllLogs()
+{
+	LogMessages.Empty();
+}
+
+void DebugHelper::SaveLogToFile()
+{
+	const FString FilePath = FPaths::ProjectSavedDir() + TEXT("Logs/");
+	const FString TimeStamp = FDateTime::Now().ToString(TEXT("%Y%m%d_%H%M%S"));
+	const FString FileName = FString::Printf(TEXT("BattleLog_%s.log"), *TimeStamp);
+	const FString FullPath = FilePath + FileName;
+	const FString CombinedLog = FString::Join(LogMessages, TEXT("\n"));
+	FFileHelper::SaveStringToFile(CombinedLog, *FullPath);
 }
 

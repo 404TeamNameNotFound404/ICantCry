@@ -2,6 +2,7 @@
 #include "GameOverVisualizer.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
+#include "ICantCry/ICC/Debug/DebugHelper.h"
 
 void UGameOverVisualizer::NativeConstruct()
 {
@@ -33,6 +34,7 @@ void UGameOverVisualizer::RetryBattle()
 	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->Reload();
 	
 	this->SetVisibility(ESlateVisibility::Hidden);
+	DebugHelper::SaveLogToFile();
 }
 
 void UGameOverVisualizer::LoadPrevious()

@@ -35,6 +35,7 @@ EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& Ow
 	if (Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().CantBuffOthers())
 	{
 		DebugHelper::LogError(Current->GetActorLabel() +  " is alone can't buff");
+		DebugHelper::AddMessageToLog(Current->GetActorLabel() +  " is alone can't buff");
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 		return EBTNodeResult::Succeeded;
 	}
@@ -49,6 +50,8 @@ EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& Ow
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(
 		FText::FromString(Current->GetActorLabel() + " buffed " + TargetToBuff->GetActorLabel() + " def"));
+
+	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " buffed " + TargetToBuff->GetActorLabel() + " def");
 	
 	return EBTNodeResult::InProgress;
 }
@@ -74,6 +77,7 @@ void UBTTask_BuffOtherDef::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* No
 	if (Current != Current->GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
 		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetActorLabel() + "'s turn yet (buff def task)");
+		DebugHelper::AddMessageToLog("It's not " + Current->GetActorLabel() + "'s turn yet (buff def task)");
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}
@@ -86,6 +90,7 @@ void UBTTask_BuffOtherDef::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* No
 			return;
 
 		DebugHelper::LogSuccess("buff def target task Task Completed");
+		DebugHelper::AddMessageToLog("buff def target task Task Completed");
 		FinishLatentTask(*OwnerCompWeak.Get(), EBTNodeResult::Succeeded);
 	}), 1.0f, false);
 }

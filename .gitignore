@@ -78,6 +78,8 @@ DerivedDataCache/*
 
 Plugins/
 
+Logs/
+
 # Visual Studio specific
 .vscode/
 .vs/

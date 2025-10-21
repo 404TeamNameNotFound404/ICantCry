@@ -28,6 +28,7 @@ void FTurn::PopulateQueue(UWorld* World)
 		Queue.Add(*It);
 		
 		DebugHelper::LogMessage(10, FColor::Black, It->GetActorLabel() + " joined the fun");
+		DebugHelper::AddMessageToLog(It->GetActorLabel() + " joined the fun");
 	}
 
 	
@@ -46,6 +47,7 @@ void FTurn::RejoinQueue(const TArray<AMob*>& Emotions)
 
 		Queue.Emplace(AsActor);
 		DebugHelper::LogMessage(10, FColor::Orange, Mob->GetActorLabel() + " rejoined the fun");
+		DebugHelper::AddMessageToLog(Mob->GetActorLabel() + " rejoined the fun");
 	}
 }
 
@@ -62,7 +64,9 @@ void FTurn::AssignFirstTurn()
 	NextTurn = (Aleatory + 1) % (Queue.Num());
 
 	DebugHelper::LogSuccess(Queue[CurrentTurn]->GetName() + " will start");
+	DebugHelper::AddMessageToLog(Queue[CurrentTurn]->GetName() + " will start");
 	DebugHelper::LogMessage(3, FColor::Blue, Queue[NextTurn]->GetName() + " will play next");
+	DebugHelper::AddMessageToLog(Queue[NextTurn]->GetName() + " will play next");
 }
 
 void FTurn::AssignFirstTurnByPriority()
@@ -87,7 +91,9 @@ void FTurn::AssignFirstTurnByPriority()
 	NextTurn = (CurrentTurn + 1) % Queue.Num();
 
 	DebugHelper::LogSuccess(Queue[CurrentTurn]->GetName() + " will start");
+	DebugHelper::AddMessageToLog(Queue[CurrentTurn]->GetName() + " will start");
 	DebugHelper::LogMessage(3, FColor::Blue, Queue[NextTurn]->GetName() + " will play next");
+	DebugHelper::AddMessageToLog(Queue[NextTurn]->GetName() + " will play next");
 }
 
 AMob* FTurn::GetMobInQueue() const

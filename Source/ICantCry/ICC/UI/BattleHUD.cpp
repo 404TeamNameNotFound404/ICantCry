@@ -188,6 +188,7 @@ void UBattleHUD::DecreaseAP(const int& Amount)
 {
     CurrentAP = FMath::Clamp(CurrentAP - Amount, 0,4);
     DebugHelper::LogWarning("AP decreased now " + FString::FromInt(CurrentAP));
+    DebugHelper::AddMessageToLog("AP decreased now " + FString::FromInt(CurrentAP));
     UpdateAPBar();
 }
 
@@ -229,6 +230,7 @@ void UBattleHUD::OnShootPressed()
     ApAccumulator = (CurrentAP >= 4) ? 4 : ApAccumulator;
     bTargetSelection = true;
     DebugHelper::LogSuccess("Shoot pressed, ap spent-> " + FString::FromInt(ApAccumulator));
+    DebugHelper::AddMessageToLog("Shoot pressed, ap spent-> " + FString::FromInt(ApAccumulator));
 
     UCircularBulletBuffer* Buffer = GetCircularBulletBuffer();
     if (Buffer && !Buffer->IsEmpty())
@@ -280,6 +282,7 @@ void UBattleHUD::OnFocusPressed()
     }
     
     DebugHelper::LogWarning("attack and defense increased!");
+    DebugHelper::AddMessageToLog("attack and defense increased!");
     IncreaseAP(1);
     BattleHandler->GetTurnBasedSystem()->EndTurn();
     GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateStatus();
@@ -334,6 +337,7 @@ void UBattleHUD::OnPassPressed()
     CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
     IncreaseAP(1);
     DebugHelper::LogSuccess("Player passed the turn");
+    DebugHelper::AddMessageToLog("Player passed the turn");
     BattleHandler->GetTurnBasedSystem()->EndTurn();
     BattleHandler->GetTurnBasedSystem()->StartNextTurn();
 	DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
@@ -374,6 +378,7 @@ void UBattleHUD::ScrollTargetSelection(float ScrollValue)
     // TargetText->SetText(FText::FromString(FString(TEXT("Target: ")) + SelectedActor->GetActorLabel()));
     
     DebugHelper::LogMessage(10, FColor::Orange, "Target Selected: " + SelectedActor->GetActorLabel());
+    DebugHelper::AddMessageToLog("Target Selected: " + SelectedActor->GetActorLabel());
 }
 
 void UBattleHUD::UpdateTarget()
@@ -542,6 +547,7 @@ void UBattleHUD::IncreaseShootPower()
     if (ApAccumulator > CurrentAP || ApAccumulator <= CurrentAP)
     {
         DebugHelper::LogError("You can't add more ap than you have it current ap " + FString::FromInt(CurrentAP) + "- Accumulator " + FString::FromInt(ApAccumulator));
+        DebugHelper::AddMessageToLog("You can't add more ap than you have it current ap " + FString::FromInt(CurrentAP) + "- Accumulator " + FString::FromInt(ApAccumulator));
         ApAccumulator = CurrentAP;
     }
     
@@ -549,6 +555,7 @@ void UBattleHUD::IncreaseShootPower()
     const int32 Boost = ApAccumulator;
     GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStats()->ApModifier = 1.0f + (Boost * 0.5f);
     DebugHelper::LogSuccess("Shoot is boosted ap modifier now is " + FString::SanitizeFloat( GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStats()->ApModifier ));
+    DebugHelper::AddMessageToLog("Shoot is boosted ap modifier now is " + FString::SanitizeFloat( GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStats()->ApModifier ));
 }
 
 void UBattleHUD::DecreaseShootPower()
@@ -579,6 +586,7 @@ void UBattleHUD::PrepareToEngage()
     checkf(Damage.PlayerStats, TEXT("Stats null"));
     PersistentInstance->SetDamageData(Damage);
     DebugHelper::LogMessage(3, FColor::White, "Targeting " + SelectedEnemy->GetActorLabel());
+    DebugHelper::AddMessageToLog("Targeting " + SelectedEnemy->GetActorLabel());
     checkf(MinigameHandler, TEXT("Minigame handler is null at UBattleHUD::Engage"));
     MinigameHandler->StartMinigame(true);
     EngageBtn->SetVisibility(ESlateVisibility::Hidden);
