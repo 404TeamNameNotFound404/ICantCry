@@ -20,6 +20,7 @@
 #include "../Source/ICantCry/ICC/Actors/Bullet/RevolverSlot.h"
 #include "../Inventory/Inventory.h"
 #include "../Inventory/BulletIconWidget.h"
+#include "ICantCry/ICC/Mechanics/UI/APBar/APBar.h"
 #include "ICantCry/ICC/Mechanics/UI/BattleVisualization/GameOver/GameOverVisualizer.h"
 #include "ICantCry/ICC/Mechanics/UI/BulletDisplay/BulletDisplayer.h"
 #include "ICantCry/ICC/Mechanics/UI/BattleVisualization/Victory/VictoryVisualizer.h"
@@ -51,6 +52,7 @@ public:
     UPROPERTY(meta = (BindWidget)) UCanvasPanel* CanvasStatus;
 
     // Action Buttons
+	UPROPERTY(meta = (BindWidget)) UAPBar* Bar;
     UPROPERTY(meta = (BindWidget)) UButton* Shoot;
     UPROPERTY(meta = (BindWidget)) UButton* ApIncreaseOnShoot;
 	UPROPERTY(meta = (BindWidget)) UButton* ApDecreaseOnShoot;

@@ -209,6 +209,7 @@ void UBattleHUD::OnShootPressed()
     if (GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->IsFreezed())
     {
         DecreaseAP(1);
+        Bar->DecreaseAP(1);
         BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UnfreezeChance();
         return;
     }
@@ -227,7 +228,8 @@ void UBattleHUD::OnShootPressed()
     bShootFired = true;
     //DecreaseAP(1);
     ApAccumulator++;
-    ApAccumulator = (CurrentAP >= 4) ? 4 : ApAccumulator;
+    ApAccumulator = FMath::Min(ApAccumulator, CurrentAP);//(CurrentAP >= 4) ? 4 : ApAccumulator;
+    UpdateAPBar(); 
     bTargetSelection = true;
     DebugHelper::LogSuccess("Shoot pressed, ap spent-> " + FString::FromInt(ApAccumulator));
     DebugHelper::AddMessageToLog("Shoot pressed, ap spent-> " + FString::FromInt(ApAccumulator));
@@ -284,6 +286,7 @@ void UBattleHUD::OnFocusPressed()
     DebugHelper::LogWarning("attack and defense increased!");
     DebugHelper::AddMessageToLog("attack and defense increased!");
     IncreaseAP(1);
+    Bar->IncreaseAP(1);
     BattleHandler->GetTurnBasedSystem()->EndTurn();
     GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateStatus();
     GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateBuffStatus();
@@ -312,6 +315,7 @@ void UBattleHUD::OnReloadPressed()
     CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Visible);
     DecreaseAP(1);
     UpdateAPBar();
+    Bar->DecreaseAP(1);
 
     bBulletSetupFinished = false;
     bShootFired = false;
@@ -336,6 +340,7 @@ void UBattleHUD::OnPassPressed()
     Displayer->SetVisibility(ESlateVisibility::Hidden);
     CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
     IncreaseAP(1);
+    Bar->IncreaseAP(1);
     DebugHelper::LogSuccess("Player passed the turn");
     DebugHelper::AddMessageToLog("Player passed the turn");
     BattleHandler->GetTurnBasedSystem()->EndTurn();
@@ -1020,7 +1025,11 @@ FText UBattleHUD::UpdateEnemyName()
 void UBattleHUD::UpdateAp()
 {
     CurrentAP -= ApAccumulator;
+    CurrentAP = FMath::Clamp(CurrentAP, 0, 4);
     UpdateAPBar();
+    Bar->SetCurrentAP(CurrentAP);
+    Bar->SetPreviewAP(0);
+    ApAccumulator = 0;
 }
 
 void UBattleHUD::SetApAccumulator(const int& Value)
