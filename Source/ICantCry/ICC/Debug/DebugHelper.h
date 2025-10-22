@@ -13,6 +13,9 @@
  */
 class ICANTCRY_API DebugHelper
 {
+private:
+	static TArray<FString> LogMessages;
+	
 public:
 	static void LogSuccess(const FString& Message);
 	static void LogWarning(const FString& Message);
@@ -77,5 +80,21 @@ public:
 	 * @param Target static mesh
 	 */
 	static void RemoveTurnMaterialOverlayToStaticMesh(UStaticMeshComponent* Target);
+
+	/**
+	 * Add messages to array
+	 * @param Message Message
+	 */
+	static void AddMessageToLog(const FString& Message);
+
+	/**
+	 * Clear every logs
+	 */
+	static void ClearAllLogs();
+	
+	/**
+	 * Write File to log
+	 */
+	static void SaveLogToFile();
 	
 };

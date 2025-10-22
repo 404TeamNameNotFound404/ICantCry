@@ -1,8 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "BTTask_BuffDefence.h"
-
 #include "BehaviorTree/BlackboardComponent.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
@@ -39,6 +37,8 @@ EBTNodeResult::Type UBTTask_BuffDefence::ExecuteTask(UBehaviorTreeComponent& Own
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(
 		FText::FromString(Current->GetActorLabel() + " buffed it's def"));
+
+	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " buffed it's def");
 	
 	return EBTNodeResult::InProgress;
 }
@@ -64,6 +64,7 @@ void UBTTask_BuffDefence::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 	if (Current != Current->GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
 		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetActorLabel() + "'s turn yet (buff def task)");
+		DebugHelper::AddMessageToLog("It's not " + Current->GetActorLabel() + "'s turn yet (buff def task)");
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}
@@ -76,6 +77,7 @@ void UBTTask_BuffDefence::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 			return;
 
 		DebugHelper::LogSuccess("buff def target task Task Completed");
+		DebugHelper::AddMessageToLog("buff def target task Task Completed");
 		FinishLatentTask(*OwnerCompWeak.Get(), EBTNodeResult::Succeeded);
 	}), 1.0f, false);
 }

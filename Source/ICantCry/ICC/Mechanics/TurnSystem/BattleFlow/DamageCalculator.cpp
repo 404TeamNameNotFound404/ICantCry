@@ -37,6 +37,7 @@ int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 			"\nDefencePower " + FString::FromInt(PlayerStats->DefencePower) + "\nAP " + FString::FromInt(PlayerStats->ApModifier) + "\nWeakness " + FString::SanitizeFloat(PlayerStats->WeaknessModifier));
 		const int Result = (((BulletData->Power / (2 - PlayerStats->MinigameModifier)) * (PlayerStats->AttackPower / PlayerStats->DefencePower))) * PlayerStats->ApModifier * BulletData->WeaknessModifier * Coefficient;
 		DebugHelper::LogMessage(3, FColor::FromHex("433878"), "Damage dealt -> " + FString::FromInt(Result));
+		DebugHelper::AddMessageToLog("Damage dealt -> " + FString::FromInt(Result));
 		return Result;
 	}
 
@@ -50,6 +51,7 @@ int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 		
 		const int AIDamageResult = ((((AIMoves->MovePower / (2 - AIMoves->MinigamePower)) * (EnemyData->AttackPower / PlayerStats->DefencePower))) * AIMoves->ActionPointsModifier * AIMoves->WeaknessModifier) * PlayerStats->MinigameModifier;
 		DebugHelper::LogMessage(3, FColor::FromHex("433878"), "Damage dealt -> " + FString::FromInt(AIDamageResult));
+		DebugHelper::AddMessageToLog("Damage dealt -> " + FString::FromInt(AIDamageResult));
 		return AIDamageResult;
 	}
 	

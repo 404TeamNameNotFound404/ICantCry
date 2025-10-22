@@ -52,6 +52,7 @@ void UUBTTask_DefaultAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 	if (Current->IsAshamed())
 	{
 		Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " skipped the turn (Ashamed)"));
+		DebugHelper::AddMessageToLog(Current->GetActorLabel() + " skipped the turn (Ashamed)");
 		Current->SetTreeId(-1);
 		Current->SetIsBuffedAtk(false);
 		BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
@@ -66,6 +67,7 @@ void UUBTTask_DefaultAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 	if (Current != Target->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
 		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not the " + Current->GetActorLabel() + " turn yet");
+		DebugHelper::AddMessageToLog("It's not the " + Current->GetActorLabel() + " turn yet");
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
 
@@ -171,6 +173,7 @@ void UUBTTask_DefaultAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 		Controller->MoveToActor(Target);
 		
 		Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " is attacking"));
+		DebugHelper::AddMessageToLog(Current->GetActorLabel() + " is attacking");
 
 		constexpr float BaseThreshold = 95.f;
 		const float Distance = FVector::Dist(Target->GetActorLocation(), Controller->GetPawn()->GetActorLocation());

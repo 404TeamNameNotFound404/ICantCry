@@ -36,6 +36,7 @@ EBTNodeResult::Type UBTTask_DebuffOtherShield::ExecuteTask(UBehaviorTreeComponen
 	if (Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().CantBuffOthers())
 	{
 		DebugHelper::LogError(Current->GetActorLabel() +  " is alone can't buff");
+		DebugHelper::AddMessageToLog(Current->GetActorLabel() +  " is alone can't buff");
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 		return EBTNodeResult::Succeeded;
 	}
@@ -46,6 +47,7 @@ EBTNodeResult::Type UBTTask_DebuffOtherShield::ExecuteTask(UBehaviorTreeComponen
 	TargetToBuff->GetStatusTracker()->InflictStatus(EAfflictedStatus::ShieldDebuff, TargetToBuff);
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " de-buffed " + TargetToBuff->GetActorLabel() + " shield"));
+	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " de-buffed " + TargetToBuff->GetActorLabel() + " shield");
 	
 	return EBTNodeResult::InProgress;
 }
@@ -71,6 +73,7 @@ void UBTTask_DebuffOtherShield::TickTask(UBehaviorTreeComponent& OwnerComp, uint
 	if (Current != Current->GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
 		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
+		DebugHelper::AddMessageToLog("It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}
@@ -83,6 +86,7 @@ void UBTTask_DebuffOtherShield::TickTask(UBehaviorTreeComponent& OwnerComp, uint
 			return;
 
 		DebugHelper::LogSuccess("Debuff Other Shield Task Completed");
+		DebugHelper::AddMessageToLog("Debuff Other Shield Task Completed");
 		FinishLatentTask(*OwnerCompWeak.Get(), EBTNodeResult::Succeeded);
 	}), 1.0f, false);
 }
