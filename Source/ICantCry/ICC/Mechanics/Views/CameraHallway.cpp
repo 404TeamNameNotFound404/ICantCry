@@ -21,7 +21,7 @@ void ACameraHallway::BeginPlay()
 {
 	Super::BeginPlay();
 
-	checkf(FixedWaypoint, TEXT("FixedWaypoint has not been assigned in editor!"))
+	checkf(CameraFixedWaypoint, TEXT("FixedWaypoint has not been assigned in editor!"))
 
 	for (TActorIterator<ACameraTraveler> It(GetWorld()); It; ++It)
 	{
@@ -33,45 +33,52 @@ void ACameraHallway::BeginPlay()
 void ACameraHallway::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	checkf(Player, TEXT("Player on CameraHallway.cpp is not initialized"));
-	
 	if (!Player || OtherActor != Player || bPlayerOverlapped)
 	{
 		DebugHelper::LogWarning("Only player can overlap with camera or overlap already handled");
 		return;
 	}
-
-	DebugHelper::LogSuccess("Player overlapped");
-
-	// Mark that the player has overlapped
+	
 	bPlayerOverlapped = true;
+	
+	if (bSnap)
+	{
+		Snap();
+	}
+	else
+	{
+		DebugHelper::LogSuccess("Player overlapped");
 
-	Counter = Player->GetWorldCameraCounter();
+		// Mark that the player has overlapped
+		//bPlayerOverlapped = true;
+
+		Counter = Player->GetWorldCameraCounter();
 	
-	if (Player->GetWorldCamera() && Player && Counter == 0)
-	{
-		DebugHelper::LogMessage(3, FColor::White, "Counter -> " + FString::FromInt(Counter));
-		Player->GetWorldCamera()->SetbDefaultCamera(false);
-		APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-		checkf(PlayerController, TEXT("PlayerController is NULL"));
-		PlayerController->SetViewTargetWithBlend(Player, 0.0f);
-		DebugHelper::LogSuccess("Set Target to Player Camera");
-		Counter++;
-		Player->SetWorldCameraCounter(Counter);
+		if (Player->GetWorldCamera() && Player && Counter == 0)
+		{
+			DebugHelper::LogMessage(3, FColor::White, "Counter -> " + FString::FromInt(Counter));
+			Player->GetWorldCamera()->SetbDefaultCamera(false);
+			APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+			checkf(PlayerController, TEXT("PlayerController is NULL"));
+			PlayerController->SetViewTargetWithBlend(Player, 0.0f);
+			DebugHelper::LogSuccess("Set Target to Player Camera");
+			Counter++;
+			Player->SetWorldCameraCounter(Counter);
+		}
+	
+		else if (Player->GetWorldCamera() && Player  && Counter == 1)
+		{
+			DebugHelper::LogMessage(3, FColor::White, "Counter -> " + FString::FromInt(Counter));
+			DebugHelper::LogSuccess("Set Target to Static Camera");
+			Player->GetWorldCamera()->SetbDefaultCamera(true);
+			APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+			checkf(PlayerController, TEXT("PlayerController is NULL"));
+			PlayerController->SetViewTargetWithBlend(Player->GetWorldCamera(), 0.0f);
+			Counter = 0;
+			Player->SetWorldCameraCounter(Counter);
+			Player->GetWorldCamera()->SnapToFixedWaypoint(CameraFixedWaypoint);
+		}
 	}
-	
-	else if (Player->GetWorldCamera() && Player  && Counter == 1)
-	{
-		DebugHelper::LogMessage(3, FColor::White, "Counter -> " + FString::FromInt(Counter));
-		DebugHelper::LogSuccess("Set Target to Static Camera");
-		Player->GetWorldCamera()->SetbDefaultCamera(true);
-		APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-		checkf(PlayerController, TEXT("PlayerController is NULL"));
-		PlayerController->SetViewTargetWithBlend(Player->GetWorldCamera(), 0.0f);
-		Counter = 0;
-		Player->SetWorldCameraCounter(Counter);
-		Player->GetWorldCamera()->SnapToFixedWaypoint(FixedWaypoint);
-	}
-	
 }
 
 void ACameraHallway::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
@@ -83,6 +90,43 @@ void ACameraHallway::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AAct
 	}
 	
 	bPlayerOverlapped = false;
+}
+
+void ACameraHallway::Snap()
+{
+	Counter = Player->GetWorldCameraCounter();
+
+	if (Player->GetWorldCamera() && Player && Counter == 0)
+	{
+		DebugHelper::LogSuccess("Snap To fixed");
+		Player->GetWorldCamera()->SnapToFixedWaypoint(CameraFixedWaypoint);
+		AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
+		Player->GetWorldCamera()->SetbDefaultCamera(true);
+		Controller->SetViewTargetWithBlend(Player->GetWorldCamera(), 0.0f);
+		Counter++;
+		Player->SetWorldCameraCounter(Counter);
+
+		if (bPlayerMustTeleport)
+		{
+			Player->SetActorLocation(InEntry.Get()->GetActorLocation());
+			Player->SetActorRotation(InEntry.Get()->GetActorRotation());
+		}
+	}
+	else if (Player->GetWorldCamera() && Player && Counter == 1)
+	{
+		Player->GetWorldCamera()->SnapToFixedWaypoint(CameraBackWaypoint);
+		AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
+		Player->GetWorldCamera()->SetbDefaultCamera(false);
+		Controller->SetViewTargetWithBlend(Player, 0.0f);
+		Counter = 0;
+		Player->SetWorldCameraCounter(Counter);
+
+		if (bPlayerMustTeleport)
+		{
+			Player->SetActorLocation(OutEntry.Get()->GetActorLocation());
+			Player->SetActorRotation(OutEntry.Get()->GetActorRotation());
+		}
+	}
 }
 
 
