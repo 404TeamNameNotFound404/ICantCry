@@ -79,6 +79,9 @@ private:
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))
 	TSoftObjectPtr<APlayerTeleportObj> OutEntry;
 
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))
+	bool bEnableWorldCamera = false;
+
 	void Snap();
 	
 };
