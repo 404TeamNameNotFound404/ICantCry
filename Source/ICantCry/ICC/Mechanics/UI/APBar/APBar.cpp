@@ -49,6 +49,34 @@ void UAPBar::Update()
 	}
 }
 
+void UAPBar::UpdateHighlights()
+{
+	SlotIndex = (SlotIndex + 1) % SlotsOutline.Num();
+	SlotsOutline[SlotIndex]->SetColorAndOpacity(SlotOutlineColor);
+}
+
+void UAPBar::UpdateHighlights(const int32& Value)
+{
+	for (UImage* Img : SlotsOutline)
+	{
+		if (Img)
+			Img->SetColorAndOpacity(FLinearColor::White);
+	}
+
+	// Highlight the first N active slots
+	for (int32 i = 0; i < Value && i < SlotsOutline.Num(); ++i)
+	{
+		SlotsOutline[i]->SetColorAndOpacity(SlotOutlineColor);
+	}
+}
+
+void UAPBar::ResetHighlightOf(const int32& Value)
+{
+	if (const int32 IndexToReset = Value - 1; SlotsOutline.IsValidIndex(IndexToReset))
+	{
+		SlotsOutline[IndexToReset]->SetColorAndOpacity(FLinearColor::White);
+	}
+}
 
 void UAPBar::UpdateAp(const int32& Value, const int32& ApCurrent)
 {
@@ -75,6 +103,12 @@ void UAPBar::NativeConstruct()
 	Super::NativeConstruct();
 
 	ApBar = {Slot0, Slot1, Slot2, Slot3};
+	SlotsOutline = {ApHighlight_0, ApHighlight_1, ApHighlight_2, ApHighlight_3};
+
+	for (UImage* Img : SlotsOutline)
+	{
+		Img->SetColorAndOpacity(FColor::White);
+	}
 
 	Init();
 }

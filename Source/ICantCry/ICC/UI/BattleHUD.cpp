@@ -213,6 +213,13 @@ void UBattleHUD::OnShootPressed()
         BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UnfreezeChance();
         return;
     }
+    
+    UCircularBulletBuffer* Buffer = GetCircularBulletBuffer();
+
+    if (Buffer->IsEmpty())
+    {
+        return;
+    }
 
     DisableButtonsDuringShooting();
 
@@ -226,15 +233,14 @@ void UBattleHUD::OnShootPressed()
     CanvasStatus->SetVisibility(ESlateVisibility::Visible);
     
     bShootFired = true;
-    //DecreaseAP(1);
     ApAccumulator++;
     ApAccumulator = FMath::Min(ApAccumulator, CurrentAP);//(CurrentAP >= 4) ? 4 : ApAccumulator;
-    UpdateAPBar(); 
+    UpdateAPBar();
+    Bar->UpdateHighlights(2);
     bTargetSelection = true;
     DebugHelper::LogSuccess("Shoot pressed, ap spent-> " + FString::FromInt(ApAccumulator));
     DebugHelper::AddMessageToLog("Shoot pressed, ap spent-> " + FString::FromInt(ApAccumulator));
-
-    UCircularBulletBuffer* Buffer = GetCircularBulletBuffer();
+    
     if (Buffer && !Buffer->IsEmpty())
     {
         const UBulletData* Bullet = Buffer->PeekAt(Buffer->GetTailIndex());
@@ -548,12 +554,14 @@ void UBattleHUD::IncreaseShootPower()
 
     ApPowerBoost++;
     ApAccumulator = FMath::Min(ApAccumulator + 1, 4);
+    Bar->UpdateHighlights(ApAccumulator);
 
-    if (ApAccumulator > CurrentAP || ApAccumulator <= CurrentAP)
+    if (ApAccumulator > CurrentAP)
     {
         DebugHelper::LogError("You can't add more ap than you have it current ap " + FString::FromInt(CurrentAP) + "- Accumulator " + FString::FromInt(ApAccumulator));
         DebugHelper::AddMessageToLog("You can't add more ap than you have it current ap " + FString::FromInt(CurrentAP) + "- Accumulator " + FString::FromInt(ApAccumulator));
         ApAccumulator = CurrentAP;
+        Bar->UpdateHighlights(ApAccumulator);
     }
     
     
@@ -565,13 +573,16 @@ void UBattleHUD::IncreaseShootPower()
 
 void UBattleHUD::DecreaseShootPower()
 {
-    if (CurrentAP >= 4 || ApPowerBoost <= 0)
+    if (ApAccumulator <= 0 || ApPowerBoost <= 0)
     {
         return;
     }
 
+    const int32 PreviousAccumulator = ApAccumulator;
+    
     ApAccumulator--;
     ApPowerBoost--;
+    Bar->ResetHighlightOf(PreviousAccumulator);
     
     // IncreaseAP(1);
 }

@@ -78,7 +78,7 @@ bool APaper::GetIsSwapped() const
 }
 
 
-void APaper::SetIsDragged(const float& Value)
+void APaper::SetIsDragged(const bool& Value)
 {
 	bIsBeingDragged = Value;
 }

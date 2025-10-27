@@ -39,5 +39,5 @@ public:
 	FVector GetCurrentLocation() const;
 	bool GetIsLifted() const;
 	bool GetIsSwapped() const;
-	void SetIsDragged(const float& Value);
+	void SetIsDragged(const bool& Value);
 };
