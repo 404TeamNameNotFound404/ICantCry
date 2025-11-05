@@ -15,6 +15,7 @@ void UInGameMenu::NativeConstruct()
 	Craft->OnClicked.AddDynamic(this, &UInGameMenu::OpenCraft);
 	Inventory->OnClicked.AddDynamic(this, &UInGameMenu::OpenInventory);
 	// Map->OnClicked.AddDynamic(this, &UInGameMenu::OpenMap);
+	Bestiary->OnClicked.AddDynamic(this, &UInGameMenu::OpenBestiary);
 
 	// For debugging purposes only!
 	Map->SetIsEnabled(false);
@@ -33,6 +34,13 @@ void UInGameMenu::OpenOverview()
 
 void UInGameMenu::OpenCraft()
 {
+
+	if (BestiaryUI)
+    {
+        Main->RemoveChild(BestiaryUI);
+        BestiaryUI->SetVisibility(ESlateVisibility::Hidden);
+    }
+
 	if (InventoryHud)
 	{
 		Main->RemoveChild(InventoryHud);
@@ -54,6 +62,14 @@ void UInGameMenu::OpenCraft()
 
 void UInGameMenu::OpenInventory()
 {
+
+
+	if (BestiaryUI)
+    {
+        Main->RemoveChild(BestiaryUI);
+        BestiaryUI->SetVisibility(ESlateVisibility::Hidden);
+    }
+
 	if (CraftingHud)
 	{
 		Main->RemoveChild(CraftingHud);
@@ -70,6 +86,61 @@ void UInGameMenu::OpenInventory()
 	Main->AddChild(InventoryHud);
 	InventoryHud->Refresh();
 	InventoryHud->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UInGameMenu::OpenBestiary()
+{
+	if (CraftingHud)
+    {
+        Main->RemoveChild(CraftingHud);
+        CraftingHud->SetVisibility(ESlateVisibility::Hidden);
+    }
+
+    if (InventoryHud)
+    {
+        Main->RemoveChild(InventoryHud);
+        InventoryHud->SetVisibility(ESlateVisibility::Hidden);
+    }
+
+	if(!BestiaryUI)
+	{
+		if(BestiaryUIClass)
+		{
+			BestiaryUI = CreateWidget<UBestiaryUI>(GetWorld(), BestiaryUIClass);
+			if (BestiaryUI)
+            {
+                // BestiaryUI->SetupEmotionsData(EmotionsData);
+            	// BestiaryUI->SetupNoteData(NoteData);
+
+                Main->AddChild(BestiaryUI);  	
+				DebugHelper::LogError("UInGameMenu::OpenBestiary -> BestiaryUI created successfully");
+            }
+            else
+            {
+				DebugHelper::LogError("UInGameMenu::OpenBestiary -> Failed to create BestiaryUI widget");
+                return;
+            }
+        }
+        else
+        {
+
+			DebugHelper::LogError("UInGameMenu::OpenBestiary -> BestiaryUIClass not set in InGameMenu");
+            return;
+        }
+		
+	}
+
+	if (!BestiaryUI->IsInViewport())
+    {
+        Main->AddChild(BestiaryUI);
+    }
+    
+    BestiaryUI->SetVisibility(ESlateVisibility::Visible);
+	DebugHelper::LogError("UInGameMenu::OpenBestiary -> Bestiary opened");
+    
+
+	
+   
 }
 
 void UInGameMenu::OpenMap()

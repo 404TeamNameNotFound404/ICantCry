@@ -42,6 +42,15 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stats")
 	float CurrentHealth = MaxHealth;
+
+	/**
+	 * 'Speed' variable to set the queue order during combat
+	 *  if Player Priority > EmotionX Priority = Player Start first
+	 *  if EmotionY Priority  < PPriority > EmotionX Priority = EE Y -> Player -> EE X
+	 *  The default value is -1 
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Battle")
+	int Priority = -1;
 	
 	/**
 	 * Attack Power

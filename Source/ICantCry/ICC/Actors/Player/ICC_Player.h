@@ -19,6 +19,7 @@
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameUserWidget.h"
 #include "ICantCry/ICC/UI/InGameMenu.h"
 #include "ICantCry/ICC/UI/BattleHUD.h"
+#include "ICantCry/ICC/UI/BestiaryUI.h"
 #include "ICC_Player.generated.h"
 
 UCLASS()
@@ -40,6 +41,8 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual int GetSpeed() const override;
 
 	/**
 	 * READ BELOW BEFORE USE!
@@ -227,9 +230,17 @@ private:
 	void Input_OpenInventory(const FInputActionValue& InputActionValue);
 	void Input_OpenCrafting(const FInputActionValue& InputActionValue);
 	void Input_CloseCrafting(const FInputActionValue &InputActionValue);
+	void Input_ChallengeInteraction(const FInputActionValue &InputActionValue); // Puzzle assemble minigame interaction
 
 	void CloseInventory();
 	void ToggleInventory();
 	void ToggleCraftingHUD();
 	void CloseCraftingHUD();
+
+
+	//Bestiary 
+	void CollectNote(const FString& NoteKey);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	UBestiaryUI* BestiaryUI;
 };

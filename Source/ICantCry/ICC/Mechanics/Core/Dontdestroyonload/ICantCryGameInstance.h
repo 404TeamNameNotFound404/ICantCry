@@ -7,9 +7,12 @@
 #include "ICantCry/ICC/Mechanics/Core/Data/PlayerStats.h"
 #include "ICantCry/ICC/Mechanics/TurnSystem/BattleFlow/DamageCalculator.h"
 #include "ICantCry/ICC/Inventory/Inventory.h"
+#include "ICantCry/ICC/Actors/EmotionsData/EmotionsData.h"
+#include "ICantCry/ICC/Actors/NoteData/NoteData.h"
 #include "ICantCryGameInstance.generated.h"
 
 class AICC_Player;
+class UBestiaryUI;
 
 /**
  * DontDestroyOnLoad like class
@@ -51,6 +54,51 @@ public:
 	bool CanRecreatePlayer() const;
 	void SetCanRecreatePlayer(const bool& Value);
 	FPlayerMemory& GetPlayerRuntimeData();
+
+
+	// Bestiary
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Bestiary")
+    TArray<FString> CollectedNotes;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Bestiary")  
+    TSet<EEmotionType> UnlockedEmotions;
+
+
+	/**
+     * Reference to the active Bestiary UI
+     * Set this from Blueprint when the Bestiary is opened
+     */
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Bestiary")
+    UBestiaryUI* ActiveBestiaryUI;
+
+    /**
+     * Update Bestiary UI if it's currently active
+     */
+    UFUNCTION(BlueprintCallable, Category = "Bestiary")
+    void UpdateBestiaryUI();
+
+    /**
+     * Check if Bestiary UI is currently active
+     */
+    UFUNCTION(BlueprintCallable, Category = "Bestiary")
+    bool IsBestiaryUIActive() const;
+
+	//[DEBUG]
+	UFUNCTION(BlueprintCallable, Category = "Debug|Bestiary")
+    void DebugUnlockAll();
+
+    UFUNCTION(BlueprintCallable, Category = "Debug|Bestiary")
+    void DebugResetBestiary();
+
+    UFUNCTION(BlueprintCallable, Category = "Debug|Bestiary")
+    void DebugPrintBestiaryStatus();
+
+    UFUNCTION(BlueprintCallable, Category = "Debug|Bestiary")
+    void DebugSimulateMobDeath(FString MobType);
+
+    UFUNCTION(BlueprintCallable, Category = "Debug|Bestiary")
+    void DebugSimulateAllMobDeaths();
+	//[DEBUG END]
 	
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))
@@ -83,3 +131,5 @@ private:
 	bool bCanRecreatePlayer = false;
 	
 };
+
+

@@ -14,6 +14,16 @@ class ICANTCRY_API UEnemyTactics : public UDataAsset
 {
 	GENERATED_BODY()
 public:
+
+	/**
+	 * 'Speed' variable to set the queue order during combat
+	 *  if Player Priority > EmotionX Priority = Player Start first
+	 *  if EmotionY Priority  < PPriority > EmotionX Priority = EE Y -> Player -> EE X
+	 *  the default value is -1
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Moves")
+	int Priority = -1;
+	
 	/**
 	 * Number of moves AI can make during it's turn (not done yet)
 	 */

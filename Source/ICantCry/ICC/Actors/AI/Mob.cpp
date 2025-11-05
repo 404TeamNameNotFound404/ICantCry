@@ -71,8 +71,14 @@ void AMob::BeginPlay()
 	Memory.InitialAttackPower = GetData()->AttackPower;
 	Memory.InitialDefencePower = GetData()->DefencePower;
 	EnemyData->Alive = true;
+	EnemyData->Type = Type;
 	Stats.Health = GetData()->MaxHealth;
 	Stats.bAlive = true;
+
+
+	// init unlock note & emotion
+	SetDefaultNoteForMobType();
+    SetDefaultEmotionForMobType();
 }
 
 // Called every frame
@@ -84,6 +90,11 @@ void AMob::Tick(float DeltaTime)
 	}
 
 	Super::Tick(DeltaTime);
+}
+
+int AMob::GetSpeed() const
+{
+	return Moves->Priority;
 }
 
 UEnemyDatas* AMob::GetData() const
@@ -491,6 +502,11 @@ bool AMob::IsAlive()
 	{
 		bIsReady = false;
 		Stats.bAlive = false;
+
+		// unlock emotion & note on dead
+		UnlockNotesOnDeath();
+        UnlockEmotionsOnDeath();
+
 		// Destroy();
 		SetActorTickEnabled(false);
 		SetActorEnableCollision(false);
@@ -558,4 +574,225 @@ ABattleHandler* AMob::GetBattleHandler() const
 {
 	checkf(BattleHandler, TEXT("Battle Handler is invalid at AMob::GetBattleHandler"));
 	return BattleHandler;
+}
+
+void AMob::UnlockNotesOnDeath()
+{
+    if (!Instance)
+    {
+        UE_LOG(LogTemp, Error, TEXT("[MOB] Cannot unlock notes - GameInstance is null"));
+        return;
+    }
+
+    if (NotesToUnlockOnDeath.Num() == 0)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[MOB] No notes to unlock for this mob"));
+        return;
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("[MOB] Attempting to unlock %d notes"), NotesToUnlockOnDeath.Num());
+    
+    int32 NewlyUnlocked = 0;
+    for (const FString& NoteKey : NotesToUnlockOnDeath)
+    {
+        if (!Instance->CollectedNotes.Contains(NoteKey))
+        {
+            Instance->CollectedNotes.Add(NoteKey);
+            NewlyUnlocked++;
+            UE_LOG(LogTemp, Warning, TEXT("[MOB] ✓ Unlocked note: %s"), *NoteKey);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("[MOB] ⚠ Note already unlocked: %s"), *NoteKey);
+        }
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("[MOB] Unlocked %d new notes"), NewlyUnlocked);
+    UpdateBestiaryUI();
+}
+
+void AMob::UnlockEmotionsOnDeath()
+{
+    if (!Instance)
+    {
+        UE_LOG(LogTemp, Error, TEXT("[MOB] Cannot unlock emotions - GameInstance is null"));
+        return;
+    }
+
+    if (EmotionsToUnlockOnDeath.Num() == 0)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[MOB] No emotions to unlock for this mob"));
+        return;
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("[MOB] Attempting to unlock %d emotions"), EmotionsToUnlockOnDeath.Num());
+    
+    int32 NewlyUnlocked = 0;
+    for (EEmotionType Emotion : EmotionsToUnlockOnDeath)
+    {
+        if (Emotion != EEmotionType::Default && !Instance->UnlockedEmotions.Contains(Emotion))
+        {
+            Instance->UnlockedEmotions.Add(Emotion);
+            NewlyUnlocked++;
+            UE_LOG(LogTemp, Warning, TEXT("[MOB] ✓ Unlocked emotion: %s"), 
+                   *UEnum::GetValueAsString(Emotion));
+        }
+        else if (Emotion == EEmotionType::Default)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("[MOB] ⚠ Skipped default emotion"));
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("[MOB] ⚠ Emotion already unlocked: %s"), 
+                   *UEnum::GetValueAsString(Emotion));
+        }
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("[MOB] Unlocked %d new emotions"), NewlyUnlocked);
+    UpdateBestiaryUI();
+}
+
+void AMob::UpdateBestiaryUI()
+{
+    if (!Instance) return;
+
+    // Usa il riferimento diretto dal GameInstance
+    Instance->UpdateBestiaryUI();
+    
+    UE_LOG(LogTemp, Warning, TEXT("[MOB] Requested BestiaryUI update via GameInstance"));
+}
+
+void AMob::SetDefaultNoteForMobType()
+{
+    if (NotesToUnlockOnDeath.Num() == 0)
+    {
+        // Usa i valori corretti dell'enum EMobType
+        switch (Type)
+        {
+            case EMobType::MobAnger:
+                NotesToUnlockOnDeath.Add(TEXT("Anger_Note"));
+                break;
+            case EMobType::MobFear:
+                NotesToUnlockOnDeath.Add(TEXT("Fear_Note"));
+                break;
+            case EMobType::MobSadness:
+                NotesToUnlockOnDeath.Add(TEXT("Sadness_Note"));
+                break;
+            case EMobType::MobJoy:
+                NotesToUnlockOnDeath.Add(TEXT("Joy_Note"));
+                break;
+            case EMobType::MobDisgust:
+                NotesToUnlockOnDeath.Add(TEXT("Disgust_Note"));
+                break;
+            case EMobType::MobAnxiety:
+                NotesToUnlockOnDeath.Add(TEXT("Anxiety_Note"));
+                break;
+            case EMobType::MobCalm:
+                NotesToUnlockOnDeath.Add(TEXT("Calm_Note"));
+                break;
+            case EMobType::MobJealousy:
+                NotesToUnlockOnDeath.Add(TEXT("Jealousy_Note"));
+                break;
+            case EMobType::MobShame:
+                NotesToUnlockOnDeath.Add(TEXT("Shame_Note"));
+                break;
+            default:
+                NotesToUnlockOnDeath.Add(TEXT("Default_Note"));
+                break;
+        }
+    }
+}
+
+void AMob::SetDefaultEmotionForMobType()
+{
+     if (EmotionsToUnlockOnDeath.Num() == 0)
+    {
+        // Usa i valori corretti dell'enum EMobType
+        switch (Type)
+        {
+            case EMobType::MobAnger:
+                EmotionsToUnlockOnDeath.Add(EEmotionType::Anger);
+                break;
+            case EMobType::MobFear:
+                EmotionsToUnlockOnDeath.Add(EEmotionType::Fear);
+                break;
+            case EMobType::MobSadness:
+                EmotionsToUnlockOnDeath.Add(EEmotionType::Sadness);
+                break;
+            case EMobType::MobJoy:
+                EmotionsToUnlockOnDeath.Add(EEmotionType::Joy);
+                break;
+            case EMobType::MobDisgust:
+                EmotionsToUnlockOnDeath.Add(EEmotionType::Disgust);
+                break;
+            case EMobType::MobAnxiety:
+                EmotionsToUnlockOnDeath.Add(EEmotionType::Anxiety);
+                break;
+            case EMobType::MobCalm:
+                EmotionsToUnlockOnDeath.Add(EEmotionType::Calm);
+                break;
+            case EMobType::MobJealousy:
+                EmotionsToUnlockOnDeath.Add(EEmotionType::Jealousy);
+                break;
+            case EMobType::MobShame:
+                EmotionsToUnlockOnDeath.Add(EEmotionType::Shame);
+                break;
+            default:
+                EmotionsToUnlockOnDeath.Add(EEmotionType::Default);
+                break;
+        }
+    }
+}
+
+void AMob::UnlockSpecificNote(const FString& NoteKey)
+{
+    if (!Instance || NoteKey.IsEmpty()) return;
+    
+    if (!Instance->CollectedNotes.Contains(NoteKey))
+    {
+        Instance->CollectedNotes.Add(NoteKey);
+        UpdateBestiaryUI();
+        UE_LOG(LogTemp, Warning, TEXT("[MOB] Manually unlocked note: %s"), *NoteKey);
+    }
+}
+
+void AMob::UnlockSpecificEmotion(EEmotionType Emotion)
+{
+    if (!Instance || Emotion == EEmotionType::Default) return;
+    
+    if (!Instance->UnlockedEmotions.Contains(Emotion))
+    {
+        Instance->UnlockedEmotions.Add(Emotion);
+        UpdateBestiaryUI();
+        UE_LOG(LogTemp, Warning, TEXT("[MOB] Manually unlocked emotion: %s"), 
+               *UEnum::GetValueAsString(Emotion));
+    }
+}
+
+bool AMob::HasEmotionUnlocked(EEmotionType Emotion) const
+{
+    if (!Instance) return false;
+    return Instance->UnlockedEmotions.Contains(Emotion);
+}
+
+bool AMob::HasNoteUnlocked(const FString& NoteKey) const
+{
+    if (!Instance) return false;
+    return Instance->CollectedNotes.Contains(NoteKey);
+}
+
+void AMob::AddNoteToUnlockList(const FString& NoteKey)
+{
+    if (!NoteKey.IsEmpty() && !NotesToUnlockOnDeath.Contains(NoteKey))
+    {
+        NotesToUnlockOnDeath.Add(NoteKey);
+    }
+}
+
+void AMob::AddEmotionToUnlockList(EEmotionType Emotion)
+{
+    if (Emotion != EEmotionType::Default && !EmotionsToUnlockOnDeath.Contains(Emotion))
+    {
+        EmotionsToUnlockOnDeath.Add(Emotion);
+    }
 }

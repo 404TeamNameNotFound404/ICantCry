@@ -60,4 +60,9 @@ bool AICC_Actor::IsAshamed() const
 	return bAshamed;
 }
 
+int AICC_Actor::GetSpeed() const
+{
+	return -1;
+}
+
 
