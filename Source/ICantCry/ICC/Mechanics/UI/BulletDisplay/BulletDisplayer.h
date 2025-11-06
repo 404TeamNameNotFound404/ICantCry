@@ -39,7 +39,7 @@ public:
 	void RefreshBullets();
 
 	void RemoveBullet();
-
+	
 	/**
 	 * DEBUG ONLY!
 	 */

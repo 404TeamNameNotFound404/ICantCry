@@ -220,6 +220,7 @@ void UTurnBasedSystem::StartNextTurn()
 			CurrentMob = Mob;
 			bIsAiTurn = true;
 			bIsPlayerTurn = false;
+			DebugHelper::AddMessageToLog(Mob->GetActorLabel() + "'s turn");
 		}
 		//otherwise is player playing
 		else
@@ -368,6 +369,8 @@ void UTurnBasedSystem::Reload()
 	bRequestFight = true;
 	bInit = false;
 	bVictory = false;
+	bIsPlayerTurn = false;
+	bIsAiTurn = false;
 	Instance->GetInventory().BulletsStored = EnemySpawnManager->GetMemory().InBattleBullets;
 	Instance->GetCurrentPlayer()->GetBattleHUD()->SetBulletSetupFinished(false);
 	Turn.CurrentTurn = 0;

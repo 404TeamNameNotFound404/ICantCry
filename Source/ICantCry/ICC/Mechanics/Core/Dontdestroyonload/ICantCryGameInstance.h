@@ -39,11 +39,11 @@ public:
 
 	UPlayerStats* GetPlayerStats() const;
 	UPersistentData* GetPersistentData() const;
-	FDamage& GetCurrentDamageData();
+	FDamage* GetCurrentDamageData();
 	void SetPlayerStats(UPlayerStats* Stats);
 	void SetPersistentPlayer(AICC_Player* Player);
 	AICC_Player* GetCurrentPlayer() const;
-	void SetDamageData(const FDamage& Damage);
+	void SetDamageData(const FDamage* Damage);
 
 	void SetInventory(const FInventory& Inv);
 	FInventory& GetInventory();

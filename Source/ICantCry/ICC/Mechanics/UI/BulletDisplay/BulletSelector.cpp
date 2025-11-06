@@ -5,6 +5,7 @@
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "ICantCry/ICC/Mechanics/UI/MagazineBullet/MagazineBullet.h"
 
+bool UBulletSelector::gCanSelect;
 
 void UBulletSelector::Setup(FBullet& NewBullet, int32 InQuantity)
 {
@@ -116,6 +117,17 @@ void UBulletSelector::Refresh()
 	}
 }
 
+bool UBulletSelector::CanSelect()
+{
+	return gCanSelect;
+}
+
+void UBulletSelector::SetCanSelect(const bool& InCanSelect)
+{
+	gCanSelect = InCanSelect;
+}
+
+
 void UBulletSelector::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -130,6 +142,11 @@ void UBulletSelector::NativeConstruct()
 
 void UBulletSelector::AddToRevolver()
 {
+	if (!gCanSelect)
+	{
+		return;
+	}
+	
 	DebugHelper::LogSuccess("Bullet " +  BulletRefPtr->GetBulletData()->BulletName + " inserted");
 
 	if (BulletRefPtr->GetQuantity() <= 0)
