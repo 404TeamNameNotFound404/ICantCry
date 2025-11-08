@@ -34,6 +34,12 @@ public:
 	float DefencePower = 1.0f;
 
 	/**
+	 * Joy dedicated variable
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float RestorePower = 1.0f;
+
+	/**
 	 * Set the exp each emotions give to player after battle
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

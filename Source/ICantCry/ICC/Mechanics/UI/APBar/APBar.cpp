@@ -85,6 +85,22 @@ void UAPBar::UpdateAp(const int32& Value, const int32& ApCurrent)
 	Update();     
 }
 
+void UAPBar::ClearAt(const int32& Value)
+{
+	for (int32 i = 0; i < Value && i < SlotsOutline.Num(); ++i)
+	{
+		SlotsOutline[i]->SetColorAndOpacity(FLinearColor::White);
+	}
+}
+
+void UAPBar::ClearAll()
+{
+	for (UImage* Img: SlotsOutline)
+	{
+		Img->SetColorAndOpacity(DefaultColor);
+	}
+}
+
 void UAPBar::SetCurrentAP(const int32& Value)
 {
 	CurrentAp = FMath::Clamp(Value, 0, MaxAp);

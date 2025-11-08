@@ -61,6 +61,7 @@ public:
     UPROPERTY(meta = (BindWidget)) UButton* Reload;
     UPROPERTY(meta = (BindWidget)) UButton* Pass;
     UPROPERTY(meta = (BindWidget)) UButton* ConfirmButton;
+	UPROPERTY(meta = (BindWidget)) UButton* ConfirmReloadBullet;
 	UPROPERTY(meta = (BindWidget)) UButton* EngageBtn;
 
     // Status Bars
@@ -205,7 +206,7 @@ private:
 
     // Game State
     UPROPERTY() int CurrentAP = 0;
-	UPROPERTY() int ApAccumulator = 0;
+	UPROPERTY() int ApAccumulator = -1;
 
     int32 CurrentEnemyIndex = 0;
     int32 SelectedBulletIndex = 0;
@@ -270,6 +271,7 @@ private:
     UFUNCTION() void SwitchToBattleUI();
 	UFUNCTION()	void SetSelectedBullet(int32 Index);
 	UFUNCTION() void UpdateRevolverUI();
+	UFUNCTION() void HideBulletMagazineOnReload();
 
 	/*
 	 *-------------------------------------------------------

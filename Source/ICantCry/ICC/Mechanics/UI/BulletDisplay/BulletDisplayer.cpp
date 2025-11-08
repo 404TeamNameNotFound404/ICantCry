@@ -98,8 +98,9 @@ void UBulletDisplayer::RefreshBullets()
 void UBulletDisplayer::RemoveBullet()
 {
 	AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
-	AICC_Player* Player = Cast<AICC_Player>(Controller->GetPawn());
+	//AICC_Player* Player = Cast<AICC_Player>(Controller->GetPawn());
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	AICC_Player* Player = Instance->GetCurrentPlayer();
 	
 
 	UBulletData* RemovedBullet = Player->GetBattleHUD()->GetCircularBulletBuffer()->RemoveBullet();
@@ -126,9 +127,11 @@ void UBulletDisplayer::RemoveBullet()
 	}
 	
 	AMob* Target = Cast<AMob>(Player->GetBattleHUD()->GetSelectedActor());
-	const float Damage = Instance->GetCurrentDamageData().CalculateDamage(true);
+	const float Damage = Instance->GetCurrentDamageData()->CalculateDamage(true);
 	Target->GetStats().Health -= Damage;
 	Target->GetHealthBar()->SetCurrentHealth(Target->GetStats().Health);
+	
+	DebugHelper::AddMessageToLog("Minigame modifier post engage -> " + FString::SanitizeFloat(Instance->GetPlayerStats()->MinigameModifier));
 }
 
 void UBulletDisplayer::InstantiateBullet(TArray<FBullet> InstantiateBullets)

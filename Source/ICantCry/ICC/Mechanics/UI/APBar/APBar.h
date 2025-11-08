@@ -33,6 +33,8 @@ public:
 	void SetPreviewAP(const int32& Value);
 	void SetCurrentAP(const int32& Value);
 	void UpdateAp(const int32& Value, const int32& ApCurrent);
+	void ClearAt(const int32& Value);
+	void ClearAll();
 	
 protected:
 	virtual void NativeConstruct() override;
@@ -50,6 +52,9 @@ protected:
 	UPROPERTY() TArray<UImage*> ApBar;
 	UPROPERTY() TArray<UImage*> SlotsOutline;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category= "AP System" ,meta=(AllowPrivateAccess=true))
+	FColor DefaultColor = FColor::White;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category= "AP System" ,meta=(AllowPrivateAccess=true))
 	FColor ApColor = FColor::Yellow;
 

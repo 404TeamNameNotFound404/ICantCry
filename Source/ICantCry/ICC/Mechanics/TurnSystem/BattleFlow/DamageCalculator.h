@@ -10,6 +10,7 @@
 #include "ICantCry/ICC/Mechanics/Core/Data/EnemyDatas.h"
 #include "DamageCalculator.generated.h"
 
+class UICantCryGameInstance;
 
 USTRUCT(BlueprintType)
 struct FDamage
@@ -36,8 +37,13 @@ struct FDamage
 	 * @param PStats Player Stats
 	 * @param AITactics AIMoves
 	 * @param EData Enemy Data
+	 * @param GI GameInstance
 	 */
-	FDamage(UBulletData* BData, UPlayerStats* PStats, UEnemyTactics* AITactics, UEnemyDatas* EData);
+	FDamage(UBulletData* BData, UPlayerStats* PStats, UEnemyTactics* AITactics, UEnemyDatas* EData, UICantCryGameInstance* GI = nullptr);
 	int CalculateDamage(const bool& IsPlayerAttacking);
+
+private:
+	UPROPERTY()
+	UICantCryGameInstance* Instance;
 	
 };

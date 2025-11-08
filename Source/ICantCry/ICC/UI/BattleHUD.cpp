@@ -17,6 +17,7 @@ void UBattleHUD::NativeConstruct()
     if (Pass) Pass->OnClicked.AddDynamic(this, &UBattleHUD::OnPassPressed);
     if (ConfirmButton) ConfirmButton->OnClicked.AddDynamic(this, &UBattleHUD::ConfirmBulletSelection);
     if (EngageBtn) EngageBtn->OnClicked.AddDynamic(this, &UBattleHUD::Engage);
+    ConfirmReloadBullet->OnClicked.AddDynamic(this, &UBattleHUD::UBattleHUD::HideBulletMagazineOnReload);
 
     //SET VISIBILITY PANNELS
 
@@ -173,7 +174,10 @@ void UBattleHUD::NativeConstruct()
    0.4f,                            
    false                            
 );
-    
+
+    ConfirmReloadBullet->SetVisibility(ESlateVisibility::Hidden);
+
+    UBulletSelector::SetCanSelect(true);
 }
 
 // TARGET
@@ -196,7 +200,6 @@ void UBattleHUD::UpdateAPBar()
 {
     const float Progress = static_cast<float>(CurrentAP) / 4.0f;
     APBar->SetPercent(Progress);
-    DebugHelper::LogMessage(8, FColor::FromHex("725CAD"), "AP Bar " + FString::SanitizeFloat(Progress));
 }
 
 void UBattleHUD::OnShootPressed()
@@ -234,9 +237,9 @@ void UBattleHUD::OnShootPressed()
     
     bShootFired = true;
     ApAccumulator++;
-    ApAccumulator = FMath::Min(ApAccumulator, CurrentAP);//(CurrentAP >= 4) ? 4 : ApAccumulator;
+    ApAccumulator = FMath::Min(ApAccumulator, CurrentAP); //(CurrentAP >= 4) ? 4 : ApAccumulator;
     UpdateAPBar();
-    Bar->UpdateHighlights(2);
+    Bar->UpdateHighlights(1);
     bTargetSelection = true;
     DebugHelper::LogSuccess("Shoot pressed, ap spent-> " + FString::FromInt(ApAccumulator));
     DebugHelper::AddMessageToLog("Shoot pressed, ap spent-> " + FString::FromInt(ApAccumulator));
@@ -318,6 +321,9 @@ void UBattleHUD::OnReloadPressed()
         return;
     }
 
+    UBulletSelector::SetCanSelect(true);
+    
+    ConfirmReloadBullet->SetVisibility(ESlateVisibility::Visible);
     CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Visible);
     DecreaseAP(1);
     UpdateAPBar();
@@ -545,17 +551,30 @@ void UBattleHUD::UpdateRevolverUI()
     }
 }
 
+void UBattleHUD::HideBulletMagazineOnReload()
+{
+    ConfirmReloadBullet->SetVisibility(ESlateVisibility::Hidden);
+    CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Hidden);
+    CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
+    Displayer->SetVisibility(ESlateVisibility::Hidden);
+    TargetText->SetVisibility(ESlateVisibility::Hidden);
+    TargetNameText->SetVisibility(ESlateVisibility::Hidden);
+    UBulletSelector::SetCanSelect(false);
+}
+
 void UBattleHUD::IncreaseShootPower()
 {
     if (CurrentAP <= 1)
     {
         return;
     }
-
+    
     ApPowerBoost++;
     ApAccumulator = FMath::Min(ApAccumulator + 1, 4);
     Bar->UpdateHighlights(ApAccumulator);
-
+    
+    DebugHelper::LogMessage(6, FColor::Orange, "ApAccumalator " + FString::FromInt(ApAccumulator));
+    
     if (ApAccumulator > CurrentAP)
     {
         DebugHelper::LogError("You can't add more ap than you have it current ap " + FString::FromInt(CurrentAP) + "- Accumulator " + FString::FromInt(ApAccumulator));
@@ -564,9 +583,48 @@ void UBattleHUD::IncreaseShootPower()
         Bar->UpdateHighlights(ApAccumulator);
     }
     
+
+    switch (ApAccumulator)
+    {
+    case 1:
+        {
+            GameInstance->GetPlayerStats()->ApModifier = 1.0f;
+            DebugHelper::AddMessageToLog("Player spent 1 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+            break;
+        }
+    case 2:
+        {
+            GameInstance->GetPlayerStats()->ApModifier = 1.5f;
+            DebugHelper::AddMessageToLog("Player spent 1 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+            break;
+        }
+    case 3:
+        {
+            GameInstance->GetPlayerStats()->ApModifier = 2.0f;
+            DebugHelper::AddMessageToLog("Player spent 1 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+            break;
+        }
+    case 4:
+        {
+            GameInstance->GetPlayerStats()->ApModifier = 2.5f;
+            DebugHelper::AddMessageToLog("Player spent 1 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+            break;
+        }
+
+    default:
+        {
+            GameInstance->GetPlayerStats()->ApModifier = 1.0f;
+            DebugHelper::AddMessageToLog("Player spent 1 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+            break;
+        }
+      
+    }
+
+    Bar->UpdateHighlights(ApAccumulator);
     
-    const int32 Boost = ApAccumulator;
-    GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStats()->ApModifier = 1.0f + (Boost * 0.5f);
+    DebugHelper::LogWarning("Ap Modifier on increase -> " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+    DebugHelper::AddMessageToLog("Ap Modifier on increase -> " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+    
     DebugHelper::LogSuccess("Shoot is boosted ap modifier now is " + FString::SanitizeFloat( GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStats()->ApModifier ));
     DebugHelper::AddMessageToLog("Shoot is boosted ap modifier now is " + FString::SanitizeFloat( GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStats()->ApModifier ));
 }
@@ -589,20 +647,16 @@ void UBattleHUD::DecreaseShootPower()
 
 void UBattleHUD::PrepareToEngage()
 {
-    UICantCryGameInstance* PersistentInstance = Cast<UICantCryGameInstance>(GetGameInstance());
-    checkf(PersistentInstance, TEXT("Instance is null at void UBattleHUD::UpdateTarget()"));
     AMob* SelectedEnemy= Cast<AMob>(BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex]);
     checkf(SelectedEnemy, TEXT("SelectedEnemy is null at UBattleHUD::Engage"));
     SelectedActorTarget = SelectedEnemy;
     SelectedActorTarget = SelectedEnemy;
-    Damage.BulletData = CurrentBulletData; 
-    Damage.EnemyData = Cast<AMob>(SelectedActorTarget)->GetData();
-    Damage.AIMoves =  Cast<AMob>(SelectedActorTarget)->GetTactics();
-    Damage.PlayerStats = PersistentInstance->GetPlayerStats();
-    checkf(Damage.PlayerStats, TEXT("Stats null"));
-    PersistentInstance->SetDamageData(Damage);
+    FDamage DummyDamage(CurrentBulletData,  GameInstance->GetPlayerStats(), Cast<AMob>(SelectedActorTarget)->GetTactics(),
+        Cast<AMob>(SelectedActorTarget)->GetData(), GameInstance);
+    GameInstance->SetDamageData(&DummyDamage);
     DebugHelper::LogMessage(3, FColor::White, "Targeting " + SelectedEnemy->GetActorLabel());
     DebugHelper::AddMessageToLog("Targeting " + SelectedEnemy->GetActorLabel());
+    DebugHelper::LogMessage(5, FColor::Emerald, "Minigame modifier -> " + FString::SanitizeFloat(DummyDamage.PlayerStats->MinigameModifier));
     checkf(MinigameHandler, TEXT("Minigame handler is null at UBattleHUD::Engage"));
     MinigameHandler->StartMinigame(true);
     EngageBtn->SetVisibility(ESlateVisibility::Hidden);
@@ -1041,6 +1095,7 @@ void UBattleHUD::UpdateAp()
     Bar->SetCurrentAP(CurrentAP);
     Bar->SetPreviewAP(0);
     ApAccumulator = 0;
+    Bar->ClearAll();
 }
 
 void UBattleHUD::SetApAccumulator(const int& Value)

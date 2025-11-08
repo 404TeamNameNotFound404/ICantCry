@@ -16,6 +16,8 @@ void UGameOverVisualizer::NativeConstruct()
 void UGameOverVisualizer::RetryBattle()
 {
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+	DebugHelper::AddMessageToLog("---Retry Pressed----");
+	DebugHelper::AddMessageToLog("Restarting the battle ...");
 
 	AEnemySpawnManager* SpawnManager = Instance->GetCurrentPlayer()
 	->GetBattleHUD()
@@ -30,11 +32,16 @@ void UGameOverVisualizer::RetryBattle()
 	}
 
 	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().RejoinQueue(SpawnManager->GetMemory().EmotionsSpawned);
+
+	for (AMob* E : SpawnManager->GetMemory().EmotionsSpawned)
+	{
+		E->ReinizializeTree();
+	}
 	
 	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->Reload();
 	
 	this->SetVisibility(ESlateVisibility::Hidden);
-	DebugHelper::SaveLogToFile();
+	// DebugHelper::SaveLogToFile();
 }
 
 void UGameOverVisualizer::LoadPrevious()

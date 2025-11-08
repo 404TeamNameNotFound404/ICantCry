@@ -63,7 +63,7 @@ void AMob::BeginPlay()
 	GameRef = Instance;
 	Damage.BulletData = nullptr;
 	Damage.EnemyData = EnemyData;
-	Damage.PlayerStats = MinigameHandler->GetBattlePlayer()->GetStats();
+	Damage.PlayerStats = Instance->GetPlayerStats(); //MinigameHandler->GetBattlePlayer()->GetStats();
 	Damage.AIMoves = Moves;
 	Handler = MinigameHandler;
 	Memory.DefaultBattleLocation = GetActorLocation();
@@ -169,6 +169,8 @@ void AMob::ReinizializeTree()
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsHealingOther?", bHealOther);
 	bIsReady = true;
 	bRespawned = false;
+	DebugHelper::LogWarning("Emotion BT re-initialized!");
+	DebugHelper::AddMessageToLog("Emotion BT re-initialized!");
 }
 
 void AMob::StartDefenceMinigame()

@@ -116,8 +116,18 @@ void ACameraHallway::Snap()
 	{
 		Player->GetWorldCamera()->SnapToFixedWaypoint(CameraBackWaypoint);
 		AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
-		Player->GetWorldCamera()->SetbDefaultCamera(false);
-		Controller->SetViewTargetWithBlend(Player, 0.0f);
+
+		if (bEnableWorldCamera)
+		{
+			Player->GetWorldCamera()->SetbDefaultCamera(true);
+			Controller->SetViewTargetWithBlend(Player->GetWorldCamera(), 0.5f);
+		}
+		else
+		{
+			Player->GetWorldCamera()->SetbDefaultCamera(false);
+			Controller->SetViewTargetWithBlend(Player, 0.0f);
+		}
+
 		Counter = 0;
 		Player->SetWorldCameraCounter(Counter);
 
