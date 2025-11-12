@@ -119,6 +119,8 @@ void AMinigameHandler::EndMinigame()
 	}
 	
 	bPlayerMinigameEnded = true;
+
+	OnMinigameEnded.Broadcast();
 }
 
 AICC_Player* AMinigameHandler::GetBattlePlayer() const

@@ -224,6 +224,7 @@ void UBattleHUD::OnShootPressed()
         return;
     }
 
+    DecisionDisplayer->Hide();
     DisableButtonsDuringShooting();
 
     CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Hidden);
@@ -238,6 +239,7 @@ void UBattleHUD::OnShootPressed()
     bShootFired = true;
     ApAccumulator++;
     ApAccumulator = FMath::Min(ApAccumulator, CurrentAP); //(CurrentAP >= 4) ? 4 : ApAccumulator;
+    DebugHelper::LogMessage(7, FColor::Orange, "Ap Accumulator on shoot -> " + FString::FromInt(ApAccumulator));
     UpdateAPBar();
     Bar->UpdateHighlights(1);
     bTargetSelection = true;
@@ -573,7 +575,7 @@ void UBattleHUD::IncreaseShootPower()
     ApAccumulator = FMath::Min(ApAccumulator + 1, 4);
     Bar->UpdateHighlights(ApAccumulator);
     
-    DebugHelper::LogMessage(6, FColor::Orange, "ApAccumalator " + FString::FromInt(ApAccumulator));
+    DebugHelper::LogMessage(6, FColor::Orange, "ApAccumalator on boost pressed " + FString::FromInt(ApAccumulator));
     
     if (ApAccumulator > CurrentAP)
     {

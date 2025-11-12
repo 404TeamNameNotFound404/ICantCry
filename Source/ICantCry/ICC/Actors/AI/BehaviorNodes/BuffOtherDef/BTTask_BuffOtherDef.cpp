@@ -52,6 +52,11 @@ EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& Ow
 		FText::FromString(Current->GetActorLabel() + " buffed " + TargetToBuff->GetActorLabel() + " def"));
 
 	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " buffed " + TargetToBuff->GetActorLabel() + " def");
+
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+
+	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
+	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetActorLabel() + " buffs " + TargetToBuff->GetActorLabel() + " def"));
 	
 	return EBTNodeResult::InProgress;
 }
@@ -117,6 +122,8 @@ void UBTTask_BuffOtherDef::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uin
 		}
 
 		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
+		UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 	}
 
 	bTimerStarted = false;

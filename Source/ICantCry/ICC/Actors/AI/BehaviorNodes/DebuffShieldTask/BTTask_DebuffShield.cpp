@@ -37,6 +37,11 @@ EBTNodeResult::Type UBTTask_DebuffShield::ExecuteTask(UBehaviorTreeComponent& Ow
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " de-buffed it's shield"));
 	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " de-buffed it's shield");
+
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+
+	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
+	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetActorLabel() + " de-buffed it's shield"));
 	
 	return EBTNodeResult::InProgress;
 }
@@ -101,7 +106,8 @@ void UBTTask_DebuffShield::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uin
 		}
 
 		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
-		
+		UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 	}
 
 	bTimeStarted = false;

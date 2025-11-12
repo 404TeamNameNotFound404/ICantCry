@@ -11,6 +11,8 @@
 
 class AICC_Player;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMinigameEnded);
+
 UCLASS(Blueprintable)
 class ICANTCRY_API AMinigameHandler : public AActor
 {
@@ -52,6 +54,9 @@ public:
 	AICC_Player* GetBattlePlayer() const;
 
 	bool IsPlayerMinigameEnded() const;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnMinigameEnded OnMinigameEnded;
 
 
 private:

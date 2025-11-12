@@ -61,7 +61,13 @@ int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 		}
 		
 		const int AIDamageResult = ((((AIMoves->MovePower / (2 - AIMoves->MinigamePower)) * (EnemyData->AttackPower / PlayerStats->DefencePower))) * AIMoves->ActionPointsModifier * AIMoves->WeaknessModifier) * PlayerStats->MinigameModifier;
+
 		DebugHelper::LogMessage(3, FColor::FromHex("433878"), "Damage dealt -> " + FString::SanitizeFloat(AIDamageResult));
+
+		DebugHelper::AddMessageToLog("AI To Player Formula is -> ( " +FString::SanitizeFloat(AIMoves->MovePower)  + ") / (2 - " + FString::SanitizeFloat(AIMoves->MinigamePower) +
+			") x (" + FString::SanitizeFloat(EnemyData->AttackPower) + " / " + FString::SanitizeFloat(PlayerStats->DefencePower) + ") x (" + FString::SanitizeFloat(AIMoves->ActionPointsModifier) + " x " +
+			" * " + FString::SanitizeFloat(PlayerStats->MinigameModifier));
+
 		DebugHelper::AddMessageToLog("Damage dealt -> " + FString::SanitizeFloat(AIDamageResult));
 		return AIDamageResult;
 	}

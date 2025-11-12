@@ -24,6 +24,7 @@
 #include "ICantCry/ICC/Mechanics/UI/BattleVisualization/GameOver/GameOverVisualizer.h"
 #include "ICantCry/ICC/Mechanics/UI/BulletDisplay/BulletDisplayer.h"
 #include "ICantCry/ICC/Mechanics/UI/BattleVisualization/Victory/VictoryVisualizer.h"
+#include "ICantCry/ICC/Mechanics/UI/DecisionDisplayer/DecisionDisplayer.h"
 #include "BattleHUD.generated.h"
 
 /**
@@ -50,6 +51,7 @@ public:
 	UPROPERTY(meta = (BindWidget)) USizeBox* MinigameSlot;
     UPROPERTY(meta = (BindWidget)) UWidget* CanvasAmmoSelection;
     UPROPERTY(meta = (BindWidget)) UCanvasPanel* CanvasStatus;
+	UPROPERTY(meta=(BindWidget)) UDecisionDisplayer* DecisionDisplayer;
 
     // Action Buttons
 	UPROPERTY(meta = (BindWidget)) UAPBar* Bar;

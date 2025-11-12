@@ -23,6 +23,7 @@ protected:
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 	virtual void OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult) override;
 
+
 	UPROPERTY()
 	UBlackboardComponent* BlackBoard;
 
@@ -37,4 +38,14 @@ protected:
 
 	UPROPERTY()
 	FTimerHandle TimerHandle;
+
+	UPROPERTY()
+	float RetreatCountdown = 1.0f;
+
+	UPROPERTY()
+	AMob* CurrentEmotion;
+
+	UPROPERTY()
+	TWeakObjectPtr<UBehaviorTreeComponent> OwnerCompPtr;
+
 };
