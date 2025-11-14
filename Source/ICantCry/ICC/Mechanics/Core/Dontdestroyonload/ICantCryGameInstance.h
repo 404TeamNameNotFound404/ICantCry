@@ -85,19 +85,13 @@ public:
 
 	//[DEBUG]
 	UFUNCTION(BlueprintCallable, Category = "Debug|Bestiary")
-    void DebugUnlockAll();
+	void DebugUnlockAllEmotionsAndNotes();
 
-    UFUNCTION(BlueprintCallable, Category = "Debug|Bestiary")
-    void DebugResetBestiary();
+	UFUNCTION(BlueprintCallable, Category = "Debug|Bestiary")
+	void DebugResetBestiary();
 
-    UFUNCTION(BlueprintCallable, Category = "Debug|Bestiary")
-    void DebugPrintBestiaryStatus();
-
-    UFUNCTION(BlueprintCallable, Category = "Debug|Bestiary")
-    void DebugSimulateMobDeath(FString MobType);
-
-    UFUNCTION(BlueprintCallable, Category = "Debug|Bestiary")
-    void DebugSimulateAllMobDeaths();
+	UFUNCTION(BlueprintCallable, Category = "Debug|Bestiary")
+	void DebugUnlockSpecificMobContent(FString MobType);
 	//[DEBUG END]
 	
 private:

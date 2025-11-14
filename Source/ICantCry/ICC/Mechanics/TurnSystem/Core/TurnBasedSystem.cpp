@@ -281,6 +281,7 @@ void UTurnBasedSystem::Flow()
 
 		if (Mob && !Mob->IsAlive())
 		{
+			Mob->UnlockContentOnDeath();
 			Turn.Queue.RemoveAt(i);
 			DebugHelper::LogWarning("Mob removed from queue due to death.");
 		}

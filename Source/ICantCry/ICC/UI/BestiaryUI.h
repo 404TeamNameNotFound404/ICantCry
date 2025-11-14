@@ -71,6 +71,10 @@ public:
     UFUNCTION(BlueprintCallable)
     void RefreshEmotionButtons();
 
+    bool IsOpen() const;
+
+    void SetIsOpen(const bool& Value);
+
 protected:
 
 
@@ -189,6 +193,12 @@ private:
 
     UPROPERTY()
     TMap<EEmotionType, UEmotionButtonWidget*> EmotionButtonMap;
+
+    UPROPERTY()
+    bool bIsOpen = false;
+
+    
+
 };
 
 
@@ -197,3 +207,5 @@ private:
 // TO DO :  
 
 // Devi debuggare in gameinstance se lo sblocco funziona dopo la morte del nemico 
+
+// Rifai tutto il debug 

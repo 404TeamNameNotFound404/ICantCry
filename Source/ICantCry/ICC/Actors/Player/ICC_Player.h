@@ -231,16 +231,30 @@ private:
 	void Input_OpenCrafting(const FInputActionValue& InputActionValue);
 	void Input_CloseCrafting(const FInputActionValue &InputActionValue);
 	void Input_ChallengeInteraction(const FInputActionValue &InputActionValue); // Puzzle assemble minigame interaction
+	void Input_OpenBestiary(const FInputActionValue& InputActionValue);
+	void Input_CloseBestiary(const FInputActionValue& InputActionValue);
+	
 
 	void CloseInventory();
 	void ToggleInventory();
 	void ToggleCraftingHUD();
 	void CloseCraftingHUD();
+	
 
 
 	//Bestiary 
-	void CollectNote(const FString& NoteKey);
+	void CollectNote(const FString& NoteKey); // da cancellare
+	void OpenBestiary();
+    void CloseBestiary();
+
+	UPROPERTY() 
+    int32 BestiaryCounter;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	UBestiaryUI* BestiaryUI;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
+    TSubclassOf<UBestiaryUI> BestiaryUIClass;
+
+
 };

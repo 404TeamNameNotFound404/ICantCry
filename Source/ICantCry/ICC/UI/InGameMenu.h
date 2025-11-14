@@ -30,8 +30,8 @@ public:
 	UFUNCTION()
 	void OpenInventory();
 
-	UFUNCTION()
-	void OpenBestiary();
+	// UFUNCTION()
+	// void OpenBestiary();
 
 	UFUNCTION()
 	void OpenMap();
@@ -43,6 +43,7 @@ public:
 
 	void SetDisabled(const bool& Value);
 	bool IsDisabled() const;
+
 
 protected:
 	virtual void NativeConstruct() override;
@@ -61,9 +62,6 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	UButton* Map;
-
-	UPROPERTY(meta = (BindWidget))  
-    UButton* Bestiary;
 
 
 private:

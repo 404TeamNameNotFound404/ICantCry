@@ -185,6 +185,16 @@ void UBestiaryUI::RefreshEmotionButtons()
     }
 }
 
+bool UBestiaryUI::IsOpen() const
+{
+    return bIsOpen;
+}
+
+void UBestiaryUI::SetIsOpen(const bool &Value)
+{
+    bIsOpen = Value;
+}
+
 void UBestiaryUI::UpdateEmotionDetails(EEmotionType Emotion)
 {
     bool bIsUnlocked = ICantCryGameInstance && ICantCryGameInstance->UnlockedEmotions.Contains(Emotion);

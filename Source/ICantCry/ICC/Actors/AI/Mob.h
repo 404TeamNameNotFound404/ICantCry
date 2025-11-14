@@ -185,21 +185,6 @@ protected:
 	static bool bStopTree;
 
 	/**
-	 * Get default note key based on mob type
-	 * @return Note key string
-	 */
-	UFUNCTION()
-	void   SetDefaultNoteForMobType();
-    
-
-	/**
-	 * Get default emotion based on mob type
-	 * @return Emotion type
-	 */
-	UFUNCTION()
-	void SetDefaultEmotionForMobType();
-
-	/**
 	 * Update Bestiary UI if it's currently open
 	 */
 	UFUNCTION()
@@ -385,83 +370,18 @@ public:
 	int GetTreeId() const;
 
 
-	// UNLOCK ON NOTE & EMOTIONS ON DEATH
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bestiary")
-	TArray<FString> NotesToUnlockOnDeath;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bestiary")
-	TArray<EEmotionType> EmotionsToUnlockOnDeath;
-
-
-	/**
-	 * Unlock notes when mob dies
-	 */
+	// DEBUG BESTIARY
 	UFUNCTION(BlueprintCallable, Category = "Bestiary")
-	void UnlockNotesOnDeath();
+	void UnlockContentOnDeath();
 
-	/**
-	 * Unlock emotions when mob dies
-	 */
 	UFUNCTION(BlueprintCallable, Category = "Bestiary")
-	void UnlockEmotionsOnDeath();
+	FString GetNoteKeyForMobType() const;
 
-	/**
-	 * Unlock a specific note manually
-	 * @param NoteKey The key of the note to unlock
-	 */
 	UFUNCTION(BlueprintCallable, Category = "Bestiary")
-	void UnlockSpecificNote(const FString &NoteKey);
+	EEmotionType GetEmotionForMobType() const;
 
-	/**
-	 * Unlock a specific emotion manually
-	 * @param Emotion The emotion type to unlock
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Bestiary")
-	void UnlockSpecificEmotion(EEmotionType Emotion);
 
-	/**
-	 * Check if an emotion is already unlocked
-	 * @param Emotion The emotion to check
-	 * @return true if unlocked
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Bestiary")
-	bool HasEmotionUnlocked(EEmotionType Emotion) const;
 
-	/**
-	 * Check if a note is already unlocked
-	 * @param NoteKey The note key to check
-	 * @return true if unlocked
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Bestiary")
-	bool HasNoteUnlocked(const FString &NoteKey) const;
-
-	/**
-	 * Add a note to the unlock list
-	 * @param NoteKey The note key to add
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Bestiary")
-	void AddNoteToUnlockList(const FString &NoteKey);
-
-	/**
-	 * Add an emotion to the unlock list
-	 * @param Emotion The emotion to add
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Bestiary")
-	void AddEmotionToUnlockList(EEmotionType Emotion);
-
-	/**
-	 * Get all notes that will be unlocked on death
-	 * @return Array of note keys
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Bestiary")
-	TArray<FString> GetNotesToUnlock() const { return NotesToUnlockOnDeath; }
-
-	/**
-	 * Get all emotions that will be unlocked on death
-	 * @return Array of emotion types
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Bestiary")
-	TArray<EEmotionType> GetEmotionsToUnlock() const { return EmotionsToUnlockOnDeath; }
 
 private:
 	UPROPERTY()
@@ -504,5 +424,7 @@ private:
 
 	static UICantCryGameInstance *GameRef;
 
-	
+	// bestiary
+	UPROPERTY()
+    bool bHasUnlockedContent = false;
 };
