@@ -233,6 +233,7 @@ private:
 	void Input_ChallengeInteraction(const FInputActionValue &InputActionValue); // Puzzle assemble minigame interaction
 	void Input_OpenBestiary(const FInputActionValue& InputActionValue);
 	void Input_CloseBestiary(const FInputActionValue& InputActionValue);
+	void Input_ToggleBestiary(const FInputActionValue& InputActionValue);
 	
 
 	void CloseInventory();
