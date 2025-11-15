@@ -364,6 +364,16 @@ public:
 	bool GetPlayerDebuffAttack() const;
 	bool GetBuffOtherDefence() const;
 	int GetTreeId() const;
+	
+	UFUNCTION() void UpdateBestiaryUI();
+
+	// DEBUG BESTIARY
+	UFUNCTION(BlueprintCallable, Category = "Bestiary")
+	FString GetNoteKeyForMobType() const;
+	UFUNCTION(BlueprintCallable, Category = "Bestiary")
+	EEmotionType GetEmotionForMobType() const;
+	UFUNCTION(BlueprintCallable, Category = "Bestiary")
+	void UnlockContentOnDeath();
 
 private:
 
@@ -406,4 +416,7 @@ private:
 	bool bRespawned = false;
 
 	static UICantCryGameInstance* GameRef;
+
+	UPROPERTY()
+	bool bHasUnlockedContent = false;
 };

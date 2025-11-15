@@ -25,8 +25,7 @@ protected:
 	void OnThinkComplete_Internal();
 	void OnThinkComplete(UBehaviorTreeComponent* OwnerComp, AICC_AIController* Controller);
 	void ProcessDecision(EDecision Dec, AMob* Current, UBlackboardComponent* Board, UBehaviorTreeComponent* OwnerComp, AICC_Player* Target);
-	UFUNCTION()
-	void OnMinigameEndedCallback();
+	UFUNCTION() void OnMinigameEndedCallback();
 	void StartAttackMinigame(AMob* Current, AICC_Player* Target, AICC_AIController* Controller);
 
 	UPROPERTY()
