@@ -71,8 +71,11 @@ void AMob::BeginPlay()
 	Memory.InitialAttackPower = GetData()->AttackPower;
 	Memory.InitialDefencePower = GetData()->DefencePower;
 	EnemyData->Alive = true;
+	EnemyData->Type = Type;
 	Stats.Health = GetData()->MaxHealth;
 	Stats.bAlive = true;
+
+
 }
 
 // Called every frame
@@ -84,6 +87,11 @@ void AMob::Tick(float DeltaTime)
 	}
 
 	Super::Tick(DeltaTime);
+}
+
+int AMob::GetSpeed() const
+{
+	return Moves->Priority;
 }
 
 UEnemyDatas* AMob::GetData() const
@@ -335,6 +343,72 @@ int AMob::GetTreeId() const
 	return Bt_Id;
 }
 
+void AMob::UnlockContentOnDeath()
+{
+	 if (!Instance)
+    {
+        UE_LOG(LogTemp, Error, TEXT("[MOB] Cannot unlock content - GameInstance is null"));
+        return;
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("[MOB] Unlocking content for mob type: %s"), 
+           *UEnum::GetValueAsString(GetMobType()));
+
+    // Sblocca note in base al MobType
+    FString NoteKey = GetNoteKeyForMobType();
+    if (!NoteKey.IsEmpty() && !Instance->CollectedNotes.Contains(NoteKey))
+    {
+        Instance->CollectedNotes.Add(NoteKey);
+        UE_LOG(LogTemp, Warning, TEXT("[MOB] ✓ Unlocked note: %s"), *NoteKey);
+    }
+
+    // Sblocca emotion in base al MobType
+    EEmotionType EmotionToUnlock = GetEmotionForMobType();
+    if (EmotionToUnlock != EEmotionType::Default && !Instance->UnlockedEmotions.Contains(EmotionToUnlock))
+    {
+        Instance->UnlockedEmotions.Add(EmotionToUnlock);
+        UE_LOG(LogTemp, Warning, TEXT("[MOB] ✓ Unlocked emotion: %s"), 
+               *UEnum::GetValueAsString(EmotionToUnlock));
+    }
+
+    // Aggiorna Bestiary UI
+    Instance->UpdateBestiaryUI();
+}
+
+FString AMob::GetNoteKeyForMobType() const
+{
+    switch (Type)
+    {
+        case EMobType::MobAnger:    return TEXT("Anger");
+        case EMobType::MobFear:     return TEXT("Fear");
+        case EMobType::MobSadness:  return TEXT("Sadness");
+        case EMobType::MobJoy:      return TEXT("Joy");
+        case EMobType::MobDisgust:  return TEXT("Disgust");
+        case EMobType::MobAnxiety:  return TEXT("Anxiety");
+        case EMobType::MobCalm:     return TEXT("Calm");
+        case EMobType::MobJealousy: return TEXT("Jealousy");
+        case EMobType::MobShame:    return TEXT("Shame");
+        default:                    return TEXT("Default");
+    }
+}
+
+EEmotionType AMob::GetEmotionForMobType() const
+{
+    switch (Type)
+    {
+        case EMobType::MobAnger:    return EEmotionType::Anger;
+        case EMobType::MobFear:     return EEmotionType::Fear;
+        case EMobType::MobSadness:  return EEmotionType::Sadness;
+        case EMobType::MobJoy:      return EEmotionType::Joy;
+        case EMobType::MobDisgust:  return EEmotionType::Disgust;
+        case EMobType::MobAnxiety:  return EEmotionType::Anxiety;
+        case EMobType::MobCalm:     return EEmotionType::Calm;
+        case EMobType::MobJealousy: return EEmotionType::Jealousy;
+        case EMobType::MobShame:    return EEmotionType::Shame;
+        default:                    return EEmotionType::Default;
+    }
+}
+
 
 void AMob::Heal(const float& RestoredHealth)
 {
@@ -491,6 +565,14 @@ bool AMob::IsAlive()
 	{
 		bIsReady = false;
 		Stats.bAlive = false;
+
+		if (!bHasUnlockedContent)
+        {
+            UnlockContentOnDeath();
+            bHasUnlockedContent = true;
+        }
+
+
 		// Destroy();
 		SetActorTickEnabled(false);
 		SetActorEnableCollision(false);
@@ -559,3 +641,16 @@ ABattleHandler* AMob::GetBattleHandler() const
 	checkf(BattleHandler, TEXT("Battle Handler is invalid at AMob::GetBattleHandler"));
 	return BattleHandler;
 }
+
+
+void AMob::UpdateBestiaryUI()
+{
+    if (!Instance) return;
+
+    // Usa il riferimento diretto dal GameInstance
+    Instance->UpdateBestiaryUI();
+    
+    UE_LOG(LogTemp, Warning, TEXT("[MOB] Requested BestiaryUI update via GameInstance"));
+}
+
+

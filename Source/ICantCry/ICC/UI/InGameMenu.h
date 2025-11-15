@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "CraftingHUD.h"
+#include "BestiaryUI.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Button.h"
 #include "InGameMenu.generated.h"
@@ -29,6 +30,9 @@ public:
 	UFUNCTION()
 	void OpenInventory();
 
+	// UFUNCTION()
+	// void OpenBestiary();
+
 	UFUNCTION()
 	void OpenMap();
 
@@ -39,6 +43,7 @@ public:
 
 	void SetDisabled(const bool& Value);
 	bool IsDisabled() const;
+
 
 protected:
 	virtual void NativeConstruct() override;
@@ -69,12 +74,18 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UCraftingHUD> CraftingHUDClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))  
+    TSubclassOf<UBestiaryUI> BestiaryUIClass;
 	
 	UPROPERTY()
 	UCraftingHUD* CraftingHud;
 
 	UPROPERTY()
 	UInventoryHUD* InventoryHud;
+
+	UPROPERTY()
+	UBestiaryUI* BestiaryUI;
 
 	UPROPERTY()
 	bool bMenuOpen = false;
