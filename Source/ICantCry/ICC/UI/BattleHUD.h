@@ -24,6 +24,7 @@
 #include "ICantCry/ICC/Mechanics/UI/BattleVisualization/GameOver/GameOverVisualizer.h"
 #include "ICantCry/ICC/Mechanics/UI/BulletDisplay/BulletDisplayer.h"
 #include "ICantCry/ICC/Mechanics/UI/BattleVisualization/Victory/VictoryVisualizer.h"
+#include "ICantCry/ICC/Mechanics/UI/DecisionDisplayer/DecisionDisplayer.h"
 #include "BattleHUD.generated.h"
 
 /**
@@ -63,6 +64,7 @@ public:
     UPROPERTY(meta = (BindWidget)) UButton* ConfirmButton;
 	UPROPERTY(meta = (BindWidget)) UButton* ConfirmReloadBullet;
 	UPROPERTY(meta = (BindWidget)) UButton* EngageBtn;
+	UPROPERTY(meta=(BindWidget)) UDecisionDisplayer* DecisionDisplayer;
 
     // Status Bars
     UPROPERTY(meta = (BindWidget)) UProgressBar* PlayerHealth;

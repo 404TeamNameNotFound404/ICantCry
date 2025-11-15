@@ -3,6 +3,7 @@
 
 #include "BTTask_BuffOtherAtk.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Chaos/PBDSuspensionConstraintData.h"
 #include "ICantCry/ICC/Actors/AI/ICC_AIController.h"
 #include "ICantCry/ICC/Actors/AI/Mob.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
@@ -57,6 +58,11 @@ EBTNodeResult::Type UBTTask_BuffOtherAtk::ExecuteTask(UBehaviorTreeComponent& Ow
 		FText::FromString(Current->GetActorLabel() + " buffed " + TargetToBuff->GetActorLabel() + " atk"));
 
 	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " buffed " + TargetToBuff->GetActorLabel() + " atk");
+
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+
+	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
+	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetActorLabel() + " buffs " + TargetToBuff->GetActorLabel() + " atk"));
 	
 	return EBTNodeResult::InProgress;
 }
@@ -121,6 +127,8 @@ void UBTTask_BuffOtherAtk::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uin
 		}
 
 		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
+		UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 	}
 
 	bTimerStarted = false;

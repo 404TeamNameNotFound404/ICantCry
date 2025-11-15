@@ -40,6 +40,11 @@ EBTNodeResult::Type UBTTask_FreezedUp::ExecuteTask(UBehaviorTreeComponent& Owner
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " freezed " + Target->GetActorLabel()));
 	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " freezed " + Target->GetActorLabel());
+
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+
+	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
+	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetActorLabel() + " freezed " + Target->GetActorLabel()));
 	
 	return EBTNodeResult::InProgress;
 }
@@ -104,7 +109,8 @@ void UBTTask_FreezedUp::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8*
 		}
 
 		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
-		
+		UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 	}
 
 	bTimeStarted = false;
