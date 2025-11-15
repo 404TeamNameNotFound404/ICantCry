@@ -6,6 +6,8 @@
 void UICantCryGameInstance::Init()
 {
 	Super::Init();
+
+	ActiveBestiaryUI = nullptr;
 	
 }
 
@@ -179,3 +181,120 @@ UWorld* UICantCryGameInstance::TryGetWorld() const
 
 	return World;
 }
+
+
+void UICantCryGameInstance::UpdateBestiaryUI()
+{
+    if (ActiveBestiaryUI && IsBestiaryUIActive())
+    {
+        ActiveBestiaryUI->RefreshEmotionButtons();
+        ActiveBestiaryUI->RefreshNotesFromGameInstance();
+        UE_LOG(LogTemp, Warning, TEXT("[GAMEINSTANCE] BestiaryUI updated"));
+    }
+}
+
+bool UICantCryGameInstance::IsBestiaryUIActive() const
+{
+    return ActiveBestiaryUI != nullptr && ActiveBestiaryUI->IsInViewport();
+}
+
+
+//{DEBUG}
+
+void UICantCryGameInstance::DebugUnlockAllEmotionsAndNotes()
+{
+    // Sblocca tutte le EMOTION
+    UnlockedEmotions.Empty();
+    UnlockedEmotions.Add(EEmotionType::Anger);
+    UnlockedEmotions.Add(EEmotionType::Fear);
+    UnlockedEmotions.Add(EEmotionType::Sadness);
+    UnlockedEmotions.Add(EEmotionType::Joy);
+    UnlockedEmotions.Add(EEmotionType::Disgust);
+    UnlockedEmotions.Add(EEmotionType::Anxiety);
+    UnlockedEmotions.Add(EEmotionType::Calm);
+    UnlockedEmotions.Add(EEmotionType::Jealousy);
+    UnlockedEmotions.Add(EEmotionType::Shame);
+
+    // Sblocca tutte le NOTE (usa le stesse chiavi che hai nel NoteData)
+    CollectedNotes.Empty();
+    CollectedNotes.Add("Anger");
+    CollectedNotes.Add("Fear");
+    CollectedNotes.Add("Sadness");
+    CollectedNotes.Add("Joy");
+    CollectedNotes.Add("Disgust");
+    CollectedNotes.Add("Anxiety");
+    CollectedNotes.Add("Calm");
+    CollectedNotes.Add("Jealousy");
+    CollectedNotes.Add("Shame");
+
+    UpdateBestiaryUI();
+    UE_LOG(LogTemp, Warning, TEXT("[DEBUG] Unlocked ALL emotions and notes"));
+}
+
+void UICantCryGameInstance::DebugResetBestiary()
+{
+    UnlockedEmotions.Empty();
+    CollectedNotes.Empty();
+    UpdateBestiaryUI();
+    UE_LOG(LogTemp, Warning, TEXT("[DEBUG] Bestiary reset to empty"));
+}
+
+void UICantCryGameInstance::DebugUnlockSpecificMobContent(FString MobType)
+{
+    if (MobType.Equals("Anger", ESearchCase::IgnoreCase))
+    {
+        UnlockedEmotions.Add(EEmotionType::Anger);
+        CollectedNotes.Add("Anger");
+    }
+    else if (MobType.Equals("Fear", ESearchCase::IgnoreCase))
+    {
+        UnlockedEmotions.Add(EEmotionType::Fear);
+        CollectedNotes.Add("Fear");
+    }
+    else if (MobType.Equals("Sadness", ESearchCase::IgnoreCase))
+    {
+        UnlockedEmotions.Add(EEmotionType::Sadness);
+        CollectedNotes.Add("Sadness");
+    }
+    else if (MobType.Equals("Joy", ESearchCase::IgnoreCase))
+    {
+        UnlockedEmotions.Add(EEmotionType::Joy);
+        CollectedNotes.Add("Joy");
+    }
+    else if (MobType.Equals("Disgust", ESearchCase::IgnoreCase))
+    {
+        UnlockedEmotions.Add(EEmotionType::Disgust);
+        CollectedNotes.Add("Disgust");
+    }
+    else if (MobType.Equals("Anxiety", ESearchCase::IgnoreCase))
+    {
+        UnlockedEmotions.Add(EEmotionType::Anxiety);
+        CollectedNotes.Add("Anxiety");
+    }
+    else if (MobType.Equals("Calm", ESearchCase::IgnoreCase))
+    {
+        UnlockedEmotions.Add(EEmotionType::Calm);
+        CollectedNotes.Add("Calm");
+    }
+    else if (MobType.Equals("Jealousy", ESearchCase::IgnoreCase))
+    {
+        UnlockedEmotions.Add(EEmotionType::Jealousy);
+        CollectedNotes.Add("Jealousy");
+    }
+    else if (MobType.Equals("Shame", ESearchCase::IgnoreCase))
+    {
+        UnlockedEmotions.Add(EEmotionType::Shame);
+        CollectedNotes.Add("Shame");
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[DEBUG] Unknown mob type: %s"), *MobType);
+        return;
+    }
+
+    UpdateBestiaryUI();
+    UE_LOG(LogTemp, Warning, TEXT("[DEBUG] Unlocked content for mob: %s"), *MobType);
+}
+
+
+

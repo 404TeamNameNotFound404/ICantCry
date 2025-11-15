@@ -92,11 +92,13 @@ void AICC_Player::BeginPlay()
 	}
 	
 	DontDestroyOnLoad->SetPlayerStats(Stats);
-	//DontDestroyOnLoad->GetInventory().StarterPack();
+	//DontDestroyOnLoad->GetInventory().StarterPack(); 
 	DontDestroyOnLoad->SetPersistentPlayer(this);
 	DontDestroyOnLoad->GetPersistentData()->InitialAttackPower = GetStats()->AttackPower;
 	DontDestroyOnLoad->GetPersistentData()->InitialDefencePower = GetStats()->DefencePower;
 	//bIsInFight = false;
+
+	BestiaryUI= CreateWidget<UBestiaryUI>(GetWorld(), BestiaryUIClass);
 }
 
 // Called every frame
@@ -156,7 +158,11 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Crafting, ETriggerEvent::Started, this, &ThisClass::Input_OpenCrafting);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_CloseCrafting, ETriggerEvent::Triggered, this, &ThisClass::Input_CloseCrafting);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_LMBInteract, ETriggerEvent::Triggered, this, &ThisClass::Input_ChallengeInteraction);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Bestiary, ETriggerEvent::Started, this, &ThisClass::Input_OpenBestiary);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_CloseBestiary, ETriggerEvent::Triggered, this, &ThisClass::Input_CloseBestiary);
+	
 }
+
 
 int AICC_Player::GetSpeed() const
 {
@@ -512,7 +518,144 @@ void AICC_Player::ResetStepCounter()
     StepDistanceAccumulator = 0.0f;
 }
 
+// BESTIARY
+void AICC_Player::CollectNote(const FString& NoteKey)
+{
+   if (BestiaryUI)
+    {
+        BestiaryUI->AddCollectedNote(NoteKey);
+    }
+    else
+    {
+        // Salva temporaneamente e aggiungi quando BestiaryUI è disponibile
+       // PendingNotes.Add(NoteKey);
+    }
+}
 
+
+void AICC_Player::Input_OpenBestiary(const FInputActionValue& InputActionValue)
+{
+	if (bIsInFight)
+    {
+        return;
+    }
+
+    if (const bool Pressed = InputActionValue.Get<bool>() && BestiaryCounter == 0)
+    {
+        DebugHelper::LogSuccess("Opening Bestiary");
+        OpenBestiary();
+		BestiaryUI->SetIsOpen(true);
+
+        FTimerHandle TimerHandle;
+        GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]() {
+            BestiaryCounter = 1;
+			DebugHelper::LogSuccess("Timer : " + FString::FromInt(BestiaryCounter));
+        }, 0.1f, false);
+    }
+}
+
+void AICC_Player::Input_CloseBestiary(const FInputActionValue& InputActionValue)
+{
+    DebugHelper::LogSuccess("Closing Bestiary pressed");
+
+    if (!BestiaryUI)
+    {
+        DebugHelper::LogError("BestiaryUI is null!");
+        return;
+    }
+
+    const bool bInput = InputActionValue.Get<bool>();
+    const bool bCounter = (BestiaryCounter == 1);
+    const bool bIsOpen = BestiaryUI->IsOpen();
+
+    DebugHelper::LogSuccess(FString::Printf(
+        TEXT("Close conditions - Input: %s, Counter==1: %s, UI IsOpen: %s"),
+        bInput ? TEXT("true") : TEXT("false"),
+        bCounter ? TEXT("true") : TEXT("false"),
+        bIsOpen ? TEXT("true") : TEXT("false")
+    ));
+
+    if (bInput && bCounter && bIsOpen)
+    {
+        DebugHelper::LogSuccess("Closing Bestiary");
+        CloseBestiary();
+        BestiaryCounter = 0;
+        BestiaryUI->SetVisibility(ESlateVisibility::Hidden);
+        BestiaryUI->SetIsOpen(false);
+    }
+}
+
+
+
+
+
+
+
+
+void AICC_Player::OpenBestiary()
+{
+	
+	if (!BestiaryUI)
+    {
+        if (!BestiaryUIClass)
+        {
+            DebugHelper::LogError("BestiaryUIClass not set in player!");
+            return;
+        }
+
+        BestiaryUI = CreateWidget<UBestiaryUI>(GetWorld(), BestiaryUIClass);
+        if (!BestiaryUI)
+        {
+            DebugHelper::LogError("Failed to create BestiaryUI widget!");
+            return;
+        }
+
+        // Imposta il riferimento nel GameInstance
+        UICantCryGameInstance* GameInstance = Cast<UICantCryGameInstance>(GetGameInstance());
+        if (GameInstance)
+        {
+            GameInstance->ActiveBestiaryUI = BestiaryUI;
+        }
+    }
+
+    // Mostra il Bestiary
+    BestiaryUI->AddToViewport();
+    
+    // Imposta input mode UI
+    AICC_PlayerController* PC = Cast<AICC_PlayerController>(GetController());
+    if (PC)
+    {
+        PC->SetInputMode(FInputModeUIOnly());
+        PC->bShowMouseCursor = true;
+    }
+    
+    DebugHelper::LogSuccess("Bestiary opened");
+}
+
+
+void AICC_Player::CloseBestiary()
+{
+	if (BestiaryUI && BestiaryUI->IsInViewport())
+    {
+        BestiaryUI->RemoveFromParent();
+        
+        UICantCryGameInstance* GameInstance = Cast<UICantCryGameInstance>(GetGameInstance());
+        if (GameInstance)
+        {
+            GameInstance->ActiveBestiaryUI = nullptr;
+        }
+        
+        // Ripristina input mode gioco
+        AICC_PlayerController* PC = Cast<AICC_PlayerController>(GetController());
+        if (PC)
+        {
+            PC->SetInputMode(FInputModeGameOnly());
+            PC->bShowMouseCursor = false;
+        }
+        
+        DebugHelper::LogSuccess("Bestiary closed");
+    }
+}
 
 
 
