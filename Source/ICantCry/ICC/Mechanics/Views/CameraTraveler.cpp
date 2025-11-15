@@ -34,6 +34,8 @@ void ACameraTraveler::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 
 	// Mark that the player has overlapped
 	bPlayerOverlapped = true;
+	Player->GetWorldCamera()->SetbDefaultCamera(true);
+	GetWorld()->GetFirstPlayerController()->SetViewTargetWithBlend(Player->GetWorldCamera(), 0.0f);
 	
 	if (Player->GetWorldCamera() && Player)
 	{

@@ -49,16 +49,28 @@ public:
 	float HealOtherChance = 0.20f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Task Chances")
-	float DebuffDefChance = 0.60f;
+	float AnxietyDebuffDefChance = 0.60f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Task Chances")
-	float DebuffAtkChance = 0.60f;
+	float SadnessDebuffDefChance = 0.60f;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Task Chances")
+	float AnxietyDebuffAtkChance = 0.60f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Task Chances")
-	float BuffDefChance = 0.60f;
+	float DisgustDebuffAtkChance = 0.60f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Task Chances")
-	float BuffOtherDefChance = 0.20f;
+	float CalmBuffDefChance = 0.60f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Task Chances")
+	float FearBuffDefChance = 0.60f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Task Chances")
+	float CalmBuffOtherDefChance = 0.20f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Task Chances")
+	float FearBuffOtherDefChance = 0.20f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Task Chances")
 	float DebuffShieldItselfChance = 0.50f;
@@ -80,7 +92,25 @@ public:
 	 * (8 July 2025)
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Task Chances")
-	float NormalAttackChance = 0.5f;
+	float AngerNormalAttackChance = 0.5f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Task Chances")
+	float ShameNormalAttackChance = 0.5f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Task Chances")
+	float DisgustNormalAttackChance = 0.5f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Task Chances")
+	float FearNormalAttackChance = 0.5f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Task Chances")
+	float SadnessNormalAttackChance = 0.5f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Task Chances")
+	float JoyNormalAttackChance = 0.5f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Task Chances")
+	float JealousyNormalAttackChance = 0.5f;
 	
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly, Category = "Drop System")

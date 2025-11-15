@@ -201,7 +201,7 @@ void DebugHelper::ClearAllLogs()
 void DebugHelper::SaveLogToFile()
 {
 	const FString FilePath = FPaths::ProjectSavedDir() + TEXT("Logs/");
-	const FString TimeStamp = FDateTime::Now().ToString(TEXT("%Y%m%d_%H%M%S"));
+	const FString TimeStamp = FDateTime::Now().ToString(TEXT("%d%m%Y_%H%M%S"));
 	const FString FileName = FString::Printf(TEXT("BattleLog_%s.log"), *TimeStamp);
 	const FString FullPath = FilePath + FileName;
 	const FString CombinedLog = FString::Join(LogMessages, TEXT("\n"));

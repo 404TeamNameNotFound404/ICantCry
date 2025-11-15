@@ -52,6 +52,28 @@ UBulletData *UCircularBulletBuffer::RemoveBullet()
     return Bullet;
 }
 
+void UCircularBulletBuffer::RemoveAt(const int32& Index)
+{
+    if (Index < 0 || Index >= Capacity || IsEmpty())
+        return;
+
+    // Shift all bullets after Index back by 1
+    int i = Index;
+    while (i != Head)
+    {
+        int next = (i + 1) % Capacity;
+        Buffer[i] = Buffer[next];
+        i = next;
+    }
+
+    // Clear the old head
+    Head = (Head - 1 + Capacity) % Capacity;
+    Buffer[Head] = nullptr;
+    bIsFull = false;
+
+    DebugHelper::LogMessage(5, FColor::Yellow, FString::Printf(TEXT("Removed bullet at slot %d and compacted buffer"), Index));
+}
+
 UBulletData *UCircularBulletBuffer::PeekCurrentBullet() const
 {
     if (IsEmpty())

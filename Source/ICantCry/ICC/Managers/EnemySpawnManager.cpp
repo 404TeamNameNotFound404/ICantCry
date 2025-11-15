@@ -77,6 +77,8 @@ void AEnemySpawnManager::ResetBattle(AMob* Emotion)
 		Emotion->GetStats().bAlive = true;
 		Emotion->GetStats().Health = Emotion->GetData()->MaxHealth;
 		Emotion->GetHealthBar()->Restore(Emotion->GetData()->MaxHealth);
+		Emotion->SetActorLocation(Emotion->GetAIMemory().DefaultBattleLocation);
+		Emotion->SetActorRotation(Emotion->GetAIMemory().DefaultBattleOrientation);
 
 		AICC_AIController* AIController = Cast<AICC_AIController>(Emotion->GetController());
 		checkf(AIController, TEXT("AIController is null in ResetEnemy"));

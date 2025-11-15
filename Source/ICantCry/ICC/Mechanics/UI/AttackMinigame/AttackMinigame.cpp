@@ -69,7 +69,8 @@ EMinigameThreshold UAttackMinigame::CheckBar()
 	return EMinigameThreshold::Miss;
 }
 
-
+// ----------------REMINDER-------------------------------------
+// calculated at runtime depending on the type of emotions target
 void UAttackMinigame::HandleScore()
 {
 	const EMinigameThreshold Result = CheckBar();
@@ -80,6 +81,8 @@ void UAttackMinigame::HandleScore()
 	case EMinigameThreshold::Bad:
 		DebugHelper::LogError("Bad minigame score!");
 		Instance->GetPlayerStats()->MinigameModifier = 0.5f;
+		DebugHelper::LogWarning("Minigame modifier On Bad" + FString::SanitizeFloat(Instance->GetPlayerStats()->MinigameModifier));
+		DebugHelper::AddMessageToLog("Player Minigame modifier " + FString::SanitizeFloat(Instance->GetPlayerStats()->MinigameModifier) + "\nBad minigame score!");
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
@@ -89,10 +92,17 @@ void UAttackMinigame::HandleScore()
 			Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
 				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
 		}
+
+		
+		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
+		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
 		break;
 	case EMinigameThreshold::Good:
 		DebugHelper::LogWarning("Good minigame score!");
 		Instance->GetPlayerStats()->MinigameModifier = 1.0f;
+		DebugHelper::LogWarning("Minigame modifier on Good " + FString::SanitizeFloat(Instance->GetPlayerStats()->MinigameModifier));
+		DebugHelper::AddMessageToLog("Player Minigame modifier " + FString::SanitizeFloat(Instance->GetPlayerStats()->MinigameModifier));
+		DebugHelper::AddMessageToLog("Good minigame score!");
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
@@ -103,10 +113,15 @@ void UAttackMinigame::HandleScore()
 			Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
 				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
 		}
+		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
+		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
 		break;
 	case EMinigameThreshold::Perfect:
 		DebugHelper::LogSuccess("Perfect minigame score!");
 		Instance->GetPlayerStats()->MinigameModifier = 1.5f;
+		DebugHelper::LogWarning("Minigame modifier on Perfect" + FString::SanitizeFloat(Instance->GetPlayerStats()->MinigameModifier));
+		DebugHelper::AddMessageToLog("Player Minigame modifier " + FString::SanitizeFloat(Instance->GetPlayerStats()->MinigameModifier));
+		DebugHelper::AddMessageToLog("Perfect minigame score!");
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
@@ -117,6 +132,8 @@ void UAttackMinigame::HandleScore()
 			Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
 				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
 		}
+		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
+		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
 		break;
 	default:
 		DebugHelper::LogMessage(3, FColor::FromHex("ADB2D4"), "Unknown minigame score!");
@@ -131,6 +148,8 @@ void UAttackMinigame::HandleScore()
 			Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
 				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
 		}
+		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
+		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
 		break;
 	}
 }

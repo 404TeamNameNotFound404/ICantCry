@@ -42,6 +42,9 @@ EBTNodeResult::Type UBTTask_DebuffDef::ExecuteTask(UBehaviorTreeComponent& Owner
 
 	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " de-buffed " + Target->GetActorLabel() + " def");
 	DebugHelper::AddMessageToLog("Target def is now -> " + FString::SanitizeFloat(Target->GetStats()->DefencePower));
+
+	Target->GetBattleHUD()->DecisionDisplayer->Show();
+	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetActorLabel() + "De-buffed " + Target->GetActorLabel() + " def"));
 	
 	return EBTNodeResult::InProgress;
 }
@@ -109,6 +112,8 @@ void UBTTask_DebuffDef::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8*
 		}
 
 		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
+		UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 		
 	}
 

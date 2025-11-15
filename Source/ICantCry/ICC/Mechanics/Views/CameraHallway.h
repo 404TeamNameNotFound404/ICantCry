@@ -8,6 +8,7 @@
 #include "Components/BoxComponent.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Mechanics/Views/CameraTraveler.h"
+#include "ICantCry/ICC/Mechanics/Views/PlayerTeleportObj.h"
 #include "CameraHallway.generated.h"
 
 UCLASS()
@@ -44,6 +45,9 @@ private:
 	UPROPERTY()
 	bool bPlayerOverlapped = false;
 
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly,  Category = "Traveler" ,meta=(AllowPrivateAccess = "true"))
+	bool bSnap = false;
+	
 	UPROPERTY()
 	int Counter = 0;
 
@@ -53,7 +57,31 @@ private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))
 	TArray<ACameraTraveler*> Travelers;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))
-	ACameraWaypoint* FixedWaypoint;
+ 	/**
+	 * Entry Waypoint (first to travel)
+	 */
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))
+	ACameraWaypoint* CameraFixedWaypoint;
+
+	/**
+	 * Return Waypoint
+	 * Previous 
+	 */
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))
+	ACameraWaypoint* CameraBackWaypoint;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))
+	bool bPlayerMustTeleport = false;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))
+	TSoftObjectPtr<APlayerTeleportObj> InEntry;
+	
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))
+	TSoftObjectPtr<APlayerTeleportObj> OutEntry;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))
+	bool bEnableWorldCamera = false;
+
+	void Snap();
 	
 };

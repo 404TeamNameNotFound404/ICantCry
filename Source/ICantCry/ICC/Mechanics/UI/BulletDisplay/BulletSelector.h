@@ -7,6 +7,7 @@
 #include "Components/Button.h"
 #include "Components/Image.h"
 #include "ICantCry/ICC/Actors/Bullet/Bullet.h"
+#include "ICantCry/ICC/Mechanics/UI/MagazineBullet/MagazineBullet.h"
 #include "BulletSelector.generated.h"
 
 
@@ -32,6 +33,9 @@ public:
 
 	void Refresh();
 
+	static bool CanSelect();
+	static void SetCanSelect(const bool& InCanSelect);
+
 protected:
 	virtual void NativeConstruct() override;
 
@@ -49,7 +53,11 @@ protected:
 
 	UPROPERTY()
 	FBullet BulletRef;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess=true)) TSubclassOf<UMagazineBullet> BulletClass;
 	
 	FBullet* BulletRefPtr = nullptr;
+	
+	static bool gCanSelect;
 	
 };

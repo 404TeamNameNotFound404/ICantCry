@@ -39,4 +39,10 @@ public:
 	void RefreshBullets();
 
 	void RemoveBullet();
+	
+	/**
+	 * DEBUG ONLY!
+	 */
+	UFUNCTION(BlueprintCallable)
+	void InstantiateBullet(TArray<FBullet> InstantiateBullets);
 };

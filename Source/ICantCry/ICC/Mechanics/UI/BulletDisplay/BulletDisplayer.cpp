@@ -56,7 +56,6 @@ void UBulletDisplayer::Refresh()
 
 	for (auto& Bullet : Instance->GetInventory().BulletsStored)
 	{
-		
 		FBullet& B = Bullet.Value;
 		
 		UBulletSelector* Item = CreateWidget<UBulletSelector>(GetWorld(), BulletButtonItemClass);
@@ -99,8 +98,9 @@ void UBulletDisplayer::RefreshBullets()
 void UBulletDisplayer::RemoveBullet()
 {
 	AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
-	AICC_Player* Player = Cast<AICC_Player>(Controller->GetPawn());
+	//AICC_Player* Player = Cast<AICC_Player>(Controller->GetPawn());
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	AICC_Player* Player = Instance->GetCurrentPlayer();
 	
 
 	UBulletData* RemovedBullet = Player->GetBattleHUD()->GetCircularBulletBuffer()->RemoveBullet();
@@ -119,15 +119,29 @@ void UBulletDisplayer::RemoveBullet()
 	}
 	
 	RefreshBullets();
+	Refresh();
 
-	if (BulletType == FearEV || BulletType == JoyEv || BulletType == CalmEV || BulletType == AngerEV)
+	if (BulletType == FearEV || BulletType == JoyEv || BulletType == CalmEV || BulletType == AngerEv)
 	{
 		return;
 	}
 	
 	AMob* Target = Cast<AMob>(Player->GetBattleHUD()->GetSelectedActor());
-	const float Damage = Instance->GetCurrentDamageData().CalculateDamage(true);
+	const float Damage = Instance->GetCurrentDamageData()->CalculateDamage(true);
 	Target->GetStats().Health -= Damage;
 	Target->GetHealthBar()->SetCurrentHealth(Target->GetStats().Health);
+	
+	DebugHelper::AddMessageToLog("Minigame modifier post engage -> " + FString::SanitizeFloat(Instance->GetPlayerStats()->MinigameModifier));
+}
+
+void UBulletDisplayer::InstantiateBullet(TArray<FBullet> InstantiateBullets)
+{
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	
+	for (FBullet& b : InstantiateBullets)
+	{
+		b.SetQuantity(10);
+		Instance->GetInventory().BulletsStored.Add(b.GetBulletData()->Type, b);
+	}
 }
 

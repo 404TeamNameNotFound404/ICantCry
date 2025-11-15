@@ -20,9 +20,11 @@
 #include "../Source/ICantCry/ICC/Actors/Bullet/RevolverSlot.h"
 #include "../Inventory/Inventory.h"
 #include "../Inventory/BulletIconWidget.h"
+#include "ICantCry/ICC/Mechanics/UI/APBar/APBar.h"
 #include "ICantCry/ICC/Mechanics/UI/BattleVisualization/GameOver/GameOverVisualizer.h"
 #include "ICantCry/ICC/Mechanics/UI/BulletDisplay/BulletDisplayer.h"
 #include "ICantCry/ICC/Mechanics/UI/BattleVisualization/Victory/VictoryVisualizer.h"
+#include "ICantCry/ICC/Mechanics/UI/DecisionDisplayer/DecisionDisplayer.h"
 #include "BattleHUD.generated.h"
 
 /**
@@ -49,14 +51,19 @@ public:
 	UPROPERTY(meta = (BindWidget)) USizeBox* MinigameSlot;
     UPROPERTY(meta = (BindWidget)) UWidget* CanvasAmmoSelection;
     UPROPERTY(meta = (BindWidget)) UCanvasPanel* CanvasStatus;
+	UPROPERTY(meta=(BindWidget)) UDecisionDisplayer* DecisionDisplayer;
 
     // Action Buttons
+	UPROPERTY(meta = (BindWidget)) UAPBar* Bar;
     UPROPERTY(meta = (BindWidget)) UButton* Shoot;
-    UPROPERTY(meta = (BindWidget)) UButton* ShootBoost;
+    UPROPERTY(meta = (BindWidget)) UButton* ApIncreaseOnShoot;
+	UPROPERTY(meta = (BindWidget)) UButton* ApDecreaseOnShoot;
+	 UPROPERTY(meta = (BindWidget)) UButton* ShootBoost;
     UPROPERTY(meta = (BindWidget)) UButton* Focus;
     UPROPERTY(meta = (BindWidget)) UButton* Reload;
     UPROPERTY(meta = (BindWidget)) UButton* Pass;
     UPROPERTY(meta = (BindWidget)) UButton* ConfirmButton;
+	UPROPERTY(meta = (BindWidget)) UButton* ConfirmReloadBullet;
 	UPROPERTY(meta = (BindWidget)) UButton* EngageBtn;
 
     // Status Bars
@@ -109,15 +116,23 @@ public:
 	UPROPERTY(meta = (BindWidget)) UImage* PistolMagazine_4;
 	UPROPERTY(meta = (BindWidget)) UImage* PistolMagazine_5;
 	UPROPERTY(meta = (BindWidget)) UImage* PistolMagazine_6;
-	UPROPERTY(meta = (BindWidget)) UCanvasPanel* CanvasBulletStats;
 
-	UPROPERTY(meta=(BindWidget)) UButton* ApIncreaseOnShoot;
-	UPROPERTY(meta=(BindWidget)) UButton* ApDecreaseOnShoot;
+	UPROPERTY(meta = (BindWidget)) UMagazineBullet* MagazineBullet0;
+	UPROPERTY(meta = (BindWidget)) UMagazineBullet* MagazineBullet1;
+	UPROPERTY(meta = (BindWidget)) UMagazineBullet* MagazineBullet2;
+	UPROPERTY(meta = (BindWidget)) UMagazineBullet* MagazineBullet3;
+	UPROPERTY(meta = (BindWidget)) UMagazineBullet* MagazineBullet4;
+	UPROPERTY(meta = (BindWidget)) UMagazineBullet* MagazineBullet5;
+	
+	UPROPERTY(meta = (BindWidget)) UCanvasPanel* CanvasBulletStats;
 
 	UPROPERTY() TArray<UImage*> PistolMagazines;
 
 	UPROPERTY()
 	TArray<UBulletData*> LoadedBulletData;
+
+	UPROPERTY() TArray<UMagazineBullet*> MagazineBullets;
+	
 	UBulletDisplayer* GetBulletDisplayer() const;
 	
     UFUNCTION(BlueprintCallable)void ScrollBulletSelection(float ScrollValue);
@@ -166,21 +181,40 @@ public:
 
 	void SetBulletSetupFinished(const bool& Value);
 
+	/**
+	 * this method bind with the quantity text box in battle hud blueprint to
+	 * update the quantity at runtime while clicking
+	 * @return runtime selected bullet quantity
+	 */
+	UFUNCTION(BlueprintPure) FText GetHoveredBulletQuantity();
+
+	UFUNCTION(BlueprintPure) FText UpdateTargetSelectionInfos(); // TargetNameText Bind
+	UFUNCTION(BlueprintPure) FText UpdateEnemyName(); // TargetText Bind
+
+	/**
+	 * Update the ap after the attack is over
+	 */
+	void UpdateAp();
+	void SetApAccumulator(const int& Value);
+
+	FBullet* GetCurrentSelectedBullet() const;
+	void DisableButtonsDuringShooting();
+	void EnableButtonsAfterShooting();
+
 private:
 
     UPROPERTY() ABattleHandler*  BattleHandler = nullptr;
 
 
     // Game State
-    UPROPERTY()
-    int CurrentAP = 0;
+    UPROPERTY() int CurrentAP = 0;
+	UPROPERTY() int ApAccumulator = 0;
 
     int32 CurrentEnemyIndex = 0;
     int32 SelectedBulletIndex = 0;
     int32 CurrentRevolverSlot = 0;
     UPROPERTY(EditDefaultsOnly, Category = "Bullets") int32 MaxRevolverSlots = 6;
-
-    TArray<AActor*> Enemies; // non ha senso sta variabile qua , abbiamo la queue sul battle handler
+	
     UPROPERTY() UBulletData* CurrentBulletData;
 	
 	UPROPERTY()
@@ -239,6 +273,7 @@ private:
     UFUNCTION() void SwitchToBattleUI();
 	UFUNCTION()	void SetSelectedBullet(int32 Index);
 	UFUNCTION() void UpdateRevolverUI();
+	UFUNCTION() void HideBulletMagazineOnReload();
 
 	/*
 	 *-------------------------------------------------------
@@ -305,6 +340,7 @@ private:
 	AICC_Actor* SelectedActorTarget = nullptr;
 
 	void PrepareToEngage();
+	
 
 	/**
 	 *-----------------------------
