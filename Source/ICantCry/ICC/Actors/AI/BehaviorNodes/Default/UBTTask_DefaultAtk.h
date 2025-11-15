@@ -44,7 +44,7 @@ protected:
 	UPROPERTY()
 	FTimerHandle DelayHandle;
 
-	UPROPERTY(VisibleAnywhere,BlueprintReadWrite, meta=(AllowPrivateAccess=true), Category="ICC")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite ,meta=(AllowPrivateAccess=true), Category="ICC")
 	float Delay = 2.f;
 
 	UPROPERTY()

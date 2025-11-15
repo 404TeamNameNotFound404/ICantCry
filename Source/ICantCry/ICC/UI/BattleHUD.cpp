@@ -237,8 +237,9 @@ void UBattleHUD::OnShootPressed()
     CanvasStatus->SetVisibility(ESlateVisibility::Visible);
     
     bShootFired = true;
-    ApAccumulator++;
-    ApAccumulator = FMath::Min(ApAccumulator, CurrentAP); //(CurrentAP >= 4) ? 4 : ApAccumulator;
+    //ApAccumulator++;
+   // ApAccumulator = FMath::Min(ApAccumulator + 1, CurrentAP); //(CurrentAP >= 4) ? 4 : ApAccumulator;
+    ApAccumulator = FMath::Clamp(ApAccumulator + 1, 0, CurrentAP);
     DebugHelper::LogMessage(7, FColor::Orange, "Ap Accumulator on shoot -> " + FString::FromInt(ApAccumulator));
     UpdateAPBar();
     Bar->UpdateHighlights(1);
@@ -597,26 +598,26 @@ void UBattleHUD::IncreaseShootPower()
     case 2:
         {
             GameInstance->GetPlayerStats()->ApModifier = 1.5f;
-            DebugHelper::AddMessageToLog("Player spent 1 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+            DebugHelper::AddMessageToLog("Player spent 2 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
             break;
         }
     case 3:
         {
             GameInstance->GetPlayerStats()->ApModifier = 2.0f;
-            DebugHelper::AddMessageToLog("Player spent 1 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+            DebugHelper::AddMessageToLog("Player spent 3 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
             break;
         }
     case 4:
         {
             GameInstance->GetPlayerStats()->ApModifier = 2.5f;
-            DebugHelper::AddMessageToLog("Player spent 1 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+            DebugHelper::AddMessageToLog("Player spent 4 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
             break;
         }
 
     default:
         {
             GameInstance->GetPlayerStats()->ApModifier = 1.0f;
-            DebugHelper::AddMessageToLog("Player spent 1 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+            DebugHelper::AddMessageToLog("Player spent 1 extra ap (default) " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
             break;
         }
       

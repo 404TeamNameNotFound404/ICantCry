@@ -30,8 +30,6 @@ EBTNodeResult::Type UBTTask_DebuffAtk::ExecuteTask(UBehaviorTreeComponent& Owner
 	
 	BlackBoard->SetValueAsBool("IsAttackDebuffed?", Current->GetPlayerDebuffAttack());
 	BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
-
-	//TODO ADD a counter for the buff (must last 3 turns)
 	
 	Target->GetStatusTracker()->MalusFlow();
 	Target->GetStatusTracker()->InflictStatus(EAfflictedStatus::DebuffAtk, Target);
