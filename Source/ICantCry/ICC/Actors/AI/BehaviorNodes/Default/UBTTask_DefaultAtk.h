@@ -22,6 +22,12 @@ public:
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
+	void OnThinkComplete_Internal();
+	void OnThinkComplete(UBehaviorTreeComponent* OwnerComp, AICC_AIController* Controller);
+	void ProcessDecision(EDecision Dec, AMob* Current, UBlackboardComponent* Board, UBehaviorTreeComponent* OwnerComp, AICC_Player* Target);
+	UFUNCTION()
+	void OnMinigameEndedCallback();
+	void StartAttackMinigame(AMob* Current, AICC_Player* Target, AICC_AIController* Controller);
 
 	UPROPERTY()
 	UBlackboardComponent* BlackBoard;
@@ -30,10 +36,16 @@ protected:
 	FDecisionMaker DecisionMaker;
 
 	UPROPERTY()
-	bool bBusy = false;
+	bool bWaitingForThinkCompletion = false;
 
 	UPROPERTY()
-	FTimerHandle TimerHandle;
+	bool bBusy = false;
+	
+	UPROPERTY()
+	FTimerHandle DelayHandle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite ,meta=(AllowPrivateAccess=true), Category="ICC")
+	float Delay = 2.f;
 
 	UPROPERTY()
 	EDecision Decision;
@@ -46,4 +58,10 @@ protected:
 
 	UPROPERTY()
 	float buffTimer = 0.0f;
+
+	UPROPERTY()
+	AMob* CurrentMob;
+
+	UPROPERTY()
+	UBehaviorTreeComponent* TreeComp;
 };

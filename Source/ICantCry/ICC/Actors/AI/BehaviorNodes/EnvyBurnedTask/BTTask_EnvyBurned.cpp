@@ -35,6 +35,11 @@ EBTNodeResult::Type UBTTask_EnvyBurned::ExecuteTask(UBehaviorTreeComponent& Owne
 	DebugHelper::AddMessageToLog(Target->GetActorLabel() + " in EnvyBurned state!");
 	
 	Target->GetStatusTracker()->InflictStatus(EAfflictedStatus::Burn, Target);
+
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+
+	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
+	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Target->GetActorLabel() + " in EnvyBurned state!"));
 	
 	return EBTNodeResult::InProgress;
 }
@@ -99,7 +104,8 @@ void UBTTask_EnvyBurned::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8
 		}
 
 		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
-		
+		UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 	}
 
 	bTimeStarted = false;
