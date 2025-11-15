@@ -30,6 +30,8 @@ EBTNodeResult::Type UBTTask_DebuffAtk::ExecuteTask(UBehaviorTreeComponent& Owner
 	
 	BlackBoard->SetValueAsBool("IsAttackDebuffed?", Current->GetPlayerDebuffAttack());
 	BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
+
+	//TODO ADD a counter for the buff (must last 3 turns)
 	
 	Target->GetStatusTracker()->MalusFlow();
 	Target->GetStatusTracker()->InflictStatus(EAfflictedStatus::DebuffAtk, Target);
@@ -38,9 +40,6 @@ EBTNodeResult::Type UBTTask_DebuffAtk::ExecuteTask(UBehaviorTreeComponent& Owner
 		FText::FromString(Current->GetActorLabel() + " De-buffed " + Target->GetActorLabel() + " atk"));
 
 	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " De-buffed " + Target->GetActorLabel() + " atk");
-
-	Target->GetBattleHUD()->DecisionDisplayer->Show();
-	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetActorLabel() + "De-buffed " + Target->GetActorLabel() + " atk"));
 	
 	return EBTNodeResult::InProgress;
 }
@@ -105,8 +104,6 @@ void UBTTask_DebuffAtk::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8*
 		}
 
 		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
-		UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
-		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 	}
 
 	bTimerStarted = false;

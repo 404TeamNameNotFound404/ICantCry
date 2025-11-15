@@ -17,11 +17,10 @@
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "ICantCry/ICC/Actors/AI/Emotions/EmotionStats/FEmotionStat.h"
 #include "ICantCry/ICC/Actors/AI/MobType.h"
-#include "ICantCry/ICC/UI/BestiaryUI.h"
-#include "ICantCry/ICC/Actors/EmotionsData/EmotionsData.h"
 #include "Mob.generated.h"
 
 class ABattleHandler;
+
 
 UCLASS(Blueprintable)
 class ICANTCRY_API AMob : public AICC_Actor
@@ -39,93 +38,94 @@ protected:
 	/**
 	 * Emotions shape
 	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Shape", meta = (AllowPrivateAccess = "true"))
-	UNiagaraComponent *Shape;
-
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character Shape", meta = (AllowPrivateAccess = "true"))
+	UNiagaraComponent* Shape;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
-	UHealthBarWidgetCmp *HealthBarComponent;
+	UHealthBarWidgetCmp* HealthBarComponent;
 
 	// Reference to Enemy Data Asset
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data", meta = (AllowPrivateAccess = "true"))
-	UEnemyDatas *EnemyData;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data",  meta = (AllowPrivateAccess = "true"))
+	UEnemyDatas* EnemyData;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data", meta = (AllowPrivateAccess = "true"))
-	UBattleData *BattleData;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data",  meta = (AllowPrivateAccess = "true"))
+	UBattleData* BattleData;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data", meta = (AllowPrivateAccess = "true"))
-	UEnemyTactics *Moves;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy Data",  meta = (AllowPrivateAccess = "true"))
+	UEnemyTactics* Moves;
 
 	UPROPERTY()
-	AICC_AIController *AIController;
+	AICC_AIController* AIController;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
 	TEnumAsByte<EMobType> Type;
+	
 
 	//----------------
 
 	UPROPERTY()
 	FEmotionMemory Memory;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Behaviors", meta = (AllowPrivateAccess = "true"))
+	UBehaviorTree* Tree;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Behaviors", meta = (AllowPrivateAccess = "true"))
-	UBehaviorTree *Tree;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Battle", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Battle", meta = (AllowPrivateAccess = "true"))
 	FEmotionStat Stats;
 
 	/**
 	 * Variable used to determinate if Emotion is 'Joy'
 	 */
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Species", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Species", meta = (AllowPrivateAccess = "true"))
 	bool bIsHealer = false;
 
 	/**
 	 * Used to determinate if Emotion is 'Anger'
 	 */
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Species", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Species", meta = (AllowPrivateAccess = "true"))
 	bool bEAnger = false;
 
 	/**
 	 * Used to determinate if Emotion is 'Fear'
 	 */
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Species", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Species", meta = (AllowPrivateAccess = "true"))
 	bool bIsEFear = false;
 
 	/**
 	 * Used to determinate is Emotion is 'Disgust'
 	 */
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Species", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Species", meta = (AllowPrivateAccess = "true"))
 	bool bIsEDisgust = false;
 
 	/**
 	 * Used to determinate if Emotion is 'Sadness'
 	 */
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Species", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Species", meta = (AllowPrivateAccess = "true"))
 	bool bIsESadness = false;
 
 	/**
 	 * Used to determinate if Emotion is 'Anxiety'
 	 */
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Species", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Species", meta = (AllowPrivateAccess = "true"))
 	bool bIsEAnxiety = false;
 
 	/**
 	 * Used to determinate if Emotion is 'Calm'
 	 */
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Species", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Species", meta = (AllowPrivateAccess = "true"))
 	bool bIsECalm = false;
 
 	/**
 	 * Used to determinate if Emotion is 'Jealousy'
 	 */
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Species", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Species", meta = (AllowPrivateAccess = "true"))
 	bool bIsEJealousy = false;
 
 	/**
 	 * Used to determinate if Emotion is 'Shame'
 	 */
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Species", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Species", meta = (AllowPrivateAccess = "true"))
 	bool bIsEShame = false;
-
+	
 	UPROPERTY()
 	bool bSelf;
 
@@ -139,7 +139,7 @@ protected:
 	bool bIsAttackDebuffed;
 
 	UPROPERTY()
-	AICC_Player *DebugPlayer = nullptr;
+	AICC_Player* DebugPlayer = nullptr;
 
 	UPROPERTY()
 	bool bEnvyBurned;
@@ -179,16 +179,10 @@ protected:
 
 	UPROPERTY()
 	int Bt_Id;
-
+	
 	//------
 
 	static bool bStopTree;
-
-	/**
-	 * Update Bestiary UI if it's currently open
-	 */
-	UFUNCTION()
-	void UpdateBestiaryUI();
 
 public:
 	// Called every frame
@@ -200,33 +194,33 @@ public:
 	 * Enemy Data
 	 * @return Enemy Data
 	 */
-	UEnemyDatas *GetData() const;
+	UEnemyDatas* GetData() const;
 
 	/**
-	 * AI moves
+	 * AI moves 
 	 * @return Get the AIMoves
 	 */
-	UEnemyTactics *GetTactics() const;
+	UEnemyTactics* GetTactics() const;
 
 	/**
-	 * Battle Data simple data asset used to edit buff and debuff increment values
-	 *
+	 * Battle Data simple data asset used to edit buff and debuff increment values 
+	 * 
 	 * @return Battle Data
 	 */
-	UBattleData *GetBattleData() const;
+	UBattleData* GetBattleData() const;
 
 	/**
 	 * Debug only
 	 * @note MUST BE REPLACED WITH THE ACTUAL SKIN
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Basic", meta = (AllowPrivateAccess = "true"))
-	UStaticMeshComponent *StaticMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Basic",  meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* StaticMesh;
 
 	/**
 	 * Get The current behavior tree
 	 * @return Selected Mob behavior tree
 	 */
-	UBehaviorTree *GetBehaviorTree() const;
+	UBehaviorTree* GetBehaviorTree() const;
 
 	FEmotionMemory GetAIMemory() const;
 
@@ -239,32 +233,33 @@ public:
 	 */
 	void DisableSilhouette();
 
-	void SetIsRespawned(const bool &Value);
+	void SetIsRespawned(const bool& Value);
 	bool IsRespawned() const;
 	void ReinizializeTree();
 
 	void StartDefenceMinigame();
-	virtual void Heal(const float &RestoredHealth);
+	virtual void Heal(const float& RestoredHealth);
 
 	static void DealDamage();
 
-	void SetIsBusy(const bool &Value);
+	void SetIsBusy(const bool& Value);
 	bool IsBusy() const;
 
 	void PlayTurn();
 
-	void SetIsReadyToPlay(const bool &Value);
+	void SetIsReadyToPlay(const bool& Value);
 	bool IsAIReadyToPlay() const;
 
 	bool IsAlive();
-
+	
 	void EndTurn();
 	static bool MinigameEnded;
 	static FDamage Damage;
 
-	FEmotionStat &GetStats();
+	FEmotionStat& GetStats();
 
 	EMobType GetMobType() const;
+
 
 	/**
 	 * Check if the minigame has started
@@ -275,33 +270,34 @@ public:
 	bool IsMinigameHasStarted() const;
 
 	bool IsMinigameEnded() const;
-	void SetMinigameEnd(const bool &Value);
+	void SetMinigameEnd(const bool& Value);
 
 	/**
 	 * Set the minigame bool value
 	 * @note this function is used for behavior decorator attack and retreat
 	 * @param Value true or false
 	 */
-	static void SetMinigameStarted(const bool &Value);
+	static void SetMinigameStarted(const bool& Value);
 
-	void SetMinigameHasStarted(const bool &Value);
+	void SetMinigameHasStarted(const bool& Value);
 
 	/**
 	 * Get the battle handler
 	 * @return Current Battle Handler
 	 */
-	ABattleHandler *GetBattleHandler() const;
+	ABattleHandler* GetBattleHandler() const;
 
 	/**
 	 * Get the health bar inside the widget component if not null
 	 * @return valid health-bar
 	 */
-	UMobHealthBar *GetHealthBar() const;
+	UMobHealthBar* GetHealthBar() const;
+
 
 	bool IsEAnger() const;
-
+	
 	bool IsEFear() const;
-
+	
 	bool IsEDisgust() const;
 
 	bool IsESadness() const;
@@ -313,44 +309,44 @@ public:
 	bool IsEJealousy() const;
 
 	bool IsEShame() const;
-
+	
 	/**
 	 * Check if current Emotion can heal or not
 	 * @return true if healer
 	 */
 	bool IsHealer() const;
 
-	void SetIsBuffedAtk(const bool &Value);
+	void SetIsBuffedAtk(const bool& Value);
+	
+	void SetIsTargetDefDebuffed(const bool& Value);
 
-	void SetIsTargetDefDebuffed(const bool &Value);
+	void SetIsAshamedState(const bool& Value);
+	
+	void SetIsLow(const bool& Value);
+	
+	void SetIsFreezedUp(const bool& Value);
 
-	void SetIsAshamedState(const bool &Value);
+	void SetIsAttacked(const bool& Value);
 
-	void SetIsLow(const bool &Value);
+	void SetIsEnvyBurned(const bool& Value);
 
-	void SetIsFreezedUp(const bool &Value);
+	void SetTreeId(const int& Value);
 
-	void SetIsAttacked(const bool &Value);
+	void SetDebuffShield(const bool& Value);
 
-	void SetIsEnvyBurned(const bool &Value);
+	void SetDebuffOtherShield(const bool& Value);
 
-	void SetTreeId(const int &Value);
+	void SetHeal(const bool& Value);
 
-	void SetDebuffShield(const bool &Value);
+	void SetHealOther(const bool& Value);
 
-	void SetDebuffOtherShield(const bool &Value);
+	void SetBuffedDefence(const bool& Value);
+	
+	void SetBuffOtherDefence(const bool& Value);
 
-	void SetHeal(const bool &Value);
+	void SetBuffOtherAtk(const bool& Value);
 
-	void SetHealOther(const bool &Value);
-
-	void SetBuffedDefence(const bool &Value);
-
-	void SetBuffOtherDefence(const bool &Value);
-
-	void SetBuffOtherAtk(const bool &Value);
-
-	void SetPlayerDebuffAttack(const bool &Value);
+	void SetPlayerDebuffAttack(const bool& Value);
 
 	bool GetIsIsBuffedAtk() const;
 	bool GetIsTargetDefenceDebuffed() const;
@@ -369,23 +365,10 @@ public:
 	bool GetBuffOtherDefence() const;
 	int GetTreeId() const;
 
-
-	// DEBUG BESTIARY
-	UFUNCTION(BlueprintCallable, Category = "Bestiary")
-	void UnlockContentOnDeath();
-
-	UFUNCTION(BlueprintCallable, Category = "Bestiary")
-	FString GetNoteKeyForMobType() const;
-
-	UFUNCTION(BlueprintCallable, Category = "Bestiary")
-	EEmotionType GetEmotionForMobType() const;
-
-
-
-
 private:
+
 	UPROPERTY()
-	AMinigameHandler *MinigameHandler = nullptr;
+	AMinigameHandler* MinigameHandler = nullptr;
 
 	UPROPERTY()
 	bool bEnableSilhouette = false;
@@ -397,14 +380,14 @@ private:
 	bool bBusy = false;
 
 	UPROPERTY()
-	UICantCryGameInstance *Instance;
+	UICantCryGameInstance* Instance;
 
 	UPROPERTY()
-	ABattleHandler *BattleHandler = nullptr;
+	ABattleHandler* BattleHandler = nullptr;
 
 	UPROPERTY()
 	FTimerHandle BehaviorTreeTimerHandle;
-
+	
 	static bool bMinigameHasStarted;
 
 	UPROPERTY()
@@ -422,9 +405,5 @@ private:
 	UPROPERTY()
 	bool bRespawned = false;
 
-	static UICantCryGameInstance *GameRef;
-
-	// bestiary
-	UPROPERTY()
-    bool bHasUnlockedContent = false;
+	static UICantCryGameInstance* GameRef;
 };
