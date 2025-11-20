@@ -345,6 +345,16 @@ int AMob::GetTreeId() const
 	return Bt_Id;
 }
 
+bool AMob::GetRethink() const
+{
+	return bRethink;
+}
+
+void AMob::SetRethink(const bool& Value)
+{
+	bRethink = Value;
+}
+
 void AMob::UnlockContentOnDeath()
 {
 	 if (!Instance)
@@ -522,6 +532,7 @@ void AMob::PlayTurn()
 	bHeal = false;
 	bHealOther = false;
 	Bt_Id = 0;
+	bRethink = false;
 	
 	AIController = Cast<AICC_AIController>(GetController());
 	checkf(AIController, TEXT("AI Controller is invalid at AMob::PlayTurn"));
@@ -543,6 +554,7 @@ void AMob::PlayTurn()
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsBuffOtherAtk?", bBuffOtherAtk);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsHealing?", bHeal);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsHealingOther?", bHealOther);
+	AIController->GetBlackboardComponent()->SetValueAsBool("Rethinker", bRethink);
 
 	GetWorld()->GetTimerManager().SetTimer(BehaviorTreeTimerHandle, [this]()
 	{

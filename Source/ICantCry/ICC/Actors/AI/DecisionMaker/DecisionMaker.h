@@ -27,6 +27,32 @@ enum class EDecision : uint8
 	Invalid UMETA(DisplayName = "Invalid")
 };
 
+
+/**
+ * Handles the priorities during decision process
+ */
+USTRUCT(BlueprintType)
+struct FDecisionPriorities
+{
+	GENERATED_BODY()
+
+	FDecisionPriorities(){}
+
+	UPROPERTY() int32 BuffAtk = 0;
+	UPROPERTY() int32 DebuffAtk = 1;
+	UPROPERTY() int32 BuffDef = 1;
+	UPROPERTY() int32 DebuffDef = 2;
+	UPROPERTY() int32 LowHealth = 2;
+	UPROPERTY() int32 EnvyBurned = 3;
+	UPROPERTY() int32 Ashamed = 4;
+	UPROPERTY() int32 DebuffShield = 4;
+	UPROPERTY() int32 FallBack = 5; // just in case jump to attack
+
+
+	int32 GetPriority(const EDecision& Decision) const;
+	EDecision PickHighestDecision(const TArray<EDecision>& Decisions) const;
+};
+
 /**
  * Aleatory
  */
@@ -47,6 +73,13 @@ struct FDecisionMaker
 	 * @return Decision
 	 */
 	EDecision Thought();
+
+
+	/**
+	 * Attempt to Think a different decision according to mob's priorities, and it's current buffs/debuffs
+	 * @return Decision
+	 */
+	EDecision EnhancedThought(AMob* Emotion);
 	
 	TMap<EDecision, float> DecisionMap;
 

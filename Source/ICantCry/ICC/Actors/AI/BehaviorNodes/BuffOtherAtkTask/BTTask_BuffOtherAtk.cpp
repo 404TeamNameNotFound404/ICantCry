@@ -38,9 +38,12 @@ EBTNodeResult::Type UBTTask_BuffOtherAtk::ExecuteTask(UBehaviorTreeComponent& Ow
 
 	if (Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().CantBuffOthers())
 	{
-		DebugHelper::LogError(Current->GetActorLabel() +  " is alone can't buff");
-		DebugHelper::AddMessageToLog(Current->GetActorLabel() +  " is alone can't buff");
-		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+		// DebugHelper::LogError(Current->GetActorLabel() +  " is alone can't buff");
+		// DebugHelper::AddMessageToLog(Current->GetActorLabel() +  " is alone can't buff");
+		// FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+
+		BlackBoard->SetValueAsBool("Rethinker", true);
+		
 		return EBTNodeResult::Succeeded;
 	}
 

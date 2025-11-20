@@ -106,6 +106,18 @@ void ACameraHallway::Snap()
 		Counter++;
 		Player->SetWorldCameraCounter(Counter);
 
+		if (bEnableWorldCamera)
+		{
+			Player->GetWorldCamera()->SetbDefaultCamera(true);
+			Controller->SetViewTargetWithBlend(Player->GetWorldCamera(), 0.5f);
+		}
+		else
+		{
+			Player->GetWorldCamera()->SetbDefaultCamera(false);
+			Controller->SetViewTargetWithBlend(Player, 0.0f);
+			DebugHelper::LogMessage(6, FColor::Orange, "Moving");
+		}
+
 		if (bPlayerMustTeleport)
 		{
 			Player->SetActorLocation(InEntry.Get()->GetActorLocation());
@@ -126,6 +138,7 @@ void ACameraHallway::Snap()
 		{
 			Player->GetWorldCamera()->SetbDefaultCamera(false);
 			Controller->SetViewTargetWithBlend(Player, 0.0f);
+			DebugHelper::LogMessage(6, FColor::Orange, "Moving");
 		}
 
 		Counter = 0;

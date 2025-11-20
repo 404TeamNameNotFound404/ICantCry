@@ -57,7 +57,7 @@ void UStatusTracker::InflictStatus(const EAfflictedStatus& Status, AICC_Actor* T
 	if (bIsOwnerAfflicted || !bCanDebuff)
 	{
 		DebugHelper::LogError("A status has already been inflicted");
-		DebugHelper::AddMessageToLog("A status has already been inflicted");
+		DebugHelper::AddMessageToLog("Emotion attempted to cast " + GetStatusName(Status) + " To " + Target->GetActorLabel() + " but " + GetStatusName(CurrentActiveStatus) + " has already been inflicted");
 		return;
 	}
 
@@ -65,8 +65,8 @@ void UStatusTracker::InflictStatus(const EAfflictedStatus& Status, AICC_Actor* T
 	StatusCounter = 0;
 	bIsOwnerAfflicted = true;
 
-	DebugHelper::LogMessage(6, FColor::Black, "Inflicting a status to " + Target->GetActorLabel());
-	DebugHelper::AddMessageToLog("Inflicting a status to " + Target->GetActorLabel());
+	DebugHelper::LogMessage(6, FColor::Black, "Inflicting  " + GetStatusName(CurrentActiveStatus) + " To " + Target->GetActorLabel());
+	DebugHelper::AddMessageToLog("Inflicting  " + GetStatusName(CurrentActiveStatus) + " To " + Target->GetActorLabel());
 
 	switch (Status)
 	{
@@ -81,6 +81,12 @@ void UStatusTracker::InflictStatus(const EAfflictedStatus& Status, AICC_Actor* T
 		break;
 	case ShieldDebuff:
 		InflictShieldDebuff(Target);
+		break;
+	case DebuffAtk:
+		DebuffAtkF();
+		break;
+	case DebuffDef:
+		DebuffDefF();
 		break;
 	case None:
 		break;
@@ -111,9 +117,8 @@ void UStatusTracker::BuffWith(const EBuffStatus& BuffStatus)
 	case LowHealth:
 		Heal();
 		break;
-	case NoBuff:
-		break;
 	default:
+	case NoBuff:
 		break;
 	}
 }
@@ -124,12 +129,14 @@ void UStatusTracker::UpdateStatus()
 	if (!bIsOwnerAfflicted || !bCanDebuff)
 	{
 		DebugHelper::LogError("No debuff status found");
+		DebugHelper::AddMessageToLog("No debuff status found for both player and ai");
 		return;
 	}
 
 	StatusCounter += 1;
 
-	DebugHelper::LogWarning("Status Counter " + FString::FromInt(StatusCounter));
+	DebugHelper::LogWarning("Status Counter for " + GetStatusName(CurrentActiveStatus) + FString::FromInt(StatusCounter));
+	DebugHelper::AddMessageToLog("Status Counter for " + GetStatusName(CurrentActiveStatus) + FString::FromInt(StatusCounter));
 
 	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
 
@@ -186,6 +193,7 @@ void UStatusTracker::UpdateBuffStatus()
 	if (!bIsOwnerAlreadyBuffed || !bCanBuff)
 	{
 		DebugHelper::LogError("No buff status found");
+		DebugHelper::AddMessageToLog("No buff status found for both player and ai");
 		return;
 	}
 
@@ -193,7 +201,8 @@ void UStatusTracker::UpdateBuffStatus()
 
 	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
 
-	DebugHelper::LogMessage(6, FColor::Blue,  Target->GetActorLabel() + " Buff Status counter " + FString::FromInt(BuffStatusCounter));
+	DebugHelper::LogMessage(6, FColor::Blue,  Target->GetActorLabel() + " Buff Status counter of " + GetBuffName(CurrentBuffedStatus) + FString::FromInt(BuffStatusCounter));
+	DebugHelper::AddMessageToLog(Target->GetActorLabel() + " Buff Status counter of " + GetBuffName(CurrentBuffedStatus) + FString::FromInt(BuffStatusCounter));
 
 	if (BuffStatusCounter < 3)
 	{
@@ -261,6 +270,7 @@ void UStatusTracker::UnfreezeChance()
 	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
 
 	DebugHelper::LogWarning("Attempting to auto freeze");
+	DebugHelper::AddMessageToLog("Attempting to auto freeze");
 
 	FreezedUpCounter++;
 

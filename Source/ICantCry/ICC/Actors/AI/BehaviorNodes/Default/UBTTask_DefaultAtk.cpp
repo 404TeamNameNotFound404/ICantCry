@@ -35,11 +35,11 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 	bBusy = true;
 	
 	DecisionMaker.Setup(CurrentMob);
-	Decision = DecisionMaker.Thought();
+	Decision = DecisionMaker.EnhancedThought(CurrentMob); //DecisionMaker.Thought();
 
 	Target->GetBattleHUD()->DecisionDisplayer->Show();
 	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(
-		FText::FromString(Self->GetActorLabel() + " is thinking...")
+		FText::FromString(Self->GetData()->EnemyName.ToString() + " is thinking...")
 	);
 	
 	Controller->GetWorld()->GetTimerManager().ClearTimer(DelayHandle);
@@ -122,8 +122,8 @@ void UUBTTask_DefaultAtk::OnThinkComplete(UBehaviorTreeComponent* OwnerComp, AIC
     {
         if (CurrentMob->IsAshamed())
         {
-            CurrentMob->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(CurrentMob->GetActorLabel() + " skipped the turn (Ashamed)"));
-            DebugHelper::AddMessageToLog(CurrentMob->GetActorLabel() + " skipped the turn (Ashamed)");
+            CurrentMob->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(CurrentMob->GetData()->EnemyName.ToString() + " skipped the turn (Ashamed)"));
+            DebugHelper::AddMessageToLog(CurrentMob->GetData()->EnemyName.ToString() + " skipped the turn (Ashamed)");
 
             CurrentMob->SetTreeId(-1);
             CurrentMob->SetIsBuffedAtk(false);

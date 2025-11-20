@@ -5,6 +5,35 @@
 #include "ICantCry/ICC/Actors/AI/BehaviorNodes/Default/UBTTask_DefaultAtk.h"
 #include "ICantCry/ICC/Mechanics/TurnSystem/Core/BattleHandler.h"
 
+int32 FDecisionPriorities::GetPriority(const EDecision& Decision) const
+{
+	switch (Decision)
+	{
+	case EDecision::BuffItSelf:         return BuffAtk;
+	case EDecision::DebuffAtk:          return DebuffAtk;
+	case EDecision::BuffDefence:        return BuffDef;
+	case EDecision::DebuffDefence:      return DebuffDef;
+	case EDecision::None:               return None;
+	case EDecision::EnvyBurned:         return EnvyBurned;
+	case EDecision::DebuffShieldItSelf: return DebuffShield;
+	default: return None;;
+	}
+}
+
+EDecision FDecisionPriorities::PickHighestDecision(const TArray<EDecision>& Decisions) const
+{
+	if (Decisions.Num() == 0)
+		return EDecision::None;
+
+	EDecision Top = Decisions[0];
+	for (int i = 1; i < Decisions.Num(); i++)
+	{
+		if (GetPriority(Decisions[i]) > GetPriority(Top))
+			Top = Decisions[i];
+	}
+	return Top;
+}
+
 FDecisionMaker::FDecisionMaker()
 {
 	FMath::RandInit(FPlatformTime::Cycles());
@@ -132,6 +161,37 @@ EDecision FDecisionMaker::Thought()
 	}
 	
 	return EDecision::None;
+}
+
+
+EDecision FDecisionMaker::EnhancedThought(AMob* Emotion)
+{
+	const FDecisionPriorities Priorities;
+
+	TArray<EDecision> ActiveDecisions;
+
+	DebugHelper::AddMessageToLog("Enhanced thought started!");
+	
+	if (Emotion->GetIsIsBuffedAtk()) ActiveDecisions.Add(EDecision::BuffItSelf);
+	if (Emotion->GetPlayerDebuffAttack()) ActiveDecisions.Add(EDecision::DebuffAtk);
+	if (Emotion->GetIsBuffedDefence()) ActiveDecisions.Add(EDecision::BuffDefence);
+	if (Emotion->GetIsTargetDefenceDebuffed()) ActiveDecisions.Add(EDecision::DebuffDefence);
+	if (Emotion->GetIsIsLow()) ActiveDecisions.Add(EDecision::HealItSelf);
+	if (Emotion->GetIsIsEnvyBurned()) ActiveDecisions.Add(EDecision::EnvyBurned);
+	if (Emotion->GetIsDebuffShield()) ActiveDecisions.Add(EDecision::DebuffShieldItSelf);
+
+	DebugHelper::AddMessageToLog("Checking " + Emotion->GetActorLabel() + " buff / debuff");
+	DebugHelper::LogWarning("Thinking");
+	
+	if (ActiveDecisions.Num() > 0)
+	{
+		DebugHelper::AddMessageToLog(Emotion->GetActorLabel() + " decided over priority");
+		return Priorities.PickHighestDecision(ActiveDecisions);
+	}
+
+	DebugHelper::AddMessageToLog("Enhanced thought complete!");
+	
+	return Thought();
 }
 
 

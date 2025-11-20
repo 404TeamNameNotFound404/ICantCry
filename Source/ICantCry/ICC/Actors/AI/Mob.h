@@ -179,6 +179,9 @@ protected:
 
 	UPROPERTY()
 	int Bt_Id;
+
+	UPROPERTY()
+	bool bRethink = false;
 	
 	//------
 
@@ -364,6 +367,8 @@ public:
 	bool GetPlayerDebuffAttack() const;
 	bool GetBuffOtherDefence() const;
 	int GetTreeId() const;
+	bool GetRethink() const;
+	void SetRethink(const bool& Value);
 	
 	UFUNCTION() void UpdateBestiaryUI();
 

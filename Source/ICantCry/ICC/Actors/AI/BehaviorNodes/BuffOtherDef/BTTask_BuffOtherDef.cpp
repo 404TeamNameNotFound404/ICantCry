@@ -34,16 +34,17 @@ EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& Ow
 	
 	if (Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().CantBuffOthers())
 	{
-		DebugHelper::LogError(Current->GetActorLabel() +  " is alone can't buff");
-		DebugHelper::AddMessageToLog(Current->GetActorLabel() +  " is alone can't buff");
-		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+		// DebugHelper::LogError(Current->GetActorLabel() +  " is alone can't buff");
+		// DebugHelper::AddMessageToLog(Current->GetActorLabel() +  " is alone can't buff");
+		// FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+		BlackBoard->SetValueAsBool("Rethinker", true);
 		return EBTNodeResult::Succeeded;
 	}
 
 	AMob* TargetToBuff = Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetMobInQueue();
 	checkf(TargetToBuff, TEXT("TargetToBuff is invalid Type UBTTask_BuffDefence::ExecuteTask"))
-
-	// check first if 'TargetToBuff' has active buff , if so it removes it to apply the new one
+	
+	
 	TargetToBuff->GetStatusTracker()->BuffFlow(EBuffStatus::DefBuff);
 	
 	TargetToBuff->GetStatusTracker()->BuffWith(EBuffStatus::DefBuff);

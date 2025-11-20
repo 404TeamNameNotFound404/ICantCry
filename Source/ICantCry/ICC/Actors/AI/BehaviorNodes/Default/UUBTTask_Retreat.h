@@ -24,6 +24,7 @@ protected:
 	virtual void OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult) override;
 
 
+
 	UPROPERTY()
 	UBlackboardComponent* BlackBoard;
 
@@ -47,5 +48,8 @@ protected:
 
 	UPROPERTY()
 	TWeakObjectPtr<UBehaviorTreeComponent> OwnerCompPtr;
+
+	UPROPERTY()
+	bool bTaskFinished = false;
 
 };
