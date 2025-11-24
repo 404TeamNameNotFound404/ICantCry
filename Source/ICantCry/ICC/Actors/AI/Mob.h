@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "ICC_AIController.h"
 #include "BehaviorTree/BehaviorTree.h"
+#include "DecisionMaker/DecisionTable.h"
 #include "ICantCry/ICC/Actors/ICC_Actor.h"
 #include "ICantCry/ICC/Mechanics/Core/Data/EnemyDatas.h"
 #include "ICantCry/ICC/Mechanics/Core/Data/EnemyTactics.h"
@@ -380,6 +381,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Bestiary")
 	void UnlockContentOnDeath();
 
+	UDecisionTable* GetDecisionTable() const;
+
 private:
 
 	UPROPERTY()
@@ -424,4 +427,7 @@ private:
 
 	UPROPERTY()
 	bool bHasUnlockedContent = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Behaviors", meta=(AllowPrivateAccess=true))
+	UDecisionTable* DecisionTable;
 };

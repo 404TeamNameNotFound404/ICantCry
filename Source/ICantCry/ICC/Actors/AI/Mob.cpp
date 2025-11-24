@@ -387,6 +387,11 @@ void AMob::UnlockContentOnDeath()
     Instance->UpdateBestiaryUI();
 }
 
+UDecisionTable* AMob::GetDecisionTable() const
+{
+	return DecisionTable;
+}
+
 FString AMob::GetNoteKeyForMobType() const
 {
     switch (Type)
