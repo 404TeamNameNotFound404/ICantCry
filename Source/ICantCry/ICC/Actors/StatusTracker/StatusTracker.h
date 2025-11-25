@@ -203,5 +203,7 @@ private:
 	/**
 	 * Rollback the current status state
 	 */
-	void RevertInflictedMalus();
+	void RevertInflictedMalus(const EAfflictedStatus& Status);
+
+	void RevertBuff();
 };

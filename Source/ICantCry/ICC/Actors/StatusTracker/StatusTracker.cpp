@@ -145,6 +145,8 @@ void UStatusTracker::UpdateStatus()
 	{
 		return;
 	}
+
+	RevertInflictedMalus(CurrentActiveStatus);
 	
 	switch (CurrentActiveStatus)
 	{
@@ -152,31 +154,69 @@ void UStatusTracker::UpdateStatus()
 		bIsOwnerAfflicted = false;
 		StatusCounter = 0;
 		Target->Freeze(false);
+
+		if (Cast<AMob>(GetOwner()))
+		{
+			PerkData.bFreezedUp = false;
+			bIsOwnerAfflicted = false;
+			StatusCounter = 0;
+		}
+		
 		break;
 	case Burn:
 		bIsOwnerAfflicted = false;
 		StatusCounter = 0;
 		Target->Burn(false);
 		bCanBuff = true;
+		if (Cast<AMob>(GetOwner()))
+		{
+			PerkData.bEnvyBurned = false;
+			bIsOwnerAfflicted = false;
+			StatusCounter = 0;
+		}
 		break;
 	case EAShame:
 		bIsOwnerAfflicted = false;
 		StatusCounter = 0;
 		Target->Ashamed(false);
+		if (Cast<AMob>(GetOwner()))
+		{
+			PerkData.bAshamed = false;
+			bIsOwnerAfflicted = false;
+			StatusCounter = 0;
+		}
 		break;
 	case ShieldDebuff:
 		bIsOwnerAfflicted = false;
 		StatusCounter = 0;
 		Target->ShieldDebuff(false);
 		bCanDebuff = true;
+		if (Cast<AMob>(GetOwner()))
+		{
+			PerkData.bShieldDebuff = false;
+			bIsOwnerAfflicted = false;
+			StatusCounter = 0;
+		}
 		break;
 	case DebuffAtk:
 		bIsOwnerAfflicted = false;
 		StatusCounter = 0;
+		if (Cast<AMob>(GetOwner()))
+		{
+			PerkData.bDebuffAtk = false;
+			bIsOwnerAfflicted = false;
+			StatusCounter = 0;
+		}
 		break;
 	case DebuffDef:
 		bIsOwnerAfflicted = false;
 		StatusCounter = 0;
+		if (Cast<AMob>(GetOwner()))
+		{
+			PerkData.bDebuffDef = false;
+			bIsOwnerAfflicted = false;
+			StatusCounter = 0;
+		}
 		break;
 	case None:
 		bIsOwnerAfflicted = false;
@@ -225,6 +265,7 @@ void UStatusTracker::UpdateBuffStatus()
 			Emotion->GetData()->AttackPower = Emotion->GetAIMemory().InitialAttackPower;
 			DebugHelper::AddMessageToLog("Buff ended atk returns to " + FString::SanitizeFloat(Emotion->GetData()->AttackPower));
 			BuffStatusCounter = 0;
+			PerkData.bBuffAtk = false;
 			bIsOwnerAlreadyBuffed = false;
 		}
 		break;
@@ -244,11 +285,13 @@ void UStatusTracker::UpdateBuffStatus()
 			DebugHelper::AddMessageToLog("Buff ended atk returns to " + FString::SanitizeFloat(Emotion->GetData()->DefencePower));
 			BuffStatusCounter = 0;
 			bIsOwnerAlreadyBuffed = false;
+			PerkData.bBuffDef = false;
 		}
 		break;
 	case LowHealth:
 		BuffStatusCounter = 0;
 		bIsOwnerAlreadyBuffed = false;
+		PerkData.bLowHealth = false;
 		break;
 
 	case Shield:
@@ -263,6 +306,7 @@ void UStatusTracker::UpdateBuffStatus()
 			BuffStatusCounter = 0;
 			bIsOwnerAlreadyBuffed = false;
 			bCanDebuff = true;
+			PerkData.bShieldDebuff = false;
 		}
 		break;
 	
@@ -414,7 +458,7 @@ void UStatusTracker::MalusFlow()
 
 	DebugHelper::LogMessage(9, FColor::Green, "Malus flow called");
 	
-	RevertInflictedMalus();
+	//RevertInflictedMalus(CurrentActiveStatus);
 }
 
 FInternalPerkData& UStatusTracker::GetPerkData()
@@ -545,7 +589,45 @@ void UStatusTracker::DebuffDefF()
 	}
 }
 
-void UStatusTracker::RevertInflictedMalus()
+void UStatusTracker::RevertInflictedMalus(const EAfflictedStatus& Status)
+{
+	if (!bIsOwnerAfflicted)
+	{
+		return;
+	}
+
+	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+	
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+	PerkData.Clear();
+
+	switch (Status)
+	{
+	case Freezed:
+		PerkData.bFreezedUp = false;
+		break;
+	case Burn:
+		PerkData.bEnvyBurned = false;
+		break;
+	case EAShame:
+		PerkData.bAshamed = false;
+		break;
+	case ShieldDebuff:
+		PerkData.bShieldDebuff = false;
+		break;
+	case DebuffAtk:
+		PerkData.bDebuffAtk = false;
+		break;
+	case DebuffDef:
+		PerkData.bDebuffDef = false;
+		break;
+	default:
+	case None:
+		break;
+	}
+}
+
+void UStatusTracker::RevertBuff()
 {
 	if (!bIsOwnerAlreadyBuffed)
 	{
@@ -565,6 +647,7 @@ void UStatusTracker::RevertInflictedMalus()
 			AICC_Player* Player = Cast<AICC_Player>(Target);
 			checkf(Player, TEXT("Player invalid at revert inflicted malus atkbuff"))
 			Player->GetStats()->AttackPower = Instance->GetPersistentData()->InitialAttackPower;
+			DebugHelper::AddMessageToLog("Player Debuff atk reverted into " + FString::FromInt(Instance->GetPersistentData()->InitialAttackPower));
 		}
 		if (Target->IsA(AMob::StaticClass()))
 		{
@@ -579,6 +662,7 @@ void UStatusTracker::RevertInflictedMalus()
 			AICC_Player* Player = Cast<AICC_Player>(Target);
 			checkf(Player, TEXT("Player invalid at revert inflicted malus defbuff"))
 			Player->GetStats()->DefencePower = Instance->GetPersistentData()->InitialDefencePower;
+			DebugHelper::AddMessageToLog("Player Debuff def reverted into " + FString::FromInt(Instance->GetPersistentData()->InitialDefencePower));
 		}
 		if (Target->IsA(AMob::StaticClass()))
 		{

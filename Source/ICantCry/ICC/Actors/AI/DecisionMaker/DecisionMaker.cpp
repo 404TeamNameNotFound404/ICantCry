@@ -86,7 +86,7 @@ void FDecisionMaker::Setup(AMob* Current)
     else
     {
 	    CurrentWeights = Current->GetDecisionTable()->Idle;
-    	DebugHelper::AddMessageToLog("Decision table used: Normal atk");
+    	DebugHelper::AddMessageToLog("Decision table used: Idle");
     }
 
 	switch (Current->GetMobType())

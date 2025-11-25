@@ -254,7 +254,6 @@ void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackbo
             {
                 Current->SetBuffedDefence(true);
                 BlackBoard->SetValueAsBool("IsDefenceBuffed?", Current->GetIsBuffedDefence());
-                DecisionMaker.Clear();
             }
             break;
 
@@ -263,7 +262,6 @@ void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackbo
             {
                 Current->SetBuffOtherDefence(true);
                 BlackBoard->SetValueAsBool("IsBuffedOtherDef?", Current->GetBuffOtherDefence());
-                DecisionMaker.Clear();
             }
             break;
 
@@ -304,7 +302,6 @@ void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackbo
             {
                 Current->SetDebuffShield(true);
                 BlackBoard->SetValueAsBool("IsShieldDebuffed??", Current->GetIsDebuffShield());
-                DecisionMaker.Clear();
             }
             break;
 
@@ -313,7 +310,6 @@ void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackbo
             {
                 Current->SetDebuffOtherShield(true);
                 BlackBoard->SetValueAsBool("IsOtherShieldDebuffed??", Current->GetIsDebuffOtherShield());
-                DecisionMaker.Clear();
             }
             break;
 
