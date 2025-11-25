@@ -31,7 +31,6 @@ EBTNodeResult::Type UBTTask_BuffDefence::ExecuteTask(UBehaviorTreeComponent& Own
 	BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 
 	Current->GetStatusTracker()->BuffFlow(EBuffStatus::DefBuff);
-	
 	Current->GetStatusTracker()->BuffWith(EBuffStatus::DefBuff);
 
 

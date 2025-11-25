@@ -6,13 +6,16 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "ICantCry/ICC/Actors/AI/ICC_AIController.h"
 #include "ICantCry/ICC/Actors/AI/Mob.h"
+#include "ICantCry/ICC/Actors/AI/BehaviorNodes/Default/UBTTask_DefaultAtk.h"
 #include "ICantCry/ICC/Actors/AI/DecisionMaker/DecisionMaker.h"
+#include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 
 UBTRethinker::UBTRethinker()
 {
 	NodeName = TEXT("Rethinker");
 	bCreateNodeInstance = true;
+	bNotifyTaskFinished = true;
 }
 
 EBTNodeResult::Type UBTRethinker::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -20,15 +23,33 @@ EBTNodeResult::Type UBTRethinker::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
 	BlackBoard = OwnerComp.GetBlackboardComponent();
-	AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner());
-	AMob* Self = Cast<AMob>(BlackBoard->GetValueAsObject("SelfActor"));
+	const AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner());
+	Current = Cast<AMob>(Controller->GetPawn());
+	
+	DebugHelper::AddMessageToLog(Current->GetData()->EnemyName.ToString() + " can't buff other .. rethinking a new action");
+	AICC_Player* Target = Cast<AICC_Player>(BlackBoard->GetValueAsObject("Target"));
 
-	FDecisionMaker DecisionMaker;
-	DecisionMaker.Setup(Self);
-	DecisionMaker.Thought();
+    Current->SetRethink(true);
+    BlackBoard->SetValueAsBool("Rethinker", Current->GetRethink());
+    
+	DecisionMaker.Setup(Current);
+	Decision = DecisionMaker.Thought();
 
-	DebugHelper::LogMessage(5,FColor::Orange,"Rethinking action");
-	DebugHelper::AddMessageToLog(Self->GetData()->EnemyName.ToString() + " can't buff other .. rethinking a new action");
+	UUBTTask_DefaultAtk::GetInstance()->ProcessDecision(Decision, Current, BlackBoard, &OwnerComp, Target);
 
-	return EBTNodeResult::Succeeded;
+	Current->SetRethink(false);
+	BlackBoard->SetValueAsBool("Rethinker", Current->GetRethink());
+	
+	return EBTNodeResult::InProgress;
+}
+
+void UBTRethinker::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult)
+{
+	Super::OnTaskFinished(OwnerComp, NodeMemory, TaskResult);
+
+	if (Current && BlackBoard)
+	{
+		Current->SetRethink(false);
+		BlackBoard->SetValueAsBool("Rethinker", false);
+	}
 }

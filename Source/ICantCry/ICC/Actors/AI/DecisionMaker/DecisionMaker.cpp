@@ -3,6 +3,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "ICantCry/ICC/Actors/AI/BehaviorNodes/Default/UBTTask_DefaultAtk.h"
+#include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Mechanics/TurnSystem/Core/BattleHandler.h"
 
 int32 FDecisionPriorities::GetPriority(const EDecision& Decision) const
@@ -40,82 +41,106 @@ FDecisionMaker::FDecisionMaker()
 
 void FDecisionMaker::Setup(AMob* Current)
 {
-	using FDecisionPopulator = TFunction<void(FDecisionMaker&, const UBattleData*)>;
+	 DecisionMap.Empty();
 
-	// Experimental : decision weight
-	FDecisionWeight EmotionDecisionWeight;
-	if (Current->GetIsIsBuffedAtk())           
-		EmotionDecisionWeight = Current->GetDecisionTable()->BuffAtk;
-	else if (Current->GetPlayerDebuffAttack()) 
-		EmotionDecisionWeight = Current->GetDecisionTable()->DebuffAtk;
-	else if (Current->GetIsIsLow())            
-		EmotionDecisionWeight = Current->GetDecisionTable()->LowHealth;
-	else if (Current->GetIsIsEnvyBurned())   
-		EmotionDecisionWeight = Current->GetDecisionTable()->EnvyBurned;
-	else                                     
-		EmotionDecisionWeight = Current->GetDecisionTable()->Idle;    
-	// Delete the part inside the comments
+    if (!Current || !Current->GetDecisionTable())
+        return;
+	
+    FDecisionWeight CurrentWeights;
 
-	static const TMap<EMobType, FDecisionPopulator> EmotionDecisionMap = {
-    { EMobType::MobAnger, [&EmotionDecisionWeight](FDecisionMaker& DM, const UBattleData* BD) {
-        DM.DecisionMap.Add(EDecision::BuffItSelf, EmotionDecisionWeight.BuffAtkWeight /*BD->BuffAtkChance*/);
-        DM.DecisionMap.Add(EDecision::None, EmotionDecisionWeight.AttackWeight /*BD->AngerNormalAttackChance*/);
-    }},
-    { EMobType::MobJoy, [&EmotionDecisionWeight](FDecisionMaker& DM, const UBattleData* BD) {
-        DM.DecisionMap.Add(EDecision::HealItSelf, EmotionDecisionWeight.HealWeight /*BD->HealItselfChance*/);
-        DM.DecisionMap.Add(EDecision::HealOther, EmotionDecisionWeight.HealOtherWeight /*BD->HealOtherChance*/);
-        DM.DecisionMap.Add(EDecision::None, EmotionDecisionWeight.AttackWeight /*BD->JoyNormalAttackChance*/);
-    }},
-    { EMobType::MobSadness, [&EmotionDecisionWeight](FDecisionMaker& DM, const UBattleData* BD) {
-        DM.DecisionMap.Add(EDecision::DebuffDefence, EmotionDecisionWeight.DebuffDefWeight/*BD->SadnessDebuffDefChance*/);
-        DM.DecisionMap.Add(EDecision::None, EmotionDecisionWeight.AttackWeight /*BD->SadnessNormalAttackChance*/);
-    }},
-    { EMobType::MobDisgust, [&EmotionDecisionWeight](FDecisionMaker& DM, const UBattleData* BD) {
-        DM.DecisionMap.Add(EDecision::DebuffAtk, EmotionDecisionWeight.DebuffAtkWeight /*BD->DisgustDebuffAtkChance*/);
-        DM.DecisionMap.Add(EDecision::None, EmotionDecisionWeight.AttackWeight /*BD->DisgustNormalAttackChance*/);
-    }},
-    { EMobType::MobFear, [&EmotionDecisionWeight](FDecisionMaker& DM, const UBattleData* BD) {
-        DM.DecisionMap.Add(EDecision::BuffDefence, EmotionDecisionWeight.BuffDefWeight /*BD->FearBuffDefChance*/);
-        DM.DecisionMap.Add(EDecision::BuffOtherDefence,EmotionDecisionWeight.BuffOtherDefWeight /*BD->FearBuffOtherDefChance*/);
-        DM.DecisionMap.Add(EDecision::None, EmotionDecisionWeight.AttackWeight /*BD->FearNormalAttackChance*/);
-    }},
-    { EMobType::MobAnxiety, [&EmotionDecisionWeight](FDecisionMaker& DM, const UBattleData* BD) {
-        DM.DecisionMap.Add(EDecision::DebuffAtk, EmotionDecisionWeight.DebuffAtkWeight/*BD->AnxietyDebuffAtkChance*/);
-        DM.DecisionMap.Add(EDecision::DebuffDefence,EmotionDecisionWeight.DebuffDefWeight /*BD->AnxietyDebuffDefChance*/);
-        DM.DecisionMap.Add(EDecision::FreezedUp, EmotionDecisionWeight.FreezedUpWeight/*BD->FreezedUpChance*/);
-    }},
-    { EMobType::MobJealousy, [&EmotionDecisionWeight](FDecisionMaker& DM, const UBattleData* BD) {
-        DM.DecisionMap.Add(EDecision::EnvyBurned, EmotionDecisionWeight.EnvyBurnedWeight /*BD->EnvyBurnedChance*/);
-        DM.DecisionMap.Add(EDecision::BuffOther, EmotionDecisionWeight.BuffOtherAtkWeight/*BD->BuffOtherAtkChance*/);
-        DM.DecisionMap.Add(EDecision::None, EmotionDecisionWeight.AttackWeight/*BD->JealousyNormalAttackChance*/);
-    }},
-    { EMobType::MobCalm, [&EmotionDecisionWeight](FDecisionMaker& DM, const UBattleData* BD) {
-        DM.DecisionMap.Add(EDecision::DebuffShieldItSelf, EmotionDecisionWeight.ShieldWeight/*BD->DebuffShieldItselfChance*/);
-        DM.DecisionMap.Add(EDecision::DebuffShieldOther, EmotionDecisionWeight.ShieldOtherWeight/*BD->DebuffShieldOtherChance*/);
-        DM.DecisionMap.Add(EDecision::BuffDefence, EmotionDecisionWeight.BuffDefWeight /*BD->CalmBuffDefChance*/);
-        DM.DecisionMap.Add(EDecision::BuffOtherDefence, EmotionDecisionWeight.BuffOtherDefWeight /*BD->CalmBuffOtherDefChance*/);
-    }},
-	};
-
-	DecisionMap.Empty(); 
-
-	UBattleData* BattleData = Current->GetBattleData();
-	checkf(BattleData, TEXT("Battle data appears to be invalid"));
-
-	EMobType MobType = Current->GetMobType(); 
-
-	if (const FDecisionPopulator* Populator = EmotionDecisionMap.Find(MobType))
+    if (Current->GetStatusTracker()->GetPerkData().bBuffAtk)
+    {
+	    CurrentWeights = Current->GetDecisionTable()->BuffAtk;
+    	DebugHelper::AddMessageToLog("Decision table used: Buffed Atk");
+    }
+    else if (Current->GetStatusTracker()->GetPerkData().bDebuffAtk)
+    {
+	    CurrentWeights = Current->GetDecisionTable()->DebuffAtk;
+    	DebugHelper::AddMessageToLog("Decision table used: Debuff Atk");
+    }
+    else if (Current->GetStatusTracker()->GetPerkData().bLowHealth)
+    {
+	    CurrentWeights = Current->GetDecisionTable()->LowHealth;
+    	DebugHelper::AddMessageToLog("Decision table used: Low health");
+    }
+    else if (Current->GetStatusTracker()->GetPerkData().bEnvyBurned)
+    {
+	    CurrentWeights = Current->GetDecisionTable()->EnvyBurned;
+    	DebugHelper::AddMessageToLog("Decision table used: Envy burned");
+    }
+	else if (Current->GetStatusTracker()->GetPerkData().bBuffDef)
 	{
-		(*Populator)(*this, BattleData);
+		CurrentWeights = Current->GetDecisionTable()->BuffDef;
+		DebugHelper::AddMessageToLog("Decision table used: Buff Def");
 	}
-	else
+	else if (Current->GetStatusTracker()->GetPerkData().bDebuffDef)
 	{
-		DebugHelper::LogWarning(FString::Printf( TEXT("No decision logic found for MobType: %d"), static_cast<int32>(MobType)));
+		CurrentWeights = Current->GetDecisionTable()->DebuffDef;
+		DebugHelper::AddMessageToLog("Decision table used: Debuff Def");
+	}
+	else if (Current->GetStatusTracker()->GetPerkData().bAshamed)
+	{
+		CurrentWeights = Current->GetDecisionTable()->Ashamed;
+		DebugHelper::AddMessageToLog("Decision table used: Ashamed");
+	}
+    else
+    {
+	    CurrentWeights = Current->GetDecisionTable()->Idle;
+    	DebugHelper::AddMessageToLog("Decision table used: Normal atk");
+    }
+
+	switch (Current->GetMobType())
+	{
+	case MobAnger:
+		if (CurrentWeights.BuffAtkWeight > 0.f) DecisionMap.Add(EDecision::BuffItSelf, CurrentWeights.BuffAtkWeight);
+		if (CurrentWeights.AttackWeight > 0.f)  DecisionMap.Add(EDecision::None, CurrentWeights.AttackWeight);
+		break;
+	case MobShame:
+		if (CurrentWeights.AttackWeight > 0.f) DecisionMap.Add(EDecision::None, CurrentWeights.AttackWeight);
+		break;
+    case MobJoy:
+		if (CurrentWeights.HealWeight > 0.f) DecisionMap.Add(EDecision::HealItSelf, CurrentWeights.HealWeight);
+		if (CurrentWeights.AttackWeight > 0.f) DecisionMap.Add(EDecision::None, CurrentWeights.AttackWeight);
+		if (CurrentWeights.HealOtherWeight > 0.f) DecisionMap.Add(EDecision::HealOther, CurrentWeights.HealOtherWeight);
+		break;
+	case MobDisgust:
+		if (CurrentWeights.AttackWeight > 0.f) DecisionMap.Add(EDecision::None, CurrentWeights.AttackWeight);
+		if (CurrentWeights.DebuffAtkWeight > 0.f) DecisionMap.Add(EDecision::DebuffAtk, CurrentWeights.DebuffAtkWeight);
+		break;
+	case MobFear:
+		if (CurrentWeights.AttackWeight > 0.f) DecisionMap.Add(EDecision::None, CurrentWeights.AttackWeight);
+		if (CurrentWeights.BuffDefWeight > 0.f) DecisionMap.Add(EDecision::BuffDefence, CurrentWeights.BuffDefWeight);
+		if (CurrentWeights.BuffOtherDefWeight > 0.f) DecisionMap.Add(EDecision::BuffOtherDefence, CurrentWeights.BuffOtherDefWeight);
+		break;
+	case MobJealousy:
+		if (CurrentWeights.EnvyBurnedWeight > 0.f) DecisionMap.Add(EDecision::EnvyBurned, CurrentWeights.EnvyBurnedWeight);
+		if (CurrentWeights.AttackWeight > 0.f) DecisionMap.Add(EDecision::None, CurrentWeights.AttackWeight);
+		if (CurrentWeights.BuffOtherAtkWeight > 0.f) DecisionMap.Add(EDecision::BuffOther, CurrentWeights.BuffOtherAtkWeight);
+		break;
+	case MobSadness:
+		if (CurrentWeights.AttackWeight > 0.f) DecisionMap.Add(EDecision::None, CurrentWeights.AttackWeight);
+		if (CurrentWeights.DebuffDefWeight > 0.f) DecisionMap.Add(EDecision::DebuffDefence, CurrentWeights.DebuffDefWeight);
+		break;
+	case MobAnxiety:
+		if (CurrentWeights.FreezedUpWeight > 0.f) DecisionMap.Add(EDecision::FreezedUp, CurrentWeights.FreezedUpWeight);
+		if (CurrentWeights.DebuffDefWeight > 0.f) DecisionMap.Add(EDecision::DebuffDefence, CurrentWeights.DebuffDefWeight);
+		if (CurrentWeights.DebuffAtkWeight > 0.f) DecisionMap.Add(EDecision::DebuffAtk, CurrentWeights.DebuffAtkWeight);
+ 		break;
+	case MobCalm:
+		if (CurrentWeights.ShieldWeight > 0.f )  DecisionMap.Add(EDecision::DebuffShieldItSelf, CurrentWeights.ShieldWeight);
+		if (CurrentWeights.ShieldOtherWeight > 0.f )DecisionMap.Add(EDecision::DebuffShieldOther, CurrentWeights.ShieldOtherWeight);
+		if (CurrentWeights.BuffDefWeight > 0.f) DecisionMap.Add(EDecision::BuffDefence, CurrentWeights.BuffDefWeight);
+		if (CurrentWeights.BuffOtherDefWeight > 0.f) DecisionMap.Add(EDecision::BuffOtherDefence, CurrentWeights.BuffOtherDefWeight);
+		break;
+    default:
+    	break;
 	}
 }
 
 EDecision FDecisionMaker::Thought()
 {
+	DebugHelper::AddMessageToLog("AI is thinking the best move..");
+	
 	TArray<TPair<EDecision, float>> Decisions;
 	Decisions.Reserve(DecisionMap.Num());
 	for (const auto& Elem : DecisionMap)
@@ -163,12 +188,15 @@ EDecision FDecisionMaker::Thought()
 	const float Chance = FMath::FRand();
 	float WeightAccumulator = 0.f;
 
+	DebugHelper::AddMessageToLog("Chance extracted: " + FString::SanitizeFloat(Chance));
+
 	for (const auto& Entry : Filtered)
 	{
 		WeightAccumulator += Entry.Value / TotalWeight;
 		if (Chance <= WeightAccumulator)
 		{
 			LastDecision = Entry.Key;
+			DebugHelper::AddMessageToLog("Decision picked: " + GetDecisionString(Entry.Key));
 			return Entry.Key;
 		}
 	}
@@ -176,6 +204,42 @@ EDecision FDecisionMaker::Thought()
 	return EDecision::None;
 }
 
+
+FString FDecisionMaker::GetDecisionString(const EDecision& Decision) const
+{
+	switch (Decision)
+	{
+	case EDecision::HealItSelf:
+		return "Heal";
+	case EDecision::HealOther:
+		return "Heal Other";
+	case EDecision::FreezedUp:
+		return "FreezedUp";
+	case EDecision::BuffItSelf:
+		return "Buff Atk";
+	case EDecision::BuffOther:
+		return "Buff Other Atk";
+	case EDecision::DebuffDefence:
+		return "Debuff Def";
+	case EDecision::BuffDefence:
+		return "Buff Def";
+	case EDecision::BuffOtherDefence:
+		return "Buff Other Def";
+	case EDecision::DebuffAtk:
+		return "Debuff Atk";
+	case EDecision::DebuffShieldItSelf:
+		return "Debuff Shield";
+	case EDecision::DebuffShieldOther:
+		return "Debuff Other Shield";
+	case EDecision::EnvyBurned:
+		return "Envy Burned";
+	case EDecision::None:
+		return "Attack";
+	default:
+	case EDecision::Invalid:
+		return "";
+	}
+}
 
 EDecision FDecisionMaker::EnhancedThought(AMob* Emotion)
 {

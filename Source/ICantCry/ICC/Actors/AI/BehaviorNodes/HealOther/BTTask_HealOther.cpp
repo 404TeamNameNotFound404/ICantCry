@@ -36,10 +36,7 @@ EBTNodeResult::Type UBTTask_HealOther::ExecuteTask(UBehaviorTreeComponent& Owner
 
 	if (Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().CantBuffOthers())
 	{
-		// DebugHelper::LogError(Current->GetActorLabel() +  " is alone can't buff");
-		// DebugHelper::AddMessageToLog(Current->GetActorLabel() +  " is alone can't buff");
-		// FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-
+		DebugHelper::AddMessageToLog(Current->GetActorLabel() + " attempted to heal other but it's alone! , rethink the action");
 		Blackboard->SetValueAsBool("Rethinker", true);
 		return EBTNodeResult::Succeeded;
 	}

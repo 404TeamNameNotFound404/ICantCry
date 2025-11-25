@@ -35,18 +35,16 @@ EBTNodeResult::Type UBTTask_DebuffOtherShield::ExecuteTask(UBehaviorTreeComponen
 
 	if (Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().CantBuffOthers())
 	{
-		// DebugHelper::LogError(Current->GetActorLabel() +  " is alone can't buff");
-		// DebugHelper::AddMessageToLog(Current->GetActorLabel() +  " is alone can't buff");
-		// FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 		Blackboard->SetValueAsBool("Rethinker", true);
-		
+		DebugHelper::AddMessageToLog(Current->GetActorLabel() + " attempted to buff other shield but it's alone! , rethink the action");
 		return EBTNodeResult::Succeeded;
 	}
 	
 	AMob* TargetToBuff = Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetMobInQueue();
 	checkf(TargetToBuff, TEXT("TargetToBuff is invalid Type at UBTTask_DebuffOtherShield::ExecuteTask"))
-	
-	TargetToBuff->GetStatusTracker()->InflictStatus(EAfflictedStatus::ShieldDebuff, TargetToBuff);
+
+	TargetToBuff->GetStatusTracker()->BuffFlow(EBuffStatus::DefBuff);
+	TargetToBuff->GetStatusTracker()->BuffWith(EBuffStatus::Shield);
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " de-buffed " + TargetToBuff->GetActorLabel() + " shield"));
 	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " de-buffed " + TargetToBuff->GetActorLabel() + " shield");

@@ -26,7 +26,38 @@ enum EBuffStatus
 	AtkBuff,
 	DefBuff,
 	LowHealth,
+	Shield,
 	NoBuff
+};
+
+
+USTRUCT()
+struct FInternalPerkData
+{
+	GENERATED_BODY();
+
+	UPROPERTY() bool bBuffAtk;
+	UPROPERTY() bool bBuffDef;
+	UPROPERTY() bool bLowHealth;
+	UPROPERTY() bool bFreezedUp;
+	UPROPERTY() bool bAshamed;
+	UPROPERTY() bool bShieldDebuff;
+	UPROPERTY() bool bDebuffAtk;
+	UPROPERTY() bool bDebuffDef;
+	UPROPERTY() bool bEnvyBurned;
+
+	void Clear()
+	{
+		bBuffAtk = false;
+		bBuffDef = false;
+		bLowHealth = false;
+		bFreezedUp = false;
+		bShieldDebuff = false;
+		bDebuffAtk = false;
+		bDebuffDef = false;
+		bAshamed = false;
+		bEnvyBurned = false;
+	}
 };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -128,6 +159,8 @@ public:
 	 */
 	void MalusFlow();
 
+	FInternalPerkData& GetPerkData();
+
 	/*-------------------- PLAYER CHECKS --------------------**/
 	/*----------DO NOT WRITE ANYTHING IN THIS SPACE -------------*/
 
@@ -148,12 +181,17 @@ private:
 	UPROPERTY()
 	bool bCanDebuff = true;
 
+	UPROPERTY()
+	FInternalPerkData PerkData;
+
 	void InflictFreeze(AICC_Actor* Target);
 	void InflictBurn(AICC_Actor* Target);
 	void InflictShieldDebuff(AICC_Actor* Target);
 	void InflictAShamed(AICC_Actor* Target);
 	void BuffAttack();
 	void BuffDefence();
+	void BuffShield();
+	
 	/**
 	 * Used for joy ev / ai 
 	 */

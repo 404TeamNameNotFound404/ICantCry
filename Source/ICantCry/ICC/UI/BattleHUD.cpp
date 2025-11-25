@@ -658,7 +658,7 @@ void UBattleHUD::PrepareToEngage()
         Cast<AMob>(SelectedActorTarget)->GetData(), GameInstance);
     GameInstance->SetDamageData(&DummyDamage);
     DebugHelper::LogMessage(3, FColor::White, "Targeting " + SelectedEnemy->GetActorLabel());
-    DebugHelper::AddMessageToLog("Targeting " + SelectedEnemy->GetActorLabel());
+    DebugHelper::AddMessageToLog("Targeting " + SelectedEnemy->GetActorLabel() + " using " + CurrentBulletData->BulletName);
     DebugHelper::LogMessage(5, FColor::Emerald, "Minigame modifier -> " + FString::SanitizeFloat(DummyDamage.PlayerStats->MinigameModifier));
     checkf(MinigameHandler, TEXT("Minigame handler is null at UBattleHUD::Engage"));
     MinigameHandler->StartMinigame(true);

@@ -29,24 +29,18 @@ EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& Ow
 	
 	BlackBoard->SetValueAsBool("IsBuffedOtherDef?", Current->GetBuffOtherDefence());
 	BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
-
-	//TODO ADD a counter for the buff (must last 3 turns)
 	
 	if (Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().CantBuffOthers())
 	{
-		// DebugHelper::LogError(Current->GetActorLabel() +  " is alone can't buff");
-		// DebugHelper::AddMessageToLog(Current->GetActorLabel() +  " is alone can't buff");
-		// FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 		BlackBoard->SetValueAsBool("Rethinker", true);
+		DebugHelper::AddMessageToLog(Current->GetActorLabel() + " attempted to buff other def but it's alone! , rethink the action");
 		return EBTNodeResult::Succeeded;
 	}
 
 	AMob* TargetToBuff = Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetMobInQueue();
 	checkf(TargetToBuff, TEXT("TargetToBuff is invalid Type UBTTask_BuffDefence::ExecuteTask"))
 	
-	
 	TargetToBuff->GetStatusTracker()->BuffFlow(EBuffStatus::DefBuff);
-	
 	TargetToBuff->GetStatusTracker()->BuffWith(EBuffStatus::DefBuff);
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(

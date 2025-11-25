@@ -89,6 +89,7 @@ struct FDecisionMaker
 	 */
 	void ResetDecision();
 
+	FString GetDecisionString(const EDecision& Decision) const;
 private:
 	UPROPERTY()
 	EDecision LastDecision = EDecision::None;
