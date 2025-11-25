@@ -61,6 +61,7 @@ EBTNodeResult::Type UBTTask_HealOther::ExecuteTask(UBehaviorTreeComponent& Owner
 	}
 	
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " heals " + CurrentToBuff->GetActorLabel()));
+	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(""));
 	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " heals " + CurrentToBuff->GetActorLabel());
 	
 	return EBTNodeResult::InProgress;
@@ -125,6 +126,8 @@ void UBTTask_HealOther::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8*
 			Blackboard->SetValueAsInt("Id", Current->GetTreeId());
 		}
 
+		const UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
 		
 	}

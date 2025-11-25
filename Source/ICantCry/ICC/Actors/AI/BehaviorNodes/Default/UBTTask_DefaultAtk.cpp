@@ -232,12 +232,18 @@ void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackbo
 
         case EDecision::HealItSelf:
             if (Current->IsHealer())
-                BlackBoard->SetValueAsBool("IsHealing?", Current->GetIsHeal());
+            {
+            	Current->SetHeal(true);
+            	BlackBoard->SetValueAsBool("IsHealing?", Current->GetIsHeal());
+            }
             break;
 
         case EDecision::HealOther:
             if (Current->IsHealer())
-                BlackBoard->SetValueAsBool("IsHealingOther?", Current->GetIsHealOther());
+            {
+            	Current->SetHealOther(true);
+            	BlackBoard->SetValueAsBool("IsHealingOther?", Current->GetIsHealOther());
+            }
             break;
 
         case EDecision::DebuffDefence:
@@ -285,7 +291,7 @@ void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackbo
             if (Current->IsEJealousy())
             {
                 Current->SetBuffOtherAtk(true);
-                BlackBoard->SetValueAsBool("IsBuffOtherAtk??", Current->GetBuffOtherAtk());
+                BlackBoard->SetValueAsBool("IsBuffOtherAtk?", Current->GetBuffOtherAtk());
             }
             break;
 
@@ -301,7 +307,7 @@ void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackbo
             if (Current->IsECalm())
             {
                 Current->SetDebuffShield(true);
-                BlackBoard->SetValueAsBool("IsShieldDebuffed??", Current->GetIsDebuffShield());
+                BlackBoard->SetValueAsBool("IsShieldDebuffed?", Current->GetIsDebuffShield());
             }
             break;
 
@@ -309,7 +315,7 @@ void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackbo
             if (Current->IsECalm())
             {
                 Current->SetDebuffOtherShield(true);
-                BlackBoard->SetValueAsBool("IsOtherShieldDebuffed??", Current->GetIsDebuffOtherShield());
+                BlackBoard->SetValueAsBool("IsOtherShieldDebuffed?", Current->GetIsDebuffOtherShield());
             }
             break;
 
