@@ -239,13 +239,13 @@ void UBattleHUD::OnShootPressed()
     bShootFired = true;
     //ApAccumulator++;
    // ApAccumulator = FMath::Min(ApAccumulator + 1, CurrentAP); //(CurrentAP >= 4) ? 4 : ApAccumulator;
-    ApAccumulator = FMath::Clamp(ApAccumulator + 1, 0, CurrentAP);
+    // ApAccumulator = FMath::Clamp(ApAccumulator + 1, 0, CurrentAP);
     DebugHelper::LogMessage(7, FColor::Orange, "Ap Accumulator on shoot -> " + FString::FromInt(ApAccumulator));
     UpdateAPBar();
     Bar->UpdateHighlights(1);
     bTargetSelection = true;
-    DebugHelper::LogSuccess("Shoot pressed, ap spent-> " + FString::FromInt(ApAccumulator));
-    DebugHelper::AddMessageToLog("Shoot pressed, ap spent-> " + FString::FromInt(ApAccumulator));
+    DebugHelper::LogSuccess("Shoot pressed, ap spent (Accumulator)-> " + FString::FromInt(ApAccumulator));
+    DebugHelper::AddMessageToLog("Shoot pressed, ap spent (Accumulator) -> " + FString::FromInt(ApAccumulator));
     
     if (Buffer && !Buffer->IsEmpty())
     {

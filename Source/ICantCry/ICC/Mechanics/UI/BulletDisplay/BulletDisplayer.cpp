@@ -140,7 +140,7 @@ void UBulletDisplayer::InstantiateBullet(TArray<FBullet> InstantiateBullets)
 	
 	for (FBullet& b : InstantiateBullets)
 	{
-		b.SetQuantity(10);
+		b.SetQuantity(100);
 		Instance->GetInventory().BulletsStored.Add(b.GetBulletData()->Type, b);
 	}
 }
