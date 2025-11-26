@@ -19,12 +19,15 @@ class ICANTCRY_API UUBTTask_DefaultAtk : public UBTTaskNode
 public:
 	UUBTTask_DefaultAtk();
 
+	static UUBTTask_DefaultAtk* GetInstance();
+	void ProcessDecision(EDecision Dec, AMob* Current, UBlackboardComponent* Board, UBehaviorTreeComponent* OwnerComp, AICC_Player* Target);
+	
+
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 	void OnThinkComplete_Internal();
 	void OnThinkComplete(UBehaviorTreeComponent* OwnerComp, AICC_AIController* Controller);
-	void ProcessDecision(EDecision Dec, AMob* Current, UBlackboardComponent* Board, UBehaviorTreeComponent* OwnerComp, AICC_Player* Target);
 	UFUNCTION() void OnMinigameEndedCallback();
 	void StartAttackMinigame(AMob* Current, AICC_Player* Target, AICC_AIController* Controller);
 
@@ -63,4 +66,6 @@ protected:
 
 	UPROPERTY()
 	UBehaviorTreeComponent* TreeComp;
+
+	static UUBTTask_DefaultAtk* Instance;
 };

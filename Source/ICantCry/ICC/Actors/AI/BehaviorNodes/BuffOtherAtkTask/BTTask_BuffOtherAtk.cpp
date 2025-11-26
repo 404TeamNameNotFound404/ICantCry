@@ -34,16 +34,10 @@ EBTNodeResult::Type UBTTask_BuffOtherAtk::ExecuteTask(UBehaviorTreeComponent& Ow
 	BlackBoard->SetValueAsBool("IsBuffOtherAtk?", Current->GetBuffOtherAtk());
 	BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 
-	//TODO ADD a counter for the buff (must last 3 turns)
-
 	if (Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().CantBuffOthers())
 	{
-		// DebugHelper::LogError(Current->GetActorLabel() +  " is alone can't buff");
-		// DebugHelper::AddMessageToLog(Current->GetActorLabel() +  " is alone can't buff");
-		// FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-
+		DebugHelper::AddMessageToLog(Current->GetActorLabel() + " attempted to buff other atk but it's alone! , rethink the action");
 		BlackBoard->SetValueAsBool("Rethinker", true);
-		
 		return EBTNodeResult::Succeeded;
 	}
 

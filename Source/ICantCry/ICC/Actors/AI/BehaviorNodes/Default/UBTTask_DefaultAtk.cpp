@@ -6,6 +6,8 @@
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 
+UUBTTask_DefaultAtk* UUBTTask_DefaultAtk::Instance;
+
 UUBTTask_DefaultAtk::UUBTTask_DefaultAtk()
 {
     NodeName = TEXT("NoStatusAttack");
@@ -13,9 +15,16 @@ UUBTTask_DefaultAtk::UUBTTask_DefaultAtk()
     bCreateNodeInstance = true;
 }
 
+UUBTTask_DefaultAtk* UUBTTask_DefaultAtk::GetInstance()
+{
+	return Instance;
+}
+
 EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
     Super::ExecuteTask(OwnerComp, NodeMemory);
+
+	Instance = this;
 	
 	BlackBoard = OwnerComp.GetBlackboardComponent();
 	AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner());
@@ -33,9 +42,10 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 	
 	bWaitingForThinkCompletion = true;
 	bBusy = true;
-	
+
+	DecisionMaker.Clear();
 	DecisionMaker.Setup(CurrentMob);
-	Decision = DecisionMaker.EnhancedThought(CurrentMob); //DecisionMaker.Thought();
+	Decision = DecisionMaker.Thought();
 
 	Target->GetBattleHUD()->DecisionDisplayer->Show();
 	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(
@@ -217,18 +227,23 @@ void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackbo
             {
                 Current->SetIsBuffedAtk(true);
                 BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
-                Decision = EDecision::Invalid;
             }
             break;
 
         case EDecision::HealItSelf:
             if (Current->IsHealer())
-                BlackBoard->SetValueAsBool("IsHealing?", Current->GetIsHeal());
+            {
+            	Current->SetHeal(true);
+            	BlackBoard->SetValueAsBool("IsHealing?", Current->GetIsHeal());
+            }
             break;
 
         case EDecision::HealOther:
             if (Current->IsHealer())
-                BlackBoard->SetValueAsBool("IsHealingOther?", Current->GetIsHealOther());
+            {
+            	Current->SetHealOther(true);
+            	BlackBoard->SetValueAsBool("IsHealingOther?", Current->GetIsHealOther());
+            }
             break;
 
         case EDecision::DebuffDefence:
@@ -245,8 +260,6 @@ void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackbo
             {
                 Current->SetBuffedDefence(true);
                 BlackBoard->SetValueAsBool("IsDefenceBuffed?", Current->GetIsBuffedDefence());
-                Decision = EDecision::Invalid;
-                DecisionMaker.Clear();
             }
             break;
 
@@ -255,8 +268,6 @@ void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackbo
             {
                 Current->SetBuffOtherDefence(true);
                 BlackBoard->SetValueAsBool("IsBuffedOtherDef?", Current->GetBuffOtherDefence());
-                Decision = EDecision::Invalid;
-                DecisionMaker.Clear();
             }
             break;
 
@@ -280,7 +291,7 @@ void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackbo
             if (Current->IsEJealousy())
             {
                 Current->SetBuffOtherAtk(true);
-                BlackBoard->SetValueAsBool("IsBuffOtherAtk??", Current->GetBuffOtherAtk());
+                BlackBoard->SetValueAsBool("IsBuffOtherAtk?", Current->GetBuffOtherAtk());
             }
             break;
 
@@ -296,9 +307,7 @@ void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackbo
             if (Current->IsECalm())
             {
                 Current->SetDebuffShield(true);
-                BlackBoard->SetValueAsBool("IsShieldDebuffed??", Current->GetIsDebuffShield());
-                Decision = EDecision::Invalid;
-                DecisionMaker.Clear();
+                BlackBoard->SetValueAsBool("IsShieldDebuffed?", Current->GetIsDebuffShield());
             }
             break;
 
@@ -306,9 +315,7 @@ void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackbo
             if (Current->IsECalm())
             {
                 Current->SetDebuffOtherShield(true);
-                BlackBoard->SetValueAsBool("IsOtherShieldDebuffed??", Current->GetIsDebuffOtherShield());
-                Decision = EDecision::Invalid;
-                DecisionMaker.Clear();
+                BlackBoard->SetValueAsBool("IsOtherShieldDebuffed?", Current->GetIsDebuffOtherShield());
             }
             break;
 

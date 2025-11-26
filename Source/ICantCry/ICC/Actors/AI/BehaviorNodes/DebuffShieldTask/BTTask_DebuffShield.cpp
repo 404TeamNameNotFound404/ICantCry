@@ -33,7 +33,8 @@ EBTNodeResult::Type UBTTask_DebuffShield::ExecuteTask(UBehaviorTreeComponent& Ow
 	AICC_Player* Target = Cast<AICC_Player>(Blackboard->GetValueAsObject("Target"));
 	checkf(Target, TEXT("Player invalid at UBTTask_DebuffShield::ExecuteTask"))
 
-	Current->GetStatusTracker()->InflictStatus(EAfflictedStatus::ShieldDebuff, Current);
+	Current->GetStatusTracker()->BuffFlow(EBuffStatus::Shield);
+	Current->GetStatusTracker()->BuffWith(EBuffStatus::Shield);
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " de-buffed it's shield"));
 	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " de-buffed it's shield");

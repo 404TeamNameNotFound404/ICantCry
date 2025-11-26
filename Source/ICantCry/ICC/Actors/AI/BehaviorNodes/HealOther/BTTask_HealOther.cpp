@@ -36,10 +36,7 @@ EBTNodeResult::Type UBTTask_HealOther::ExecuteTask(UBehaviorTreeComponent& Owner
 
 	if (Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().CantBuffOthers())
 	{
-		// DebugHelper::LogError(Current->GetActorLabel() +  " is alone can't buff");
-		// DebugHelper::AddMessageToLog(Current->GetActorLabel() +  " is alone can't buff");
-		// FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-
+		DebugHelper::AddMessageToLog(Current->GetActorLabel() + " attempted to heal other but it's alone! , rethink the action");
 		Blackboard->SetValueAsBool("Rethinker", true);
 		return EBTNodeResult::Succeeded;
 	}
@@ -64,6 +61,7 @@ EBTNodeResult::Type UBTTask_HealOther::ExecuteTask(UBehaviorTreeComponent& Owner
 	}
 	
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " heals " + CurrentToBuff->GetActorLabel()));
+	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(""));
 	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " heals " + CurrentToBuff->GetActorLabel());
 	
 	return EBTNodeResult::InProgress;
@@ -128,6 +126,8 @@ void UBTTask_HealOther::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8*
 			Blackboard->SetValueAsInt("Id", Current->GetTreeId());
 		}
 
+		const UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
 		
 	}

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DecisionTable.h"
 #include "ICantCry/ICC/Actors/AI/Mob.h"
 #include "DecisionMaker.generated.h"
 
@@ -38,15 +39,10 @@ struct FDecisionPriorities
 
 	FDecisionPriorities(){}
 
-	UPROPERTY() int32 BuffAtk = 0;
-	UPROPERTY() int32 DebuffAtk = 1;
-	UPROPERTY() int32 BuffDef = 1;
-	UPROPERTY() int32 DebuffDef = 2;
-	UPROPERTY() int32 LowHealth = 2;
-	UPROPERTY() int32 EnvyBurned = 3;
-	UPROPERTY() int32 Ashamed = 4;
-	UPROPERTY() int32 DebuffShield = 4;
-	UPROPERTY() int32 FallBack = 5; // just in case jump to attack
+	explicit FDecisionPriorities(const FDecisionWeight& InWeights)
+	   : DecisionWeight(InWeights) {}
+
+	UPROPERTY() FDecisionWeight DecisionWeight;
 
 
 	int32 GetPriority(const EDecision& Decision) const;
@@ -93,6 +89,7 @@ struct FDecisionMaker
 	 */
 	void ResetDecision();
 
+	FString GetDecisionString(const EDecision& Decision) const;
 private:
 	UPROPERTY()
 	EDecision LastDecision = EDecision::None;
