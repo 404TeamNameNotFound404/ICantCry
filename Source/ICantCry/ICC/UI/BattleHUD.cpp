@@ -922,6 +922,7 @@ void UBattleHUD::Engage()
             EnableButtonsAfterShooting();
             DecreaseAP(1);
             UpdateAPBar();
+            GameInstance->GetCurrentPlayer()->GetStatusTracker()->BuffWith(EBuffStatus::Shield);
             break;
         }
     case JealousyDv:
