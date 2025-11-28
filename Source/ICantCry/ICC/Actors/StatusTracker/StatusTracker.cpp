@@ -61,6 +61,24 @@ void UStatusTracker::InflictStatus(const EAfflictedStatus& Status, AICC_Actor* T
 		return;
 	}
 
+	if (bShieldBuffed)
+	{
+		PlayerShieldAccumulator--;
+		DebugHelper::AddMessageToLog(GetOwner()->GetActorLabel() + " attempted to inflict " + GetStatusName(Status) + " but fortunately a shield was used to protect from the debuff "
+			+ FString::FromInt(PlayerShieldAccumulator) + " left");
+
+		if (PlayerShieldAccumulator <= 0)
+		{
+			bShieldBuffed = false;
+			PlayerShieldAccumulator = 0;
+			DebugHelper::AddMessageToLog("Shield debuff protection for " + GetOwner()->GetActorLabel() + " ended");
+		}
+		else
+		{
+			return;
+		}
+	}
+
 	CurrentActiveStatus = Status;
 	StatusCounter = 0;
 	bIsOwnerAfflicted = true;
@@ -258,6 +276,8 @@ void UStatusTracker::UpdateBuffStatus()
 			Player->GetStats()->AttackPower = Instance->GetPersistentData()->InitialAttackPower;
 			DebugHelper::AddMessageToLog("Buff ended atk returns to " + FString::SanitizeFloat(Player->GetStats()->AttackPower));
 			BuffStatusCounter = 0;
+			bIsOwnerAlreadyBuffed = false;
+			bCanDebuff = true;
 		}
 		if (Target->IsA(AMob::StaticClass()))
 		{
@@ -267,6 +287,7 @@ void UStatusTracker::UpdateBuffStatus()
 			BuffStatusCounter = 0;
 			PerkData.bBuffAtk = false;
 			bIsOwnerAlreadyBuffed = false;
+			bCanBuff = true;
 		}
 		break;
 	case DefBuff:
@@ -277,6 +298,8 @@ void UStatusTracker::UpdateBuffStatus()
 			Player->GetStats()->DefencePower = Instance->GetPersistentData()->InitialDefencePower;
 			DebugHelper::AddMessageToLog("Buff ended atk returns to " + FString::SanitizeFloat(Player->GetStats()->DefencePower));
 			BuffStatusCounter = 0;
+			bIsOwnerAlreadyBuffed = false;
+			bCanDebuff = true;
 		}
 		if (Target->IsA(AMob::StaticClass()))
 		{
@@ -286,12 +309,14 @@ void UStatusTracker::UpdateBuffStatus()
 			BuffStatusCounter = 0;
 			bIsOwnerAlreadyBuffed = false;
 			PerkData.bBuffDef = false;
+			bCanBuff = true;
 		}
 		break;
 	case LowHealth:
 		BuffStatusCounter = 0;
 		bIsOwnerAlreadyBuffed = false;
 		PerkData.bLowHealth = false;
+		bCanBuff = true;
 		break;
 
 	case Shield:
@@ -446,6 +471,7 @@ void UStatusTracker::BuffFlow(const EBuffStatus& NewBuffStatus)
 	BuffWith(NewBuffStatus);
 	DebugHelper::LogMessage(7, FColor::Orange, "Old buff " + GetBuffName(CurrentBuffedStatus) + "Removed " + "New buff assigned " + GetBuffName(NewBuffStatus));
 	DebugHelper::AddMessageToLog("Old buff " + GetBuffName(CurrentBuffedStatus) + "Removed " + "New buff assigned " + GetBuffName(NewBuffStatus));
+	BuffStatusCounter = 0;
 	CurrentBuffedStatus = NewBuffStatus;
 }
 
@@ -521,6 +547,10 @@ void UStatusTracker::BuffShield()
 	
 	if (Target->IsA(AICC_Player::StaticClass()))
 	{
+		bCanDebuff = false;
+		bShieldBuffed = true;
+		PlayerShieldAccumulator = 3;
+		DebugHelper::AddMessageToLog(Target->GetActorLabel() + " uses shield debuff. Shield left " + FString::FromInt(PlayerShieldAccumulator));
 	}
 
 	if (Target->IsA(AMob::StaticClass()))

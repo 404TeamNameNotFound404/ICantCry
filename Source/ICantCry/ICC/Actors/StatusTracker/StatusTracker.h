@@ -184,6 +184,12 @@ private:
 	UPROPERTY()
 	FInternalPerkData PerkData;
 
+	UPROPERTY()
+	int32 PlayerShieldAccumulator = 0;
+
+	UPROPERTY()
+	bool bShieldBuffed = false;
+	
 	void InflictFreeze(AICC_Actor* Target);
 	void InflictBurn(AICC_Actor* Target);
 	void InflictShieldDebuff(AICC_Actor* Target);
