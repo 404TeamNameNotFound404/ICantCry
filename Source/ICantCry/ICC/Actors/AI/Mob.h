@@ -383,6 +383,12 @@ public:
 
 	UDecisionTable* GetDecisionTable() const;
 
+	/**
+	 * If the health is 20% of the max health, health will be considered low
+	 * @return true if low health
+	 */
+	bool IsLowHealth() const;
+
 private:
 
 	UPROPERTY()
