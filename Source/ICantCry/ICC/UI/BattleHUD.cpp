@@ -6,6 +6,7 @@
 #include "EngineUtils.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "ICantCry/ICC/Mechanics/UI/BattleVisualization/GameOver/GameOverVisualizer.h"
+#include "Framework/Application/SlateApplication.h"
 
 void UBattleHUD::NativeConstruct()
 {
@@ -237,9 +238,6 @@ void UBattleHUD::OnShootPressed()
     CanvasStatus->SetVisibility(ESlateVisibility::Visible);
     
     bShootFired = true;
-    //ApAccumulator++;
-   // ApAccumulator = FMath::Min(ApAccumulator + 1, CurrentAP); //(CurrentAP >= 4) ? 4 : ApAccumulator;
-    // ApAccumulator = FMath::Clamp(ApAccumulator + 1, 0, CurrentAP);
     DebugHelper::LogMessage(7, FColor::Orange, "Ap Accumulator on shoot -> " + FString::FromInt(ApAccumulator));
     UpdateAPBar();
     Bar->UpdateHighlights(1);
@@ -254,7 +252,6 @@ void UBattleHUD::OnShootPressed()
         {
             const EBulletType Type = Bullet->Type;
             
-            // EV bullets: hide AP indicators
             if (Type == EBulletType::JoyEv ||
                 Type == EBulletType::AngerEv ||
                 Type == EBulletType::JealousyEv ||
@@ -265,13 +262,16 @@ void UBattleHUD::OnShootPressed()
                 ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
                 ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
             }
-            else // DV bullets: show AP indicators
+            else 
             {
                 ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Visible);
                 ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Visible);
             }
         }
     }
+    
+    FSlateApplication::Get().ClearAllUserFocus();
+
 }
 
 void UBattleHUD::OnShootBoostPressed()
@@ -309,6 +309,8 @@ void UBattleHUD::OnFocusPressed()
     CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
     CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Hidden);
     bTargetSelection = false;
+    FSlateApplication::Get().ClearAllUserFocus();
+
 }
 
 void UBattleHUD::OnReloadPressed()
@@ -342,6 +344,7 @@ void UBattleHUD::OnReloadPressed()
     CanvasStatus->SetVisibility(ESlateVisibility::Hidden);
     Displayer->SetVisibility(ESlateVisibility::Visible);
     Displayer->Refresh();
+    FSlateApplication::Get().ClearAllUserFocus();
 }
 
 void UBattleHUD::OnPassPressed()
@@ -368,6 +371,7 @@ void UBattleHUD::OnPassPressed()
     GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateStatus();
     GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateBuffStatus();
     Displayer->SetVisibility(ESlateVisibility::Hidden);
+    FSlateApplication::Get().ClearAllUserFocus();
 }
 
 void UBattleHUD::ScrollTargetSelection(float ScrollValue)
@@ -626,26 +630,44 @@ void UBattleHUD::IncreaseShootPower()
     Bar->UpdateHighlights(ApAccumulator);
     
     DebugHelper::LogWarning("Ap Modifier on increase -> " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
-    DebugHelper::AddMessageToLog("Ap Modifier on increase -> " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+    DebugHelper::AddMessageToLog("Player decided to increase it's shoot power, now has modifier: -> " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
     
     DebugHelper::LogSuccess("Shoot is boosted ap modifier now is " + FString::SanitizeFloat( GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStats()->ApModifier ));
     DebugHelper::AddMessageToLog("Shoot is boosted ap modifier now is " + FString::SanitizeFloat( GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStats()->ApModifier ));
+    FSlateApplication::Get().ClearAllUserFocus();
 }
 
 void UBattleHUD::DecreaseShootPower()
 {
-    if (ApAccumulator <= 0 || ApPowerBoost <= 0)
-    {
+    if (ApAccumulator <= 0)
         return;
+
+    ApPowerBoost--;
+    ApAccumulator = FMath::Clamp(ApAccumulator - 1, 1, 4);
+
+    Bar->UpdateHighlights(ApAccumulator);
+
+    DebugHelper::LogMessage(6, FColor::Yellow, 
+        "Restored Ap: " + FString::FromInt(ApAccumulator));
+
+    
+    float NewModifier = 1.0f;
+
+    switch (ApAccumulator)
+    {
+    case 1: NewModifier = 1.0f; break;
+    case 2: NewModifier = 1.5f; break;
+    case 3: NewModifier = 2.0f; break;
+    case 4: NewModifier = 2.5f; break;
+    default: NewModifier = 1.0f; break;
     }
 
-    const int32 PreviousAccumulator = ApAccumulator;
-    
-    ApAccumulator--;
-    ApPowerBoost--;
-    Bar->ResetHighlightOf(PreviousAccumulator);
-    
-    // IncreaseAP(1);
+    GameInstance->GetPlayerStats()->ApModifier = NewModifier;
+    DebugHelper::AddMessageToLog("Player decided to decrease boost, now has: " + FString::SanitizeFloat(NewModifier));
+
+    Bar->UpdateHighlights(ApAccumulator);
+
+    FSlateApplication::Get().ClearAllUserFocus();
 }
 
 void UBattleHUD::PrepareToEngage()

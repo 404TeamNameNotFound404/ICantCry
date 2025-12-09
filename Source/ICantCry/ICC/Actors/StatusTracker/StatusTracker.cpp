@@ -112,6 +112,7 @@ void FInternalPerkData::AssignPriority(AMob* Emotion)
 	case 0:
 		{
 			Data.Clear();
+			Data.bIdle = true;
 			break;
 		}
 
@@ -160,7 +161,17 @@ void FInternalPerkData::AssignPriority(AMob* Emotion)
 
 	case 4:
 		{
-			
+			Data.Clear();
+			if (Emotion->GetIsIsEnvyBurned())
+			{
+				DebugHelper::AddMessageToLog(Emotion->GetActorLabel() + " changed it's DT to Envy Burned");
+				Data.bEnvyBurned = true;
+			}
+
+			if (Emotion->GetIsDebuffShield())
+			{
+				Data.bShieldDebuff = true;
+			}
 		}
 	}
 }
@@ -219,6 +230,18 @@ void UStatusTracker::InflictStatus(const EAfflictedStatus& Status, AICC_Actor* T
 		else
 		{
 			return;
+		}
+	}
+
+	Priority.SetNextPriorityFromDebuff(Status);
+
+	if (GetOwner()->IsA(AMob::StaticClass()))
+	{
+		AMob* Emotion = Cast<AMob>(GetOwner());
+		
+		if (PerkData.HasHighDebuffPriority(Cast<AMob>(GetOwner())))
+		{
+			PerkData.AssignPriority(Emotion);
 		}
 	}
 
