@@ -116,6 +116,29 @@ AMob* FTurn::GetMobInQueue() const
 	return nullptr;
 }
 
+AMob* FTurn::GetMobInQueue(AMob* Emotion) const
+{
+	if (Queue.IsEmpty())
+	{
+		return nullptr;
+	}
+
+	const int32 MaxTries = Queue.Num();
+	for (int32 i = 0; i < MaxTries; ++i)
+	{
+		const int32 Aleatory = FMath::RandRange(0, Queue.Num() - 1);
+		
+		if (AMob* Mob = Cast<AMob>(Queue[Aleatory]))
+		{
+			if (Mob == Emotion) continue;
+			
+			return Mob;
+		}
+	}
+
+	return nullptr;
+}
+
 bool FTurn::CantBuffOthers()
 {
 	if (Queue.IsEmpty())

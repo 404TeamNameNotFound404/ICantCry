@@ -37,8 +37,14 @@ EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& Ow
 		return EBTNodeResult::Succeeded;
 	}
 
-	AMob* TargetToBuff = Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetMobInQueue();
-	checkf(TargetToBuff, TEXT("TargetToBuff is invalid Type UBTTask_BuffDefence::ExecuteTask"))
+	AMob* TargetToBuff = Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetMobInQueue(Current);
+
+	if (!TargetToBuff) // rethink if target buff appears to be nullptr again 
+	{
+		BlackBoard->SetValueAsBool("Rethinker", true);
+		DebugHelper::AddMessageToLog(Current->GetActorLabel() + " attempted to buff other def but it didn't find a valid target (scrivetemelo se entra qua dentro)! , rethinking the action");
+		return EBTNodeResult::Succeeded;
+	}
 	
 	TargetToBuff->GetStatusTracker()->BuffFlow(EBuffStatus::DefBuff);
 	TargetToBuff->GetStatusTracker()->BuffWith(EBuffStatus::DefBuff);

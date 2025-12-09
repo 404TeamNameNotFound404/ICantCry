@@ -6,34 +6,6 @@
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Mechanics/TurnSystem/Core/BattleHandler.h"
 
-int32 FDecisionPriorities::GetPriority(const EDecision& Decision) const
-{
-	switch (Decision)
-	{
-	case EDecision::BuffItSelf:         return AtkBuff;
-	case EDecision::DebuffAtk:          return DebuffAtk;
-	case EDecision::BuffDefence:        return DefBuff;
-	case EDecision::DebuffDefence:      return DebuffDef;
-	case EDecision::None:               return None;
-	case EDecision::EnvyBurned:         return EnvyBurned;
-	case EDecision::DebuffShieldItSelf: return DebuffShield;
-	default: return None;;
-	}
-}
-
-EDecision FDecisionPriorities::PickHighestDecision(const TArray<EDecision>& Decisions) const
-{
-	if (Decisions.Num() == 0) return EDecision::None;
-
-	EDecision Top = Decisions[0];
-	for (int i = 1; i < Decisions.Num(); i++)
-	{
-		if (GetPriority(Decisions[i]) > GetPriority(Top))
-			Top = Decisions[i];
-	}
-	return Top;
-}
-
 FDecisionMaker::FDecisionMaker()
 {
 	FMath::RandInit(FPlatformTime::Cycles());
@@ -58,8 +30,12 @@ void FDecisionMaker::Setup(AMob* Current)
 	    CurrentWeights = Current->GetDecisionTable()->DebuffAtk;
     	DebugHelper::AddMessageToLog("Decision table used: Debuff Atk");
     }
-    else if (Current->GetStatusTracker()->GetPerkData().bLowHealth)
+    else if (Current->IsLowHealth())
     {
+    	Current->GetStatusTracker()->GetPerkData().bBuffAtk = false;
+    	Current->GetStatusTracker()->GetPerkData().bDebuffAtk = false;
+    	Current->GetStatusTracker()->GetPerkData().bBuffDef = false;
+    	Current->GetStatusTracker()->GetPerkData().bDebuffDef = false;
 	    CurrentWeights = Current->GetDecisionTable()->LowHealth;
     	DebugHelper::AddMessageToLog("Decision table used: Low health");
     }
@@ -78,6 +54,11 @@ void FDecisionMaker::Setup(AMob* Current)
 		CurrentWeights = Current->GetDecisionTable()->DebuffDef;
 		DebugHelper::AddMessageToLog("Decision table used: Debuff Def");
 	}
+	else if (Current->GetStatusTracker()->GetPerkData().bShieldDebuff)
+	{
+		CurrentWeights = Current->GetDecisionTable()->DebuffShield;
+		DebugHelper::AddMessageToLog("Decision table used: Shield");
+	}
 	else if (Current->GetStatusTracker()->GetPerkData().bAshamed)
 	{
 		CurrentWeights = Current->GetDecisionTable()->Ashamed;
@@ -88,49 +69,111 @@ void FDecisionMaker::Setup(AMob* Current)
 	    CurrentWeights = Current->GetDecisionTable()->Idle;
     	DebugHelper::AddMessageToLog("Decision table used: Idle");
     }
-
+	
+	UStatusTracker* StatusTracker = Current->GetStatusTracker();
+	
 	switch (Current->GetMobType())
 	{
 	case MobAnger:
-		if (CurrentWeights.BuffAtkWeight > 0.f) DecisionMap.Add(EDecision::BuffItSelf, CurrentWeights.BuffAtkWeight);
-		if (CurrentWeights.AttackWeight > 0.f)  DecisionMap.Add(EDecision::None, CurrentWeights.AttackWeight);
+		if (CurrentWeights.BuffAtkWeight > 0.f && !Current->IsLowHealth())
+			DecisionMap.Add(EDecision::BuffItSelf, CurrentWeights.BuffAtkWeight);
+		
+		if (CurrentWeights.AttackWeight > 0.f && !Current->IsLowHealth())
+			DecisionMap.Add(EDecision::None, CurrentWeights.AttackWeight);
+		
+		if (CurrentWeights.LowHealthWeight > 0.f)
+			DecisionMap.Add(EDecision::Low, CurrentWeights.LowHealthWeight);
 		break;
 	case MobShame:
-		if (CurrentWeights.AttackWeight > 0.f) DecisionMap.Add(EDecision::None, CurrentWeights.AttackWeight);
+		if (CurrentWeights.AttackWeight > 0.f)
+			DecisionMap.Add(EDecision::None, CurrentWeights.AttackWeight);
 		break;
     case MobJoy:
-		if (CurrentWeights.HealWeight > 0.f) DecisionMap.Add(EDecision::HealItSelf, CurrentWeights.HealWeight);
-		if (CurrentWeights.AttackWeight > 0.f) DecisionMap.Add(EDecision::None, CurrentWeights.AttackWeight);
-		if (CurrentWeights.HealOtherWeight > 0.f) DecisionMap.Add(EDecision::HealOther, CurrentWeights.HealOtherWeight);
+		if (CurrentWeights.HealWeight > 0.f)
+			DecisionMap.Add(EDecision::HealItSelf, CurrentWeights.HealWeight);
+		
+		if (CurrentWeights.AttackWeight > 0.f && !Current->IsLowHealth())
+			DecisionMap.Add(EDecision::None, CurrentWeights.AttackWeight);
+		
+		if (CurrentWeights.HealOtherWeight > 0.f)
+			DecisionMap.Add(EDecision::HealOther, CurrentWeights.HealOtherWeight);
+		
+		if (CurrentWeights.LowHealthWeight > 0.f)
+			DecisionMap.Add(EDecision::Low, CurrentWeights.LowHealthWeight);
 		break;
 	case MobDisgust:
-		if (CurrentWeights.AttackWeight > 0.f) DecisionMap.Add(EDecision::None, CurrentWeights.AttackWeight);
-		if (CurrentWeights.DebuffAtkWeight > 0.f) DecisionMap.Add(EDecision::DebuffAtk, CurrentWeights.DebuffAtkWeight);
+		if (CurrentWeights.AttackWeight > 0.f && !Current->IsLowHealth())
+			DecisionMap.Add(EDecision::None, CurrentWeights.AttackWeight);
+		
+		if (CurrentWeights.DebuffAtkWeight > 0.f && !Current->IsLowHealth())
+			DecisionMap.Add(EDecision::DebuffAtk, CurrentWeights.DebuffAtkWeight);
+		
+		if (CurrentWeights.LowHealthWeight > 0.f)
+			DecisionMap.Add(EDecision::Low, CurrentWeights.LowHealthWeight);
 		break;
 	case MobFear:
-		if (CurrentWeights.AttackWeight > 0.f) DecisionMap.Add(EDecision::None, CurrentWeights.AttackWeight);
-		if (CurrentWeights.BuffDefWeight > 0.f) DecisionMap.Add(EDecision::BuffDefence, CurrentWeights.BuffDefWeight);
-		if (CurrentWeights.BuffOtherDefWeight > 0.f) DecisionMap.Add(EDecision::BuffOtherDefence, CurrentWeights.BuffOtherDefWeight);
+		if (CurrentWeights.AttackWeight > 0.f && !Current->IsLowHealth())
+			DecisionMap.Add(EDecision::None, CurrentWeights.AttackWeight);
+		
+		if (CurrentWeights.BuffDefWeight > 0.f && !Current->IsLowHealth())
+			DecisionMap.Add(EDecision::BuffDefence, CurrentWeights.BuffDefWeight);
+		
+		if (CurrentWeights.BuffOtherDefWeight > 0.f )
+			DecisionMap.Add(EDecision::BuffOtherDefence, CurrentWeights.BuffOtherDefWeight);
+		
+		if (CurrentWeights.LowHealthWeight > 0.f)
+			DecisionMap.Add(EDecision::Low, CurrentWeights.LowHealthWeight);
 		break;
 	case MobJealousy:
-		if (CurrentWeights.EnvyBurnedWeight > 0.f) DecisionMap.Add(EDecision::EnvyBurned, CurrentWeights.EnvyBurnedWeight);
-		if (CurrentWeights.AttackWeight > 0.f) DecisionMap.Add(EDecision::None, CurrentWeights.AttackWeight);
-		if (CurrentWeights.BuffOtherAtkWeight > 0.f) DecisionMap.Add(EDecision::BuffOther, CurrentWeights.BuffOtherAtkWeight);
+		if (CurrentWeights.EnvyBurnedWeight > 0.f)
+			DecisionMap.Add(EDecision::EnvyBurned, CurrentWeights.EnvyBurnedWeight);
+		if (CurrentWeights.AttackWeight > 0.f && !Current->IsLowHealth())
+			
+			DecisionMap.Add(EDecision::None, CurrentWeights.AttackWeight);
+		if (CurrentWeights.BuffOtherAtkWeight > 0.f)
+			DecisionMap.Add(EDecision::BuffOther, CurrentWeights.BuffOtherAtkWeight);
+		
+		if (CurrentWeights.LowHealthWeight > 0.f)
+			DecisionMap.Add(EDecision::Low, CurrentWeights.LowHealthWeight);
 		break;
 	case MobSadness:
-		if (CurrentWeights.AttackWeight > 0.f) DecisionMap.Add(EDecision::None, CurrentWeights.AttackWeight);
-		if (CurrentWeights.DebuffDefWeight > 0.f) DecisionMap.Add(EDecision::DebuffDefence, CurrentWeights.DebuffDefWeight);
+		if (CurrentWeights.AttackWeight > 0.f && !Current->IsLowHealth())
+			DecisionMap.Add(EDecision::None, CurrentWeights.AttackWeight);
+		
+		if (CurrentWeights.DebuffDefWeight > 0.f && !Current->IsLowHealth())
+			DecisionMap.Add(EDecision::DebuffDefence, CurrentWeights.DebuffDefWeight);
+		
+		if (CurrentWeights.LowHealthWeight > 0.f)
+			DecisionMap.Add(EDecision::Low, CurrentWeights.LowHealthWeight);
 		break;
 	case MobAnxiety:
-		if (CurrentWeights.FreezedUpWeight > 0.f) DecisionMap.Add(EDecision::FreezedUp, CurrentWeights.FreezedUpWeight);
-		if (CurrentWeights.DebuffDefWeight > 0.f) DecisionMap.Add(EDecision::DebuffDefence, CurrentWeights.DebuffDefWeight);
-		if (CurrentWeights.DebuffAtkWeight > 0.f) DecisionMap.Add(EDecision::DebuffAtk, CurrentWeights.DebuffAtkWeight);
+		if (CurrentWeights.FreezedUpWeight > 0.f)
+			DecisionMap.Add(EDecision::FreezedUp, CurrentWeights.FreezedUpWeight);
+		
+		if (CurrentWeights.DebuffDefWeight > 0.f)
+			DecisionMap.Add(EDecision::DebuffDefence, CurrentWeights.DebuffDefWeight);
+		
+		if (CurrentWeights.DebuffAtkWeight > 0.f)
+			DecisionMap.Add(EDecision::DebuffAtk, CurrentWeights.DebuffAtkWeight);
+		
+		if (CurrentWeights.LowHealthWeight > 0.f)
+			DecisionMap.Add(EDecision::Low, CurrentWeights.LowHealthWeight);
  		break;
 	case MobCalm:
-		if (CurrentWeights.ShieldWeight > 0.f )  DecisionMap.Add(EDecision::DebuffShieldItSelf, CurrentWeights.ShieldWeight);
-		if (CurrentWeights.ShieldOtherWeight > 0.f )DecisionMap.Add(EDecision::DebuffShieldOther, CurrentWeights.ShieldOtherWeight);
-		if (CurrentWeights.BuffDefWeight > 0.f) DecisionMap.Add(EDecision::BuffDefence, CurrentWeights.BuffDefWeight);
-		if (CurrentWeights.BuffOtherDefWeight > 0.f) DecisionMap.Add(EDecision::BuffOtherDefence, CurrentWeights.BuffOtherDefWeight);
+		if (CurrentWeights.ShieldWeight > 0.f )
+			DecisionMap.Add(EDecision::DebuffShieldItSelf, CurrentWeights.ShieldWeight);
+		
+		if (CurrentWeights.ShieldOtherWeight > 0.f )
+			DecisionMap.Add(EDecision::DebuffShieldOther, CurrentWeights.ShieldOtherWeight);
+		
+		if (CurrentWeights.BuffDefWeight > 0.f  && !Current->IsLowHealth())
+			DecisionMap.Add(EDecision::BuffDefence, CurrentWeights.BuffDefWeight);
+		
+		if (CurrentWeights.BuffOtherDefWeight > 0.f)
+			DecisionMap.Add(EDecision::BuffOtherDefence, CurrentWeights.BuffOtherDefWeight);
+		
+		if (CurrentWeights.LowHealthWeight > 0.f)
+			DecisionMap.Add(EDecision::Low, CurrentWeights.LowHealthWeight);
 		break;
     default:
     	break;
@@ -235,38 +278,12 @@ FString FDecisionMaker::GetDecisionString(const EDecision& Decision) const
 		return "Envy Burned";
 	case EDecision::None:
 		return "Attack";
+	case EDecision::Low:
+		return "LowHealth";
 	default:
 	case EDecision::Invalid:
 		return "";
 	}
-}
-
-EDecision FDecisionMaker::EnhancedThought(AMob* Emotion)
-{
-	if (!Emotion || !Emotion->GetDecisionTable()) return Thought();
-
-	// Decide current state by value
-	FDecisionWeight CurrentWeights;
-	if (Emotion->GetIsIsBuffedAtk())  CurrentWeights = Emotion->GetDecisionTable()->BuffAtk;
-	else if (Emotion->GetPlayerDebuffAttack()) CurrentWeights = Emotion->GetDecisionTable()->DebuffAtk;
-	else if (Emotion->GetIsIsLow())           CurrentWeights = Emotion->GetDecisionTable()->LowHealth;
-	else if (Emotion->GetIsIsEnvyBurned())  CurrentWeights = Emotion->GetDecisionTable()->EnvyBurned;
-	else                                    CurrentWeights = Emotion->GetDecisionTable()->Idle;
-
-	// Build active decisions based on current state
-	TArray<EDecision> ActiveDecisions;
-	if (CurrentWeights.BuffAtkWeight > 0.f)       ActiveDecisions.Add(EDecision::BuffItSelf);
-	if (CurrentWeights.DebuffAtkWeight > 0.f)     ActiveDecisions.Add(EDecision::DebuffAtk);
-	if (CurrentWeights.EnvyBurnedWeight > 0.f)    ActiveDecisions.Add(EDecision::EnvyBurned);
-	if (CurrentWeights.LowHealthWeight > 0.f)     ActiveDecisions.Add(EDecision::HealItSelf);
-	if (CurrentWeights.BuffDefWeight > 0.f)       ActiveDecisions.Add(EDecision::BuffDefence);
-	if (CurrentWeights.DebuffDefWeight > 0.f)     ActiveDecisions.Add(EDecision::DebuffDefence);
-	if (CurrentWeights.ShieldWeight > 0.f)        ActiveDecisions.Add(EDecision::DebuffShieldItSelf);
-
-	// Use the FDecisionWeight as priorities
-	FDecisionPriorities Priorities(CurrentWeights);
-
-	return Priorities.PickHighestDecision(ActiveDecisions);
 }
 
 

@@ -392,6 +392,12 @@ UDecisionTable* AMob::GetDecisionTable() const
 	return DecisionTable;
 }
 
+bool AMob::IsLowHealth() const
+{
+	constexpr float Threshold = 0.2f;
+	return Stats.Health <= GetData()->MaxHealth * Threshold;
+}
+
 FString AMob::GetNoteKeyForMobType() const
 {
     switch (Type)

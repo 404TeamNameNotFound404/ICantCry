@@ -17,6 +17,7 @@ enum EAfflictedStatus
 	ShieldDebuff,
 	DebuffAtk,
 	DebuffDef,
+	CriticHealth,
 	None
 };
 
@@ -25,11 +26,55 @@ enum EBuffStatus
 {
 	AtkBuff,
 	DefBuff,
-	LowHealth,
 	Shield,
+	LowHealth,
 	NoBuff
 };
 
+class AMob;
+
+USTRUCT()
+struct FStatusPriority
+{
+	GENERATED_BODY()
+
+	FStatusPriority() = default;
+	~FStatusPriority() = default;
+
+	// Status (Malus)
+	void SetPriotity(const int32& Value){CurrentPriority = Value;}
+	int32 GetPriority() const { return CurrentPriority; }
+	int32 GetNextPriority() const { return NextPriority; }
+
+	int32 GetBuffPriority() const {return CurrentBuffPriority;};
+	int32 GetNextBuffPriority() const {return NextBuffPriority;};
+	void SetBuffCurrentPriority(const int32& Value) { CurrentBuffPriority = Value; }
+	
+	void SetNextPriorityFromBuff(const EBuffStatus& BuffStatus);
+	void SetNextPriorityFromDebuff(const EAfflictedStatus& Status);
+
+private:
+	UPROPERTY() int32 NormalPriority = 0;
+	UPROPERTY()  int32 BuffAtkPriority = 1;
+	UPROPERTY()  int32 DeBuffAtkPriority = 1;
+	UPROPERTY()  int32 BuffDefPriority = 2;
+	UPROPERTY()  int32 DeBuffDefPriority = 2;
+	UPROPERTY()  int32 LowHealthPriority = 3;
+	UPROPERTY()  int32 EnvyBurnedPriority = 4;
+	UPROPERTY()  int32 AshamedPriority = 4;
+	UPROPERTY()  int32 DebuffShieldPriority = 4;
+
+	// Status (Malus)
+	UPROPERTY() int32 CurrentPriority = 0; // current buff/debuff AI has
+	UPROPERTY() int32 NextPriority = 0; // the next buff / debuff AI wants to cast
+
+	// Status (Buff)
+	UPROPERTY() int32 CurrentBuffPriority = 0;
+	UPROPERTY() int32 NextBuffPriority = 0;
+	
+	void SetNextPriority(const int32& Value) { NextPriority = Value; }
+	void SetNextBuffProcessPriority(const int32& Value) { NextBuffPriority = Value; }
+};
 
 USTRUCT()
 struct FInternalPerkData
@@ -46,6 +91,10 @@ struct FInternalPerkData
 	UPROPERTY() bool bDebuffDef;
 	UPROPERTY() bool bEnvyBurned;
 
+	FStatusPriority Priority;
+
+	void CheckPriority(AMob* Mob);
+	
 	void Clear()
 	{
 		bBuffAtk = false;
@@ -58,6 +107,10 @@ struct FInternalPerkData
 		bAshamed = false;
 		bEnvyBurned = false;
 	}
+
+	bool HasBuffHightPriority(AMob* Emotion) const;
+	bool HasHighDebuffPriority(AMob* Emotion) const;
+	void AssignPriority(AMob* Emotion);
 };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -161,6 +214,8 @@ public:
 
 	FInternalPerkData& GetPerkData();
 
+	FStatusPriority& GetStatusPriority();
+
 	/*-------------------- PLAYER CHECKS --------------------**/
 	/*----------DO NOT WRITE ANYTHING IN THIS SPACE -------------*/
 
@@ -189,6 +244,9 @@ private:
 
 	UPROPERTY()
 	bool bShieldBuffed = false;
+
+	UPROPERTY()
+	FStatusPriority Priority;
 	
 	void InflictFreeze(AICC_Actor* Target);
 	void InflictBurn(AICC_Actor* Target);

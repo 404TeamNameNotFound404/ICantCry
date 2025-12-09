@@ -29,6 +29,7 @@ struct FTurn
 	void AssignFirstTurnByPriority();
 	
 	AMob* GetMobInQueue() const;
+	AMob* GetMobInQueue(AMob* Emotion) const;
 
 	bool CantBuffOthers();
 };
