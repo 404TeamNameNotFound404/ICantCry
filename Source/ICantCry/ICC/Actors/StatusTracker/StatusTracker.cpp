@@ -497,7 +497,7 @@ void UStatusTracker::UpdateBuffStatus()
 			AICC_Player* Player = Cast<AICC_Player>(GetOwner());
 			UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 			Player->GetStats()->DefencePower = Instance->GetPersistentData()->InitialDefencePower;
-			DebugHelper::AddMessageToLog("Buff ended atk returns to " + FString::SanitizeFloat(Player->GetStats()->DefencePower));
+			DebugHelper::AddMessageToLog("Buff ended def returns to " + FString::SanitizeFloat(Player->GetStats()->DefencePower));
 			BuffStatusCounter = 0;
 			bIsOwnerAlreadyBuffed = false;
 			bCanDebuff = true;
@@ -506,7 +506,7 @@ void UStatusTracker::UpdateBuffStatus()
 		{
 			AMob* Emotion = Cast<AMob>(GetOwner());
 			Emotion->GetData()->DefencePower = Emotion->GetAIMemory().InitialDefencePower;
-			DebugHelper::AddMessageToLog("Buff ended atk returns to " + FString::SanitizeFloat(Emotion->GetData()->DefencePower));
+			DebugHelper::AddMessageToLog("Buff ended def returns to " + FString::SanitizeFloat(Emotion->GetData()->DefencePower));
 			BuffStatusCounter = 0;
 			bIsOwnerAlreadyBuffed = false;
 			PerkData.bBuffDef = false;

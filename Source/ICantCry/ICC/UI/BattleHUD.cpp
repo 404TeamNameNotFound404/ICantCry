@@ -179,6 +179,8 @@ void UBattleHUD::NativeConstruct()
     ConfirmReloadBullet->SetVisibility(ESlateVisibility::Hidden);
 
     UBulletSelector::SetCanSelect(true);
+
+    OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
 }
 
 // TARGET
@@ -205,6 +207,8 @@ void UBattleHUD::UpdateAPBar()
 
 void UBattleHUD::OnShootPressed()
 {
+    OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
+    
     if (!GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn() || CurrentAP <= 0)
     {
         return;
@@ -222,6 +226,12 @@ void UBattleHUD::OnShootPressed()
 
     if (Buffer->IsEmpty())
     {
+        DebugHelper::LogWarning("Buffer is empty");
+        BulletName->SetVisibility(ESlateVisibility::Hidden);
+        Quantity->SetVisibility(ESlateVisibility::Hidden);
+        OutOfBulletTxt->SetVisibility(ESlateVisibility::Visible);
+        OutOfBulletTxt->SetColorAndOpacity(FLinearColor::Red);
+        OutOfBulletTxt->SetText(FText::FromString("Magazine empty!"));
         return;
     }
 
@@ -234,6 +244,8 @@ void UBattleHUD::OnShootPressed()
     TargetText->SetVisibility(ESlateVisibility::Visible);
     TargetNameText->SetVisibility(ESlateVisibility::Visible);
     CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
+    BulletName->SetVisibility(ESlateVisibility::Hidden);
+    Quantity->SetVisibility(ESlateVisibility::Hidden);
     CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
     CanvasStatus->SetVisibility(ESlateVisibility::Visible);
     
@@ -309,8 +321,10 @@ void UBattleHUD::OnFocusPressed()
     CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
     CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Hidden);
     bTargetSelection = false;
+    OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
+    BulletName->SetVisibility(ESlateVisibility::Hidden);
+    Quantity->SetVisibility(ESlateVisibility::Hidden);
     FSlateApplication::Get().ClearAllUserFocus();
-
 }
 
 void UBattleHUD::OnReloadPressed()
@@ -341,9 +355,12 @@ void UBattleHUD::OnReloadPressed()
     TargetText->SetVisibility(ESlateVisibility::Hidden);
     TargetNameText->SetVisibility(ESlateVisibility::Hidden);
     CanvasBulletStats->SetVisibility(ESlateVisibility::Visible);
+    BulletName->SetVisibility(ESlateVisibility::Visible);
+    Quantity->SetVisibility(ESlateVisibility::Visible);
     CanvasStatus->SetVisibility(ESlateVisibility::Hidden);
     Displayer->SetVisibility(ESlateVisibility::Visible);
     Displayer->Refresh();
+    OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
     FSlateApplication::Get().ClearAllUserFocus();
 }
 
@@ -371,6 +388,9 @@ void UBattleHUD::OnPassPressed()
     GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateStatus();
     GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateBuffStatus();
     Displayer->SetVisibility(ESlateVisibility::Hidden);
+    OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
+    BulletName->SetVisibility(ESlateVisibility::Hidden);
+    Quantity->SetVisibility(ESlateVisibility::Hidden);
     FSlateApplication::Get().ClearAllUserFocus();
 }
 
@@ -403,6 +423,9 @@ void UBattleHUD::ScrollTargetSelection(float ScrollValue)
     
     DebugHelper::LogMessage(10, FColor::Orange, "Target Selected: " + SelectedActor->GetActorLabel());
     DebugHelper::AddMessageToLog("Target Selected: " + SelectedActor->GetActorLabel());
+    OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
+    BulletName->SetVisibility(ESlateVisibility::Hidden);
+    Quantity->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UBattleHUD::UpdateTarget()
@@ -686,6 +709,8 @@ void UBattleHUD::PrepareToEngage()
     MinigameHandler->StartMinigame(true);
     EngageBtn->SetVisibility(ESlateVisibility::Hidden);
     CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
+    BulletName->SetVisibility(ESlateVisibility::Hidden);
+    Quantity->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UBattleHUD::SpawnVisualizer()
@@ -814,6 +839,8 @@ void UBattleHUD::ScrollBulletSelection(float ScrollValue)
 {
     UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
     CanvasBulletStats->SetVisibility(ESlateVisibility::Visible);
+    BulletName->SetVisibility(ESlateVisibility::Visible);
+    Quantity->SetVisibility(ESlateVisibility::Visible);
     
     if (Instance->GetInventory().BulletsStored.IsEmpty()) 
     {

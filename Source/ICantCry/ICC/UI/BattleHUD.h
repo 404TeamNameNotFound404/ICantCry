@@ -72,6 +72,7 @@ public:
 
     // Ammo Display
     UPROPERTY(meta = (BindWidget)) UImage* Magazine;
+	UPROPERTY(meta=(BindWidget)) UTextBlock* OutOfBulletTxt;
     // UPROPERTY(meta = (BindWidget)) UImage* Ammo_1;
     // UPROPERTY(meta = (BindWidget)) UImage* Ammo_2;
     // UPROPERTY(meta = (BindWidget)) UImage* Ammo_3;
