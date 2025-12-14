@@ -803,8 +803,9 @@ void UStatusTracker::DebuffAtkF()
 	if (Target->IsA(AICC_Player::StaticClass()))
 	{
 		const AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+		DebugHelper::AddMessageToLog("Player debuff math :starting Debuff atk" + FString::SanitizeFloat(Player->GetStats()->AttackPower));
 		Player->GetStats()->AttackPower -= Player->GetStats()->AttackPower * Player->GetBattleData()->DebuffAtkMalus;
-		DebugHelper::AddMessageToLog("Player atk value (debuff) " + FString::SanitizeFloat(Player->GetStats()->AttackPower));
+		DebugHelper::AddMessageToLog("Player debuff math : Debuff atk post malus -> " + FString::SanitizeFloat(Player->GetStats()->AttackPower) + "\nAtk malus dealed -> " + FString::SanitizeFloat(Player->GetBattleData()->DebuffAtkMalus));
 	}
 
 	if (Target->IsA(AMob::StaticClass()))
@@ -823,7 +824,9 @@ void UStatusTracker::DebuffDefF()
 	if (Target->IsA(AICC_Player::StaticClass()))
 	{
 		const AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+		DebugHelper::AddMessageToLog("Player debuff math :starting Debuff def" + FString::SanitizeFloat(Player->GetStats()->DefencePower));
 		Player->GetStats()->DefencePower -= Player->GetStats()->DefencePower * Player->GetBattleData()->DebuffDefMalus;
+		DebugHelper::AddMessageToLog("Player debuff math : Debuff def post malus -> " + FString::SanitizeFloat(Player->GetStats()->DefencePower) + "\nDef malus dealed -> " + FString::SanitizeFloat(Player->GetBattleData()->DebuffDefMalus));
 	}
 
 	if (Target->IsA(AMob::StaticClass()))
