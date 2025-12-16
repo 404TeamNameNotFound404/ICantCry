@@ -42,7 +42,7 @@ EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& Ow
 	if (!TargetToBuff) // rethink if target buff appears to be nullptr again 
 	{
 		BlackBoard->SetValueAsBool("Rethinker", true);
-		DebugHelper::AddMessageToLog(Current->GetActorLabel() + " attempted to buff other def but it didn't find a valid target (scrivetemelo se entra qua dentro)! , rethinking the action");
+		DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: " + Current->GetActorLabel() + " attempted to buff other def but it didn't find a valid target (scrivetemelo se entra qua dentro)! , rethinking the action");
 		return EBTNodeResult::Succeeded;
 	}
 	
@@ -52,7 +52,7 @@ EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& Ow
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(
 		FText::FromString(Current->GetActorLabel() + " buffed " + TargetToBuff->GetActorLabel() + " def"));
 
-	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " buffed " + TargetToBuff->GetActorLabel() + " def");
+	DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: " + Current->GetActorLabel() + " buffed " + TargetToBuff->GetActorLabel() + " def");
 
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 
@@ -83,7 +83,7 @@ void UBTTask_BuffOtherDef::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* No
 	if (Current != Current->GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
 		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetActorLabel() + "'s turn yet (buff def task)");
-		DebugHelper::AddMessageToLog("It's not " + Current->GetActorLabel() + "'s turn yet (buff def task)");
+		DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: It's not " + Current->GetActorLabel() + "'s turn yet (buff def task)");
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}
@@ -96,7 +96,7 @@ void UBTTask_BuffOtherDef::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* No
 			return;
 
 		DebugHelper::LogSuccess("buff def target task Task Completed");
-		DebugHelper::AddMessageToLog("buff def target task Task Completed");
+		DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: buff def target task Task Completed");
 		FinishLatentTask(*OwnerCompWeak.Get(), EBTNodeResult::Succeeded);
 	}), 1.0f, false);
 }

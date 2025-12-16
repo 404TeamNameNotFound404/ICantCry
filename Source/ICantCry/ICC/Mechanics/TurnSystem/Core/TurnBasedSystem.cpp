@@ -107,7 +107,7 @@ void UTurnBasedSystem::Start2(UWorld* World, FBattleMemory* Memory)
 	DebugHelper::ClearAllLogs();
 	DebugHelper::LogSuccess("Fight started right after");
 	DebugHelper::AddMessageToLog("-----Battle Log-----\n");
-	DebugHelper::AddMessageToLog("Fight started right after");
+	DebugHelper::AddMessageToLog("[Turn System]: Fight started right after");
 }
 
 void UTurnBasedSystem::Update(UWorld* World)
@@ -153,7 +153,7 @@ void UTurnBasedSystem::Update(UWorld* World)
 				DebugHelper::AddTurnMaterialOverlayToStaticMesh(Player->DebugMesh);
 				CurrentPlayer = Player;
 				BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Your Turn"));
-				DebugHelper::AddMessageToLog("Your turn");
+				DebugHelper::AddMessageToLog("[Turn System]: Your turn");
 			}
 		}
 
@@ -168,7 +168,7 @@ void UTurnBasedSystem::Update(UWorld* World)
 			AMob* Mob = Cast<AMob>(Turn.Queue[Turn.CurrentTurn]);
 			checkf(Mob, TEXT("Mob invalid at UTurnBasedSystem::Update"))
 			DebugHelper::LogWarning(Mob->GetActorLabel() + " Turn");
-			DebugHelper::AddMessageToLog(Mob->GetActorLabel() + " Turn");
+			DebugHelper::AddMessageToLog("[Turn System]: " + Mob->GetActorLabel() + " Turn");
 			AICC_AIController* AIController = Cast<AICC_AIController>(Mob->GetController());
 			CurrentPlayer->GetBattleHUD()->SetCurrentPlayingEmotion(Mob);
 			
@@ -185,7 +185,7 @@ void UTurnBasedSystem::Update(UWorld* World)
 	{
 		DebugHelper::AddTurnMaterialOverlayToStaticMesh(CurrentPlayer->DebugMesh);
 		BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Your Turn"));
-		DebugHelper::AddMessageToLog("Your turn");
+		DebugHelper::AddMessageToLog("[Turn System]: Your turn");
 		
 		if (CurrentPlayer->GetBattleHUD()->IsShootFired())
 		{
@@ -208,7 +208,7 @@ void UTurnBasedSystem::Update(UWorld* World)
 void UTurnBasedSystem::StartNextTurn()
 {
 	DebugHelper::LogWarning("Next turn is started");
-	DebugHelper::AddMessageToLog("Next turn is started");
+	DebugHelper::AddMessageToLog("[Turn System]: Next turn is started");
 	
 	if (Turn.Queue.IsValidIndex(Turn.CurrentTurn))
 	{
@@ -220,7 +220,7 @@ void UTurnBasedSystem::StartNextTurn()
 			CurrentMob = Mob;
 			bIsAiTurn = true;
 			bIsPlayerTurn = false;
-			DebugHelper::AddMessageToLog(Mob->GetActorLabel() + "'s turn");
+			DebugHelper::AddMessageToLog("[Turn System]: " + Mob->GetActorLabel() + "'s turn");
 		}
 		//otherwise is player playing
 		else
@@ -245,7 +245,7 @@ void UTurnBasedSystem::EndTurn()
 	if (bAIPlayTurn)
 	{
 		DebugHelper::LogError("AI Turn Ended");
-		DebugHelper::AddMessageToLog("AI Turn Ended");
+		DebugHelper::AddMessageToLog("[Turn System]: AI Turn Ended");
 		bAIPlayTurn = false;
 		Instance->GetCurrentPlayer()->GetBattleHUD()->SetApAccumulator(0);
 	}
@@ -301,7 +301,7 @@ void UTurnBasedSystem::Flow()
 			Mob->UnlockContentOnDeath();
 			Turn.Queue.RemoveAt(i);
 			DebugHelper::LogWarning("Mob removed from queue due to death.");
-			DebugHelper::AddMessageToLog(Mob->GetActorLabel() + " removed from queue due to death.");
+			DebugHelper::AddMessageToLog("[Turn System]: " + Mob->GetActorLabel() + " died RIP.");
 		}
 	}
 
@@ -313,7 +313,7 @@ void UTurnBasedSystem::Flow()
 		bIsAiTurn = false;
 		
 		BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Victory!"));
-		DebugHelper::AddMessageToLog("Victory!");
+		DebugHelper::AddMessageToLog("[Turn System]: Victory!");
 
 		if (!bVictory)
 		{
@@ -332,7 +332,7 @@ void UTurnBasedSystem::Flow()
 		bIsPlayerTurn = false;
 		bIsAiTurn = false;
 		BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Game Over"));
-		DebugHelper::AddMessageToLog("Game Over!");
+		DebugHelper::AddMessageToLog("[Turn System]: Game Over!");
 		
 		TryGetCurrentPlayer()->GetBattleHUD()->DisplayGameOverVisualizer();
 	}

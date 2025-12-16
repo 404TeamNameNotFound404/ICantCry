@@ -45,7 +45,7 @@ EBTNodeResult::Type UBTTask_DebuffOtherShield::ExecuteTask(UBehaviorTreeComponen
 	if (!TargetToBuff) // rethink if target buff appears to be nullptr again 
 	{
 		Blackboard->SetValueAsBool("Rethinker", true);
-		DebugHelper::AddMessageToLog(Current->GetActorLabel() + " attempted to buff other def but it didn't find a valid target (scrivetemelo se entra qua dentro)! , rethinking the action");
+		DebugHelper::AddMessageToLog("[Behavior Tree - DOS]: " + Current->GetActorLabel() + " attempted to buff other def but it didn't find a valid target (scrivetemelo se entra qua dentro)! , rethinking the action");
 		return EBTNodeResult::Succeeded;
 	}
 
@@ -53,7 +53,7 @@ EBTNodeResult::Type UBTTask_DebuffOtherShield::ExecuteTask(UBehaviorTreeComponen
 	TargetToBuff->GetStatusTracker()->BuffWith(EBuffStatus::Shield);
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " de-buffed " + TargetToBuff->GetActorLabel() + " shield"));
-	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " de-buffed " + TargetToBuff->GetActorLabel() + " shield");
+	DebugHelper::AddMessageToLog("[Behavior Tree - DOS]: " + Current->GetActorLabel() + " de-buffed " + TargetToBuff->GetActorLabel() + " shield");
 	
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 
@@ -84,7 +84,7 @@ void UBTTask_DebuffOtherShield::TickTask(UBehaviorTreeComponent& OwnerComp, uint
 	if (Current != Current->GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
 		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
-		DebugHelper::AddMessageToLog("It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
+		DebugHelper::AddMessageToLog("[Behavior Tree - DOS]: It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}
@@ -97,7 +97,7 @@ void UBTTask_DebuffOtherShield::TickTask(UBehaviorTreeComponent& OwnerComp, uint
 			return;
 
 		DebugHelper::LogSuccess("Debuff Other Shield Task Completed");
-		DebugHelper::AddMessageToLog("Debuff Other Shield Task Completed");
+		DebugHelper::AddMessageToLog("[Behavior Tree - DOS]: Debuff Other Shield Task Completed");
 		FinishLatentTask(*OwnerCompWeak.Get(), EBTNodeResult::Succeeded);
 	}), 1.0f, false);
 }

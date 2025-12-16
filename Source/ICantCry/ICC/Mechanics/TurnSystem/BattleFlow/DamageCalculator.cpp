@@ -38,17 +38,17 @@ int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 		const float Result = (((BulletData->Power / (2 - Stats->MinigameModifier)) * (Stats->AttackPower / EnemyData->DefencePower))) * (PlayerStats->ApModifier * Coefficient/*BulletData->WeaknessModifier*/) /** */;
 		const int RoundedResult = FMath::RoundToInt(Result);
 
-		DebugHelper::AddMessageToLog("Data gathered for dmg math:\nBullet Pwr : " + FString::SanitizeFloat(BulletData->Power) +"\nMinigame Modifier " + FString::SanitizeFloat(Stats->MinigameModifier)
+		DebugHelper::AddMessageToLog("[DamageMath]: Data gathered for dmg math:\nBullet Pwr : " + FString::SanitizeFloat(BulletData->Power) +"\nMinigame Modifier " + FString::SanitizeFloat(Stats->MinigameModifier)
 			+ "\nPlayer Atk: " + FString::SanitizeFloat(Stats->AttackPower) + "\nTarget Def : " + FString::SanitizeFloat(EnemyData->DefencePower) +
 			"\nPlayer Ap Modifier " + FString::SanitizeFloat(Stats->ApModifier) + "\nWeaknessModifier " + FString::SanitizeFloat(Coefficient));
 		
-		DebugHelper::AddMessageToLog("Formula is -> ( " +FString::SanitizeFloat(BulletData->Power)  + ") / (2 - " + FString::SanitizeFloat(Stats->MinigameModifier) +
+		DebugHelper::AddMessageToLog("[DamageMath]: Formula is -> ( " +FString::SanitizeFloat(BulletData->Power)  + ") / (2 - " + FString::SanitizeFloat(Stats->MinigameModifier) +
 			") x (" + FString::SanitizeFloat(Stats->AttackPower) + " / " + FString::SanitizeFloat(EnemyData->DefencePower) + ") x (" + FString::SanitizeFloat(PlayerStats->ApModifier) + " x " + FString::SanitizeFloat(Coefficient));
 
-		DebugHelper::AddMessageToLog("Risultato approssimato per eccesso (Ceil Result) -> " + FString::SanitizeFloat(RoundedResult));
+		DebugHelper::AddMessageToLog("[DamageMath]: Risultato approssimato per eccesso (Ceil Result) -> " + FString::SanitizeFloat(RoundedResult));
 		
 		DebugHelper::LogMessage(3, FColor::FromHex("433878"), "Damage dealt -> " + FString::SanitizeFloat(RoundedResult));
-		DebugHelper::AddMessageToLog("Damage dealt -> " + FString::SanitizeFloat(RoundedResult));
+		DebugHelper::AddMessageToLog("[DamageMath]: Damage dealt -> " + FString::SanitizeFloat(RoundedResult));
 		return RoundedResult;
 	}
 
@@ -65,11 +65,11 @@ int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 		
 		DebugHelper::LogMessage(3, FColor::FromHex("433878"), "Damage dealt -> " + FString::SanitizeFloat(RoundedResult));
 
-		DebugHelper::AddMessageToLog("AI To Player Formula is -> ( " +FString::SanitizeFloat(AIMoves->MovePower)  + ") / (2 - " + FString::SanitizeFloat(AIMoves->MinigamePower) +
+		DebugHelper::AddMessageToLog("[DamageMath]: AI To Player Formula is -> ( " +FString::SanitizeFloat(AIMoves->MovePower)  + ") / (2 - " + FString::SanitizeFloat(AIMoves->MinigamePower) +
 			") x (" + FString::SanitizeFloat(EnemyData->AttackPower) + " / " + FString::SanitizeFloat(PlayerStats->DefencePower) + ") x (" + FString::SanitizeFloat(AIMoves->ActionPointsModifier) + " x " +
 			" * " + FString::SanitizeFloat(PlayerStats->MinigameModifier));
 
-		DebugHelper::AddMessageToLog("Damage dealt -> " + FString::SanitizeFloat(AIDamageResult));
+		DebugHelper::AddMessageToLog("[DamageMath]: Damage dealt -> " + FString::SanitizeFloat(AIDamageResult));
 		return RoundedResult;
 	}
 	

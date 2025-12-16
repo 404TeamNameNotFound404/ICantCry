@@ -39,18 +39,13 @@ EBTNodeResult::Type UBTTask_SelfHeal::ExecuteTask(UBehaviorTreeComponent& OwnerC
 	AMob* TargetToBuff = Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetMobInQueue();
 	checkf(TargetToBuff, TEXT("TargetToBuff is invalid Type at UBTTask_DebuffOtherShield::ExecuteTask"))
 
-	// if (Current->GetData()->Health < Current->GetData()->MaxHealth)
-	// {
-	// 	Current->Heal(Current->GetData()->Health *= 0.20f);
-	// }
-
 	if (Current->GetStats().Health < Current->GetData()->MaxHealth)
 	{
 		Current->Heal(Current->GetStats().Health*= 0.20f);
 	}
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " use Heal"));
-	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " use Heal");
+	DebugHelper::AddMessageToLog("[Behavior Tree - Healing]: "+ Current->GetActorLabel() + " use Heal");
 	
 	return EBTNodeResult::InProgress;
 }
@@ -76,7 +71,7 @@ void UBTTask_SelfHeal::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMe
 	if (Current != Current->GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
 		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
-		DebugHelper::AddMessageToLog("It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
+		DebugHelper::AddMessageToLog("[Behavior Tree - Healing]: It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}
@@ -89,7 +84,7 @@ void UBTTask_SelfHeal::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMe
 			return;
 
 		DebugHelper::LogSuccess("Debuff Other Shield Task Completed");
-		DebugHelper::AddMessageToLog("Self heal task completed!");
+		DebugHelper::AddMessageToLog("[Behavior Tree - Healing]: Self heal task completed!");
 		FinishLatentTask(*OwnerCompWeak.Get(), EBTNodeResult::Succeeded);
 	}), 1.0f, false);
 }

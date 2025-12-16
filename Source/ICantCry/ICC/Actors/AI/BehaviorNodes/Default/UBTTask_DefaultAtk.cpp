@@ -135,7 +135,7 @@ void UUBTTask_DefaultAtk::OnThinkComplete(UBehaviorTreeComponent* OwnerComp, AIC
 		{
 			CurrentMob->GetBattleHandler()->GetBattleInfo()->SetInfo(
 				FText::FromString(CurrentMob->GetData()->EnemyName.ToString() + " skipped the turn (Ashamed)"));
-			DebugHelper::AddMessageToLog(CurrentMob->GetData()->EnemyName.ToString() + " skipped the turn (Ashamed)");
+			DebugHelper::AddMessageToLog("[Behavior Tree]: " + CurrentMob->GetData()->EnemyName.ToString() + " skipped the turn (Ashamed)");
 
 			CurrentMob->SetTreeId(-1);
 			CurrentMob->SetIsBuffedAtk(false);
@@ -182,7 +182,7 @@ void UUBTTask_DefaultAtk::StartAttackMinigame(AMob* Current, AICC_Player* Target
 
 	Current->GetBattleHandler()->GetBattleInfo()->
 	         SetInfo(FText::FromString(Current->GetActorLabel() + " is attacking"));
-	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " is attacking");
+	DebugHelper::AddMessageToLog("[Behavior Tree]: " + Current->GetActorLabel() + " is attacking");
 
 	Current->GetAIMemory().AttackLocation = Current->GetActorLocation();
 	Target->GetBattleHUD()->DecisionDisplayer->Hide();
@@ -204,7 +204,7 @@ void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackbo
 	{
 		Current->GetBattleHandler()->GetBattleInfo()->SetInfo(
 			FText::FromString(Current->GetActorLabel() + " skipped the turn (Ashamed)"));
-		DebugHelper::AddMessageToLog(Current->GetActorLabel() + " skipped the turn (Ashamed)");
+		DebugHelper::AddMessageToLog("[Behavior Tree]: " + Current->GetActorLabel() + " skipped the turn (Ashamed)");
 		Current->SetTreeId(-1);
 		Current->SetIsBuffedAtk(false);
 		BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
@@ -219,7 +219,7 @@ void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackbo
 	if (Current != Target->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
 		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not the " + Current->GetActorLabel() + " turn yet");
-		DebugHelper::AddMessageToLog("It's not the " + Current->GetActorLabel() + " turn yet");
+		DebugHelper::AddMessageToLog("[Behavior Tree]: It's not the " + Current->GetActorLabel() + " turn yet");
 		FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
 		return;
 	}
@@ -366,188 +366,3 @@ void UUBTTask_DefaultAtk::OnMinigameEndedCallback()
 	// Finish the task
 	FinishLatentTask(*TreeComp, EBTNodeResult::Succeeded);
 }
-
-
-// BlackBoard = OwnerComp.GetBlackboardComponent();
-//
-// AICC_Player* Target = Cast<AICC_Player>(BlackBoard->GetValueAsObject("Target"));
-// AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner());
-// AMob* Self = Cast<AMob>(BlackBoard->GetValueAsObject("SelfActor"));
-// checkf(Controller, TEXT("AI Controller is invalid at EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask"));
-//
-// checkf(Target, TEXT("Target is invalid at EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask %s "), *Self->GetData()->GetName());
-//
-//
-// bool Attacked = BlackBoard->GetValueAsBool("Attacked?");
-// AMob* Current = Target->GetBattleHUD()->GetCurrentPlayingEmotion();
-// checkf(Current, TEXT("Current is invalid at Type UUBTTask_DefaultAtk::ExecuteTask"));
-//
-// Current->SetTreeId(0);
-// Current->SetIsAttacked(false);
-// BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
-// BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
-//
-// DecisionMaker.Setup(Current);
-// Decision = DecisionMaker.Thought();
-// Target->GetBattleHUD()->DecisionDisplayer->SetEnganger(FText::FromString(Current->GetActorLabel() + " is thinking..."));
-//
-// return EBTNodeResult::InProgress;
-
-
-// AICC_Player* Target = Cast<AICC_Player>(BlackBoard->GetValueAsObject("Target"));
-//
-// AMob* Current = Cast<AMob>(Controller->GetPawn());
-//
-// if (Current->IsAshamed())
-// {
-// 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " skipped the turn (Ashamed)"));
-// 	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " skipped the turn (Ashamed)");
-// 	Current->SetTreeId(-1);
-// 	Current->SetIsBuffedAtk(false);
-// 	BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
-// 	BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
-// 	BlackBoard->SetValueAsBool("IsDefenceDebuffed?", Current->GetIsTargetDefenceDebuffed());
-// 	bBusy = false;
-// 	Cast<AMob>(Controller->GetPawn())->GetBattleHandler()->GetBattleInfo()->ClearInfo();
-// 	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-// 	return;
-// }
-//
-// if (Current != Target->GetBattleHUD()->GetCurrentPlayingEmotion())
-// {
-// 	DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not the " + Current->GetActorLabel() + " turn yet");
-// 	DebugHelper::AddMessageToLog("It's not the " + Current->GetActorLabel() + " turn yet");
-// 	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-// }
-//
-// // -------   REWRITE THIS PART -----------------
-//
-// if (Decision == EDecision::BuffItSelf && Current->IsEAnger())
-// {
-// 	Current->SetIsBuffedAtk(true);
-// 	BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
-// 	Decision = EDecision::Invalid;
-// 	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-// }
-//
-// else if (Decision == EDecision::HealItSelf && Current->IsHealer())
-// {
-// 	Current->SetHeal(true);
-// 	BlackBoard->SetValueAsBool("IsHealing?", Current->GetIsHeal());
-// 	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-// }
-//
-// else if (Decision == EDecision::HealOther && Current->IsHealer())
-// {
-// 	Current->SetHealOther(true);
-// 	BlackBoard->SetValueAsBool("IsHealingOther?", Current->GetIsHealOther());
-// 	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-// }
-//
-// else if ((Decision == EDecision::DebuffDefence && Current->IsESadness()) || (Decision == EDecision::DebuffDefence && Current->IsEAnxiety()))
-// {
-// 	Current->GetBattleHandler()->GetBattleInfo()->SetTurnInfo(FText::FromString(Current->GetActorLabel() + " de-buff"));
-// 	Current->SetIsTargetDefDebuffed(true);
-// 	BlackBoard->SetValueAsBool("IsDefenceDebuffed?", Current->GetIsTargetDefenceDebuffed());
-// 	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-// }
-//
-// else if ((Decision == EDecision::BuffDefence && Current->IsEFear()) || (Decision == EDecision::BuffDefence && Current->IsECalm()))
-// {
-// 	Current->SetBuffedDefence(true);
-// 	BlackBoard->SetValueAsBool("IsDefenceBuffed?", Current->GetIsBuffedDefence());
-// 	Decision = EDecision::Invalid;
-// 	DecisionMaker.Clear();
-// 	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-// }
-//
-// else if ((Decision == EDecision::BuffOtherDefence && Current->IsEFear()) || (Decision == EDecision::BuffOtherDefence && Current->IsECalm()))
-// {
-// 	Current->SetBuffOtherDefence(true);
-// 	BlackBoard->SetValueAsBool("IsBuffedOtherDef?", Current->GetBuffOtherDefence());
-// 	Decision = EDecision::Invalid;
-// 	DecisionMaker.Clear();
-// 	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-// }
-//
-// else if ((Decision == EDecision::DebuffAtk && Current->IsEDisgust()) || (Decision == EDecision::DebuffAtk && Current->IsEAnxiety()))
-// {
-// 	Current->SetPlayerDebuffAttack(true);
-// 	BlackBoard->SetValueAsBool("IsAttackDebuffed?", Current->GetPlayerDebuffAttack());
-// 	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-// }
-//
-// else if (Decision == EDecision::FreezedUp && Current->IsEAnxiety())
-// {
-// 	Current->SetIsFreezedUp(true);
-// 	BlackBoard->SetValueAsBool("IsFreezedUp?", Current->GetIsIsFreezedUp());
-// 	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-// }
-//
-// else if (Decision == EDecision::BuffOther && Current->IsEJealousy())
-// {
-// 	Current->SetBuffOtherAtk(true);
-// 	BlackBoard->SetValueAsBool("IsBuffOtherAtk??", Current->GetBuffOtherAtk());
-// 	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-// }
-//
-// else if (Decision == EDecision::EnvyBurned && Current->IsEJealousy())
-// {
-// 	Current->SetIsEnvyBurned(true);
-// 	BlackBoard->SetValueAsBool("IsEnvyBurnedState?", Current->GetIsIsEnvyBurned());
-// 	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-// }
-//
-// else if (Decision == EDecision::DebuffShieldItSelf && Current->IsECalm())
-// {
-// 	Current->SetDebuffShield(true);
-// 	BlackBoard->SetValueAsBool("IsShieldDebuffed??", Current->GetIsDebuffShield());
-// 	Decision = EDecision::Invalid;
-// 	DecisionMaker.Clear();
-// 	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-// }
-//
-// else if (Decision == EDecision::DebuffShieldOther && Current->IsECalm())
-// {
-// 	Current->SetDebuffOtherShield(true);
-// 	BlackBoard->SetValueAsBool("IsOtherShieldDebuffed??", Current->GetIsDebuffOtherShield());
-// 	Decision = EDecision::Invalid;
-// 	DecisionMaker.Clear();
-// 	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-// }
-//
-//
-// else if (Decision == EDecision::None)
-// {
-// 	Controller->MoveToActor(Target);
-// 	
-// 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " is attacking"));
-// 	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " is attacking");
-//
-// 	constexpr float BaseThreshold = 95.f;
-// 	const float Distance = FVector::Dist(Target->GetActorLocation(), Controller->GetPawn()->GetActorLocation());
-// 	float DynamicThreshold = BaseThreshold * (Distance / 95.f); // Scale threshold based on distance factor
-// 	
-// 	if (FVector::Distance(Target->GetActorLocation(), Controller->GetPawn()->GetActorLocation()) < DynamicThreshold && !bBusy) //(FVector::Distance(Target->GetActorLocation(), Controller->GetPawn()->GetActorLocation()) < 95.f && !bBusy) 
-// 	{
-// 		Cast<AMob>(Controller->GetPawn())->GetAIMemory().AttackLocation = Cast<AMob>(Controller->GetPawn())->
-// 			GetActorLocation();
-// 		Target->GetMinigameHandler()->StartMinigame(false);
-// 		bBusy = true;
-// 	}
-//
-// 	// -------   REWRITE THIS PART -----------------
-//
-// 	
-// 	if (!Current->IsMinigameStarted() && Current->IsMinigameEnded() && Target->GetMinigameHandler()->IsPlayerMinigameEnded()) //if (!AMob::IsMinigameStarted() && AMob::MinigameEnded && Target->GetMinigameHandler()->IsPlayerMinigameEnded())
-// 	{
-// 		Current->SetTreeId(-1);
-// 		Current->SetIsBuffedAtk(false);
-// 		BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
-// 		BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
-// 		BlackBoard->SetValueAsBool("IsDefenceDebuffed?", Current->GetIsTargetDefenceDebuffed());
-// 		bBusy = false;
-// 		Cast<AMob>(Controller->GetPawn())->GetBattleHandler()->GetBattleInfo()->ClearInfo();
-// 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-// 	}
-// }

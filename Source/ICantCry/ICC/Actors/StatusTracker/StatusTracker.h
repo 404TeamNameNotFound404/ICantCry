@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "StatusTracker.generated.h"
 
 class AICC_Actor;
@@ -249,6 +250,9 @@ private:
 
 	UPROPERTY()
 	FStatusPriority Priority;
+
+	UPROPERTY()
+	UICantCryGameInstance* Instance;
 	
 	void InflictFreeze(AICC_Actor* Target);
 	void InflictBurn(AICC_Actor* Target);
