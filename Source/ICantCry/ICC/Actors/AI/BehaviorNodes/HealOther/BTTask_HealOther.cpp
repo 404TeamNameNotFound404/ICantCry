@@ -36,7 +36,7 @@ EBTNodeResult::Type UBTTask_HealOther::ExecuteTask(UBehaviorTreeComponent& Owner
 
 	if (Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().CantBuffOthers())
 	{
-		DebugHelper::AddMessageToLog(Current->GetActorLabel() + " attempted to heal other but it's alone! , rethink the action");
+		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " attempted to heal other but it's alone! , rethink the action");
 		Blackboard->SetValueAsBool("Rethinker", true);
 		return EBTNodeResult::Succeeded;
 	}
@@ -45,7 +45,7 @@ EBTNodeResult::Type UBTTask_HealOther::ExecuteTask(UBehaviorTreeComponent& Owner
 	if (!TargetToBuff) // rethink if targetto buff appears to be nullptr again 
 	{
 		Blackboard->SetValueAsBool("Rethinker", true);
-		DebugHelper::AddMessageToLog(Current->GetActorLabel() + " attempted to buff other def but it didn't find a valid target (scrivetemelo se entra qua dentro)! , rethinking the action");
+		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " attempted to buff other def but it didn't find a valid target (scrivetemelo se entra qua dentro)! , rethinking the action");
 		return EBTNodeResult::Succeeded;
 	}
 
@@ -67,7 +67,7 @@ EBTNodeResult::Type UBTTask_HealOther::ExecuteTask(UBehaviorTreeComponent& Owner
 	
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " heals " + CurrentToBuff->GetActorLabel()));
 	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(""));
-	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " heals " + CurrentToBuff->GetActorLabel());
+	DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " heals " + CurrentToBuff->GetActorLabel());
 	
 	return EBTNodeResult::InProgress;
 }
@@ -93,7 +93,7 @@ void UBTTask_HealOther::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	if (Current != Current->GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
 		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
-		DebugHelper::AddMessageToLog("It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
+		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}
@@ -106,7 +106,7 @@ void UBTTask_HealOther::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 			return;
 
 		DebugHelper::LogSuccess("Debuff Other Shield Task Completed");
-		DebugHelper::AddMessageToLog("Debuff Other Shield Task Completed");
+		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: Debuff Other Shield Task Completed");
 		FinishLatentTask(*OwnerCompWeak.Get(), EBTNodeResult::Succeeded);
 	}), 1.0f, false);
 }

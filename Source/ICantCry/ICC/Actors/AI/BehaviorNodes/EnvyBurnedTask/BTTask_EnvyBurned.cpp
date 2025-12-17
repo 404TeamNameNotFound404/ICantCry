@@ -32,7 +32,7 @@ EBTNodeResult::Type UBTTask_EnvyBurned::ExecuteTask(UBehaviorTreeComponent& Owne
 	
 	AICC_Player* Target = Cast<AICC_Player>(Blackboard->GetValueAsObject("Target"));
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Target->GetActorLabel() + " in EnvyBurned state!"));
-	DebugHelper::AddMessageToLog(Target->GetActorLabel() + " in EnvyBurned state!");
+	DebugHelper::AddMessageToLog("[Behavior Tree - EnvyBurned]: " + Target->GetActorLabel() + " in EnvyBurned state!");
 	
 	Target->GetStatusTracker()->InflictStatus(EAfflictedStatus::Burn, Target);
 
@@ -65,7 +65,7 @@ void UBTTask_EnvyBurned::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Node
 	if (Current != Current->GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
 		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
-		DebugHelper::AddMessageToLog("It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
+		DebugHelper::AddMessageToLog("[Behavior Tree - EnvyBurned]: It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}
@@ -78,7 +78,7 @@ void UBTTask_EnvyBurned::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Node
 			return;
 
 		DebugHelper::LogSuccess("Envy Burned Task Completed");
-		DebugHelper::AddMessageToLog("Envy Burned Task Completed");
+		DebugHelper::AddMessageToLog("[Behavior Tree - EnvyBurned]: Envy Burned Task Completed");
 		FinishLatentTask(*OwnerCompWeak.Get(), EBTNodeResult::Succeeded);
 	}), 1.0f, false);
 }

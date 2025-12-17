@@ -195,7 +195,7 @@ void UBattleHUD::DecreaseAP(const int& Amount)
 {
     CurrentAP = FMath::Clamp(CurrentAP - Amount, 0,4);
     DebugHelper::LogWarning("AP decreased now " + FString::FromInt(CurrentAP));
-    DebugHelper::AddMessageToLog("AP decreased now " + FString::FromInt(CurrentAP));
+    DebugHelper::AddMessageToLog("[BattleHUD]: AP decreased now " + FString::FromInt(CurrentAP));
     UpdateAPBar();
 }
 
@@ -255,7 +255,7 @@ void UBattleHUD::OnShootPressed()
     Bar->UpdateHighlights(1);
     bTargetSelection = true;
     DebugHelper::LogSuccess("Shoot pressed, ap spent (Accumulator)-> " + FString::FromInt(ApAccumulator));
-    DebugHelper::AddMessageToLog("Shoot pressed, ap spent (Accumulator) -> " + FString::FromInt(ApAccumulator));
+    DebugHelper::AddMessageToLog("[BattleHUD]: Shoot pressed, ap spent (Accumulator) -> " + FString::FromInt(ApAccumulator));
     
     if (Buffer && !Buffer->IsEmpty())
     {
@@ -308,7 +308,7 @@ void UBattleHUD::OnFocusPressed()
     }
     
     DebugHelper::LogWarning("attack and defense increased!");
-    DebugHelper::AddMessageToLog("attack and defense increased!");
+    DebugHelper::AddMessageToLog("[BattleHUD]: attack and defense increased!");
     IncreaseAP(1);
     Bar->IncreaseAP(1);
     BattleHandler->GetTurnBasedSystem()->EndTurn();
@@ -377,7 +377,7 @@ void UBattleHUD::OnPassPressed()
     IncreaseAP(1);
     Bar->IncreaseAP(1);
     DebugHelper::LogSuccess("Player passed the turn");
-    DebugHelper::AddMessageToLog("Player passed the turn");
+    DebugHelper::AddMessageToLog("[BattleHUD]: Player passed the turn");
     BattleHandler->GetTurnBasedSystem()->EndTurn();
     BattleHandler->GetTurnBasedSystem()->StartNextTurn();
 	DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
@@ -422,7 +422,7 @@ void UBattleHUD::ScrollTargetSelection(float ScrollValue)
     // TargetText->SetText(FText::FromString(FString(TEXT("Target: ")) + SelectedActor->GetActorLabel()));
     
     DebugHelper::LogMessage(10, FColor::Orange, "Target Selected: " + SelectedActor->GetActorLabel());
-    DebugHelper::AddMessageToLog("Target Selected: " + SelectedActor->GetActorLabel());
+    DebugHelper::AddMessageToLog("[BattleHUD]: Target Selected: " + SelectedActor->GetActorLabel());
     OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
     BulletName->SetVisibility(ESlateVisibility::Hidden);
     Quantity->SetVisibility(ESlateVisibility::Hidden);
@@ -608,7 +608,7 @@ void UBattleHUD::IncreaseShootPower()
     if (ApAccumulator > CurrentAP)
     {
         DebugHelper::LogError("You can't add more ap than you have it current ap " + FString::FromInt(CurrentAP) + "- Accumulator " + FString::FromInt(ApAccumulator));
-        DebugHelper::AddMessageToLog("You can't add more ap than you have it current ap " + FString::FromInt(CurrentAP) + "- Accumulator " + FString::FromInt(ApAccumulator));
+        DebugHelper::AddMessageToLog("[BattleHUD]: You can't add more ap than you have it current ap " + FString::FromInt(CurrentAP) + "- Accumulator " + FString::FromInt(ApAccumulator));
         ApAccumulator = CurrentAP;
         Bar->UpdateHighlights(ApAccumulator);
     }
@@ -619,32 +619,32 @@ void UBattleHUD::IncreaseShootPower()
     case 1:
         {
             GameInstance->GetPlayerStats()->ApModifier = 1.0f;
-            DebugHelper::AddMessageToLog("Player spent 1 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+            DebugHelper::AddMessageToLog("[BattleHUD]: Player spent 1 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
             break;
         }
     case 2:
         {
             GameInstance->GetPlayerStats()->ApModifier = 1.5f;
-            DebugHelper::AddMessageToLog("Player spent 2 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+            DebugHelper::AddMessageToLog("[BattleHUD]: Player spent 2 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
             break;
         }
     case 3:
         {
             GameInstance->GetPlayerStats()->ApModifier = 2.0f;
-            DebugHelper::AddMessageToLog("Player spent 3 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+            DebugHelper::AddMessageToLog("[BattleHUD]: Player spent 3 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
             break;
         }
     case 4:
         {
             GameInstance->GetPlayerStats()->ApModifier = 2.5f;
-            DebugHelper::AddMessageToLog("Player spent 4 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+            DebugHelper::AddMessageToLog("[BattleHUD]: Player spent 4 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
             break;
         }
 
     default:
         {
             GameInstance->GetPlayerStats()->ApModifier = 1.0f;
-            DebugHelper::AddMessageToLog("Player spent 1 extra ap (default) " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+            DebugHelper::AddMessageToLog("[BattleHUD]: Player spent 1 extra ap (default) " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
             break;
         }
       
@@ -653,10 +653,10 @@ void UBattleHUD::IncreaseShootPower()
     Bar->UpdateHighlights(ApAccumulator);
     
     DebugHelper::LogWarning("Ap Modifier on increase -> " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
-    DebugHelper::AddMessageToLog("Player decided to increase it's shoot power, now has modifier: -> " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+    DebugHelper::AddMessageToLog("[BattleHUD]: Player decided to increase it's shoot power, now has modifier: -> " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
     
     DebugHelper::LogSuccess("Shoot is boosted ap modifier now is " + FString::SanitizeFloat( GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStats()->ApModifier ));
-    DebugHelper::AddMessageToLog("Shoot is boosted ap modifier now is " + FString::SanitizeFloat( GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStats()->ApModifier ));
+    DebugHelper::AddMessageToLog("[BattleHUD]: Shoot is boosted ap modifier now is " + FString::SanitizeFloat( GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStats()->ApModifier ));
     FSlateApplication::Get().ClearAllUserFocus();
 }
 
@@ -686,7 +686,7 @@ void UBattleHUD::DecreaseShootPower()
     }
 
     GameInstance->GetPlayerStats()->ApModifier = NewModifier;
-    DebugHelper::AddMessageToLog("Player decided to decrease boost, now has: " + FString::SanitizeFloat(NewModifier));
+    DebugHelper::AddMessageToLog("[BattleHUD]: Player decided to decrease boost, now has: " + FString::SanitizeFloat(NewModifier));
 
     Bar->UpdateHighlights(ApAccumulator);
 
@@ -703,7 +703,7 @@ void UBattleHUD::PrepareToEngage()
         Cast<AMob>(SelectedActorTarget)->GetData(), GameInstance);
     GameInstance->SetDamageData(&DummyDamage);
     DebugHelper::LogMessage(3, FColor::White, "Targeting " + SelectedEnemy->GetActorLabel());
-    DebugHelper::AddMessageToLog("Targeting " + SelectedEnemy->GetActorLabel() + " using " + CurrentBulletData->BulletName);
+    DebugHelper::AddMessageToLog("[BattleHUD]: Targeting " + SelectedEnemy->GetActorLabel() + " using " + CurrentBulletData->BulletName);
     DebugHelper::LogMessage(5, FColor::Emerald, "Minigame modifier -> " + FString::SanitizeFloat(DummyDamage.PlayerStats->MinigameModifier));
     checkf(MinigameHandler, TEXT("Minigame handler is null at UBattleHUD::Engage"));
     MinigameHandler->StartMinigame(true);

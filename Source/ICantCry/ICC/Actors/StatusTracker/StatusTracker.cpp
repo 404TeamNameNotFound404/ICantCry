@@ -24,7 +24,7 @@
 
 void FStatusPriority::SetNextPriorityFromBuff(const EBuffStatus& BuffStatus)
 {
-	DebugHelper::AddMessageToLog("Set next priority from buff for Current Emotion turn");
+	DebugHelper::AddMessageToLog("[Status Tracker]: Set next priority from buff for Current Emotion turn");
 	switch (BuffStatus)
 	{
 	case AtkBuff:
@@ -47,7 +47,7 @@ void FStatusPriority::SetNextPriorityFromBuff(const EBuffStatus& BuffStatus)
 
 void FStatusPriority::SetNextPriorityFromDebuff(const EAfflictedStatus& Status)
 {
-	DebugHelper::AddMessageToLog("Set next priority from debuff for Current Emotion turn");
+	DebugHelper::AddMessageToLog("[Status Tracker]: Set next priority from debuff for Current Emotion turn");
 	switch (Status)
 	{
 	case Freezed:
@@ -122,14 +122,14 @@ void FInternalPerkData::AssignPriority(AMob* Emotion)
 			if (Emotion->GetIsIsBuffedAtk())
 			{
 				Data.Clear();
-				DebugHelper::AddMessageToLog(Emotion->GetActorLabel() + " changed it's DT priority " + FString::FromInt(StatusPriority.GetNextBuffPriority()));
+				DebugHelper::AddMessageToLog("[Status Tracker]: " + Emotion->GetActorLabel() + " changed it's DT priority " + FString::FromInt(StatusPriority.GetNextBuffPriority()));
 				Data.bBuffAtk = true;
 			}
 
 			else if (Emotion->GetPlayerDebuffAttack())
 			{
 				Data.Clear();
-				DebugHelper::AddMessageToLog(Emotion->GetActorLabel() + " changed it's DT priority " + FString::FromInt(StatusPriority.GetNextBuffPriority()));
+				DebugHelper::AddMessageToLog("[Status Tracker]: " + Emotion->GetActorLabel() + " changed it's DT priority " + FString::FromInt(StatusPriority.GetNextBuffPriority()));
 				Data.bDebuffAtk = true;
 			}
 		}
@@ -140,14 +140,14 @@ void FInternalPerkData::AssignPriority(AMob* Emotion)
 			if (Emotion->GetIsBuffedDefence())
 			{
 				Data.Clear();
-				DebugHelper::AddMessageToLog(Emotion->GetActorLabel() + " changed it's DT priority " + FString::FromInt(StatusPriority.GetNextBuffPriority()));
+				DebugHelper::AddMessageToLog("[Status Tracker]: " + Emotion->GetActorLabel() + " changed it's DT priority " + FString::FromInt(StatusPriority.GetNextBuffPriority()));
 				Data.bBuffDef = true;
 			}
 
 			else if (Emotion->GetIsTargetDefenceDebuffed())
 			{
 				Data.Clear();
-				DebugHelper::AddMessageToLog(Emotion->GetActorLabel() + " changed it's DT priority " + FString::FromInt(StatusPriority.GetNextBuffPriority()));
+				DebugHelper::AddMessageToLog("[Status Tracker]: " + Emotion->GetActorLabel() + " changed it's DT priority " + FString::FromInt(StatusPriority.GetNextBuffPriority()));
 				Data.bDebuffDef = true;
 			}
 		}
@@ -155,7 +155,7 @@ void FInternalPerkData::AssignPriority(AMob* Emotion)
 	case 3:
 		{
 			Data.Clear();
-			DebugHelper::AddMessageToLog(Emotion->GetActorLabel() + " changed it's DT priority " + FString::FromInt(StatusPriority.GetNextBuffPriority()));
+			DebugHelper::AddMessageToLog("[Status Tracker]: " + Emotion->GetActorLabel() + " changed it's DT priority " + FString::FromInt(StatusPriority.GetNextBuffPriority()));
 			Data.bLowHealth = true;
 		}
 
@@ -164,7 +164,7 @@ void FInternalPerkData::AssignPriority(AMob* Emotion)
 			Data.Clear();
 			if (Emotion->GetIsIsEnvyBurned())
 			{
-				DebugHelper::AddMessageToLog(Emotion->GetActorLabel() + " changed it's DT to Envy Burned");
+				DebugHelper::AddMessageToLog("[Status Tracker]: " + Emotion->GetActorLabel() + " changed it's DT to Envy Burned");
 				Data.bEnvyBurned = true;
 			}
 
@@ -185,6 +185,8 @@ UStatusTracker::UStatusTracker()
 	PrimaryComponentTick.bStartWithTickEnabled = false;
 
 	bIsOwnerAfflicted = false;
+
+	
 }
 
 
@@ -192,6 +194,8 @@ UStatusTracker::UStatusTracker()
 void UStatusTracker::BeginPlay()
 {
 	Super::BeginPlay();
+
+	Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 }
 
 
@@ -211,21 +215,21 @@ void UStatusTracker::InflictStatus(const EAfflictedStatus& Status, AICC_Actor* T
 	if (bIsOwnerAfflicted || !bCanDebuff)
 	{
 		DebugHelper::LogError("A status has already been inflicted");
-		DebugHelper::AddMessageToLog("Emotion attempted to cast " + GetStatusName(Status) + " To " + Target->GetActorLabel() + " but " + GetStatusName(CurrentActiveStatus) + " has already been inflicted");
+		DebugHelper::AddMessageToLog("[Status Tracker]: Emotion attempted to cast " + GetStatusName(Status) + " To " + Target->GetActorLabel() + " but " + GetStatusName(CurrentActiveStatus) + " has already been inflicted");
 		return;
 	}
 
 	if (bShieldBuffed)
 	{
 		PlayerShieldAccumulator--;
-		DebugHelper::AddMessageToLog(GetOwner()->GetActorLabel() + " attempted to inflict " + GetStatusName(Status) + " but fortunately a shield was used to protect from the debuff "
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetActorLabel() + " attempted to inflict " + GetStatusName(Status) + " but fortunately a shield was used to protect from the debuff "
 			+ FString::FromInt(PlayerShieldAccumulator) + " left");
 
 		if (PlayerShieldAccumulator <= 0)
 		{
 			bShieldBuffed = false;
 			PlayerShieldAccumulator = 0;
-			DebugHelper::AddMessageToLog("Shield debuff protection for " + GetOwner()->GetActorLabel() + " ended");
+			DebugHelper::AddMessageToLog("[Status Tracker]: Shield debuff protection for " + GetOwner()->GetActorLabel() + " ended");
 		}
 		else
 		{
@@ -250,7 +254,7 @@ void UStatusTracker::InflictStatus(const EAfflictedStatus& Status, AICC_Actor* T
 	bIsOwnerAfflicted = true;
 
 	DebugHelper::LogMessage(6, FColor::Black, "Inflicting  " + GetStatusName(CurrentActiveStatus) + " To " + Target->GetActorLabel());
-	DebugHelper::AddMessageToLog("Inflicting  " + GetStatusName(CurrentActiveStatus) + " To " + Target->GetActorLabel());
+	DebugHelper::AddMessageToLog("[Status Tracker]: Inflicting  " + GetStatusName(CurrentActiveStatus) + " To " + Target->GetActorLabel());
 
 	switch (Status)
 	{
@@ -283,11 +287,11 @@ void UStatusTracker::InflictStatus(const EAfflictedStatus& Status, AICC_Actor* T
 		{
 			if (const AMob* Shame = Cast<AMob>(GetOwner()); Shame->IsEShame())
 			{
-				DebugHelper::AddMessageToLog("Mob is shame, can't go low health, skipping low health decision table");
+				DebugHelper::AddMessageToLog("[Status Tracker]: Mob is shame, can't go low health, skipping low health decision table");
 				return;
 			}
 			
-			DebugHelper::AddMessageToLog(GetOwner()->GetActorLabel() + " is in low health status!");
+			DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetActorLabel() + " is in low health status!");
 			PerkData.bLowHealth = true;
 		}
 	default:
@@ -339,21 +343,21 @@ void UStatusTracker::UpdateStatus()
 	{
 		if (const AMob* Self = Cast<AMob>(GetOwner()); !Self->IsLowHealth())
 		{
-			DebugHelper::AddMessageToLog(Self->GetActorLabel() + " health is not low");
+			DebugHelper::AddMessageToLog("[Status Tracker]: " + Self->GetActorLabel() + " health is not low");
 			PerkData.bLowHealth = false;
 		}
 	}
 	
 	if (!bIsOwnerAfflicted || !bCanDebuff)
 	{
-		DebugHelper::AddMessageToLog("No debuff status found for " + GetOwner()->GetActorLabel());
+		DebugHelper::AddMessageToLog("[Status Tracker]: No debuff status found for " + GetOwner()->GetActorLabel());
 		return;
 	}
 
 	StatusCounter += 1;
 
 	DebugHelper::LogWarning("Status Counter for " + GetStatusName(CurrentActiveStatus) + FString::FromInt(StatusCounter));
-	DebugHelper::AddMessageToLog("Status Counter for " + GetStatusName(CurrentActiveStatus) + FString::FromInt(StatusCounter));
+	DebugHelper::AddMessageToLog("[Status Tracker]: Status Counter for " + GetStatusName(CurrentActiveStatus) + FString::FromInt(StatusCounter));
 	
 
 	if (StatusCounter < 3)
@@ -420,6 +424,14 @@ void UStatusTracker::UpdateStatus()
 	case DebuffAtk:
 		bIsOwnerAfflicted = false;
 		StatusCounter = 0;
+
+		if (GetOwner()->IsA(AICC_Player::StaticClass()))
+		{
+			const AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+			Player->GetStats()->AttackPower = Instance->GetPersistentData()->InitialAttackPower;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Debuff for Atk ended, atk of " + Player->GetActorLabel() + " restored as " + FString::SanitizeFloat(Player->GetStats()->AttackPower));
+		}
+		
 		if (Cast<AMob>(GetOwner()))
 		{
 			PerkData.bDebuffAtk = false;
@@ -431,6 +443,14 @@ void UStatusTracker::UpdateStatus()
 	case DebuffDef:
 		bIsOwnerAfflicted = false;
 		StatusCounter = 0;
+
+		if (GetOwner()->IsA(AICC_Player::StaticClass()))
+		{
+			const AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+			Player->GetStats()->DefencePower = Instance->GetPersistentData()->InitialDefencePower;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Debuff for Def ended, def of " + Player->GetActorLabel() + " restored as " + FString::SanitizeFloat(Player->GetStats()->DefencePower));
+		}
+		
 		if (Cast<AMob>(GetOwner()))
 		{
 			PerkData.bDebuffDef = false;
@@ -452,7 +472,7 @@ void UStatusTracker::UpdateBuffStatus()
 {
 	if (!bIsOwnerAlreadyBuffed || !bCanBuff)
 	{
-		DebugHelper::AddMessageToLog("No buff status found for " + GetOwner()->GetActorLabel());
+		DebugHelper::AddMessageToLog("[Status Tracker]: No buff status found for " + GetOwner()->GetActorLabel());
 		return;
 	}
 
@@ -460,7 +480,7 @@ void UStatusTracker::UpdateBuffStatus()
 
 	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
 	
-	DebugHelper::AddMessageToLog(Target->GetActorLabel() + " Buff Status counter of " + GetBuffName(CurrentBuffedStatus) + " " + FString::FromInt(BuffStatusCounter));
+	DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + " Buff Status counter of " + GetBuffName(CurrentBuffedStatus) + " " + FString::FromInt(BuffStatusCounter));
 
 	if (BuffStatusCounter < 3)
 	{
@@ -473,9 +493,8 @@ void UStatusTracker::UpdateBuffStatus()
 		if (Target->IsA(AICC_Player::StaticClass()))
 		{
 			AICC_Player* Player = Cast<AICC_Player>(GetOwner());
-			UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 			Player->GetStats()->AttackPower = Instance->GetPersistentData()->InitialAttackPower;
-			DebugHelper::AddMessageToLog("Buff ended atk returns to " + FString::SanitizeFloat(Player->GetStats()->AttackPower));
+			DebugHelper::AddMessageToLog("[Status Tracker]: Buff ended atk returns to " + FString::SanitizeFloat(Player->GetStats()->AttackPower));
 			BuffStatusCounter = 0;
 			bIsOwnerAlreadyBuffed = false;
 			bCanDebuff = true;
@@ -484,7 +503,7 @@ void UStatusTracker::UpdateBuffStatus()
 		{
 			AMob* Emotion = Cast<AMob>(GetOwner());
 			Emotion->GetData()->AttackPower = Emotion->GetAIMemory().InitialAttackPower;
-			DebugHelper::AddMessageToLog("Buff ended atk returns to " + FString::SanitizeFloat(Emotion->GetData()->AttackPower));
+			DebugHelper::AddMessageToLog("[Status Tracker]: Buff ended atk returns to " + FString::SanitizeFloat(Emotion->GetData()->AttackPower));
 			BuffStatusCounter = 0;
 			PerkData.bBuffAtk = false;
 			bIsOwnerAlreadyBuffed = false;
@@ -495,9 +514,8 @@ void UStatusTracker::UpdateBuffStatus()
 		if (Target->IsA(AICC_Player::StaticClass()))
 		{
 			AICC_Player* Player = Cast<AICC_Player>(GetOwner());
-			UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 			Player->GetStats()->DefencePower = Instance->GetPersistentData()->InitialDefencePower;
-			DebugHelper::AddMessageToLog("Buff ended def returns to " + FString::SanitizeFloat(Player->GetStats()->DefencePower));
+			DebugHelper::AddMessageToLog("[Status Tracker]: Buff ended def returns to " + FString::SanitizeFloat(Player->GetStats()->DefencePower));
 			BuffStatusCounter = 0;
 			bIsOwnerAlreadyBuffed = false;
 			bCanDebuff = true;
@@ -506,7 +524,7 @@ void UStatusTracker::UpdateBuffStatus()
 		{
 			AMob* Emotion = Cast<AMob>(GetOwner());
 			Emotion->GetData()->DefencePower = Emotion->GetAIMemory().InitialDefencePower;
-			DebugHelper::AddMessageToLog("Buff ended def returns to " + FString::SanitizeFloat(Emotion->GetData()->DefencePower));
+			DebugHelper::AddMessageToLog("[Status Tracker]: Buff ended def returns to " + FString::SanitizeFloat(Emotion->GetData()->DefencePower));
 			BuffStatusCounter = 0;
 			bIsOwnerAlreadyBuffed = false;
 			PerkData.bBuffDef = false;
@@ -553,7 +571,7 @@ void UStatusTracker::UnfreezeChance()
 	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
 
 	DebugHelper::LogWarning("Attempting to auto freeze");
-	DebugHelper::AddMessageToLog("Attempting to auto freeze");
+	DebugHelper::AddMessageToLog("[Status Tracker]: Attempting to auto freeze");
 
 	FreezedUpCounter++;
 
@@ -567,7 +585,7 @@ void UStatusTracker::UnfreezeChance()
 				bIsOwnerAfflicted = false;
 				CurrentActiveStatus = None;
 				StatusCounter = 0;
-				DebugHelper::AddMessageToLog("Free from FreezedUp at 25%");
+				DebugHelper::AddMessageToLog("[Status Tracker]: Free from FreezedUp at 25%");
 			}
 		}
 
@@ -579,7 +597,7 @@ void UStatusTracker::UnfreezeChance()
 				bIsOwnerAfflicted = false;
 				CurrentActiveStatus = None;
 				StatusCounter = 0;
-				DebugHelper::AddMessageToLog("Free from FreezedUp at 50%");
+				DebugHelper::AddMessageToLog("[Status Tracker]: Free from FreezedUp at 50%");
 			}
 		}
 	case 3:
@@ -590,7 +608,7 @@ void UStatusTracker::UnfreezeChance()
 				bIsOwnerAfflicted = false;
 				CurrentActiveStatus = None;
 				StatusCounter = 0;
-				DebugHelper::AddMessageToLog("Free from FreezedUp at 75%");
+				DebugHelper::AddMessageToLog("[Status Tracker]: Free from FreezedUp at 75%");
 			}
 		}
 
@@ -599,7 +617,7 @@ void UStatusTracker::UnfreezeChance()
 			Target->Freeze(false);
 			bIsOwnerAfflicted = false;
 			CurrentActiveStatus = None;
-			DebugHelper::AddMessageToLog("Free from FreezedUp at 100% (malus ends)");
+			DebugHelper::AddMessageToLog("[Status Tracker]: Free from FreezedUp at 100% (malus ends)");
 			StatusCounter = 0;
 		}
 		
@@ -673,13 +691,13 @@ void UStatusTracker::BuffFlow(const EBuffStatus& NewBuffStatus)
 
 	if (PerkData.HasBuffHightPriority(Cast<AMob>(GetOwner())))
 	{
-		DebugHelper::AddMessageToLog("Hight priority detected ");
+		DebugHelper::AddMessageToLog("[Status Tracker]: Hight priority detected ");
 		PerkData.AssignPriority(Cast<AMob>(GetOwner()));
 	}
 	
 	BuffWith(NewBuffStatus);
 	DebugHelper::LogMessage(7, FColor::Orange, "Old buff " + GetBuffName(CurrentBuffedStatus) + "Removed " + "New buff assigned " + GetBuffName(NewBuffStatus));
-	DebugHelper::AddMessageToLog("Old buff " + GetBuffName(CurrentBuffedStatus) + "Removed " + "New buff assigned " + GetBuffName(NewBuffStatus));
+	DebugHelper::AddMessageToLog("[Status Tracker]: Old buff " + GetBuffName(CurrentBuffedStatus) + "Removed " + "New buff assigned " + GetBuffName(NewBuffStatus));
 	BuffStatusCounter = 0;
 	CurrentBuffedStatus = NewBuffStatus;
 }
@@ -716,7 +734,7 @@ void UStatusTracker::BuffAttack()
 		Player->GetStats()->AttackPower += FMath::FloorToInt(
 			Player->GetStats()->AttackPower * Player->GetBattleData()->BuffAtkIncrement);
 		DebugHelper::LogWarning("Attack buffed " + FString::SanitizeFloat(Player->GetStats()->AttackPower));
-		DebugHelper::AddMessageToLog("Attack buffed " + FString::SanitizeFloat(Player->GetStats()->AttackPower));
+		DebugHelper::AddMessageToLog("[Status Tracker]: Attack buffed " + FString::SanitizeFloat(Player->GetStats()->AttackPower));
 	}
 
 	if (Target->IsA(AMob::StaticClass()))
@@ -738,7 +756,7 @@ void UStatusTracker::BuffDefence()
 		Player->GetStats()->DefencePower += FMath::FloorToInt(
 			Player->GetStats()->DefencePower * Player->GetBattleData()->BuffDefIncrement);
 		DebugHelper::LogWarning("Defence buffed " + FString::SanitizeFloat(Player->GetStats()->DefencePower));
-		DebugHelper::AddMessageToLog("Defence buffed " + FString::SanitizeFloat(Player->GetStats()->DefencePower));
+		DebugHelper::AddMessageToLog("[Status Tracker]: Defence buffed " + FString::SanitizeFloat(Player->GetStats()->DefencePower));
 	}
 
 	if (Target->IsA(AMob::StaticClass()))
@@ -764,14 +782,14 @@ void UStatusTracker::BuffShield()
 		bCanDebuff = false;
 		bShieldBuffed = true;
 		PlayerShieldAccumulator = 3;
-		DebugHelper::AddMessageToLog(Target->GetActorLabel() + " uses shield debuff. Shield left " + FString::FromInt(PlayerShieldAccumulator));
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + " uses shield debuff. Shield left " + FString::FromInt(PlayerShieldAccumulator));
 	}
 
 	if (Target->IsA(AMob::StaticClass()))
 	{
 		bCanDebuff  = false;
 		PerkData.bShieldDebuff = true;
-		DebugHelper::AddMessageToLog(Target->GetActorLabel() + " has shield");
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + " has shield");
 	}
 	
 }
@@ -792,7 +810,7 @@ void UStatusTracker::Heal()
 		const AMob* Mob = Cast<AMob>(GetOwner());
 		Mob->GetHealthBar()->Restore(Mob->GetData()->RestorePower); // maybe add a RestorePower?
 		bIsOwnerAlreadyBuffed = false;
-		DebugHelper::AddMessageToLog(Mob->GetActorLabel() +  " restored " + FString::SanitizeFloat(Mob->GetData()->RestorePower));
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + Mob->GetActorLabel() +  " restored " + FString::SanitizeFloat(Mob->GetData()->RestorePower));
 	}
 }
 
@@ -803,16 +821,16 @@ void UStatusTracker::DebuffAtkF()
 	if (Target->IsA(AICC_Player::StaticClass()))
 	{
 		const AICC_Player* Player = Cast<AICC_Player>(GetOwner());
-		DebugHelper::AddMessageToLog("Player debuff math :starting Debuff atk" + FString::SanitizeFloat(Player->GetStats()->AttackPower));
+		DebugHelper::AddMessageToLog("[Status Tracker]: Player debuff math :starting Debuff atk" + FString::SanitizeFloat(Player->GetStats()->AttackPower));
 		Player->GetStats()->AttackPower -= Player->GetStats()->AttackPower * Player->GetBattleData()->DebuffAtkMalus;
-		DebugHelper::AddMessageToLog("Player debuff math : Debuff atk post malus -> " + FString::SanitizeFloat(Player->GetStats()->AttackPower) + "\nAtk malus dealed -> " + FString::SanitizeFloat(Player->GetBattleData()->DebuffAtkMalus));
+		DebugHelper::AddMessageToLog("[Status Tracker]: Player debuff math : Debuff atk post malus -> " + FString::SanitizeFloat(Player->GetStats()->AttackPower) + "\n[Status Tracker]: Atk malus dealed -> " + FString::SanitizeFloat(Player->GetBattleData()->DebuffAtkMalus));
 	}
 
 	if (Target->IsA(AMob::StaticClass()))
 	{
 		const AMob* Mob = Cast<AMob>(GetOwner());
 		Mob->GetData()->AttackPower -= Mob->GetData()->AttackPower * Mob->GetBattleData()->EmotionAtkDebuffMalus;
-		DebugHelper::AddMessageToLog("AI atk value (debuff) " + FString::SanitizeFloat(Mob->GetData()->AttackPower));
+		DebugHelper::AddMessageToLog("[Status Tracker]: AI atk value (debuff) " + FString::SanitizeFloat(Mob->GetData()->AttackPower));
 		PerkData.bDebuffAtk = true;
 	}
 }
@@ -824,9 +842,9 @@ void UStatusTracker::DebuffDefF()
 	if (Target->IsA(AICC_Player::StaticClass()))
 	{
 		const AICC_Player* Player = Cast<AICC_Player>(GetOwner());
-		DebugHelper::AddMessageToLog("Player debuff math :starting Debuff def" + FString::SanitizeFloat(Player->GetStats()->DefencePower));
+		DebugHelper::AddMessageToLog("[Status Tracker]: Player debuff math :starting Debuff def" + FString::SanitizeFloat(Player->GetStats()->DefencePower));
 		Player->GetStats()->DefencePower -= Player->GetStats()->DefencePower * Player->GetBattleData()->DebuffDefMalus;
-		DebugHelper::AddMessageToLog("Player debuff math : Debuff def post malus -> " + FString::SanitizeFloat(Player->GetStats()->DefencePower) + "\nDef malus dealed -> " + FString::SanitizeFloat(Player->GetBattleData()->DebuffDefMalus));
+		DebugHelper::AddMessageToLog("[Status Tracker]: Player debuff math : Debuff def post malus -> " + FString::SanitizeFloat(Player->GetStats()->DefencePower) + "\n[Status Tracker]: Def malus dealed -> " + FString::SanitizeFloat(Player->GetBattleData()->DebuffDefMalus));
 	}
 
 	if (Target->IsA(AMob::StaticClass()))
@@ -846,7 +864,6 @@ void UStatusTracker::RevertInflictedMalus(const EAfflictedStatus& Status)
 
 	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
 	
-	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 	PerkData.Clear();
 
 	switch (Status)
@@ -884,7 +901,6 @@ void UStatusTracker::RevertBuff()
 
 	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
 	
-	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 	PerkData.Clear();
 	
 	switch (CurrentBuffedStatus)
@@ -895,7 +911,7 @@ void UStatusTracker::RevertBuff()
 			AICC_Player* Player = Cast<AICC_Player>(Target);
 			checkf(Player, TEXT("Player invalid at revert inflicted malus atkbuff"))
 			Player->GetStats()->AttackPower = Instance->GetPersistentData()->InitialAttackPower;
-			DebugHelper::AddMessageToLog("Player Debuff atk reverted into " + FString::FromInt(Instance->GetPersistentData()->InitialAttackPower));
+			DebugHelper::AddMessageToLog("[Status Tracker]: Player Debuff atk reverted into " + FString::FromInt(Instance->GetPersistentData()->InitialAttackPower));
 		}
 		if (Target->IsA(AMob::StaticClass()))
 		{
@@ -910,7 +926,7 @@ void UStatusTracker::RevertBuff()
 			AICC_Player* Player = Cast<AICC_Player>(Target);
 			checkf(Player, TEXT("Player invalid at revert inflicted malus defbuff"))
 			Player->GetStats()->DefencePower = Instance->GetPersistentData()->InitialDefencePower;
-			DebugHelper::AddMessageToLog("Player Debuff def reverted into " + FString::FromInt(Instance->GetPersistentData()->InitialDefencePower));
+			DebugHelper::AddMessageToLog("[Status Tracker]: Player Debuff def reverted into " + FString::FromInt(Instance->GetPersistentData()->InitialDefencePower));
 		}
 		if (Target->IsA(AMob::StaticClass()))
 		{
@@ -937,7 +953,7 @@ void UStatusTracker::InflictFreeze(AICC_Actor* Target)
 {
 	bIsOwnerAfflicted = true;
 	Target->Freeze(true);
-	DebugHelper::AddMessageToLog(Target->GetActorLabel() + " freezed");
+	DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + " freezed");
 	PerkData.bFreezedUp = true;
 }
 
@@ -948,7 +964,7 @@ void UStatusTracker::InflictBurn(AICC_Actor* Target)
 	Target->Burn(true);
 	bCanBuff = false;
 	DebugHelper::LogWarning(Target->GetActorLabel() + " in envy burned state\nCan buff " + FString::FromInt(bCanBuff));
-	DebugHelper::AddMessageToLog(Target->GetActorLabel() + " in envy burned state\nCan buff " + FString::FromInt(bCanBuff));
+	DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + " in envy burned state\nCan buff " + FString::FromInt(bCanBuff));
 	PerkData.bEnvyBurned = true;
 }
 
@@ -958,7 +974,7 @@ void UStatusTracker::InflictShieldDebuff(AICC_Actor* Target)
 	bIsOwnerAfflicted = true;
 	Target->ShieldDebuff(true);
 	bCanDebuff = false;
-	DebugHelper::AddMessageToLog("Shield debuff  inflicted to  " + Target->GetActorLabel());
+	DebugHelper::AddMessageToLog("[Status Tracker]: Shield debuff  inflicted to  " + Target->GetActorLabel());
 	PerkData.bShieldDebuff = true;
 }
 
@@ -968,6 +984,6 @@ void UStatusTracker::InflictAShamed(AICC_Actor* Target)
 	bIsOwnerAfflicted = true;
 	Target->Ashamed(true);
 	DebugHelper::LogMessage(5, FColor::FromHex("FE7743"), Target->GetActorLabel() + " can't perform attack");
-	DebugHelper::AddMessageToLog(Target->GetActorLabel() + " can't perform attack");
+	DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + " can't perform attack");
 	PerkData.bAshamed = true;
 }

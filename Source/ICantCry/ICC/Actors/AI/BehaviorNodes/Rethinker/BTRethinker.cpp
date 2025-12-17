@@ -27,7 +27,7 @@ EBTNodeResult::Type UBTRethinker::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	const AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner());
 	Current = Cast<AMob>(Controller->GetPawn());
 	
-	DebugHelper::AddMessageToLog(Current->GetData()->EnemyName.ToString() + " can't buff other .. rethinking a new action");
+	DebugHelper::AddMessageToLog("[Behavior Tree - Rethinker]: " + Current->GetData()->EnemyName.ToString() + " can't buff other .. rethinking a new action");
 	AICC_Player* Target = Cast<AICC_Player>(BlackBoard->GetValueAsObject("Target"));
 
     Current->SetRethink(true);
@@ -132,7 +132,7 @@ void UBTRethinker::OnThinkComplete(UBehaviorTreeComponent* OwnerComp, AICC_AICon
 		if (Current->IsAshamed())
 		{
 			Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetData()->EnemyName.ToString() + " skipped the turn (Ashamed)"));
-			DebugHelper::AddMessageToLog(Current->GetData()->EnemyName.ToString() + " skipped the turn (Ashamed)");
+			DebugHelper::AddMessageToLog("[Behavior Tree - Rethinker]: " + Current->GetData()->EnemyName.ToString() + " skipped the turn (Ashamed)");
 
 			Current->SetTreeId(-1);
 			Current->SetIsBuffedAtk(false);
@@ -178,7 +178,7 @@ void UBTRethinker::StartAttackMinigame(AMob* CurrentMob, AICC_Player* Target, AI
     Controller->MoveToActor(Target);
 
     CurrentMob->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " is attacking"));
-    DebugHelper::AddMessageToLog(Current->GetActorLabel() + " is attacking");
+    DebugHelper::AddMessageToLog("[Behavior Tree - Rethinker]: " + Current->GetActorLabel() + " is attacking");
 
     CurrentMob->GetAIMemory().AttackLocation = CurrentMob->GetActorLocation();
 	Target->GetBattleHUD()->DecisionDisplayer->Hide();
@@ -198,7 +198,7 @@ void UBTRethinker::ProcessDecision(EDecision Dec, AMob* CurrentMob, UBlackboardC
     if (Current->IsAshamed())
     {
         CurrentMob->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " skipped the turn (Ashamed)"));
-        DebugHelper::AddMessageToLog(CurrentMob->GetActorLabel() + " skipped the turn (Ashamed)");
+        DebugHelper::AddMessageToLog("[Behavior Tree - Rethinker]: " + CurrentMob->GetActorLabel() + " skipped the turn (Ashamed)");
         CurrentMob->SetTreeId(-1);
         CurrentMob->SetIsBuffedAtk(false);
         BlackBoard->SetValueAsInt("Id", CurrentMob->GetTreeId());
@@ -213,7 +213,7 @@ void UBTRethinker::ProcessDecision(EDecision Dec, AMob* CurrentMob, UBlackboardC
     if (Current != Target->GetBattleHUD()->GetCurrentPlayingEmotion())
     {
         DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not the " + Current->GetActorLabel() + " turn yet");
-        DebugHelper::AddMessageToLog("It's not the " + Current->GetActorLabel() + " turn yet");
+        DebugHelper::AddMessageToLog("[Behavior Tree - Rethinker]: It's not the " + Current->GetActorLabel() + " turn yet");
         FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
         return;
     }

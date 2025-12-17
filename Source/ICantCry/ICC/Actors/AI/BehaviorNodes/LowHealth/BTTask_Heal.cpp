@@ -25,7 +25,7 @@ EBTNodeResult::Type UBTTask_Heal::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	
 	
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " uses Heal"));
-	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " uses Heal");
+	DebugHelper::AddMessageToLog("[Behavior Tree - Heal]: " + Current->GetActorLabel() + " uses Heal");
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
 	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetActorLabel() + " uses heal"));
@@ -56,7 +56,7 @@ void UBTTask_Heal::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 		{
 			Current->Heal(Current->GetTactics()->HealingPoint); // Can be edited via editor on the EnemyTactics data asset
 			Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " Healed ItSelf"));
-			DebugHelper::AddMessageToLog(Current->GetActorLabel() + " Healed ItSelf");
+			DebugHelper::AddMessageToLog("[Behavior Tree - Heal]: " + Current->GetActorLabel() + " Healed ItSelf");
 			Timer = 0.0f;
 			UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 			Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
@@ -69,7 +69,7 @@ void UBTTask_Heal::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 			checkf(Other, TEXT("Other Mob is invalid heal TickTask"));
 			Other->Heal(Current->GetTactics()->HealingPoint);
 			Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " Healed " + Other->GetActorLabel()));
-			DebugHelper::AddMessageToLog(Current->GetActorLabel() + " Healed " + Other->GetActorLabel());
+			DebugHelper::AddMessageToLog("[Behavior Tree - Heal]: " + Current->GetActorLabel() + " Healed " + Other->GetActorLabel());
 			Timer = 0.0f;
 			UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 			Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();

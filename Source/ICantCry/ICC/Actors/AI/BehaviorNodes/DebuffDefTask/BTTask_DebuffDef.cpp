@@ -40,8 +40,8 @@ EBTNodeResult::Type UBTTask_DebuffDef::ExecuteTask(UBehaviorTreeComponent& Owner
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " de-buffed " + Target->GetActorLabel() + " def"));
 	Current->GetBattleHandler()->GetBattleInfo()->SetTurnInfo(FText::FromString("Target def is now -> " + FString::SanitizeFloat(Target->GetStats()->DefencePower)));
 
-	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " de-buffed " + Target->GetActorLabel() + " def");
-	DebugHelper::AddMessageToLog("Target def is now -> " + FString::SanitizeFloat(Target->GetStats()->DefencePower));
+	DebugHelper::AddMessageToLog("[Behavior Tree - Debuff Def]: " + Current->GetActorLabel() + " de-buffed " + Target->GetActorLabel() + " def");
+	DebugHelper::AddMessageToLog("[Behavior Tree - Debuff Def]: Target def is now -> " + FString::SanitizeFloat(Target->GetStats()->DefencePower));
 
 	Target->GetBattleHUD()->DecisionDisplayer->Show();
 	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetActorLabel() + "De-buffed " + Target->GetActorLabel() + " def"));
@@ -70,7 +70,7 @@ void UBTTask_DebuffDef::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	if (Current != Current->GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
 		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
-		DebugHelper::AddMessageToLog("It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
+		DebugHelper::AddMessageToLog("[Behavior Tree - Debuff Def]: It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}
@@ -83,7 +83,7 @@ void UBTTask_DebuffDef::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 			return;
 
 		DebugHelper::LogSuccess("Debuff Defence Task Completed");
-		DebugHelper::AddMessageToLog("Debuff Defence Task Completed");
+		DebugHelper::AddMessageToLog("[Behavior Tree - Debuff Def]: Debuff Defence Task Completed");
 		FinishLatentTask(*OwnerCompWeak.Get(), EBTNodeResult::Succeeded);
 	}), 1.0f, false);
 	

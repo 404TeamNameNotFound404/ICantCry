@@ -23,12 +23,12 @@ void FDecisionMaker::Setup(AMob* Current)
     if (Current->GetStatusTracker()->GetPerkData().bBuffAtk)
     {
 	    CurrentWeights = Current->GetDecisionTable()->BuffAtk;
-    	DebugHelper::AddMessageToLog("Decision table used: Buffed Atk");
+    	DebugHelper::AddMessageToLog("[Decision Maker]: Decision table used: Buffed Atk");
     }
     else if (Current->GetStatusTracker()->GetPerkData().bDebuffAtk)
     {
 	    CurrentWeights = Current->GetDecisionTable()->DebuffAtk;
-    	DebugHelper::AddMessageToLog("Decision table used: Debuff Atk");
+    	DebugHelper::AddMessageToLog("[Decision Maker]: Decision table used: Debuff Atk");
     }
     else if (Current->IsLowHealth())
     {
@@ -37,37 +37,37 @@ void FDecisionMaker::Setup(AMob* Current)
     	Current->GetStatusTracker()->GetPerkData().bBuffDef = false;
     	Current->GetStatusTracker()->GetPerkData().bDebuffDef = false;
 	    CurrentWeights = Current->GetDecisionTable()->LowHealth;
-    	DebugHelper::AddMessageToLog("Decision table used: Low health");
+    	DebugHelper::AddMessageToLog("[Decision Maker]: Decision table used: Low health");
     }
     else if (Current->GetStatusTracker()->GetPerkData().bEnvyBurned)
     {
 	    CurrentWeights = Current->GetDecisionTable()->EnvyBurned;
-    	DebugHelper::AddMessageToLog("Decision table used: Envy burned");
+    	DebugHelper::AddMessageToLog("[Decision Maker]: Decision table used: Envy burned");
     }
 	else if (Current->GetStatusTracker()->GetPerkData().bBuffDef)
 	{
 		CurrentWeights = Current->GetDecisionTable()->BuffDef;
-		DebugHelper::AddMessageToLog("Decision table used: Buff Def");
+		DebugHelper::AddMessageToLog("[Decision Maker]: Decision table used: Buff Def");
 	}
 	else if (Current->GetStatusTracker()->GetPerkData().bDebuffDef)
 	{
 		CurrentWeights = Current->GetDecisionTable()->DebuffDef;
-		DebugHelper::AddMessageToLog("Decision table used: Debuff Def");
+		DebugHelper::AddMessageToLog("[Decision Maker]: Decision table used: Debuff Def");
 	}
 	else if (Current->GetStatusTracker()->GetPerkData().bShieldDebuff)
 	{
 		CurrentWeights = Current->GetDecisionTable()->DebuffShield;
-		DebugHelper::AddMessageToLog("Decision table used: Shield");
+		DebugHelper::AddMessageToLog("[Decision Maker]: Decision table used: Shield");
 	}
 	else if (Current->GetStatusTracker()->GetPerkData().bAshamed)
 	{
 		CurrentWeights = Current->GetDecisionTable()->Ashamed;
-		DebugHelper::AddMessageToLog("Decision table used: Ashamed");
+		DebugHelper::AddMessageToLog("[Decision Maker]: Decision table used: Ashamed");
 	}
     else
     {
 	    CurrentWeights = Current->GetDecisionTable()->Idle;
-    	DebugHelper::AddMessageToLog("Decision table used: Idle");
+    	DebugHelper::AddMessageToLog("[Decision Maker]: Decision table used: Idle");
     }
 	
 	UStatusTracker* StatusTracker = Current->GetStatusTracker();
@@ -182,7 +182,7 @@ void FDecisionMaker::Setup(AMob* Current)
 
 EDecision FDecisionMaker::Thought()
 {
-	DebugHelper::AddMessageToLog("AI is thinking the best move..");
+	DebugHelper::AddMessageToLog("[Decision Maker]: AI is thinking the best move..");
 	
 	TArray<TPair<EDecision, float>> Decisions;
 	Decisions.Reserve(DecisionMap.Num());
@@ -231,7 +231,7 @@ EDecision FDecisionMaker::Thought()
 	const float Chance = FMath::FRand();
 	float WeightAccumulator = 0.f;
 
-	DebugHelper::AddMessageToLog("Chance extracted: " + FString::SanitizeFloat(Chance));
+	DebugHelper::AddMessageToLog("[Decision Maker]: Chance extracted: " + FString::SanitizeFloat(Chance));
 
 	for (const auto& Entry : Filtered)
 	{
@@ -239,7 +239,7 @@ EDecision FDecisionMaker::Thought()
 		if (Chance <= WeightAccumulator)
 		{
 			LastDecision = Entry.Key;
-			DebugHelper::AddMessageToLog("Decision picked: " + GetDecisionString(Entry.Key));
+			DebugHelper::AddMessageToLog("[Decision Maker]: Decision picked: " + GetDecisionString(Entry.Key));
 			return Entry.Key;
 		}
 	}
