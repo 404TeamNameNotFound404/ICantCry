@@ -85,8 +85,6 @@ void FInternalPerkData::CheckPriority(AMob* Mob)
 	{
 		return;
 	}
-
-	
 }
 
 bool FInternalPerkData::HasBuffHightPriority(AMob* Emotion) const
@@ -478,7 +476,7 @@ void UStatusTracker::UpdateBuffStatus()
 
 	BuffStatusCounter += 1;
 
-	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+	const AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
 	
 	DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + " Buff Status counter of " + GetBuffName(CurrentBuffedStatus) + " " + FString::FromInt(BuffStatusCounter));
 
@@ -492,7 +490,7 @@ void UStatusTracker::UpdateBuffStatus()
 	case AtkBuff:
 		if (Target->IsA(AICC_Player::StaticClass()))
 		{
-			AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+			const AICC_Player* Player = Cast<AICC_Player>(GetOwner());
 			Player->GetStats()->AttackPower = Instance->GetPersistentData()->InitialAttackPower;
 			DebugHelper::AddMessageToLog("[Status Tracker]: Buff ended atk returns to " + FString::SanitizeFloat(Player->GetStats()->AttackPower));
 			BuffStatusCounter = 0;
@@ -501,7 +499,7 @@ void UStatusTracker::UpdateBuffStatus()
 		}
 		if (Target->IsA(AMob::StaticClass()))
 		{
-			AMob* Emotion = Cast<AMob>(GetOwner());
+			const AMob* Emotion = Cast<AMob>(GetOwner());
 			Emotion->GetData()->AttackPower = Emotion->GetAIMemory().InitialAttackPower;
 			DebugHelper::AddMessageToLog("[Status Tracker]: Buff ended atk returns to " + FString::SanitizeFloat(Emotion->GetData()->AttackPower));
 			BuffStatusCounter = 0;
@@ -513,7 +511,7 @@ void UStatusTracker::UpdateBuffStatus()
 	case DefBuff:
 		if (Target->IsA(AICC_Player::StaticClass()))
 		{
-			AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+			const AICC_Player* Player = Cast<AICC_Player>(GetOwner());
 			Player->GetStats()->DefencePower = Instance->GetPersistentData()->InitialDefencePower;
 			DebugHelper::AddMessageToLog("[Status Tracker]: Buff ended def returns to " + FString::SanitizeFloat(Player->GetStats()->DefencePower));
 			BuffStatusCounter = 0;
@@ -522,7 +520,7 @@ void UStatusTracker::UpdateBuffStatus()
 		}
 		if (Target->IsA(AMob::StaticClass()))
 		{
-			AMob* Emotion = Cast<AMob>(GetOwner());
+			const AMob* Emotion = Cast<AMob>(GetOwner());
 			Emotion->GetData()->DefencePower = Emotion->GetAIMemory().InitialDefencePower;
 			DebugHelper::AddMessageToLog("[Status Tracker]: Buff ended def returns to " + FString::SanitizeFloat(Emotion->GetData()->DefencePower));
 			BuffStatusCounter = 0;
@@ -730,7 +728,7 @@ void UStatusTracker::BuffAttack()
 
 	if (Target->IsA(AICC_Player::StaticClass()))
 	{
-		AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+		const AICC_Player* Player = Cast<AICC_Player>(GetOwner());
 		Player->GetStats()->AttackPower += FMath::FloorToInt(
 			Player->GetStats()->AttackPower * Player->GetBattleData()->BuffAtkIncrement);
 		DebugHelper::LogWarning("Attack buffed " + FString::SanitizeFloat(Player->GetStats()->AttackPower));
@@ -739,20 +737,59 @@ void UStatusTracker::BuffAttack()
 
 	if (Target->IsA(AMob::StaticClass()))
 	{
-		AMob* Mob = Cast<AMob>(GetOwner());
+		const AMob* Mob = Cast<AMob>(GetOwner());
 		Mob->GetTactics()->MovePower = FMath::FloorToInt(
 			Mob->GetTactics()->MovePower * Mob->GetBattleData()->EmotionAtkBuffIncrement);
-		PerkData.bBuffAtk = true;
+
+		switch (Mob->GetMobType())
+		{
+		case MobAnger:
+			DebugHelper::AddMessageToLog("[Status Tracker]: Buff atk is applied and " + Mob->GetActorLabel() + " changed it's DT to buff atk");
+			PerkData.bBuffAtk = true;
+			break;
+		case MobShame:
+			PerkData.bBuffAtk = false;
+			break;
+		case MobJoy:
+			PerkData.bBuffAtk = true;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Buff atk is applied and " + Mob->GetActorLabel() + " changed it's DT to buff atk");
+			break;
+		case MobDisgust:
+			PerkData.bBuffAtk = true;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Buff atk is applied and " + Mob->GetActorLabel() + " changed it's DT to buff atk");
+			break;
+		case MobFear:
+			PerkData.bBuffAtk = true;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Buff atk is applied and " + Mob->GetActorLabel() + " changed it's DT to buff atk");
+			break;
+		case MobJealousy:
+			PerkData.bBuffAtk = true;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Buff atk is applied and " + Mob->GetActorLabel() + " changed it's DT to buff atk");
+			break;
+		case MobSadness:
+			PerkData.bBuffAtk = true;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Buff atk is applied and " + Mob->GetActorLabel() + " changed it's DT to buff atk");
+			break;
+		case MobAnxiety:
+			PerkData.bBuffAtk = false;
+			break;
+		case MobCalm:
+			PerkData.bBuffAtk = false;
+			break;
+		default:
+			PerkData.bBuffAtk = false;
+			break;
+		}
 	}
 }
 
 void UStatusTracker::BuffDefence()
 {
-	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+	const AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
 
 	if (Target->IsA(AICC_Player::StaticClass()))
 	{
-		AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+		const AICC_Player* Player = Cast<AICC_Player>(GetOwner());
 		Player->GetStats()->DefencePower += FMath::FloorToInt(
 			Player->GetStats()->DefencePower * Player->GetBattleData()->BuffDefIncrement);
 		DebugHelper::LogWarning("Defence buffed " + FString::SanitizeFloat(Player->GetStats()->DefencePower));
@@ -761,10 +798,43 @@ void UStatusTracker::BuffDefence()
 
 	if (Target->IsA(AMob::StaticClass()))
 	{
-		AMob* Mob = Cast<AMob>(GetOwner());
+		const AMob* Mob = Cast<AMob>(GetOwner());
 		Mob->GetData()->DefencePower = FMath::FloorToInt(
 			Mob->GetData()->DefencePower * Mob->GetBattleData()->EmotionDefBuffIncrement);
-		PerkData.bBuffDef = true;
+
+		switch (Mob->GetMobType())
+		{
+		case MobAnger:
+			PerkData.bBuffDef = false;
+			break;
+		case MobShame:
+			PerkData.bBuffDef = false;
+			break;
+		case MobJoy:
+			PerkData.bBuffDef = true;
+			break;
+		case MobDisgust:
+			PerkData.bBuffDef = false;
+			break;
+		case MobFear:
+			PerkData.bBuffDef = true;
+			break;
+		case MobJealousy:
+			PerkData.bBuffDef = false;
+			break;
+		case MobSadness:
+			PerkData.bBuffDef = false;
+			break;
+		case MobAnxiety:
+			PerkData.bBuffDef = false;
+			break;
+		case MobCalm:
+			PerkData.bBuffDef = true;
+			break;
+		default:
+			PerkData.bBuffDef = false;
+			break;
+		}
 	}
 }
 
@@ -788,10 +858,33 @@ void UStatusTracker::BuffShield()
 	if (Target->IsA(AMob::StaticClass()))
 	{
 		bCanDebuff  = false;
-		PerkData.bShieldDebuff = true;
+		// PerkData.bShieldDebuff = true;
 		DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + " has shield");
+		
+		switch (const AMob* Mob = Cast<AMob>(GetOwner()); Mob->GetMobType())
+		{
+		case MobAnger:
+			break;
+		case MobShame:
+			break;
+		case MobJoy:
+			break;
+		case MobDisgust:
+			break;
+		case MobFear:
+			break;
+		case MobJealousy:
+			break;
+		case MobSadness:
+			break;
+		case MobAnxiety:
+			break;
+		case MobCalm:
+			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table for " + Target->GetActorLabel() + " has changed into Shield");
+			PerkData.bShieldDebuff = true;
+			break;
+		}
 	}
-	
 }
 
 void UStatusTracker::Heal()
@@ -831,7 +924,34 @@ void UStatusTracker::DebuffAtkF()
 		const AMob* Mob = Cast<AMob>(GetOwner());
 		Mob->GetData()->AttackPower -= Mob->GetData()->AttackPower * Mob->GetBattleData()->EmotionAtkDebuffMalus;
 		DebugHelper::AddMessageToLog("[Status Tracker]: AI atk value (debuff) " + FString::SanitizeFloat(Mob->GetData()->AttackPower));
-		PerkData.bDebuffAtk = true;
+
+		switch (Mob->GetMobType())
+		{
+		case MobAnger:
+			PerkData.bDebuffAtk = true;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff atk");
+			break;
+		case MobShame:
+			break;
+		case MobJoy:
+			break;
+		case MobDisgust:
+			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff atk");
+			PerkData.bDebuffAtk = true;
+			break;
+		case MobFear:
+			break;
+		case MobJealousy:
+			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff atk");
+			PerkData.bDebuffAtk = true;
+			break;
+		case MobSadness:
+			break;
+		case MobAnxiety:
+			break;
+		case MobCalm:
+			break;
+		}
 	}
 }
 
@@ -851,7 +971,34 @@ void UStatusTracker::DebuffDefF()
 	{
 		const AMob* Mob = Cast<AMob>(GetOwner());
 		Mob->GetData()->DefencePower -= Mob->GetData()->DefencePower * Mob->GetBattleData()->EmotionDefDebuffMalus;
-		PerkData.bDebuffDef = true;
+		
+		switch (Mob->GetMobType())
+		{
+		case MobAnger:
+			break;
+		case MobShame:
+			break;
+		case MobJoy:
+			break;
+		case MobDisgust:
+			break;
+		case MobFear:
+			PerkData.bDebuffDef = true;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff def");
+			break;
+		case MobJealousy:
+			break;
+		case MobSadness:
+			break;
+		case MobAnxiety:
+			break;
+		case MobCalm:
+			PerkData.bDebuffDef = true;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff def");
+			break;
+		default:
+			break;
+		}
 	}
 }
 
@@ -965,7 +1112,39 @@ void UStatusTracker::InflictBurn(AICC_Actor* Target)
 	bCanBuff = false;
 	DebugHelper::LogWarning(Target->GetActorLabel() + " in envy burned state\nCan buff " + FString::FromInt(bCanBuff));
 	DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + " in envy burned state\nCan buff " + FString::FromInt(bCanBuff));
-	PerkData.bEnvyBurned = true;
+
+	if (Target->IsA(AMob::StaticClass()))
+	{
+		switch (const AMob* Mob = Cast<AMob>(Target); Mob->GetMobType())
+		{
+		case MobAnger:
+			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now envy burned");
+			PerkData.bEnvyBurned = true;
+			break;
+		case MobShame:
+			break;
+		case MobJoy:
+			break;
+		case MobDisgust:
+			break;
+		case MobFear:
+			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now envy burned");
+			PerkData.bEnvyBurned = true;
+			break;
+		case MobJealousy:
+			break;
+		case MobSadness:
+			break;
+		case MobAnxiety:
+			break;
+		case MobCalm:
+			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now envy burned");
+			PerkData.bEnvyBurned = true;
+			break;
+		default:
+			break;
+		}
+	}
 }
 
 void UStatusTracker::InflictShieldDebuff(AICC_Actor* Target)
@@ -985,5 +1164,43 @@ void UStatusTracker::InflictAShamed(AICC_Actor* Target)
 	Target->Ashamed(true);
 	DebugHelper::LogMessage(5, FColor::FromHex("FE7743"), Target->GetActorLabel() + " can't perform attack");
 	DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + " can't perform attack");
-	PerkData.bAshamed = true;
+
+	if (Target->IsA(AMob::StaticClass()))
+	{
+		switch (const AMob* Mob = Cast<AMob>(Target); Mob->GetMobType())
+		{
+		case MobAnger:
+			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now ashamed");
+			PerkData.bAshamed = true;
+			break;
+		case MobShame:
+			break;
+		case MobJoy:
+			PerkData.bAshamed = true;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now ashamed");
+			break;
+		case MobDisgust:
+			PerkData.bAshamed = true;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now ashamed");
+			break;
+		case MobFear:
+			PerkData.bAshamed = true;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now ashamed");
+			break;
+		case MobJealousy:
+			PerkData.bAshamed = true;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now ashamed");
+			break;
+		case MobSadness:
+			PerkData.bAshamed = true;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now ashamed");
+			break;
+		case MobAnxiety:
+			break;
+		case MobCalm:
+			break;
+		default:
+			break;
+		}
+	}
 }
