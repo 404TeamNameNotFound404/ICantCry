@@ -620,23 +620,7 @@ void UStatusTracker::UnfreezeChance()
 		}
 		
 	}
-	
-
-	// if (constexpr float ChanceToFreeze = 0.25f; AleatoryChance <= ChanceToFreeze)
-	// {
-	// 	Target->Freeze(false);
-	// 	bIsOwnerAfflicted = false;
-	// 	CurrentActiveStatus = None;
-	// 	StatusCounter = 0;
-	// }
 }
-
-/*
- * First turn 0.25
- * Second turn 0.50
- * Third 0.75
- * Last : 1.0
- */
 
 FString UStatusTracker::GetStatusName(const EAfflictedStatus& Status) const
 {

@@ -24,6 +24,8 @@ EBTNodeResult::Type UBTRethinker::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
 	BlackBoard = OwnerComp.GetBlackboardComponent();
+	TreeComp = &OwnerComp;
+	
 	const AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner());
 	Current = Cast<AMob>(Controller->GetPawn());
 	
@@ -65,6 +67,8 @@ EBTNodeResult::Type UBTRethinker::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	return EBTNodeResult::InProgress;
 }
 
+// probably I won't need this?
+
 void UBTRethinker::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
@@ -89,20 +93,20 @@ void UBTRethinker::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 	if (!Current->IsMinigameStarted() || !Current->IsMinigameEnded() || !Target->GetMinigameHandler()->IsPlayerMinigameEnded())
 		return;
 	
-	Current->SetTreeId(-1);
-	Current->SetIsBuffedAtk(false);
-	BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
-	BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
-	BlackBoard->SetValueAsBool("IsDefenceDebuffed?", Current->GetIsTargetDefenceDebuffed());
-	Current->SetRethink(false);
-	BlackBoard->SetValueAsBool("Rethinker", Current->GetRethink());
-
-	Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
-
-	bBusy = false;
-	bWaitingForThinkCompletion = false;
-
-	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+	// Current->SetTreeId(-1);
+	// Current->SetIsBuffedAtk(false);
+	// BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
+	// BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
+	// BlackBoard->SetValueAsBool("IsDefenceDebuffed?", Current->GetIsTargetDefenceDebuffed());
+	// Current->SetRethink(false);
+	// BlackBoard->SetValueAsBool("Rethinker", Current->GetRethink());
+	//
+	// Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
+	//
+	// bBusy = false;
+	// bWaitingForThinkCompletion = false;
+	//
+	// FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 }
 
 void UBTRethinker::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult)
@@ -356,7 +360,6 @@ void UBTRethinker::OnMinigameEndedCallback()
 	BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
 	Current->SetRethink(false);
 	BlackBoard->SetValueAsBool("Rethinker", Current->GetRethink());
-
-	// Finish the task
+	
 	FinishLatentTask(*TreeComp, EBTNodeResult::Succeeded);
 }

@@ -52,11 +52,6 @@ void UMagazineBullet::Setup(UCircularBulletBuffer* InBuffer,  UBulletData* Bulle
 		}
 	}
 
-	// if (BulletBtn && BulletData)
-	// {
-	// 	BulletBtn->SetBackgroundColor(BulletData->DisplayColor);
-	// }
-
 	Instance = Cast<UICantCryGameInstance>(GetGameInstance());
 }
 

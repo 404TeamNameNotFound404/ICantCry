@@ -251,8 +251,9 @@ void UBattleHUD::OnShootPressed()
     
     bShootFired = true;
     DebugHelper::LogMessage(7, FColor::Orange, "Ap Accumulator on shoot -> " + FString::FromInt(ApAccumulator));
-    UpdateAPBar();
     Bar->UpdateHighlights(1);
+    UpdateAPBar();
+    ApAccumulator = 1;
     bTargetSelection = true;
     DebugHelper::LogSuccess("Shoot pressed, ap spent (Accumulator)-> " + FString::FromInt(ApAccumulator));
     DebugHelper::AddMessageToLog("[BattleHUD]: Shoot pressed, ap spent (Accumulator) -> " + FString::FromInt(ApAccumulator));
@@ -361,6 +362,7 @@ void UBattleHUD::OnReloadPressed()
     Displayer->SetVisibility(ESlateVisibility::Visible);
     Displayer->Refresh();
     OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
+    RefreshBulletMagazine();
     FSlateApplication::Get().ClearAllUserFocus();
 }
 
@@ -599,7 +601,6 @@ void UBattleHUD::IncreaseShootPower()
         return;
     }
     
-    ApPowerBoost++;
     ApAccumulator = FMath::Min(ApAccumulator + 1, 4);
     Bar->UpdateHighlights(ApAccumulator);
     
@@ -613,34 +614,38 @@ void UBattleHUD::IncreaseShootPower()
         Bar->UpdateHighlights(ApAccumulator);
     }
     
-
+    
     switch (ApAccumulator)
     {
     case 1:
         {
             GameInstance->GetPlayerStats()->ApModifier = 1.0f;
             DebugHelper::AddMessageToLog("[BattleHUD]: Player spent 1 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+            DebugHelper::LogWarning("[BattleHUD]: Player spent 1 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
             break;
         }
     case 2:
         {
             GameInstance->GetPlayerStats()->ApModifier = 1.5f;
             DebugHelper::AddMessageToLog("[BattleHUD]: Player spent 2 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+            DebugHelper::LogWarning("[BattleHUD]: Player spent 2 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
             break;
         }
     case 3:
         {
             GameInstance->GetPlayerStats()->ApModifier = 2.0f;
             DebugHelper::AddMessageToLog("[BattleHUD]: Player spent 3 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+            DebugHelper::LogWarning("[BattleHUD]: Player spent 3 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
             break;
         }
     case 4:
         {
             GameInstance->GetPlayerStats()->ApModifier = 2.5f;
             DebugHelper::AddMessageToLog("[BattleHUD]: Player spent 4 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+            DebugHelper::LogWarning("[BattleHUD]: Player spent 4 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
             break;
         }
-
+    
     default:
         {
             GameInstance->GetPlayerStats()->ApModifier = 1.0f;
@@ -649,33 +654,26 @@ void UBattleHUD::IncreaseShootPower()
         }
       
     }
-
+    
     Bar->UpdateHighlights(ApAccumulator);
-    
-    DebugHelper::LogWarning("Ap Modifier on increase -> " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
-    DebugHelper::AddMessageToLog("[BattleHUD]: Player decided to increase it's shoot power, now has modifier: -> " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
-    
-    DebugHelper::LogSuccess("Shoot is boosted ap modifier now is " + FString::SanitizeFloat( GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStats()->ApModifier ));
-    DebugHelper::AddMessageToLog("[BattleHUD]: Shoot is boosted ap modifier now is " + FString::SanitizeFloat( GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStats()->ApModifier ));
-    FSlateApplication::Get().ClearAllUserFocus();
 }
 
 void UBattleHUD::DecreaseShootPower()
 {
     if (ApAccumulator <= 0)
         return;
-
+    
     ApPowerBoost--;
     ApAccumulator = FMath::Clamp(ApAccumulator - 1, 1, 4);
-
+    
     Bar->UpdateHighlights(ApAccumulator);
-
+    
     DebugHelper::LogMessage(6, FColor::Yellow, 
         "Restored Ap: " + FString::FromInt(ApAccumulator));
-
+    
     
     float NewModifier = 1.0f;
-
+    
     switch (ApAccumulator)
     {
     case 1: NewModifier = 1.0f; break;
@@ -684,12 +682,12 @@ void UBattleHUD::DecreaseShootPower()
     case 4: NewModifier = 2.5f; break;
     default: NewModifier = 1.0f; break;
     }
-
+    
     GameInstance->GetPlayerStats()->ApModifier = NewModifier;
     DebugHelper::AddMessageToLog("[BattleHUD]: Player decided to decrease boost, now has: " + FString::SanitizeFloat(NewModifier));
-
+    
     Bar->UpdateHighlights(ApAccumulator);
-
+    
     FSlateApplication::Get().ClearAllUserFocus();
 }
 
@@ -1065,12 +1063,6 @@ void UBattleHUD::SpawnGameOverVisualizer()
         VisualizerGameOverSlot->AddChild(GameOverVisualizer);
         GameOverVisualizer->SetVisibility(ESlateVisibility::Hidden);
     }, 5.0f, false);
-    // TSubclassOf<UGameOverVisualizer> GameOverVisualizerClass = LoadClass<UGameOverVisualizer>(this,TEXT("/Game/ICC/BluePrints/UI/Battle/WBP_GameOver.WBP_GameOver_C"));
-    // checkf(GameOverVisualizerClass, TEXT("GameOverVisualizerClass path invalid"))
-    // GameOverVisualizer = CreateWidget<UGameOverVisualizer>(GetWorld(), GameOverVisualizerClass);
-    // checkf(GameOverVisualizer, TEXT("Invalid GameOverVisualizer"))
-    // VisualizerGameOverSlot->AddChild(GameOverVisualizer);
-    // GameOverVisualizer->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UBattleHUD::DisplayGameOverVisualizer()
@@ -1108,10 +1100,9 @@ FText UBattleHUD::UpdateTargetSelectionInfos()
     // Start at current index and find the first alive target
     for (int32 i = 0; i < Queue.Num(); ++i)
     {
-        int32 CheckIndex = (CurrentEnemyIndex + i) % Queue.Num();
-        AMob* Mob = Cast<AMob>(Queue[CheckIndex]);
+        const int32 CheckIndex = (CurrentEnemyIndex + i) % Queue.Num();
         
-        if (!Mob || Mob->IsAlive())
+        if ( AMob* Mob = Cast<AMob>(Queue[CheckIndex]); !Mob || Mob->IsAlive())
         {
             return FText::FromString("Target: " + Queue[CheckIndex]->GetActorLabel());
         }
@@ -1130,9 +1121,9 @@ FText UBattleHUD::UpdateEnemyName()
     // Start at current index and find the first alive target
     for (int32 i = 0; i < Queue.Num(); ++i)
     {
-        int32 CheckIndex = (CurrentEnemyIndex + i) % Queue.Num();
-        AMob* Mob = Cast<AMob>(Queue[CheckIndex]);
-        if (!Mob || Mob->IsAlive())
+        const int32 CheckIndex = (CurrentEnemyIndex + i) % Queue.Num();
+       
+        if ( AMob* Mob = Cast<AMob>(Queue[CheckIndex]); !Mob || Mob->IsAlive())
         {
             return FText::FromString(Queue[CheckIndex]->GetActorLabel());
         }
@@ -1176,6 +1167,31 @@ void UBattleHUD::EnableButtonsAfterShooting()
     Pass->SetIsEnabled(true);
     Reload->SetIsEnabled(true);
     Shoot->SetIsEnabled(true);
+}
+
+void UBattleHUD::RefreshBulletMagazine()
+{
+    UCircularBulletBuffer* Buffer = GetCircularBulletBuffer();
+    const int32 NumSlots = MagazineBullets.Num();
+
+    int32 FilledSlots = 0;
+
+    for (int32 i = 0; i < Buffer->GetCount() && FilledSlots < NumSlots; ++i)
+    {
+        const int32 BufferIndex =
+            (Buffer->GetTailIndex() + i) % Buffer->GetCapacity();
+
+        UBulletData* BulletData = Buffer->PeekAt(BufferIndex);
+        if (!BulletData) continue;
+
+        MagazineBullets[FilledSlots]->Setup(Buffer, BulletData, BufferIndex);
+        FilledSlots++;
+    }
+    
+    for (int32 i = FilledSlots; i < NumSlots; ++i)
+    {
+        MagazineBullets[i]->Setup(nullptr, nullptr, -1);
+    }
 }
 
 void UBattleHUD::ShowHUD() 
