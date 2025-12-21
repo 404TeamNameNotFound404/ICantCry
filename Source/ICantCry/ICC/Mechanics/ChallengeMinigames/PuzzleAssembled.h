@@ -32,6 +32,12 @@ protected:
 
 	UPROPERTY() AChallengeMinigame* MinigameOwner;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Reward")
+	ERecipeType RecipeType;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Reward")
+	FRecipe Self;
+
 public:
 	void Display();
 	void SetMinigameOwner(AChallengeMinigame* Minigame);

@@ -2,15 +2,16 @@
 
 
 #include "PuzzleAssembled.h"
-
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
-#include "WorldPartition/ContentBundle/ContentBundleEditorSubsystemInterface.h"
+#include "ICantCry/ICC/UI/InventoryHUD.h"
 
 void UPuzzleAssembled::NativeConstruct()
 {
 	Super::NativeConstruct();
 	Return->OnClicked.AddDynamic(this, & UPuzzleAssembled::DisableMinigame);
+
+	Self.RequiredBlueprintType = RecipeType;
 }
 
 void UPuzzleAssembled::DisableMinigame()
@@ -23,17 +24,14 @@ void UPuzzleAssembled::DisableMinigame()
 	Controller->SetShowMouseCursor(false);
 	MinigameOwner->GetTriggerComponent()->SetActive(false);
 	MinigameOwner->GetTriggerComponent()->DestroyComponent();
+	Instance->GetCurrentPlayer()->GetInventoryManager()->AddRecipe(Self);
 	RemoveFromParent();
 }
 
 void UPuzzleAssembled::Display()
 {
-	Body->SetText(FText::FromString("You assembled correctly all the pieces and for doing that, you obtained a new blueprint"));
+	Body->SetText(FText::FromString("You obtained " + Self.GetName(RecipeType) + " Blueprint"));
 	Body->SetAutoWrapText(true);
-
-	const UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
-	if (!Blueprint) return;
-	Instance->GetCurrentPlayer()->GetInventoryManager()->AddRecipe(Blueprint->RecipeType);
 }
 
 void UPuzzleAssembled::SetMinigameOwner(AChallengeMinigame* Minigame)
