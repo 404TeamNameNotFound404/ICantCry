@@ -152,6 +152,12 @@ bool AMob::IsRespawned() const
 
 void AMob::ReinizializeTree()
 {
+	if (!AIController)
+	{
+		DebugHelper::LogMessage(10, FColor::Red, "AI controller is invalid at AMob::ReinizializeTree()");
+		return;
+	}
+	
 	AIController->GetBlackboardComponent()->SetValueAsObject("Target", DebugPlayer);
 	AIController->GetBlackboardComponent()->SetValueAsObject("SelfActor", this);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsBuffed?", bIsBuffedAtk);

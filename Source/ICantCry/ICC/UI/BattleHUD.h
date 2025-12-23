@@ -203,6 +203,14 @@ public:
 	void EnableButtonsAfterShooting();
 
 	void RefreshBulletMagazine();
+	void ResetBulletMagazine();
+	void ResetAp();
+	void RequestBulletPreparation();
+
+	/**
+	 * Reset the hud and all it's call at game over's retry
+	 */
+	void Reset(const TMap<TEnumAsByte<EBulletType>, FBullet>& Bullets);
 
 private:
 

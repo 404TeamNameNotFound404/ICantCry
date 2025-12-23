@@ -17,7 +17,19 @@ void FBattleMemory::Register(TSubclassOf<AMob> EmotionClass, const FVector& Loca
 void FBattleMemory::Load(const TArray<AICC_Actor*>& Queue, const TMap<TEnumAsByte<EBulletType>, FBullet>& Bullets)
 {
 	LastStoredQueue = Queue;
-	InBattleBullets = Bullets;
+	//InBattleBullets = Bullets;
+
+	if (Bullets.IsEmpty())
+	{
+		DebugHelper::LogMessage(8, FColor::White, "Bullets array passed at Battle Memory load is empty");
+	}
+	
+	for (auto Pair : Bullets)
+	{
+		InBattleBullets.Add(Pair.Key, Pair.Value.Clone());
+		DebugHelper::LogMessage(8, FColor::Magenta, Pair.Value.GetBulletData()->BulletName + " added n " + FString::FromInt(Pair.Value.GetQuantity()));
+	}
+	
 }
 
 void FBattleMemory::Clear()

@@ -118,12 +118,12 @@ void UBattleHUD::NativeConstruct()
 
     // SetSelectedBullet(0);
 
-    //INIT BULLET SELECTION
+    //Bullet Selection 
     SelectedBulletIndex = 0;
     CurrentRevolverSlot = 0;
     UpdateBulletSelection();
 
-    // AMMO SELECTION
+    // Ammo Selection
     for (UImage* Icon : BulletIcons)
     {
         if (Icon) 
@@ -133,7 +133,6 @@ void UBattleHUD::NativeConstruct()
         }
     }
     
-    // Evidenzia il proiettile selezionato iniziale
     if (BulletIcons.IsValidIndex(SelectedBulletIndex))
     {
         BulletIcons[SelectedBulletIndex]->SetOpacity(1.0f);
@@ -144,8 +143,6 @@ void UBattleHUD::NativeConstruct()
 		BattleHandler = *It;
 		break;
 	}
-
-    DebugHelper::LogError("Lenght bullet icon " + FString::FromInt(BulletIcons.Num()));
 
     for (TActorIterator<AMinigameHandler> It(GetWorld()); It; ++It)
     {
@@ -178,7 +175,7 @@ void UBattleHUD::NativeConstruct()
 
     ConfirmReloadBullet->SetVisibility(ESlateVisibility::Hidden);
 
-    UBulletSelector::SetCanSelect(true);
+    //UBulletSelector::SetCanSelect(true);
 
     OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
 }
@@ -341,7 +338,7 @@ void UBattleHUD::OnReloadPressed()
         return;
     }
 
-    UBulletSelector::SetCanSelect(true);
+    //UBulletSelector::SetCanSelect(true);
     
     ConfirmReloadBullet->SetVisibility(ESlateVisibility::Visible);
     CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Visible);
@@ -591,7 +588,7 @@ void UBattleHUD::HideBulletMagazineOnReload()
     Displayer->SetVisibility(ESlateVisibility::Hidden);
     TargetText->SetVisibility(ESlateVisibility::Hidden);
     TargetNameText->SetVisibility(ESlateVisibility::Hidden);
-    UBulletSelector::SetCanSelect(false);
+    //UBulletSelector::SetCanSelect(false);
 }
 
 void UBattleHUD::IncreaseShootPower()
@@ -815,7 +812,8 @@ void UBattleHUD::ConfirmBulletSelection() // this is for the confirm button
     SwitchToBattleUI();
     bBulletSetupFinished = true;
     bStartFight = true;
-    BattleHandler->GetTurnBasedSystem()->RequestFight(true);
+    //BattleHandler->GetTurnBasedSystem()->RequestFight(true);
+    BattleHandler->GetTurnBasedSystem()->PrePrepareToBattle();
 }
 
 void UBattleHUD::SwitchToBattleUI()
@@ -1192,6 +1190,74 @@ void UBattleHUD::RefreshBulletMagazine()
     {
         MagazineBullets[i]->Setup(nullptr, nullptr, -1);
     }
+}
+
+void UBattleHUD::ResetBulletMagazine()
+{
+    const UCircularBulletBuffer* Buffer = GetCircularBulletBuffer();
+
+    for (int32 i = 0; i < Buffer->GetCount(); ++i)
+    {
+        MagazineBullets[i]->RemoveFromMagazine();
+    }
+}
+
+void UBattleHUD::ResetAp()
+{
+    CurrentAP = 2;
+    Bar->SetCurrentAP(CurrentAP);
+    Bar->SetPreviewAP(0);
+    UpdateAPBar();
+}
+
+void UBattleHUD::RequestBulletPreparation()
+{
+    bBulletSetupFinished = false;
+    bStartFight = false;
+
+    if (RevolverBuffer)
+    {
+        RevolverBuffer->Clear();
+        RevolverBuffer->Initialize(MaxRevolverSlots);
+    }
+
+    for (UMagazineBullet* Slot : MagazineBullets)
+    {
+        if (!Slot) continue;
+        Slot->Setup(nullptr, nullptr, -1);
+        //Slot->SetRenderOpacity(0.25f);
+        // Slot->GetMagazineBulletButton()->SetBackgroundColor(FLinearColor::Transparent);
+        Slot->GetMagazineBulletButton()->SetIsEnabled(true);
+    }
+    
+    for (UImage* Img: PistolMagazines)
+    {
+        Img->SetColorAndOpacity(FColor::White);
+        Img->SetBrushFromTexture(nullptr);
+    }
+    
+    ConfirmReloadBullet->SetVisibility(ESlateVisibility::Visible);
+    CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Visible);
+    Displayer->SetVisibility(ESlateVisibility::Visible);
+    CanvasAmmoSelection->SetVisibility(ESlateVisibility::Visible);
+    TargetText->SetVisibility(ESlateVisibility::Hidden);
+    TargetNameText->SetVisibility(ESlateVisibility::Hidden);
+    CanvasBulletStats->SetVisibility(ESlateVisibility::Visible);
+    BulletName->SetVisibility(ESlateVisibility::Visible);
+    Quantity->SetVisibility(ESlateVisibility::Visible);
+    CanvasStatus->SetVisibility(ESlateVisibility::Hidden);
+    Displayer->SetVisibility(ESlateVisibility::Visible);
+    OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
+
+    DebugHelper::LogWarning("Entered Preparation Phase");
+
+    GetBattleHandler()->GetTurnBasedSystem()->SetBattlePhase(EBattlePhase::Preparation);
+}
+
+void UBattleHUD::Reset(const TMap<TEnumAsByte<EBulletType>, FBullet>& Bullets) 
+{
+    GameInstance->GetInventory().BulletsStored = Bullets;
+    DebugHelper::LogMessage(10, FColor::Green, "Reset called");
 }
 
 void UBattleHUD::ShowHUD() 

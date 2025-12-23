@@ -60,6 +60,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Bullet Buffer")
     int32 GetTailIndex() const;
 
+	void Clear();
+
 
 private:
 

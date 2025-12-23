@@ -9,6 +9,8 @@ bool UBulletSelector::gCanSelect;
 
 void UBulletSelector::Setup(FBullet& NewBullet, int32 InQuantity)
 {
+	const UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	Player = Instance->GetCurrentPlayer();
 	BulletRef = NewBullet;
 	BulletRefPtr = &NewBullet;
 	
@@ -24,6 +26,11 @@ void UBulletSelector::Setup(FBullet& NewBullet, int32 InQuantity)
 
 void UBulletSelector::DisplayBulletInfo() // NB no need to display quantity here since now it's directly bind in battle hud
 {
+	if (!BulletRefPtr || !BulletRefPtr->GetBulletData())
+	{
+		return;
+	}
+	
 	Player->GetBattleHUD()->BulletName->SetText(FText::FromString(BulletRefPtr->GetBulletData()->BulletName));
 	Player->GetBattleHUD()->Description->SetText(FText::FromString(BulletRefPtr->GetBulletData()->Description));
 }
@@ -93,6 +100,9 @@ void UBulletSelector::Refresh()
 			BulletImage->SetBrushFromTexture(nullptr); 
 		}
 	}
+
+	Bullet->SetVisibility(ESlateVisibility::Visible);
+	Bullet->SetIsEnabled(true);
 }
 
 bool UBulletSelector::CanSelect()
@@ -105,6 +115,15 @@ void UBulletSelector::SetCanSelect(const bool& InCanSelect)
 	gCanSelect = InCanSelect;
 }
 
+void UBulletSelector::SetCanSelectBullet(const bool& InCanSelect)
+{
+	bCanSelect = InCanSelect;
+
+	if (UButton* Button = Bullet)
+	{
+		Button->SetIsEnabled(bCanSelect);
+	}
+}
 
 void UBulletSelector::NativeConstruct()
 {
@@ -116,14 +135,17 @@ void UBulletSelector::NativeConstruct()
 	Bullet->OnClicked.AddDynamic(this, &UBulletSelector::AddToRevolver);
 
 	Bullet->OnHovered.AddDynamic(this, &UBulletSelector::DisplayBulletInfo);
+
+	Bullet->SetVisibility(ESlateVisibility::Visible);
+	Bullet->SetIsEnabled(true);
 }
 
 void UBulletSelector::AddToRevolver()
 {
-	if (!gCanSelect)
-	{
-		return;
-	}
+	// if (!gCanSelect)
+	// {
+	// 	return;
+	// }
 	
 	DebugHelper::LogSuccess("Bullet " +  BulletRefPtr->GetBulletData()->BulletName + " inserted");
 

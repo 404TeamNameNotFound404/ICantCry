@@ -22,7 +22,6 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UHorizontalBox* Main;
 
-	void Setup();
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
 	TSubclassOf<UBulletSelector> BulletButtonItemClass;
@@ -31,6 +30,7 @@ protected:
 	TArray<UBulletSelector*> Bullets;
 
 public:
+	void Setup();
 	
 	void Refresh();
 

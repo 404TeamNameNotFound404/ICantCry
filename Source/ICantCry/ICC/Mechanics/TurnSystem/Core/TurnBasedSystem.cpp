@@ -87,11 +87,10 @@ void UTurnBasedSystem::Start2(UWorld* World, FBattleMemory* Memory)
 	checkf(Instance, TEXT("Instance is null at start2"))
 	
 	FTimerHandle DelayHandle;
-	World->GetTimerManager().SetTimer(DelayHandle, [this, World, Memory]()
+	World->GetTimerManager().SetTimer(DelayHandle, [this, World]()
 	{
 		EnemySpawnManager->SpawnRandomEnemy();
 		Turn.PopulateQueue(World);
-		Memory->Load(Turn.Queue, Instance->GetInventory().BulletsStored);
 		TryGetCurrentPlayer()->GetBattleHUD()->SpawnVisualizer();
 		TryGetCurrentPlayer()->GetBattleHUD()->SpawnGameOverVisualizer();
 	}, 0.5f, false);
@@ -100,6 +99,7 @@ void UTurnBasedSystem::Start2(UWorld* World, FBattleMemory* Memory)
 	FTimerHandle DelayHudHandle;
 	World->GetTimerManager().SetTimer(DelayHudHandle, [this]()
 	{
+		DebugHelper::LogMessage(10, FColor::Black, "Bullet stored " + FString::FromInt(Instance->GetInventory().BulletsStored.Num()));
 		CurrentPlayer->GetBattleHUD()->ShowHUD();
 	}, 5.f, false);
 	
@@ -108,11 +108,12 @@ void UTurnBasedSystem::Start2(UWorld* World, FBattleMemory* Memory)
 	DebugHelper::LogSuccess("Fight started right after");
 	DebugHelper::AddMessageToLog("-----Battle Log-----\n");
 	DebugHelper::AddMessageToLog("[Turn System]: Fight started right after");
+	SetBattlePhase(EBattlePhase::Preparation);
 }
 
-void UTurnBasedSystem::Update(UWorld* World)
+void UTurnBasedSystem::Update(UWorld* World, FBattleMemory* Memory)
 {
-	if (!bRequestFight)
+	if (!bRequestFight || BattlePhase == EBattlePhase::Preparation)
 	{
 		return;
 	}
@@ -158,6 +159,7 @@ void UTurnBasedSystem::Update(UWorld* World)
 		}
 
 		bInit = true;
+		SetBattlePhase(EBattlePhase::Running);
 	}
 	
 	if (bIsAiTurn)
@@ -320,6 +322,7 @@ void UTurnBasedSystem::Flow()
 			TryGetCurrentPlayer()->GetBattleHUD()->DisplayVictoryVisualizer();
 			TryGetCurrentPlayer()->GetBattleHUD()->GetVictoryVisualizer()->AfterBattle(EnemySpawnManager->GetMemory().LastStoredQueue);
 			bVictory = true;
+			SetBattlePhase(EBattlePhase::Finished);
 		}
 		
 		return;
@@ -335,6 +338,7 @@ void UTurnBasedSystem::Flow()
 		DebugHelper::AddMessageToLog("[Turn System]: Game Over!");
 		
 		TryGetCurrentPlayer()->GetBattleHUD()->DisplayGameOverVisualizer();
+		SetBattlePhase(EBattlePhase::Finished);
 	}
 	
 }
@@ -367,16 +371,38 @@ void UTurnBasedSystem::ExitBattle()
 
 void UTurnBasedSystem::Reload()
 {
-	bRequestFight = true;
+	//bRequestFight = true;
+	RequestFight(false);
 	bInit = false;
 	bVictory = false;
 	bIsPlayerTurn = false;
 	bIsAiTurn = false;
-	Instance->GetInventory().BulletsStored = EnemySpawnManager->GetMemory().InBattleBullets;
+	//Instance->GetInventory().BulletsStored = EnemySpawnManager->GetMemory().InBattleBullets;
 	Instance->GetCurrentPlayer()->GetBattleHUD()->SetBulletSetupFinished(false);
 	Turn.CurrentTurn = 0;
 }
 
+EBattlePhase UTurnBasedSystem::GetBattlePhase() const
+{
+	return BattlePhase;
+}
+
+void UTurnBasedSystem::SetBattlePhase(const EBattlePhase& Phase)
+{
+	BattlePhase = Phase;
+}
+
+void UTurnBasedSystem::PrePrepareToBattle()
+{
+	if (BattlePhase != EBattlePhase::Preparation)
+	{
+		DebugHelper::LogMessage(10, FColor::Red, "Can't pre-prepare the fight");
+		return;
+	}
+
+	SetBattlePhase(EBattlePhase::Running);
+	bRequestFight = true;
+}
 
 TArray<AICC_Actor*> UTurnBasedSystem::GetCopyQueue() const
 {

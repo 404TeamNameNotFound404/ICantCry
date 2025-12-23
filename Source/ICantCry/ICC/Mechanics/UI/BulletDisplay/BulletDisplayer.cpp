@@ -24,6 +24,7 @@ void UBulletDisplayer::Setup()
 	
 	if (Instance->GetInventory().BulletsStored.IsEmpty())
 	{
+		DebugHelper::LogMessage(10, FColor::Yellow,"Inventory empty during Setup");
 		return;
 	}
 
@@ -40,7 +41,6 @@ void UBulletDisplayer::Setup()
 }
 
 
-
 void UBulletDisplayer::Refresh()
 {
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
@@ -50,7 +50,7 @@ void UBulletDisplayer::Refresh()
 
 	if (Instance->GetInventory().BulletsStored.IsEmpty())
 	{
-		DebugHelper::LogWarning("No inventory available");
+		DebugHelper::LogMessage(8, FColor::White,"No inventory available");
 		return;
 	}
 
@@ -63,16 +63,20 @@ void UBulletDisplayer::Refresh()
 
 		if (B.GetQuantity() <= 0)
 		{
-			DebugHelper::LogWarning( B.GetBulletData()->BulletName + " is 0");
+			DebugHelper::LogMessage(8, FColor::Yellow, B.GetBulletData()->BulletName + " is 0");
 			continue;
 		}
 		
 		Item->SetPadding(FMargin(2,2));
 		Main->AddChild(Item);
 		Item->SetIsFocusable(true);
+		Item->SetIsEnabled(true);
 		Bullets.Add(Item);
 		DebugHelper::LogMessage(4, FColor::Purple, B.GetBulletData()->BulletName + " added");
+		Item->SetVisibility(ESlateVisibility::Visible);
 	}
+
+	Main->SetVisibility(ESlateVisibility::Visible);
 
 	DebugHelper::LogWarning("Refreshing avaiable bullets");
 }
@@ -86,6 +90,7 @@ void UBulletDisplayer::RefreshBullets()
 {
 	if (Bullets.IsEmpty())
 	{
+		DebugHelper::LogMessage(10, FColor::Cyan, "No avaiable bullets at void UBulletDisplayer::RefreshBullets()");
 		return;
 	}
 
@@ -100,11 +105,11 @@ void UBulletDisplayer::RemoveBullet()
 	AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
 	//AICC_Player* Player = Cast<AICC_Player>(Controller->GetPawn());
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
-	AICC_Player* Player = Instance->GetCurrentPlayer();
+	const AICC_Player* Player = Instance->GetCurrentPlayer();
 	
 
-	UBulletData* RemovedBullet = Player->GetBattleHUD()->GetCircularBulletBuffer()->RemoveBullet();
-	EBulletType BulletType = RemovedBullet->Type;
+	const UBulletData* RemovedBullet = Player->GetBattleHUD()->GetCircularBulletBuffer()->RemoveBullet();
+	const EBulletType BulletType = RemovedBullet->Type;
 	
 	if (Instance->GetInventory().BulletsStored.Contains(BulletType))
 	{
@@ -143,5 +148,10 @@ void UBulletDisplayer::InstantiateBullet(TArray<FBullet> InstantiateBullets)
 		b.SetQuantity(100);
 		Instance->GetInventory().BulletsStored.Add(b.GetBulletData()->Type, b);
 	}
+
+	auto* SpawnManager = Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetEnemySpawnManager();
+	const auto Turn  =  Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().Queue;
+
+	SpawnManager->GetMemory().Load(Turn, Instance->GetInventory().BulletsStored);
 }
 

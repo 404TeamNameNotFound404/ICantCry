@@ -25,9 +25,6 @@ protected:
 	UPROPERTY(meta=(BindWidget)) UTextBlock* Body;
 	UPROPERTY(meta=(BindWidget)) UButton* Return;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess=true), Category="Reward")
-	ARecipePickup* Blueprint;
-
 	UFUNCTION() void DisableMinigame();
 
 	UPROPERTY() AChallengeMinigame* MinigameOwner;
