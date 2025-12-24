@@ -398,6 +398,7 @@ void UStatusTracker::UpdateStatus()
 		bIsOwnerAfflicted = false;
 		StatusCounter = 0;
 		Target->Ashamed(false);
+		
 		if (Cast<AMob>(GetOwner()))
 		{
 			PerkData.bAshamed = false;
@@ -708,7 +709,7 @@ FStatusPriority& UStatusTracker::GetStatusPriority()
 
 void UStatusTracker::BuffAttack()
 {
-	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+	const AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
 
 	if (Target->IsA(AICC_Player::StaticClass()))
 	{
@@ -716,7 +717,7 @@ void UStatusTracker::BuffAttack()
 		Player->GetStats()->AttackPower += FMath::FloorToInt(
 			Player->GetStats()->AttackPower * Player->GetBattleData()->BuffAtkIncrement);
 		DebugHelper::LogWarning("Attack buffed " + FString::SanitizeFloat(Player->GetStats()->AttackPower));
-		DebugHelper::AddMessageToLog("[Status Tracker]: Attack buffed " + FString::SanitizeFloat(Player->GetStats()->AttackPower));
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + Player->GetActorLabel() + " buffed it's attack " + FString::SanitizeFloat(Player->GetStats()->AttackPower));
 	}
 
 	if (Target->IsA(AMob::StaticClass()))
@@ -777,7 +778,7 @@ void UStatusTracker::BuffDefence()
 		Player->GetStats()->DefencePower += FMath::FloorToInt(
 			Player->GetStats()->DefencePower * Player->GetBattleData()->BuffDefIncrement);
 		DebugHelper::LogWarning("Defence buffed " + FString::SanitizeFloat(Player->GetStats()->DefencePower));
-		DebugHelper::AddMessageToLog("[Status Tracker]: Defence buffed " + FString::SanitizeFloat(Player->GetStats()->DefencePower));
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + Player->GetActorLabel() +  "buffed it's Defence - " + FString::SanitizeFloat(Player->GetStats()->DefencePower));
 	}
 
 	if (Target->IsA(AMob::StaticClass()))
@@ -992,8 +993,6 @@ void UStatusTracker::RevertInflictedMalus(const EAfflictedStatus& Status)
 	{
 		return;
 	}
-
-	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
 	
 	PerkData.Clear();
 
@@ -1143,11 +1142,18 @@ void UStatusTracker::InflictShieldDebuff(AICC_Actor* Target)
 
 void UStatusTracker::InflictAShamed(AICC_Actor* Target)
 {
-	// AI can't target for attack
+	// AI can't target for attack and player can't attack
+	
 	bIsOwnerAfflicted = true;
 	Target->Ashamed(true);
 	DebugHelper::LogMessage(5, FColor::FromHex("FE7743"), Target->GetActorLabel() + " can't perform attack");
 	DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + " can't perform attack");
+
+	if (Target->IsA(AICC_Player::StaticClass()))
+	{
+		AICC_Player* Player = Cast<AICC_Player>(Target);
+		Player->Ashamed(true);
+	}
 
 	if (Target->IsA(AMob::StaticClass()))
 	{

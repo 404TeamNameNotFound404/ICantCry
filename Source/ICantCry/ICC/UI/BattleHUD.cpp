@@ -205,6 +205,13 @@ void UBattleHUD::UpdateAPBar()
 void UBattleHUD::OnShootPressed()
 {
     OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
+
+    if (GameInstance->GetCurrentPlayer()->IsAshamed())
+    {
+        DebugHelper::LogError("Player can't attack , is in ashamed state!");
+        DebugHelper::AddMessageToLog("[BattleHUD]: " + GameInstance->GetCurrentPlayer()->GetActorLabel() + " can't attack because it's under ashamed state!");
+        return;
+    }
     
     if (!GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn() || CurrentAP <= 0)
     {
@@ -219,7 +226,7 @@ void UBattleHUD::OnShootPressed()
         return;
     }
     
-    UCircularBulletBuffer* Buffer = GetCircularBulletBuffer();
+    const UCircularBulletBuffer* Buffer = GetCircularBulletBuffer();
 
     if (Buffer->IsEmpty())
     {
@@ -923,6 +930,7 @@ void UBattleHUD::Engage()
     case FearEV:
         EngageBtn->SetVisibility(ESlateVisibility::Hidden);
         CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
+        PersistentInstance->GetCurrentPlayer()->GetStatusTracker()->BuffWith(EBuffStatus::DefBuff);
         EnableButtonsAfterShooting();
         DecreaseAP(1);
         UpdateAPBar();
@@ -1225,8 +1233,6 @@ void UBattleHUD::RequestBulletPreparation()
     {
         if (!Slot) continue;
         Slot->Setup(nullptr, nullptr, -1);
-        //Slot->SetRenderOpacity(0.25f);
-        // Slot->GetMagazineBulletButton()->SetBackgroundColor(FLinearColor::Transparent);
         Slot->GetMagazineBulletButton()->SetIsEnabled(true);
     }
     
@@ -1257,7 +1263,6 @@ void UBattleHUD::RequestBulletPreparation()
 void UBattleHUD::Reset(const TMap<TEnumAsByte<EBulletType>, FBullet>& Bullets) 
 {
     GameInstance->GetInventory().BulletsStored = Bullets;
-    DebugHelper::LogMessage(10, FColor::Green, "Reset called");
 }
 
 void UBattleHUD::ShowHUD() 
