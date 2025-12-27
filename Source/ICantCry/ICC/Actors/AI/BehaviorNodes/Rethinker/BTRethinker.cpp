@@ -24,11 +24,13 @@ EBTNodeResult::Type UBTRethinker::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
 	BlackBoard = OwnerComp.GetBlackboardComponent();
+	TreeComp = &OwnerComp;
+	
 	const AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner());
 	Current = Cast<AMob>(Controller->GetPawn());
 	
 	DebugHelper::AddMessageToLog("[Behavior Tree - Rethinker]: " + Current->GetData()->EnemyName.ToString() + " can't buff other .. rethinking a new action");
-	AICC_Player* Target = Cast<AICC_Player>(BlackBoard->GetValueAsObject("Target"));
+	const AICC_Player* Target = Cast<AICC_Player>(BlackBoard->GetValueAsObject("Target"));
 
     Current->SetRethink(true);
     BlackBoard->SetValueAsBool("Rethinker", Current->GetRethink());
@@ -65,46 +67,46 @@ EBTNodeResult::Type UBTRethinker::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	return EBTNodeResult::InProgress;
 }
 
+// probably I won't need this?
+
 void UBTRethinker::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
 
 	if (!bWaitingForThinkCompletion || !bBusy)
 		return;
-
-	AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner());
-	if (!Controller || !Current || !BlackBoard)
+	
+	if (const AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner()); !Controller || !Current || !BlackBoard)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}
 
-	AICC_Player* Target = Cast<AICC_Player>(BlackBoard->GetValueAsObject("Target"));
+	const AICC_Player* Target = Cast<AICC_Player>(BlackBoard->GetValueAsObject("Target"));
+	
 	if (!Target)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}
-
-	// Wait until minigame is fully finished
+	
 	if (!Current->IsMinigameStarted() || !Current->IsMinigameEnded() || !Target->GetMinigameHandler()->IsPlayerMinigameEnded())
 		return;
-
-	// Minigame finished: cleanup and finish task
-	Current->SetTreeId(-1);
-	Current->SetIsBuffedAtk(false);
-	BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
-	BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
-	BlackBoard->SetValueAsBool("IsDefenceDebuffed?", Current->GetIsTargetDefenceDebuffed());
-	Current->SetRethink(false);
-	BlackBoard->SetValueAsBool("Rethinker", Current->GetRethink());
-
-	Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
-
-	bBusy = false;
-	bWaitingForThinkCompletion = false;
-
-	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+	
+	// Current->SetTreeId(-1);
+	// Current->SetIsBuffedAtk(false);
+	// BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
+	// BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
+	// BlackBoard->SetValueAsBool("IsDefenceDebuffed?", Current->GetIsTargetDefenceDebuffed());
+	// Current->SetRethink(false);
+	// BlackBoard->SetValueAsBool("Rethinker", Current->GetRethink());
+	//
+	// Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
+	//
+	// bBusy = false;
+	// bWaitingForThinkCompletion = false;
+	//
+	// FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 }
 
 void UBTRethinker::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult)
@@ -125,8 +127,7 @@ void UBTRethinker::OnThinkComplete(UBehaviorTreeComponent* OwnerComp, AICC_AICon
 		FinishLatentTask(*OwnerComp, EBTNodeResult::Failed);
 		return;
 	}
-
-	// Early-outs for ashamed or not-current-turn
+	
 	if (Current->IsAshamed() || Current != Target->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
 		if (Current->IsAshamed())
@@ -145,17 +146,14 @@ void UBTRethinker::OnThinkComplete(UBehaviorTreeComponent* OwnerComp, AICC_AICon
 		FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
 		return;
 	}
-
-	// Immediate decision actions
+	
 	if (Decision != EDecision::None)
 	{
-		// Process decision and update Blackboard accordingly
 		ProcessDecision(Decision, Current, BlackBoard, OwnerComp ,Target);
 		FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
 		return;
 	}
-
-	// Decision is None: attack / start minigame
+	
 	StartAttackMinigame(Current, Target, Controller);
 }
 
@@ -170,7 +168,6 @@ void UBTRethinker::OnThinkComplete_Internal()
     OnThinkComplete(OwnerComp, Controller);
 }
 
-// Helper function: start attack minigame
 void UBTRethinker::StartAttackMinigame(AMob* CurrentMob, AICC_Player* Target, AICC_AIController* Controller)
 {
     if (!CurrentMob || !Target || !Controller) return;
@@ -187,14 +184,12 @@ void UBTRethinker::StartAttackMinigame(AMob* CurrentMob, AICC_Player* Target, AI
     bBusy = true;
 }
 
-// Helper function: process decision (buff, heal, debuff, etc.)
 void UBTRethinker::ProcessDecision(EDecision Dec, AMob* CurrentMob, UBlackboardComponent* Board, UBehaviorTreeComponent* OwnerComp, AICC_Player* Target)
 {
     AICC_AIController* Controller = Cast<AICC_AIController>(Current->GetController());
     if (!Controller || !Current || !BlackBoard || !OwnerComp || !Target)
         return;
-
-    // Early-outs for ashamed or not-current-turn
+	
     if (Current->IsAshamed())
     {
         CurrentMob->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " skipped the turn (Ashamed)"));
@@ -217,8 +212,7 @@ void UBTRethinker::ProcessDecision(EDecision Dec, AMob* CurrentMob, UBlackboardC
         FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
         return;
     }
-
-    // Decisions
+	
     switch (Dec)
     {
         case EDecision::BuffItSelf:
@@ -344,33 +338,28 @@ void UBTRethinker::ProcessDecision(EDecision Dec, AMob* CurrentMob, UBlackboardC
 
         case EDecision::None:
         default:
-            // Attack / start minigame
             StartAttackMinigame(CurrentMob, Target, Controller);
             return;
     }
-
-    // Finish task after processing decision
+	
     FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
 }
 
 void UBTRethinker::OnMinigameEndedCallback()
 {
 	if (!Current || !BlackBoard) return;
-
-	// Unsubscribe so it doesn't trigger multiple times
-	if (AICC_Player* Target = Cast<AICC_Player>(BlackBoard->GetValueAsObject("Target")))
+	
+	if (const AICC_Player* Target = Cast<AICC_Player>(BlackBoard->GetValueAsObject("Target")))
 	{
 		Target->GetMinigameHandler()->OnMinigameEnded.RemoveDynamic(this, &UBTRethinker::OnMinigameEndedCallback);
 	}
-
-	// Reset Blackboard / AI state
+	
 	Current->SetTreeId(-1);
 	Current->SetIsBuffedAtk(false);
 	BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
 	BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
 	Current->SetRethink(false);
 	BlackBoard->SetValueAsBool("Rethinker", Current->GetRethink());
-
-	// Finish the task
+	
 	FinishLatentTask(*TreeComp, EBTNodeResult::Succeeded);
 }

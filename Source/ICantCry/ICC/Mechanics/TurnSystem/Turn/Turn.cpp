@@ -39,15 +39,43 @@ void FTurn::RejoinQueue(const TArray<AMob*>& Emotions)
 	for (AMob* Mob : Emotions)
 	{
 		AICC_Actor* AsActor = Cast<AICC_Actor>(Mob);
-
+	
 		if (Queue.Contains(AsActor))
 		{
 			continue;
 		}
-
+	
 		Queue.Emplace(AsActor);
 		DebugHelper::LogMessage(10, FColor::Orange, Mob->GetActorLabel() + " rejoined the fun");
 		DebugHelper::AddMessageToLog("[Turn]: " + Mob->GetActorLabel() + " rejoined the fun");
+	}
+	
+}
+
+void FTurn::RejoinQueue(const TArray<AMob*>& Emotions, AICC_Player* Player)
+{
+	Queue.Reset();
+
+	Queue.Add(Player);
+	
+	for (AMob* Mob : Emotions)
+	{
+		if (!Mob) continue;
+
+		AICC_Actor* AsActor = Cast<AICC_Actor>(Mob);
+		if (!AsActor) continue;
+
+		Queue.Add(AsActor);
+
+		DebugHelper::LogMessage(
+			10,
+			FColor::Orange,
+			Mob->GetActorLabel() + " rejoined the fun"
+		);
+
+		DebugHelper::AddMessageToLog(
+			"[Turn]: " + Mob->GetActorLabel() + " rejoined the fun"
+		);
 	}
 }
 

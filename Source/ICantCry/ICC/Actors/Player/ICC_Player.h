@@ -234,7 +234,7 @@ private:
 	void Input_OpenBestiary(const FInputActionValue& InputActionValue);
 	void Input_CloseBestiary(const FInputActionValue& InputActionValue);
 	void Input_ToggleBestiary(const FInputActionValue& InputActionValue);
-	
+	void Input_ChallengeReleaseInteraction(const FInputActionValue& InputActionValue);
 
 	void CloseInventory();
 	void ToggleInventory();

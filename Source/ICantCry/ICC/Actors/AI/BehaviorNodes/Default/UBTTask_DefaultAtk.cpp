@@ -93,13 +93,11 @@ void UUBTTask_DefaultAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}
-
-	// Wait until minigame is fully finished
+	
 	if (!CurrentMob->IsMinigameStarted() || !CurrentMob->IsMinigameEnded() || !Target->GetMinigameHandler()->
 		IsPlayerMinigameEnded())
 		return;
-
-	// Minigame finished: cleanup and finish task
+	
 	CurrentMob->SetTreeId(-1);
 	CurrentMob->SetIsBuffedAtk(false);
 	BlackBoard->SetValueAsInt("Id", CurrentMob->GetTreeId());
@@ -127,8 +125,7 @@ void UUBTTask_DefaultAtk::OnThinkComplete(UBehaviorTreeComponent* OwnerComp, AIC
 		FinishLatentTask(*OwnerComp, EBTNodeResult::Failed);
 		return;
 	}
-
-	// Early-outs for ashamed or not-current-turn
+	
 	if (CurrentMob->IsAshamed() || CurrentMob != Target->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
 		if (CurrentMob->IsAshamed())
@@ -148,17 +145,14 @@ void UUBTTask_DefaultAtk::OnThinkComplete(UBehaviorTreeComponent* OwnerComp, AIC
 		FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
 		return;
 	}
-
-	// Immediate decision actions
+	
 	if (Decision != EDecision::None)
 	{
-		// Process decision and update Blackboard accordingly
 		ProcessDecision(Decision, CurrentMob, BlackBoard, OwnerComp, Target);
 		FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
 		return;
 	}
-
-	// Decision is None: attack / start minigame
+	
 	StartAttackMinigame(CurrentMob, Target, Controller);
 }
 
@@ -173,7 +167,6 @@ void UUBTTask_DefaultAtk::OnThinkComplete_Internal()
 	OnThinkComplete(OwnerComp, Controller);
 }
 
-// Helper function: start attack minigame
 void UUBTTask_DefaultAtk::StartAttackMinigame(AMob* Current, AICC_Player* Target, AICC_AIController* Controller)
 {
 	if (!Current || !Target || !Controller) return;
@@ -191,7 +184,7 @@ void UUBTTask_DefaultAtk::StartAttackMinigame(AMob* Current, AICC_Player* Target
 	bBusy = true;
 }
 
-// Helper function: process decision (buff, heal, debuff, etc.)
+
 void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackboardComponent* Board,
                                           UBehaviorTreeComponent* OwnerComp, AICC_Player* Target)
 {
@@ -199,7 +192,7 @@ void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackbo
 	if (!Controller || !Current || !BlackBoard || !OwnerComp || !Target)
 		return;
 
-	// Early-outs for ashamed or not-current-turn
+
 	if (Current->IsAshamed())
 	{
 		Current->GetBattleHandler()->GetBattleInfo()->SetInfo(
@@ -224,7 +217,7 @@ void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackbo
 		return;
 	}
 
-	// Decisions
+
 	switch (Dec)
 	{
 	case EDecision::BuffItSelf:
@@ -337,12 +330,10 @@ void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackbo
 
 	case EDecision::None:
 	default:
-		// Attack / start minigame
 		StartAttackMinigame(Current, Target, Controller);
 		return;
 	}
-
-	// Finish task after processing decision
+	
 	FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
 }
 
@@ -350,19 +341,16 @@ void UUBTTask_DefaultAtk::OnMinigameEndedCallback()
 {
 	if (!CurrentMob || !BlackBoard) return;
 
-	// Unsubscribe so it doesn't trigger multiple times
 	if (AICC_Player* Target = Cast<AICC_Player>(BlackBoard->GetValueAsObject("Target")))
 	{
 		Target->GetMinigameHandler()->OnMinigameEnded.
 		        RemoveDynamic(this, &UUBTTask_DefaultAtk::OnMinigameEndedCallback);
 	}
-
-	// Reset Blackboard / AI state
+	
 	CurrentMob->SetTreeId(-1);
 	CurrentMob->SetIsBuffedAtk(false);
 	BlackBoard->SetValueAsInt("Id", CurrentMob->GetTreeId());
 	BlackBoard->SetValueAsBool("IsBuffed?", CurrentMob->GetIsIsBuffedAtk());
-
-	// Finish the task
+	
 	FinishLatentTask(*TreeComp, EBTNodeResult::Succeeded);
 }

@@ -66,33 +66,78 @@ void AEnemySpawnManager::RespawnEnemy(TSubclassOf<AMob> Class, const FVector& Lo
 
 void AEnemySpawnManager::ResetBattle(AMob* Emotion)
 {
-	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(Emotion->GetGameInstance());
-
-	if (!Emotion->IsAlive())
+	if (!Emotion)
 	{
-		Emotion->SetIsReadyToPlay(true);
-		Emotion->SetActorHiddenInGame(false);
-		Emotion->SetActorEnableCollision(true);
-		Emotion->SetActorTickEnabled(true);
-		Emotion->GetStats().bAlive = true;
-		Emotion->GetStats().Health = Emotion->GetData()->MaxHealth;
-		Emotion->GetHealthBar()->Restore(Emotion->GetData()->MaxHealth);
-		Emotion->SetActorLocation(Emotion->GetAIMemory().DefaultBattleLocation);
-		Emotion->SetActorRotation(Emotion->GetAIMemory().DefaultBattleOrientation);
-
-		AICC_AIController* AIController = Cast<AICC_AIController>(Emotion->GetController());
-		checkf(AIController, TEXT("AIController is null in ResetEnemy"));
-		AIController->BrainComponent->RestartLogic();
-		AIController->Possess(Emotion);
-		//AIController->RunBehaviorTree(Emotion->GetBehaviorTree());
-		DebugHelper::LogMessage(10, FColor::Purple, Emotion->GetActorLabel() + " respawned");
+		return;
 	}
+
+    UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(Emotion->GetGameInstance());
+
+    AICC_AIController* AIController = Cast<AICC_AIController>(Emotion->GetController());
+
+    checkf(AIController, TEXT("AIController is null in ResetEnemy"));
+
+    UCharacterMovementComponent* MoveCmp = Emotion->GetCharacterMovement();
 	
-	Emotion->GetStats().Health = Emotion->GetData()->MaxHealth;
-	Emotion->GetHealthBar()->Restore(Emotion->GetData()->MaxHealth);
+    AIController->StopMovement();
+
+    if (AIController->BrainComponent)
+    {
+        AIController->BrainComponent->StopLogic(TEXT("Battle Reset"));
+    }
+
+    if (MoveCmp)
+    {
+        MoveCmp->StopMovementImmediately();
+        MoveCmp->DisableMovement();
+    }
 	
-	Instance->GetCurrentPlayer()->GetStats()->CurrentHealth = Emotion->GetData()->MaxHealth;
-	Instance->GetCurrentPlayer()->GetBattleHUD()->ResetHealth();
+    Emotion->SetMinigameHasStarted(false);
+    Emotion->SetIsBusy(false);
+    Emotion->SetIsReadyToPlay(true);
+
+    Emotion->SetActorHiddenInGame(false);
+    Emotion->SetActorEnableCollision(true);
+    Emotion->SetActorTickEnabled(true);
+
+    Emotion->GetStats().bAlive = true;
+    Emotion->GetStats().Health = Emotion->GetData()->MaxHealth;
+    Emotion->GetHealthBar()->Restore(Emotion->GetData()->MaxHealth);
+
+    Emotion->TeleportTo(
+        Emotion->GetAIMemory().DefaultBattleLocation,
+        Emotion->GetAIMemory().DefaultBattleOrientation,
+        false,
+        true
+    );
+	
+    if (AIController->GetPawn() != Emotion)
+    {
+        AIController->Possess(Emotion);
+    }
+	
+    if (MoveCmp)
+    {
+        MoveCmp->SetMovementMode(MOVE_Walking);
+    }
+	
+    if (AIController->BrainComponent)
+    {
+        AIController->BrainComponent->RestartLogic();
+    }
+	
+    Instance->GetCurrentPlayer()->GetStats()->CurrentHealth =
+        Emotion->GetData()->MaxHealth;
+
+    Instance->GetCurrentPlayer()->GetBattleHUD()->ResetHealth();
+    Instance->GetCurrentPlayer()->GetBattleHUD()->ResetAp();
+    // Instance->GetCurrentPlayer()->GetBattleHUD()->Reset(Memory.InBattleBullets);
+
+    DebugHelper::LogMessage(
+        10,
+        FColor::Purple,
+        Emotion->GetActorLabel() + " fully reset"
+    );
 }
 
 void AEnemySpawnManager::Spawn()

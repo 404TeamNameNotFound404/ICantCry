@@ -25,6 +25,7 @@ struct FTurn
 	FTurn();
 	void PopulateQueue(UWorld* World);
 	void RejoinQueue(const TArray<AMob*>& Emotions);
+	void RejoinQueue(const TArray<AMob*>& Emotions, AICC_Player* Player);
 	void AssignFirstTurn();
 	void AssignFirstTurnByPriority();
 	

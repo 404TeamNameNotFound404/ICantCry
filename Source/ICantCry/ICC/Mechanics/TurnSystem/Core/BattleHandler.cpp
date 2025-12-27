@@ -38,7 +38,7 @@ void ABattleHandler::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	TurnBasedSystem->Update(GetWorld());
+	TurnBasedSystem->Update(GetWorld(), &SpawnManager->GetMemory());
 }
 
 UTurnBasedSystem *ABattleHandler::GetTurnBasedSystem() const

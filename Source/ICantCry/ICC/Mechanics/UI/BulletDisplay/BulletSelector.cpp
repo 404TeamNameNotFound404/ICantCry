@@ -9,6 +9,8 @@ bool UBulletSelector::gCanSelect;
 
 void UBulletSelector::Setup(FBullet& NewBullet, int32 InQuantity)
 {
+	const UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	Player = Instance->GetCurrentPlayer();
 	BulletRef = NewBullet;
 	BulletRefPtr = &NewBullet;
 	
@@ -24,6 +26,11 @@ void UBulletSelector::Setup(FBullet& NewBullet, int32 InQuantity)
 
 void UBulletSelector::DisplayBulletInfo() // NB no need to display quantity here since now it's directly bind in battle hud
 {
+	if (!BulletRefPtr || !BulletRefPtr->GetBulletData())
+	{
+		return;
+	}
+	
 	Player->GetBattleHUD()->BulletName->SetText(FText::FromString(BulletRefPtr->GetBulletData()->BulletName));
 	Player->GetBattleHUD()->Description->SetText(FText::FromString(BulletRefPtr->GetBulletData()->Description));
 }
@@ -52,28 +59,6 @@ void UBulletSelector::Refresh()
 
 	const int32 TailIndex = Buffer->GetTailIndex();
 	const int32 Capacity = Buffer->GetCapacity();
-
-	// for (int32 i = 0; i < Slots.Num(); ++i)
-	// {
-	// 	int32 BufferIndex = (TailIndex + i) % Capacity;
-	// 	UBulletData* BulletData = Buffer->PeekAt(BufferIndex);
-	//
-	// 	UImage* BulletImage = Slots[i]->BulletIcon;
-	// 	if (!BulletImage) continue;
-	//
-	// 	// Reset tint and opacity
-	// 	BulletImage->SetBrushTintColor(FSlateColor{FColor::White});
-	// 	BulletImage->SetColorAndOpacity(FLinearColor::White);
-	//
-	// 	if (BulletData)
-	// 	{
-	// 		BulletImage->SetBrushFromTexture(BulletData->Icon, true);
-	// 	}
-	// 	else
-	// 	{
-	// 		BulletImage->SetBrushFromTexture(nullptr); 
-	// 	}
-	// }
 
 	for (int32 i = 0; i < MagazineBullets.Num(); ++i)
 	{
@@ -115,6 +100,9 @@ void UBulletSelector::Refresh()
 			BulletImage->SetBrushFromTexture(nullptr); 
 		}
 	}
+
+	Bullet->SetVisibility(ESlateVisibility::Visible);
+	Bullet->SetIsEnabled(true);
 }
 
 bool UBulletSelector::CanSelect()
@@ -127,6 +115,15 @@ void UBulletSelector::SetCanSelect(const bool& InCanSelect)
 	gCanSelect = InCanSelect;
 }
 
+void UBulletSelector::SetCanSelectBullet(const bool& InCanSelect)
+{
+	bCanSelect = InCanSelect;
+
+	if (UButton* Button = Bullet)
+	{
+		Button->SetIsEnabled(bCanSelect);
+	}
+}
 
 void UBulletSelector::NativeConstruct()
 {
@@ -138,14 +135,17 @@ void UBulletSelector::NativeConstruct()
 	Bullet->OnClicked.AddDynamic(this, &UBulletSelector::AddToRevolver);
 
 	Bullet->OnHovered.AddDynamic(this, &UBulletSelector::DisplayBulletInfo);
+
+	Bullet->SetVisibility(ESlateVisibility::Visible);
+	Bullet->SetIsEnabled(true);
 }
 
 void UBulletSelector::AddToRevolver()
 {
-	if (!gCanSelect)
-	{
-		return;
-	}
+	// if (!gCanSelect)
+	// {
+	// 	return;
+	// }
 	
 	DebugHelper::LogSuccess("Bullet " +  BulletRefPtr->GetBulletData()->BulletName + " inserted");
 
@@ -161,7 +161,6 @@ void UBulletSelector::AddToRevolver()
 		return;
 	}
 	
-	//Player->GetBattleHUD()->GetCircularBulletBuffer()->AddBullet(BulletRef.GetBulletData());
 	Player->GetBattleHUD()->GetCircularBulletBuffer()->AddBullet(BulletRefPtr->GetBulletData());
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
 
@@ -171,32 +170,7 @@ void UBulletSelector::AddToRevolver()
 	const TArray<URevolverSlot*>& Slots = Player->GetBattleHUD()->RevolverSlots;
 	const TArray<UImage*>& PistolMagazines = Player->GetBattleHUD()->PistolMagazines;
 	const TArray<UMagazineBullet*>& MagazineBullets = Player->GetBattleHUD()->MagazineBullets;
-
-	// for (int32 i = 0; i < Slots.Num(); ++i)
-	// {
-	// 	int32 BufferIndex = (Player->GetBattleHUD()->GetCircularBulletBuffer()->GetTailIndex() + i) % Player->GetBattleHUD()->GetCircularBulletBuffer()->GetCapacity();
-	// 	UBulletData* BulletData = Player->GetBattleHUD()->GetCircularBulletBuffer()->PeekAt(BufferIndex);
-	//
-	// 	UImage* BulletImage = Slots[i]->EmptySlotIcon;
-	// 	BulletIcon->SetBrushTintColor(FSlateColor{FColor::White});
-	// 	BulletIcon->SetColorAndOpacity(FLinearColor::White);
-	// 	Slots[i]->BulletIcon->SetBrushTintColor(FSlateColor{FColor::White});
-	// 	Slots[i]->BulletIcon->SetColorAndOpacity(FLinearColor::White);
-	// 	
-	//
-	// 	if (BulletImage)
-	// 	{
-	// 		if (BulletData)
-	// 		{
-	// 			BulletImage->SetBrushFromTexture(BulletData->Icon, true);
-	// 		}
-	// 		else
-	// 		{
-	// 			BulletImage->SetBrushFromTexture(nullptr); // Clear unused slot
-	// 		}
-	// 	}
-	// }
-
+	
 	UCircularBulletBuffer* Buffer = Player->GetBattleHUD()->GetCircularBulletBuffer();
 	const int32 NumSlots = MagazineBullets.Num();
 	const int32 NumBullets = Buffer->GetCount();
@@ -205,7 +179,7 @@ void UBulletSelector::AddToRevolver()
 
 	for (int32 i = 0; i < Buffer->GetCount(); ++i)
 	{
-		int32 BufferIndex = (Buffer->GetTailIndex() + i) % Buffer->GetCapacity();
+		const int32 BufferIndex = (Buffer->GetTailIndex() + i) % Buffer->GetCapacity();
 		UBulletData* BulletData = Buffer->PeekAt(BufferIndex);
 
 		if (!BulletData)
@@ -225,11 +199,9 @@ void UBulletSelector::AddToRevolver()
 		FilledSlots++;
 	}
 
-	// **Only clear the remaining slots that were previously visible**
 	for (int32 i = FilledSlots; i < NumSlots; ++i)
 	{
-		UMagazineBullet* MagazineSlot = MagazineBullets[i];
-		if (MagazineSlot->GetMagazineBulletButton()->GetIsEnabled())
+		if (UMagazineBullet* MagazineSlot = MagazineBullets[i]; MagazineSlot->GetMagazineBulletButton()->GetIsEnabled())
 		{
 			MagazineSlot->Setup(Buffer, nullptr, -1);
 			MagazineSlot->SetRenderOpacity(0.25f);
@@ -241,11 +213,9 @@ void UBulletSelector::AddToRevolver()
 	for (int32 i = 0; i < PistolMagazines.Num(); ++i)
 	{
 		const int32 BufferIndex = (Player->GetBattleHUD()->GetCircularBulletBuffer()->GetTailIndex() + i) % Player->GetBattleHUD()->GetCircularBulletBuffer()->GetCapacity();
-		UBulletData* BulletData = Player->GetBattleHUD()->GetCircularBulletBuffer()->PeekAt(BufferIndex);
+		const UBulletData* BulletData = Player->GetBattleHUD()->GetCircularBulletBuffer()->PeekAt(BufferIndex);
 
-		UImage* BulletImage = PistolMagazines[i];
-
-		if (BulletImage)
+		if (const UImage* BulletImage = PistolMagazines[i]; BulletImage)
 		{
 			if (BulletData)
 			{
@@ -255,10 +225,12 @@ void UBulletSelector::AddToRevolver()
 			}
 			else
 			{
-				PistolMagazines[i]->SetBrushFromTexture(nullptr); // Clear unused slot
+				PistolMagazines[i]->SetBrushFromTexture(nullptr);
 			}
 		}
 	}
+	
+	Player->GetBattleHUD()->RefreshBulletMagazine();
 }
 
 

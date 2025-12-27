@@ -202,14 +202,25 @@ public:
 	void DisableButtonsDuringShooting();
 	void EnableButtonsAfterShooting();
 
+	void RefreshBulletMagazine();
+	void ResetBulletMagazine();
+	void ResetAp();
+	void RequestBulletPreparation();
+
+	/**
+	 * Reset the hud and all it's call at game over's retry
+	 */
+	void Reset(const TMap<TEnumAsByte<EBulletType>, FBullet>& Bullets);
+
 private:
 
     UPROPERTY() ABattleHandler*  BattleHandler = nullptr;
 
 
     // Game State
-    UPROPERTY() int CurrentAP = 0;
-	UPROPERTY() int ApAccumulator = -1;
+    UPROPERTY() int32 CurrentAP = 0;
+	UPROPERTY() int32 ApAccumulator = 0;
+	UPROPERTY() int32 BaseCost = 1;
 
     int32 CurrentEnemyIndex = 0;
     int32 SelectedBulletIndex = 0;

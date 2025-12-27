@@ -47,4 +47,5 @@ public:
 	FString GetWeakAgainstName() const;
 
 
+	FBullet Clone() const;
 };

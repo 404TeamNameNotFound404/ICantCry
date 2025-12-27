@@ -118,12 +118,12 @@ void UBattleHUD::NativeConstruct()
 
     // SetSelectedBullet(0);
 
-    //INIT BULLET SELECTION
+    //Bullet Selection 
     SelectedBulletIndex = 0;
     CurrentRevolverSlot = 0;
     UpdateBulletSelection();
 
-    // AMMO SELECTION
+    // Ammo Selection
     for (UImage* Icon : BulletIcons)
     {
         if (Icon) 
@@ -133,7 +133,6 @@ void UBattleHUD::NativeConstruct()
         }
     }
     
-    // Evidenzia il proiettile selezionato iniziale
     if (BulletIcons.IsValidIndex(SelectedBulletIndex))
     {
         BulletIcons[SelectedBulletIndex]->SetOpacity(1.0f);
@@ -144,8 +143,6 @@ void UBattleHUD::NativeConstruct()
 		BattleHandler = *It;
 		break;
 	}
-
-    DebugHelper::LogError("Lenght bullet icon " + FString::FromInt(BulletIcons.Num()));
 
     for (TActorIterator<AMinigameHandler> It(GetWorld()); It; ++It)
     {
@@ -178,7 +175,7 @@ void UBattleHUD::NativeConstruct()
 
     ConfirmReloadBullet->SetVisibility(ESlateVisibility::Hidden);
 
-    UBulletSelector::SetCanSelect(true);
+    //UBulletSelector::SetCanSelect(true);
 
     OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
 }
@@ -208,6 +205,13 @@ void UBattleHUD::UpdateAPBar()
 void UBattleHUD::OnShootPressed()
 {
     OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
+
+    if (GameInstance->GetCurrentPlayer()->IsAshamed())
+    {
+        DebugHelper::LogError("Player can't attack , is in ashamed state!");
+        DebugHelper::AddMessageToLog("[BattleHUD]: " + GameInstance->GetCurrentPlayer()->GetActorLabel() + " can't attack because it's under ashamed state!");
+        return;
+    }
     
     if (!GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn() || CurrentAP <= 0)
     {
@@ -222,7 +226,7 @@ void UBattleHUD::OnShootPressed()
         return;
     }
     
-    UCircularBulletBuffer* Buffer = GetCircularBulletBuffer();
+    const UCircularBulletBuffer* Buffer = GetCircularBulletBuffer();
 
     if (Buffer->IsEmpty())
     {
@@ -251,8 +255,9 @@ void UBattleHUD::OnShootPressed()
     
     bShootFired = true;
     DebugHelper::LogMessage(7, FColor::Orange, "Ap Accumulator on shoot -> " + FString::FromInt(ApAccumulator));
-    UpdateAPBar();
     Bar->UpdateHighlights(1);
+    UpdateAPBar();
+    ApAccumulator = 1;
     bTargetSelection = true;
     DebugHelper::LogSuccess("Shoot pressed, ap spent (Accumulator)-> " + FString::FromInt(ApAccumulator));
     DebugHelper::AddMessageToLog("[BattleHUD]: Shoot pressed, ap spent (Accumulator) -> " + FString::FromInt(ApAccumulator));
@@ -340,7 +345,7 @@ void UBattleHUD::OnReloadPressed()
         return;
     }
 
-    UBulletSelector::SetCanSelect(true);
+    //UBulletSelector::SetCanSelect(true);
     
     ConfirmReloadBullet->SetVisibility(ESlateVisibility::Visible);
     CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Visible);
@@ -361,6 +366,7 @@ void UBattleHUD::OnReloadPressed()
     Displayer->SetVisibility(ESlateVisibility::Visible);
     Displayer->Refresh();
     OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
+    RefreshBulletMagazine();
     FSlateApplication::Get().ClearAllUserFocus();
 }
 
@@ -589,7 +595,7 @@ void UBattleHUD::HideBulletMagazineOnReload()
     Displayer->SetVisibility(ESlateVisibility::Hidden);
     TargetText->SetVisibility(ESlateVisibility::Hidden);
     TargetNameText->SetVisibility(ESlateVisibility::Hidden);
-    UBulletSelector::SetCanSelect(false);
+    //UBulletSelector::SetCanSelect(false);
 }
 
 void UBattleHUD::IncreaseShootPower()
@@ -599,7 +605,6 @@ void UBattleHUD::IncreaseShootPower()
         return;
     }
     
-    ApPowerBoost++;
     ApAccumulator = FMath::Min(ApAccumulator + 1, 4);
     Bar->UpdateHighlights(ApAccumulator);
     
@@ -613,34 +618,38 @@ void UBattleHUD::IncreaseShootPower()
         Bar->UpdateHighlights(ApAccumulator);
     }
     
-
+    
     switch (ApAccumulator)
     {
     case 1:
         {
             GameInstance->GetPlayerStats()->ApModifier = 1.0f;
             DebugHelper::AddMessageToLog("[BattleHUD]: Player spent 1 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+            DebugHelper::LogWarning("[BattleHUD]: Player spent 1 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
             break;
         }
     case 2:
         {
             GameInstance->GetPlayerStats()->ApModifier = 1.5f;
             DebugHelper::AddMessageToLog("[BattleHUD]: Player spent 2 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+            DebugHelper::LogWarning("[BattleHUD]: Player spent 2 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
             break;
         }
     case 3:
         {
             GameInstance->GetPlayerStats()->ApModifier = 2.0f;
             DebugHelper::AddMessageToLog("[BattleHUD]: Player spent 3 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+            DebugHelper::LogWarning("[BattleHUD]: Player spent 3 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
             break;
         }
     case 4:
         {
             GameInstance->GetPlayerStats()->ApModifier = 2.5f;
             DebugHelper::AddMessageToLog("[BattleHUD]: Player spent 4 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
+            DebugHelper::LogWarning("[BattleHUD]: Player spent 4 extra ap " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
             break;
         }
-
+    
     default:
         {
             GameInstance->GetPlayerStats()->ApModifier = 1.0f;
@@ -649,33 +658,26 @@ void UBattleHUD::IncreaseShootPower()
         }
       
     }
-
+    
     Bar->UpdateHighlights(ApAccumulator);
-    
-    DebugHelper::LogWarning("Ap Modifier on increase -> " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
-    DebugHelper::AddMessageToLog("[BattleHUD]: Player decided to increase it's shoot power, now has modifier: -> " + FString::SanitizeFloat(GameInstance->GetPlayerStats()->ApModifier));
-    
-    DebugHelper::LogSuccess("Shoot is boosted ap modifier now is " + FString::SanitizeFloat( GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStats()->ApModifier ));
-    DebugHelper::AddMessageToLog("[BattleHUD]: Shoot is boosted ap modifier now is " + FString::SanitizeFloat( GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStats()->ApModifier ));
-    FSlateApplication::Get().ClearAllUserFocus();
 }
 
 void UBattleHUD::DecreaseShootPower()
 {
     if (ApAccumulator <= 0)
         return;
-
+    
     ApPowerBoost--;
     ApAccumulator = FMath::Clamp(ApAccumulator - 1, 1, 4);
-
+    
     Bar->UpdateHighlights(ApAccumulator);
-
+    
     DebugHelper::LogMessage(6, FColor::Yellow, 
         "Restored Ap: " + FString::FromInt(ApAccumulator));
-
+    
     
     float NewModifier = 1.0f;
-
+    
     switch (ApAccumulator)
     {
     case 1: NewModifier = 1.0f; break;
@@ -684,12 +686,12 @@ void UBattleHUD::DecreaseShootPower()
     case 4: NewModifier = 2.5f; break;
     default: NewModifier = 1.0f; break;
     }
-
+    
     GameInstance->GetPlayerStats()->ApModifier = NewModifier;
     DebugHelper::AddMessageToLog("[BattleHUD]: Player decided to decrease boost, now has: " + FString::SanitizeFloat(NewModifier));
-
+    
     Bar->UpdateHighlights(ApAccumulator);
-
+    
     FSlateApplication::Get().ClearAllUserFocus();
 }
 
@@ -817,7 +819,8 @@ void UBattleHUD::ConfirmBulletSelection() // this is for the confirm button
     SwitchToBattleUI();
     bBulletSetupFinished = true;
     bStartFight = true;
-    BattleHandler->GetTurnBasedSystem()->RequestFight(true);
+    //BattleHandler->GetTurnBasedSystem()->RequestFight(true);
+    BattleHandler->GetTurnBasedSystem()->PrePrepareToBattle();
 }
 
 void UBattleHUD::SwitchToBattleUI()
@@ -927,6 +930,7 @@ void UBattleHUD::Engage()
     case FearEV:
         EngageBtn->SetVisibility(ESlateVisibility::Hidden);
         CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
+        PersistentInstance->GetCurrentPlayer()->GetStatusTracker()->BuffWith(EBuffStatus::DefBuff);
         EnableButtonsAfterShooting();
         DecreaseAP(1);
         UpdateAPBar();
@@ -1065,12 +1069,6 @@ void UBattleHUD::SpawnGameOverVisualizer()
         VisualizerGameOverSlot->AddChild(GameOverVisualizer);
         GameOverVisualizer->SetVisibility(ESlateVisibility::Hidden);
     }, 5.0f, false);
-    // TSubclassOf<UGameOverVisualizer> GameOverVisualizerClass = LoadClass<UGameOverVisualizer>(this,TEXT("/Game/ICC/BluePrints/UI/Battle/WBP_GameOver.WBP_GameOver_C"));
-    // checkf(GameOverVisualizerClass, TEXT("GameOverVisualizerClass path invalid"))
-    // GameOverVisualizer = CreateWidget<UGameOverVisualizer>(GetWorld(), GameOverVisualizerClass);
-    // checkf(GameOverVisualizer, TEXT("Invalid GameOverVisualizer"))
-    // VisualizerGameOverSlot->AddChild(GameOverVisualizer);
-    // GameOverVisualizer->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UBattleHUD::DisplayGameOverVisualizer()
@@ -1108,10 +1106,9 @@ FText UBattleHUD::UpdateTargetSelectionInfos()
     // Start at current index and find the first alive target
     for (int32 i = 0; i < Queue.Num(); ++i)
     {
-        int32 CheckIndex = (CurrentEnemyIndex + i) % Queue.Num();
-        AMob* Mob = Cast<AMob>(Queue[CheckIndex]);
+        const int32 CheckIndex = (CurrentEnemyIndex + i) % Queue.Num();
         
-        if (!Mob || Mob->IsAlive())
+        if ( AMob* Mob = Cast<AMob>(Queue[CheckIndex]); !Mob || Mob->IsAlive())
         {
             return FText::FromString("Target: " + Queue[CheckIndex]->GetActorLabel());
         }
@@ -1130,9 +1127,9 @@ FText UBattleHUD::UpdateEnemyName()
     // Start at current index and find the first alive target
     for (int32 i = 0; i < Queue.Num(); ++i)
     {
-        int32 CheckIndex = (CurrentEnemyIndex + i) % Queue.Num();
-        AMob* Mob = Cast<AMob>(Queue[CheckIndex]);
-        if (!Mob || Mob->IsAlive())
+        const int32 CheckIndex = (CurrentEnemyIndex + i) % Queue.Num();
+       
+        if ( AMob* Mob = Cast<AMob>(Queue[CheckIndex]); !Mob || Mob->IsAlive())
         {
             return FText::FromString(Queue[CheckIndex]->GetActorLabel());
         }
@@ -1176,6 +1173,96 @@ void UBattleHUD::EnableButtonsAfterShooting()
     Pass->SetIsEnabled(true);
     Reload->SetIsEnabled(true);
     Shoot->SetIsEnabled(true);
+}
+
+void UBattleHUD::RefreshBulletMagazine()
+{
+    UCircularBulletBuffer* Buffer = GetCircularBulletBuffer();
+    const int32 NumSlots = MagazineBullets.Num();
+
+    int32 FilledSlots = 0;
+
+    for (int32 i = 0; i < Buffer->GetCount() && FilledSlots < NumSlots; ++i)
+    {
+        const int32 BufferIndex =
+            (Buffer->GetTailIndex() + i) % Buffer->GetCapacity();
+
+        UBulletData* BulletData = Buffer->PeekAt(BufferIndex);
+        if (!BulletData) continue;
+
+        MagazineBullets[FilledSlots]->Setup(Buffer, BulletData, BufferIndex);
+        FilledSlots++;
+    }
+    
+    for (int32 i = FilledSlots; i < NumSlots; ++i)
+    {
+        MagazineBullets[i]->Setup(nullptr, nullptr, -1);
+    }
+}
+
+void UBattleHUD::ResetBulletMagazine()
+{
+    const UCircularBulletBuffer* Buffer = GetCircularBulletBuffer();
+
+    for (int32 i = 0; i < Buffer->GetCount(); ++i)
+    {
+        MagazineBullets[i]->RemoveFromMagazine();
+    }
+}
+
+void UBattleHUD::ResetAp()
+{
+    CurrentAP = 2;
+    Bar->SetCurrentAP(CurrentAP);
+    Bar->SetPreviewAP(0);
+    UpdateAPBar();
+}
+
+void UBattleHUD::RequestBulletPreparation()
+{
+    bBulletSetupFinished = false;
+    bStartFight = false;
+
+    if (RevolverBuffer)
+    {
+        RevolverBuffer->Clear();
+        RevolverBuffer->Initialize(MaxRevolverSlots);
+    }
+
+    for (UMagazineBullet* Slot : MagazineBullets)
+    {
+        if (!Slot) continue;
+        Slot->Setup(nullptr, nullptr, -1);
+        Slot->GetMagazineBulletButton()->SetIsEnabled(true);
+    }
+    
+    for (UImage* Img: PistolMagazines)
+    {
+        Img->SetColorAndOpacity(FColor::White);
+        Img->SetBrushFromTexture(nullptr);
+    }
+    
+    ConfirmReloadBullet->SetVisibility(ESlateVisibility::Visible);
+    CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Visible);
+    Displayer->SetVisibility(ESlateVisibility::Visible);
+    CanvasAmmoSelection->SetVisibility(ESlateVisibility::Visible);
+    TargetText->SetVisibility(ESlateVisibility::Hidden);
+    TargetNameText->SetVisibility(ESlateVisibility::Hidden);
+    CanvasBulletStats->SetVisibility(ESlateVisibility::Visible);
+    BulletName->SetVisibility(ESlateVisibility::Visible);
+    Quantity->SetVisibility(ESlateVisibility::Visible);
+    CanvasStatus->SetVisibility(ESlateVisibility::Hidden);
+    Displayer->SetVisibility(ESlateVisibility::Visible);
+    OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
+
+    DebugHelper::LogWarning("Entered Preparation Phase");
+
+    GetBattleHandler()->GetTurnBasedSystem()->SetBattlePhase(EBattlePhase::Preparation);
+}
+
+void UBattleHUD::Reset(const TMap<TEnumAsByte<EBulletType>, FBullet>& Bullets) 
+{
+    GameInstance->GetInventory().BulletsStored = Bullets;
 }
 
 void UBattleHUD::ShowHUD() 

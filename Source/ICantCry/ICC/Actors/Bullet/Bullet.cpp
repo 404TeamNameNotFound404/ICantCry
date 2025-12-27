@@ -117,3 +117,11 @@ FString FBullet::GetWeakAgainstName() const
 
 	return Result;
 }
+
+FBullet FBullet::Clone() const
+{
+	FBullet Clone;
+	Clone.BulletData = BulletData;
+	Clone.Quantity = Quantity;
+	return Clone;
+}

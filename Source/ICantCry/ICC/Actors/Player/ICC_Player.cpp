@@ -160,6 +160,7 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Crafting, ETriggerEvent::Started, this, &ThisClass::Input_OpenCrafting);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_CloseCrafting, ETriggerEvent::Triggered, this, &ThisClass::Input_CloseCrafting);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_LMBInteract, ETriggerEvent::Triggered, this, &ThisClass::Input_ChallengeInteraction);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_LMBInteract, ETriggerEvent::Completed, this, &ThisClass::Input_ChallengeReleaseInteraction);
 	//  LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Bestiary, ETriggerEvent::Started, this, &ThisClass::Input_OpenBestiary);
 	// LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_CloseBestiary, ETriggerEvent::Triggered, this, &ThisClass::Input_CloseBestiary);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Bestiary, ETriggerEvent::Started, this, &ThisClass::Input_ToggleBestiary);
@@ -618,3 +619,42 @@ void AICC_Player::Input_ToggleBestiary(const FInputActionValue& InputActionValue
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void AICC_Player::Input_ChallengeReleaseInteraction(const FInputActionValue& InputActionValue)
+{
+	if (AChallengeMinigame::Singleton)
+	{
+		if (APaper* Paper = AChallengeMinigame::Singleton->GetCurrentPaper())
+		{
+			Paper->Release();
+		}
+	}
+}
