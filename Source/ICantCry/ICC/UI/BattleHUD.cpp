@@ -1231,7 +1231,7 @@ void UBattleHUD::RequestBulletPreparation()
 
     for (UMagazineBullet* BulletSlot : MagazineBullets)
     {
-        if (!Slot) continue;
+        if (!BulletSlot) continue;
         BulletSlot->Setup(nullptr, nullptr, -1);
         BulletSlot->GetMagazineBulletButton()->SetIsEnabled(true);
     }
