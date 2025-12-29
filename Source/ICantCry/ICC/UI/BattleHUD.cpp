@@ -1229,11 +1229,11 @@ void UBattleHUD::RequestBulletPreparation()
         RevolverBuffer->Initialize(MaxRevolverSlots);
     }
 
-    for (UMagazineBullet* Slot : MagazineBullets)
+    for (UMagazineBullet* BulletSlot : MagazineBullets)
     {
-        if (!Slot) continue;
-        Slot->Setup(nullptr, nullptr, -1);
-        Slot->GetMagazineBulletButton()->SetIsEnabled(true);
+        if (!BulletSlot) continue;
+        BulletSlot->Setup(nullptr, nullptr, -1);
+        BulletSlot->GetMagazineBulletButton()->SetIsEnabled(true);
     }
     
     for (UImage* Img: PistolMagazines)
