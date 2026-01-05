@@ -111,7 +111,7 @@ struct FInternalPerkData
 		bIdle = false;
 	}
 
-	bool HasBuffHightPriority(AMob* Emotion) const;
+	bool HasBuffHighPriority(AMob* Emotion) const;
 	bool HasHighDebuffPriority(AMob* Emotion) const;
 	void AssignPriority(AMob* Emotion);
 };
@@ -164,6 +164,8 @@ public:
 	 * @return true if owner has a buff
 	 */
 	bool IsBuffed() const;
+
+	bool CanDebuff() const;
 
 	/**
 	 * Assign Status to afflict

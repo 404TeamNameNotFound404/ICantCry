@@ -118,4 +118,6 @@ private:
 
 	UPROPERTY()
 	TEnumAsByte<EBattlePhase> BattlePhase;
+
+	UPROPERTY() int32 BattleTurnCounter = -1;
 };

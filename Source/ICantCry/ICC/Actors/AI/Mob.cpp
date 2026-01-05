@@ -70,6 +70,10 @@ void AMob::BeginPlay()
 	Memory.DefaultBattleOrientation = GetActorRotation();
 	Memory.InitialAttackPower = GetData()->AttackPower;
 	Memory.InitialDefencePower = GetData()->DefencePower;
+
+	DebugHelper::AddMessageToLog("[AMob]: Memory registered InitialAttackPower as: " + FString::SanitizeFloat(Memory.InitialAttackPower));
+	DebugHelper::AddMessageToLog("[AMob]: Memory registered InitialDefPower as: " + FString::SanitizeFloat(Memory.InitialDefencePower));
+	
 	EnemyData->Alive = true;
 	EnemyData->Type = Type;
 	Stats.Health = GetData()->MaxHealth;

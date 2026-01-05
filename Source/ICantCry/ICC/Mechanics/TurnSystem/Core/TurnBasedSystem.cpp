@@ -154,7 +154,7 @@ void UTurnBasedSystem::Update(UWorld* World, FBattleMemory* Memory)
 				DebugHelper::AddTurnMaterialOverlayToStaticMesh(Player->DebugMesh);
 				CurrentPlayer = Player;
 				BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Your Turn"));
-				DebugHelper::AddMessageToLog("[Turn System]: Your turn");
+				DebugHelper::AddMessageToLog("[Turn System]: Turn: " +  FString::FromInt(BattleTurnCounter) + " Your turn");
 			}
 		}
 
@@ -170,7 +170,7 @@ void UTurnBasedSystem::Update(UWorld* World, FBattleMemory* Memory)
 			AMob* Mob = Cast<AMob>(Turn.Queue[Turn.CurrentTurn]);
 			checkf(Mob, TEXT("Mob invalid at UTurnBasedSystem::Update"))
 			DebugHelper::LogWarning(Mob->GetActorLabel() + " Turn");
-			DebugHelper::AddMessageToLog("[Turn System]: " + Mob->GetActorLabel() + " Turn");
+			DebugHelper::AddMessageToLog("[Turn System]: Turn " + FString::FromInt(BattleTurnCounter) + " - " + Mob->GetActorLabel() + " Turn");
 			AICC_AIController* AIController = Cast<AICC_AIController>(Mob->GetController());
 			CurrentPlayer->GetBattleHUD()->SetCurrentPlayingEmotion(Mob);
 			
@@ -209,8 +209,7 @@ void UTurnBasedSystem::Update(UWorld* World, FBattleMemory* Memory)
 
 void UTurnBasedSystem::StartNextTurn()
 {
-	DebugHelper::LogWarning("Next turn is started");
-	DebugHelper::AddMessageToLog("[Turn System]: Next turn is started");
+	BattleTurnCounter++;
 	
 	if (Turn.Queue.IsValidIndex(Turn.CurrentTurn))
 	{
@@ -222,7 +221,7 @@ void UTurnBasedSystem::StartNextTurn()
 			CurrentMob = Mob;
 			bIsAiTurn = true;
 			bIsPlayerTurn = false;
-			DebugHelper::AddMessageToLog("[Turn System]: " + Mob->GetActorLabel() + "'s turn");
+			DebugHelper::AddMessageToLog("[Turn System]: Turn " + FString::FromInt(BattleTurnCounter) + " - " + Mob->GetActorLabel() + "'s turn");
 		}
 		//otherwise is player playing
 		else
@@ -367,6 +366,7 @@ void UTurnBasedSystem::ExitBattle()
 	bVictory = false;
 	Turn.Queue.Empty();
 	EnemySpawnManager->GetMemory().Clear();
+	BattleTurnCounter = 0;
 }
 
 void UTurnBasedSystem::Reload()
@@ -380,6 +380,7 @@ void UTurnBasedSystem::Reload()
 	//Instance->GetInventory().BulletsStored = EnemySpawnManager->GetMemory().InBattleBullets;
 	Instance->GetCurrentPlayer()->GetBattleHUD()->SetBulletSetupFinished(false);
 	Turn.CurrentTurn = 0;
+	BattleTurnCounter = 0;
 }
 
 EBattlePhase UTurnBasedSystem::GetBattlePhase() const
