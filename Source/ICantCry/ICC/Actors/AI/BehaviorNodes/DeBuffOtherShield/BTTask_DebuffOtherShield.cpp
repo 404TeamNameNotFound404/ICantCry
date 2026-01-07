@@ -49,7 +49,7 @@ EBTNodeResult::Type UBTTask_DebuffOtherShield::ExecuteTask(UBehaviorTreeComponen
 		return EBTNodeResult::Succeeded;
 	}
 
-	TargetToBuff->GetStatusTracker()->BuffFlow(EBuffStatus::DefBuff);
+	TargetToBuff->GetStatusTracker()->BuffFlow(EBuffStatus::DefBuff, TargetToBuff);
 	TargetToBuff->GetStatusTracker()->BuffWith(EBuffStatus::Shield);
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " de-buffed " + TargetToBuff->GetActorLabel() + " shield"));

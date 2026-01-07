@@ -33,7 +33,7 @@ EBTNodeResult::Type UBTTask_Buff::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	
 	Current->GetStatusTracker()->BuffFlow(EBuffStatus::AtkBuff);
 	Current->GetStatusTracker()->BuffWith(EBuffStatus::AtkBuff);
-
+	
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(
 		FText::FromString(Current->GetActorLabel() + " buffed it's atk"));
 

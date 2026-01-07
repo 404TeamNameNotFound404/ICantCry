@@ -592,9 +592,12 @@ void UBattleHUD::HideBulletMagazineOnReload()
     ConfirmReloadBullet->SetVisibility(ESlateVisibility::Hidden);
     CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Hidden);
     CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
+    ConfirmButton->SetVisibility(ESlateVisibility::Hidden);
     Displayer->SetVisibility(ESlateVisibility::Hidden);
     TargetText->SetVisibility(ESlateVisibility::Hidden);
     TargetNameText->SetVisibility(ESlateVisibility::Hidden);
+    BulletName->SetVisibility(ESlateVisibility::Hidden);
+    Quantity->SetVisibility(ESlateVisibility::Hidden);
     //UBulletSelector::SetCanSelect(false);
 }
 
@@ -814,12 +817,16 @@ void UBattleHUD::UpdateBulletInfo(UBulletData* BulletData)
 
 void UBattleHUD::ConfirmBulletSelection() // this is for the confirm button  
 {
-    if (CanvasAmmoSelection) CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
-    if (ConfirmButton) ConfirmButton->SetVisibility(ESlateVisibility::Hidden);
+    CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
+    ConfirmButton->SetVisibility(ESlateVisibility::Hidden);
+    ConfirmReloadBullet->SetVisibility(ESlateVisibility::Hidden);
+    CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Hidden);
+    BulletName->SetVisibility(ESlateVisibility::Hidden);
+    Quantity->SetVisibility(ESlateVisibility::Hidden);
+    Displayer->SetVisibility(ESlateVisibility::Hidden);
     SwitchToBattleUI();
     bBulletSetupFinished = true;
     bStartFight = true;
-    //BattleHandler->GetTurnBasedSystem()->RequestFight(true);
     BattleHandler->GetTurnBasedSystem()->PrePrepareToBattle();
 }
 

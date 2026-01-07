@@ -32,6 +32,21 @@ enum EBuffStatus
 	NoBuff
 };
 
+UENUM()
+enum EPrioritySource
+{
+	Source_None,
+	Source_BuffAtk,
+	Source_DebuffAtk,
+	Source_BuffDef,
+	Source_DebuffDef,
+	Source_LowHealth,
+	Source_EnvyBurned,
+	Source_FreezedUp,
+	Source_Ashamed,
+	Source_Shield
+};
+
 class AMob;
 
 USTRUCT()
@@ -53,9 +68,15 @@ struct FStatusPriority
 	
 	void SetNextPriorityFromBuff(const EBuffStatus& BuffStatus);
 	void SetNextPriorityFromDebuff(const EAfflictedStatus& Status);
+	bool CanUsePriority(const EMobType& EmotionType, const EPrioritySource& SourcePriority) const;
+	void ClearNextBuff();
+
+	EPrioritySource GetNextPrioritySource() const;
+	EPrioritySource GetCurrentPrioritySource() const;
+	void CommitNextBuff();
 
 private:
-	UPROPERTY() int32 NormalPriority = 0;
+	UPROPERTY()  int32 NormalPriority = 0;
 	UPROPERTY()  int32 BuffAtkPriority = 1;
 	UPROPERTY()  int32 DeBuffAtkPriority = 1;
 	UPROPERTY()  int32 BuffDefPriority = 2;
@@ -64,6 +85,8 @@ private:
 	UPROPERTY()  int32 EnvyBurnedPriority = 4;
 	UPROPERTY()  int32 AshamedPriority = 4;
 	UPROPERTY()  int32 DebuffShieldPriority = 4;
+	UPROPERTY() TEnumAsByte<EPrioritySource> CurrentBuffSource = EPrioritySource::Source_None;
+	UPROPERTY() TEnumAsByte<EPrioritySource> NextBuffSource = EPrioritySource::Source_None;
 
 	// Status (Malus)
 	UPROPERTY() int32 CurrentPriority = 0; // current buff/debuff AI has
@@ -111,7 +134,7 @@ struct FInternalPerkData
 		bIdle = false;
 	}
 
-	bool HasBuffHightPriority(AMob* Emotion) const;
+	bool HasBuffHighPriority(AMob* Emotion) const;
 	bool HasHighDebuffPriority(AMob* Emotion) const;
 	void AssignPriority(AMob* Emotion);
 };
@@ -140,7 +163,7 @@ protected:
 	TEnumAsByte<EAfflictedStatus> CurrentActiveStatus;
 
 	UPROPERTY()
-	TEnumAsByte<EBuffStatus> CurrentBuffedStatus;
+	TEnumAsByte<EBuffStatus> CurrentBuffedStatus = EBuffStatus::NoBuff;
 
 	UPROPERTY()
 	int32 TurnElapsed = 0;
@@ -164,6 +187,8 @@ public:
 	 * @return true if owner has a buff
 	 */
 	bool IsBuffed() const;
+
+	bool CanDebuff() const;
 
 	/**
 	 * Assign Status to afflict
@@ -208,6 +233,7 @@ public:
 *  check if Another buff is applied and the AI is buffed the current buff is replaced with the new one
 */
 	void BuffFlow(const EBuffStatus& NewBuffStatus);
+	void BuffFlow(const EBuffStatus& NewBuffStatus, AMob* Target);
 
 
 	/**
@@ -253,6 +279,9 @@ private:
 
 	UPROPERTY()
 	UICantCryGameInstance* Instance;
+
+	UPROPERTY()
+	bool bBuffedTwice = false;
 	
 	void InflictFreeze(AICC_Actor* Target);
 	void InflictBurn(AICC_Actor* Target);
@@ -276,4 +305,6 @@ private:
 	void RevertInflictedMalus(const EAfflictedStatus& Status);
 
 	void RevertBuff();
+
+	void ApplyPriorityBuff(const EBuffStatus& BuffStatus, AMob* Target);
 };
