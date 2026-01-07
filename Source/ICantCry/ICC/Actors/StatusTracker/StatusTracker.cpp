@@ -29,18 +29,23 @@ void FStatusPriority::SetNextPriorityFromBuff(const EBuffStatus& BuffStatus)
 	{
 	case AtkBuff:
 		SetNextBuffProcessPriority(1);
+		NextBuffSource = EPrioritySource::Source_BuffAtk;
 		break;
 	case DefBuff:
 		SetNextBuffProcessPriority(2);
+		NextBuffSource = EPrioritySource::Source_BuffDef;
 		break;
 	case Shield:
 		SetNextBuffProcessPriority(4);
+		NextBuffSource = EPrioritySource::Source_Shield;
 		break;
 	case LowHealth:
 		SetNextBuffProcessPriority(3);
+		NextBuffSource = EPrioritySource::Source_LowHealth;
 		break;
 	default:
 	case NoBuff:
+		NextBuffSource = EPrioritySource::Source_None;
 		break;
 	}
 }
@@ -51,30 +56,96 @@ void FStatusPriority::SetNextPriorityFromDebuff(const EAfflictedStatus& Status)
 	switch (Status)
 	{
 	case Freezed:
+		NextBuffSource = EPrioritySource::Source_FreezedUp;
 		break;
 	case Burn:
 		SetNextPriority(4);
+		NextBuffSource = EPrioritySource::Source_EnvyBurned;
 		break;
 	case EAShame:
 		SetNextPriority(4);
+		NextBuffSource = EPrioritySource::Source_Ashamed;
 		break;
 	case ShieldDebuff:
 		SetNextPriority(4);
+		NextBuffSource = EPrioritySource::Source_Shield;
 		break;
 	case DebuffAtk:
 		SetNextPriority(1);
+		NextBuffSource = EPrioritySource::Source_DebuffAtk;
 		break;
 	case DebuffDef:
 		SetNextPriority(2);
+		NextBuffSource = EPrioritySource::Source_DebuffDef;
 		break;
 	case CriticHealth:
 		SetNextPriority(3);
+		NextBuffSource = EPrioritySource::Source_LowHealth;
 		break;
 	default:
 	case None:
 		SetNextPriority(0);
+		NextBuffSource = EPrioritySource::Source_None;
 		break;
 	}
+}
+
+bool FStatusPriority::CanUsePriority(const EMobType& EmotionType, const EPrioritySource& SourcePriority) const
+{
+	switch (SourcePriority)
+	{
+	default:
+	case Source_None:
+		return true;
+	case Source_BuffAtk:
+		return EmotionType == EMobType::MobAnger || EmotionType == EMobType::MobDisgust || EmotionType == EMobType::MobFear ||
+			EmotionType == EMobType::MobJealousy || EmotionType == EMobType::MobJoy || EmotionType == EMobType::MobSadness;
+	case Source_DebuffAtk:
+		return EmotionType == EMobType::MobAnger || EmotionType == EMobType::MobDisgust || EmotionType == EMobType::MobJealousy;
+	case Source_BuffDef:
+		return EmotionType == EMobType::MobCalm || EmotionType == EMobType::MobFear || EmotionType == EMobType::MobJoy;
+	case Source_DebuffDef:
+		return EmotionType == EMobType::MobCalm || EmotionType == EMobType::MobFear;
+	case Source_LowHealth:
+		return  EmotionType == EMobType::MobAnger || EmotionType == EMobType::MobAnxiety || EmotionType == EMobType::MobCalm ||
+			    EmotionType == EMobType::MobDisgust || EmotionType == EMobType::MobFear || EmotionType == EMobType::MobJealousy ||
+				EmotionType == EMobType::MobJoy || EmotionType == EMobType::MobSadness;
+	case Source_EnvyBurned:
+		return EmotionType == EMobType::MobAnger || EmotionType == EMobType::MobCalm || EmotionType == EMobType::MobFear;
+	case Source_FreezedUp:
+		return false;
+	case Source_Ashamed:
+		return EmotionType == EMobType::MobAnger || EmotionType == EMobType::MobDisgust || EmotionType == EMobType::MobFear ||
+				EmotionType == EMobType::MobJealousy || EmotionType == EMobType::MobJoy || EmotionType == EMobType::MobSadness;
+	case Source_Shield:
+		return EmotionType == EMobType::MobCalm;
+	}
+}
+
+void FStatusPriority::ClearNextBuff()
+{
+	NextBuffPriority = 0;
+	NextBuffSource = EPrioritySource::Source_None;
+}
+
+
+EPrioritySource FStatusPriority::GetNextPrioritySource() const
+{
+	return NextBuffSource;
+}
+
+EPrioritySource FStatusPriority::GetCurrentPrioritySource() const
+{
+	return CurrentBuffSource;
+}
+
+void FStatusPriority::CommitNextBuff()
+{
+	CurrentBuffPriority = NextBuffPriority;
+	CurrentBuffSource   = NextBuffSource;
+
+	NextBuffPriority = 0;
+	NextBuffSource   = EPrioritySource::Source_None;
 }
 
 void FInternalPerkData::CheckPriority(AMob* Mob)
@@ -113,7 +184,7 @@ void FInternalPerkData::AssignPriority(AMob* Emotion)
 			Data.bIdle = true;
 			break;
 		}
-
+	
 	case 1:
 		{
 			if (Emotion->GetIsIsBuffedAtk())
@@ -122,17 +193,17 @@ void FInternalPerkData::AssignPriority(AMob* Emotion)
 				Data.bBuffAtk = true;
 				break;
 			}
-
+	
 			if (Emotion->GetPlayerDebuffAttack())
 			{
 				DebugHelper::AddMessageToLog("[Status Tracker]: " + Emotion->GetActorLabel() + " changed it's DT priority " + FString::FromInt(StatusPriority.GetNextBuffPriority()));
 				Data.bDebuffAtk = true;
 				break;
 			}
-
+	
 			break;
 		}
-
+	
 	case 2:
 		{
 			Data.Clear();
@@ -142,24 +213,24 @@ void FInternalPerkData::AssignPriority(AMob* Emotion)
 				Data.bBuffDef = true;
 				break;
 			}
-
+	
 			if (Emotion->GetIsTargetDefenceDebuffed())
 			{
 				DebugHelper::AddMessageToLog("[Status Tracker]: " + Emotion->GetActorLabel() + " changed it's DT priority " + FString::FromInt(StatusPriority.GetNextBuffPriority()));
 				Data.bDebuffDef = true;
 				break;
 			}
-
+	
 			break;
 		}
-
+	
 	case 3:
 		{
 			DebugHelper::AddMessageToLog("[Status Tracker]: " + Emotion->GetActorLabel() + " changed it's DT priority " + FString::FromInt(StatusPriority.GetNextBuffPriority()));
 			Data.bLowHealth = true;
 			break;
 		}
-
+	
 	case 4:
 		{
 			if (Emotion->GetIsIsEnvyBurned())
@@ -168,7 +239,7 @@ void FInternalPerkData::AssignPriority(AMob* Emotion)
 				Data.bEnvyBurned = true;
 				break;
 			}
-
+	
 			if (Emotion->GetIsDebuffShield())
 			{
 				Data.bShieldDebuff = true;
@@ -315,6 +386,15 @@ void UStatusTracker::BuffWith(const EBuffStatus& BuffStatus)
 		return;
 	}
 
+	if (static_cast<int32>(CurrentBuffedStatus) == static_cast<int32>(BuffStatus))
+	{
+		bBuffedTwice = true;
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetActorLabel() + " got buffed twice with " + GetBuffName(BuffStatus));
+		DebugHelper::AddMessageToLog("[Status Tracker]: Current status of " + GetOwner()->GetActorLabel() + " is still " + GetBuffName(CurrentBuffedStatus));
+		BuffStatusCounter = 0;
+		return;
+	}
+
 	CurrentBuffedStatus = BuffStatus;
 	BuffStatusCounter = 0;
 	bIsOwnerAlreadyBuffed = true;
@@ -323,11 +403,22 @@ void UStatusTracker::BuffWith(const EBuffStatus& BuffStatus)
 	{
 	case AtkBuff:
 		Priority.SetPriotity(1);
-		BuffAttack();
+		
+		if (!bBuffedTwice)
+		{
+			BuffAttack();
+		}
+		
 		break;
 	case DefBuff:
 		Priority.SetPriotity(2);
-		BuffDefence();
+
+		if (!bBuffedTwice)
+		{
+			BuffDefence();
+		}
+		
+		//BuffDefence();
 		break;
 	case LowHealth:
 		Heal();
@@ -519,6 +610,7 @@ void UStatusTracker::UpdateBuffStatus()
 			PerkData.bBuffAtk = false;
 			bIsOwnerAlreadyBuffed = false;
 			bCanBuff = true;
+			bBuffedTwice = false;
 		}
 		break;
 	case DefBuff:
@@ -541,6 +633,7 @@ void UStatusTracker::UpdateBuffStatus()
 			bIsOwnerAlreadyBuffed = false;
 			PerkData.bBuffDef = false;
 			bCanBuff = true;
+			bBuffedTwice = false;
 		}
 		break;
 	case LowHealth:
@@ -548,6 +641,7 @@ void UStatusTracker::UpdateBuffStatus()
 		bIsOwnerAlreadyBuffed = false;
 		PerkData.bLowHealth = false;
 		bCanBuff = true;
+		bBuffedTwice = false;
 		break;
 
 	case Shield:
@@ -563,12 +657,14 @@ void UStatusTracker::UpdateBuffStatus()
 			bIsOwnerAlreadyBuffed = false;
 			bCanDebuff = true;
 			PerkData.bShieldDebuff = false;
+			bBuffedTwice = false;
 		}
 		break;
 	
 	case NoBuff:
 		BuffStatusCounter = 0;
 		bIsOwnerAlreadyBuffed = false;
+		bBuffedTwice = false;
 		break;
 	default:
 		break;
@@ -689,13 +785,66 @@ void UStatusTracker::BuffFlow(const EBuffStatus& NewBuffStatus)
 		return;
 	}
 
+	const AMob* Emotion = Cast<AMob>(GetOwner());
+	
+	if (!Emotion)
+	{
+		return;
+	}
+	
 	Priority.SetNextPriorityFromBuff(NewBuffStatus);
+	
+	if (const FStatusPriority& P = Priority; !P.CanUsePriority(Emotion->GetMobType(), P.GetNextPrioritySource()))
+	{
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + Emotion->GetActorLabel() +
+			" cannot use priority source " + UEnum::GetValueAsString(P.GetNextPrioritySource()));
+
+		Priority.ClearNextBuff();
+		return;
+	}
+	
 	BuffWith(NewBuffStatus);
+
 
 	if (PerkData.HasBuffHighPriority(Cast<AMob>(GetOwner())))
 	{
 		DebugHelper::AddMessageToLog("[Status Tracker]: High priority detected ");
 		PerkData.AssignPriority(Cast<AMob>(GetOwner()));
+	}
+	
+	DebugHelper::LogMessage(7, FColor::Orange, "Old buff " + GetBuffName(CurrentBuffedStatus) + "Removed " + "New buff assigned " + GetBuffName(NewBuffStatus));
+	DebugHelper::AddMessageToLog("[Status Tracker]: Old buff " + GetBuffName(CurrentBuffedStatus) + "Removed " + "New buff assigned " + GetBuffName(NewBuffStatus));
+	BuffStatusCounter = 0;
+	CurrentBuffedStatus = NewBuffStatus;
+}
+
+void UStatusTracker::BuffFlow(const EBuffStatus& NewBuffStatus, AMob* Target)
+{
+	const AMob* Emotion = Cast<AMob>(GetOwner());
+	
+	if (!Emotion)
+	{
+		return;
+	}
+
+	BuffWith(NewBuffStatus);
+	
+	Priority.SetNextPriorityFromBuff(NewBuffStatus);
+	
+	if (const FStatusPriority& P = Priority; !P.CanUsePriority(Emotion->GetMobType(), P.GetNextPrioritySource()))
+	{
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + Emotion->GetActorLabel() +
+			" cannot use priority source " + UEnum::GetValueAsString(P.GetNextPrioritySource()));
+
+		Priority.ClearNextBuff();
+	}
+	else
+	{
+		if (PerkData.HasBuffHighPriority(Cast<AMob>(GetOwner()))) // probably i have to set to target Cast<AMob>(GetOwner())
+		{
+			DebugHelper::AddMessageToLog("[Status Tracker]: High priority detected ");
+			PerkData.AssignPriority(Target);
+		}
 	}
 	
 	DebugHelper::LogMessage(7, FColor::Orange, "Old buff " + GetBuffName(CurrentBuffedStatus) + "Removed " + "New buff assigned " + GetBuffName(NewBuffStatus));
@@ -733,8 +882,7 @@ void UStatusTracker::BuffAttack()
 	if (Target->IsA(AICC_Player::StaticClass()))
 	{
 		const AICC_Player* Player = Cast<AICC_Player>(GetOwner());
-		Player->GetStats()->AttackPower += FMath::FloorToInt(
-			Player->GetStats()->AttackPower * Player->GetBattleData()->BuffAtkIncrement);
+		Player->GetStats()->AttackPower += FMath::FloorToInt( Player->GetStats()->AttackPower * Player->GetBattleData()->BuffAtkIncrement);
 		DebugHelper::LogWarning("Attack buffed " + FString::SanitizeFloat(Player->GetStats()->AttackPower));
 		DebugHelper::AddMessageToLog("[Status Tracker]: " + Player->GetActorLabel() + " buffed it's attack " + FString::SanitizeFloat(Player->GetStats()->AttackPower));
 	}
@@ -803,7 +951,7 @@ void UStatusTracker::BuffDefence()
 	if (Target->IsA(AMob::StaticClass()))
 	{
 		const AMob* Mob = Cast<AMob>(GetOwner());
-		Mob->GetData()->DefencePower = FMath::FloorToInt(Mob->GetData()->DefencePower * Mob->GetBattleData()->EmotionDefBuffIncrement);
+		Mob->GetData()->DefencePower += FMath::FloorToInt(Mob->GetData()->DefencePower * Mob->GetBattleData()->EmotionDefBuffIncrement);
 
 		switch (Mob->GetMobType())
 		{
@@ -1096,6 +1244,20 @@ void UStatusTracker::RevertBuff()
 	bIsOwnerAlreadyBuffed = false;
 	CurrentBuffedStatus = EBuffStatus::NoBuff;
 	DebugHelper::LogMessage(8, FColor::Orange, "Current buff " + GetBuffName(CurrentBuffedStatus) + " is now removed");
+}
+
+void UStatusTracker::ApplyPriorityBuff(const EBuffStatus& BuffStatus, AMob* Target)
+{
+	Priority.SetNextPriorityFromBuff(BuffStatus);
+	if (!Priority.CanUsePriority(Cast<AMob>(GetOuter())->GetMobType(), Priority.GetNextPrioritySource()))
+	{
+		Priority.ClearNextBuff();
+		return;
+	}
+
+	Priority.SetBuffCurrentPriority(Priority.GetNextBuffPriority());
+	Priority.CommitNextBuff(); 
+	PerkData.AssignPriority(Cast<AMob>(GetOwner()));
 }
 
 void UStatusTracker::InflictFreeze(AICC_Actor* Target)
