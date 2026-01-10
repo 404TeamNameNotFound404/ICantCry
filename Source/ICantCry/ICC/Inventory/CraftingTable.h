@@ -21,9 +21,9 @@ class ICANTCRY_API UCraftingTable : public UObject
 
 public:
 
-    void Initialize(FInventory* InInventory); 
+    void Initialize(FInventory* InInventory, UWorld* World); 
 	
-	void Initialize(); 
+	void Initialize(UWorld* World); 
 
 	void CraftBullet(const FBullet& BulletToCraft, ERecipeType BlueprintType, ECasingType CasingType);
 

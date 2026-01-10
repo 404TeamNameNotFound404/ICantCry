@@ -11,144 +11,87 @@ void UInGameMenu::NativeConstruct()
 	Super::NativeConstruct();
 
 	
-	// Overview->OnClicked.AddDynamic(this, &UInGameMenu::OpenOverview);
-	Craft->OnClicked.AddDynamic(this, &UInGameMenu::OpenCraft);
+	Character->OnClicked.AddDynamic(this, &UInGameMenu::OpenCharacter);
 	Inventory->OnClicked.AddDynamic(this, &UInGameMenu::OpenInventory);
 	// Map->OnClicked.AddDynamic(this, &UInGameMenu::OpenMap);
-	//Bestiary->OnClicked.AddDynamic(this, &UInGameMenu::OpenBestiary);
+	
 
 	// For debugging purposes only!
 	Map->SetIsEnabled(false);
-	Overview->SetIsEnabled(false);
-}
 
 
-void UInGameMenu::OpenOverview()
-{
-	
-	if (CraftingHud)
+	if (!InventoryHud)
 	{
-		CraftingHud->SetVisibility(ESlateVisibility::Hidden);
+		InventoryHud = CreateWidget<UInventoryHUD>(GetWorld(), InventoryHUDClass);
+		InventoryHud->SetVisibility(ESlateVisibility::Hidden);
+		// Main->AddChild(InventoryHud);
+		// InventoryHud->Refresh();
+	}
+
+	
+	if (!CharacterUI)
+	{
+		CharacterUI = CreateWidget<UCharacterUI>(GetWorld(), CharacterUIClass);
+		CharacterUI->SetVisibility(ESlateVisibility::Visible);
+		Main->AddChild(CharacterUI);
+		CharacterUI->RefreshUI();
 	}
 }
 
-void UInGameMenu::OpenCraft()
-{
-
-	// if (BestiaryUI)
-    // {
-    //     Main->RemoveChild(BestiaryUI);
-    //     BestiaryUI->SetVisibility(ESlateVisibility::Hidden);
-    // }
-
-	if (InventoryHud)
-	{
-		Main->RemoveChild(InventoryHud);
-	}
-	
-	if (!CraftingHud)
-	{
-		CraftingHud = CreateWidget<UCraftingHUD>(GetWorld(), CraftingHUDClass);
-		CraftingHud->SetCraftingTable(Table);
-		Main->AddChild(CraftingHud);
-		CraftingHud->RefreshUI();
-	}
-	
-	Main->AddChild(CraftingHud);
-	CraftingHud->RefreshUI();
-	CraftingHud->SetVisibility(ESlateVisibility::Visible);
-
-}
 
 void UInGameMenu::OpenInventory()
 {
 
-
-	// if (BestiaryUI)
-    // {
-    //     Main->RemoveChild(BestiaryUI);
-    //     BestiaryUI->SetVisibility(ESlateVisibility::Hidden);
-    // }
-
-	if (CraftingHud)
-	{
-		Main->RemoveChild(CraftingHud);
-	}
-
+	
 	if (!InventoryHud)
 	{
 		InventoryHud = CreateWidget<UInventoryHUD>(GetWorld(), InventoryHUDClass);
 		InventoryHud->SetVisibility(ESlateVisibility::Visible);
 		Main->AddChild(InventoryHud);
 		InventoryHud->Refresh();
+
+	}
+	else
+	{
+		Main->AddChild(InventoryHud);
+		InventoryHud->Refresh();
+		InventoryHud->SetVisibility(ESlateVisibility::Visible);
 	}
 	
-	Main->AddChild(InventoryHud);
-	InventoryHud->Refresh();
-	InventoryHud->SetVisibility(ESlateVisibility::Visible);
+	
 }
 
-// void UInGameMenu::OpenBestiary()
-// {
-// 	if (CraftingHud)
-//     {
-//         Main->RemoveChild(CraftingHud);
-//         CraftingHud->SetVisibility(ESlateVisibility::Hidden);
-//     }
 
-//     if (InventoryHud)
-//     {
-//         Main->RemoveChild(InventoryHud);
-//         InventoryHud->SetVisibility(ESlateVisibility::Hidden);
-//     }
 
-// 	if(!BestiaryUI)
-// 	{
-// 		if(BestiaryUIClass)
-// 		{
-// 			BestiaryUI = CreateWidget<UBestiaryUI>(GetWorld(), BestiaryUIClass);
-// 			if (BestiaryUI)
-//             {
-//                 // BestiaryUI->SetupEmotionsData(EmotionsData);
-//             	// BestiaryUI->SetupNoteData(NoteData);
+void UInGameMenu::OpenCharacter()
+{
 
-//                 Main->AddChild(BestiaryUI);  	
-// 				DebugHelper::LogError("UInGameMenu::OpenBestiary -> BestiaryUI created successfully");
-//             }
-//             else
-//             {
-// 				DebugHelper::LogError("UInGameMenu::OpenBestiary -> Failed to create BestiaryUI widget");
-//                 return;
-//             }
-//         }
-//         else
-//         {
-
-// 			DebugHelper::LogError("UInGameMenu::OpenBestiary -> BestiaryUIClass not set in InGameMenu");
-//             return;
-//         }
-		
-// 	}
-
-// 	if (!BestiaryUI->IsInViewport())
-//     {
-//         Main->AddChild(BestiaryUI);
-//     }
-    
-//     BestiaryUI->SetVisibility(ESlateVisibility::Visible);
-// 	DebugHelper::LogError("UInGameMenu::OpenBestiary -> Bestiary opened");
-    
+	if (InventoryHud)
+	{
+		//Main->RemoveChild(InventoryHud);
+		InventoryHud->SetVisibility(ESlateVisibility::Hidden);
+	}
 
 	
-   
-// }
+	// if (!CharacterUI)
+	// {
+	// 	CharacterUI = CreateWidget<UCharacterUI>(GetWorld(), CharacterUIClass);
+	// 	CharacterUI->SetVisibility(ESlateVisibility::Visible);
+	// 	Main->AddChild(CharacterUI);
+	// 	CharacterUI->RefreshUI();
+	// }
+	
+	Main->AddChild(CharacterUI);
+	CharacterUI->RefreshUI();
+	CharacterUI->SetVisibility(ESlateVisibility::Visible);
+
+}
+
+
 
 void UInGameMenu::OpenMap()
 {
-	if (CraftingHud)
-	{
-		CraftingHud->SetVisibility(ESlateVisibility::Hidden);
-	}
+	
 }
 
 void UInGameMenu::InstantiateTable(AICC_Player* Player)

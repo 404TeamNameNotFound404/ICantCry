@@ -7,12 +7,15 @@
 #include "../Inventory/Inventory.h"
 #include "Components/ScrollBox.h"
 #include "Components/Button.h"
+#include "Components/UniformGridPanel.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/Border.h"
 #include "BulletBottonItem.h"
 #include "CasingWidget.h"
 #include "Components/CanvasPanel.h"
+#include "Components/WidgetSwitcher.h"
+#include "../UI/EssenceWidget.h" 
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "InventoryHUD.generated.h"
 
@@ -38,20 +41,30 @@ public:
     void SelectBullet(int32 Index);
 
 	void Refresh();
-	
-	UPROPERTY(meta = (BindWidget)) UImage* SelectedBulletImage;  // icon proiettile (pannello di dx)
+
+	void RefreshEssence();
+
+
+public: 
+
+	// LEFT PANEL
+	UPROPERTY(meta = (BindWidget))  UWidgetSwitcher* BulletSwitcher; // page switcher for bullets
+	UPROPERTY(meta = (BindWidget))  UUniformGridPanel* BulletBox;
+
+	// MID
+	UPROPERTY(meta = (BindWidget)) UImage* SelectedBulletImage;  // icon proiettile (pannello centrale)
 	UPROPERTY(meta = (BindWidget)) UTextBlock* SelectedBulletName;
     UPROPERTY(meta = (BindWidget)) UTextBlock* SelectedBulletPower;
     UPROPERTY(meta = (BindWidget)) UTextBlock* SelectedBulletEffectiveness;
     UPROPERTY(meta = (BindWidget)) UTextBlock* SelectedBulletWeakness;
 	UPROPERTY(meta = (BindWidget)) UTextBlock* CraftInfo;
+	UPROPERTY(meta = (BindWidget))  UButton* CraftButton;
 	
-protected:
+	
+	// RIGHT PANEL
+	UPROPERTY(meta = (BindWidget))  UScrollBox* EssenceBox;
 
-    //left pannel
-    UPROPERTY(meta = (BindWidget)) UScrollBox* BulletListContainer; // Lista proiettili (sinistra)
-    
-	// Right pannel
+protected:
 
 	// Template per i bottoni dei proiettili
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
@@ -77,7 +90,9 @@ private:
 	void MoveSelectionDown();
 
     TArray<FBullet> DisplayedBullets;
+
     int32 CurrentSelectedIndex;
+
     TArray<UBulletBottonItem*> BulletButtons;
 
 	UPROPERTY()
@@ -92,5 +107,6 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI-Class", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UCasingWidget> CasingWidgetClass;
 	
-	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI-Class", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UEssenceWidget> UEssenceWidgetClass;
 };

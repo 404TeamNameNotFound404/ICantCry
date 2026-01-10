@@ -7,7 +7,7 @@
 #include "ICantCry/ICC/Input/ICC_PlayerController.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 
-void UCraftingTable::Initialize(FInventory *InInventory)
+void UCraftingTable::Initialize(FInventory *InInventory, UWorld* World)
 {
 
     if (!InInventory)
@@ -18,7 +18,7 @@ void UCraftingTable::Initialize(FInventory *InInventory)
 
     MasterRecipes.Empty();
     
-    UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+    UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(UGameplayStatics::GetGameInstance(World));
     checkf(Instance, TEXT("Instance invalid"))
     Inventory = Instance->GetInventory();
 
@@ -28,9 +28,9 @@ void UCraftingTable::Initialize(FInventory *InInventory)
     checkf(Player, TEXT("Player is invalid"))
 }
 
-void UCraftingTable::Initialize()
+void UCraftingTable::Initialize(UWorld* World)
 {
-    UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+    UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(UGameplayStatics::GetGameInstance(World));
     checkf(Instance, TEXT("Instance invalid"))
     Inventory = Instance->GetInventory();
     MasterRecipes.Empty();
@@ -228,25 +228,6 @@ FInventory UCraftingTable::GetInventory() const
     return Instance->GetInventory();
 }
 
-TArray<ERecipeType> UCraftingTable::GetAvailableRecipes() const
-{
-    TArray<ERecipeType> AvailableRecipes;
-
-    AvailableRecipes.Empty();
-
-    DebugHelper::LogSuccess("GetAvailableRecipes called before loop");
-
-    
-    for (const ERecipeType& RecipeDef : GetInventory().OwnedBlueprints)
-    {
-        DebugHelper::LogError("Joining the recipe loop");
-        AvailableRecipes.Add(RecipeDef);
-    }
-
-    DebugHelper::LogSuccess("GetAvailableRecipes called after loop");
-
-    return AvailableRecipes;
-}
 
 TArray<FRecipe> UCraftingTable::GetAvaiableRecipes()
 {

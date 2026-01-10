@@ -27,46 +27,15 @@ void UInventoryHUD::UpdateInventoryDisplay(const FInventory& Inventory)
 void UInventoryHUD::DisplayCasings()
 {
     DebugHelper::LogError("CASING SIZE " + FString::FromInt(ImmutableInventory.GoldCasings.Num()));
-    BulletListContainer->ClearChildren();
+    BulletBox->ClearChildren();
     
-    // for (const auto& Casing : ImmutableInventory.GoldCasings)
-    // {
-    //     DebugHelper::LogMessage(5, FColor::Magenta, "Found " + Casing.GetName());
-    //
-    //     UCasingWidget* CasingSlot = CreateWidget<UCasingWidget>(GetWorld(), CasingWidgetClass);
-    //     // must put some check like Casing->Type == Type then increase its quantity without adding a new one
-    //     CasingSlot->GetCasingImage()->SetBrushFromTexture(Casing.GetIcon());
-    //     CasingSlot->GetCaseName()->SetText(FText::FromString(Casing.GetName() + " " + FString::FromInt(Casing.GetQuantity()) + "x"));
-    //
-    //     if (Casing.GetName() == ImmutableInventory.CasingsStored[Casing.GetName()].GetName())
-    //     {
-    //         CasingSlot->GetCaseName()->SetText(FText::FromString(Casing.GetName() + " " + FString::FromInt(ImmutableInventory.CasingsStored[Casing.GetName()].GetQuantity()) + "x"));
-    //     }
-    //     
-    //     BulletListContainer->AddChild(CasingSlot);
-    //     break;
-    // }
-
-    // for (const auto& Pair : ImmutableInventory.CasingsStored)
-    // {
-    //     const auto& Casing = Pair.Value;
-    //
-    //     UCasingWidget* CasingSlot = CreateWidget<UCasingWidget>(GetWorld(), CasingWidgetClass);
-    //     CasingSlot->GetCasingImage()->SetBrushFromTexture(Casing.GetIcon());
-    //
-    //     FString Label = Casing.GetName() + " " + FString::FromInt(Casing.GetQuantity()) + "x";
-    //     CasingSlot->GetCaseName()->SetText(FText::FromString(Label));
-    //
-    //     CasingSlot->SetPadding(FMargin{0, 2.5f});
-    //     BulletListContainer->AddChild(CasingSlot);
-    // }
 }
 
 void UInventoryHUD::ClearBulletList()
 {
-    if(BulletListContainer)
+    if(BulletBox)
     {
-        BulletListContainer->ClearChildren();
+        BulletBox->ClearChildren();
     }
     
     DisplayedBullets.Empty(); // svuota i dati visualizzati
@@ -84,7 +53,7 @@ void UInventoryHUD::PopulateBulletList(const TArray<FInventoryItem>& Items)
     {
         if (Item.ItemType != EItemType::Bullet) continue;
 
-        if (!BulletListContainer)
+        if (!BulletBox)
         {
             DebugHelper::LogError("BulletListContainer è null!");
             return;
@@ -104,7 +73,7 @@ void UInventoryHUD::PopulateBulletList(const TArray<FInventoryItem>& Items)
             BulletButton->Setup(Item.Bullet, Item.Quantity);   // imposta nome, icona, quantità
             BulletButton->SetOwner(this, Index);               // collega all'HUD + index
 
-            BulletListContainer->AddChild(BulletButton);       // aggiungi visivamente
+            BulletBox->AddChild(BulletButton);       // aggiungi visivamente
             BulletButtons.Add(BulletButton);                   // salva riferimento per selezione
             DisplayedBullets.Add(Item.Bullet);                 // salva i dati del proiettile
 
@@ -125,7 +94,7 @@ void UInventoryHUD::DisplayBullets()
         return;
     }
     
-    BulletListContainer->ClearChildren();
+    BulletBox->ClearChildren();
     
     for (auto& StoredBullet : GameInstance->GetInventory().BulletsStored)
     {
@@ -133,7 +102,7 @@ void UInventoryHUD::DisplayBullets()
         UBulletBottonItem* Item = CreateWidget<UBulletBottonItem>(this, BulletButtonClass);
         Item->Setup(Bullet.GetBulletData(), Bullet.GetQuantity());
         Item->SetOwner(this, 0);
-        BulletListContainer->AddChild(Item);
+        BulletBox->AddChild(Item);
     }
 
     DebugHelper::LogError("Bullet refreshed");
@@ -172,7 +141,8 @@ void UInventoryHUD::SelectBullet(int32 Index)
 void UInventoryHUD::Refresh()
 {
     DisplayCasings();
-    DisplayBullets();
+    //DisplayBullets();
+    RefreshEssence();
 }
 
 void UInventoryHUD::UpdateDetailPanel(const FBullet& Bullet)
@@ -207,6 +177,21 @@ void UInventoryHUD::MoveSelectionDown()
     {
         int32 NewIndex = (CurrentSelectedIndex + 1) % DisplayedBullets.Num();
         SelectBullet(NewIndex);
+    }
+}
+
+void UInventoryHUD::RefreshEssence()
+{
+    EssenceBox->ClearChildren();
+
+    for (const auto& Essence : GameInstance->GetInventory().EssencesStored)
+    {
+        UEssenceWidget* EssenceWidget = CreateWidget<UEssenceWidget>(GetWorld(), UEssenceWidgetClass);
+        checkf(EssenceWidget, TEXT("Essence widget is null"))
+
+        EssenceBox->AddChild(EssenceWidget);
+        const FEssence& E = Essence.Value;
+        EssenceWidget->Setup(E, E.Quantity);
     }
 }
 

@@ -36,13 +36,13 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<ERecipeType> OwnedBlueprints;
 
-    // Bossoli base
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FEmptyCasing EmptyCasing;
+    // // Bossoli base
+    // UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    // FEmptyCasing EmptyCasing;
 
-    // Bossoli rinforzati (gold)
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FGoldEmptyCasing GoldCasing;
+    // // Bossoli rinforzati (gold)
+    // UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    // FGoldEmptyCasing GoldCasing;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 EmptyCasingCount;
@@ -57,8 +57,8 @@ public:
     UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
     TArray<FGoldEmptyCasing> GoldCasings;
 
-    UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
-    TArray<FEmptyCasing> EmptyCasings;
+    // UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
+    // TArray<FEmptyCasing> EmptyCasings;
 
     UPROPERTY()
     TMap<FString, FCasing> CasingsStored;
@@ -87,15 +87,10 @@ public:
     UPROPERTY()
     TMap<int32, FRecipe> RecipeLists;
 
-    bool HasBlueprint(ERecipeType RecipeType) const;
  
-    void AddBlueprint(ERecipeType BlueprintType);
-
     void AddToInventory(EItemType ItemType, FBullet Bullet, const TArray<FEssence>& ItemEssences, FRecipe Recipe, int32 Quantity);
 
     void AddEssenceInMap(const EEssenceType& EssenceType, const int32& Quantity);
-
-    int32 GetEssenceQuantityInMap(const EEssenceType& EssenceType) const;
 
     void RemoveEssence(EEssenceType EssenceType, int32 Quantity);
 	
@@ -107,15 +102,11 @@ public:
 
     bool CompareItemData(const FInventoryItem& Item, const FBullet& Bullet, const TArray<FEssence>& ItemEssences, const FRecipe& Recipe) const;
 
-	int32 GetBulletQuantity(const FBullet& Bullet) const;
-
     void StarterPack();
 
     void AddCraftedBullet(FBullet &Bullet);
 
 	int32 GetEssenceQuantity(EEssenceType EssenceType) const;
-
-    int32 GetRecipeQuantity(ERecipeType RecipeType) const;
 
 
     // for hud

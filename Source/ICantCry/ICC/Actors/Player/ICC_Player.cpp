@@ -520,6 +520,8 @@ void AICC_Player::ResetStepCounter()
     StepDistanceAccumulator = 0.0f;
 }
 
+
+
 // BESTIARY
 void AICC_Player::CollectNote(const FString& NoteKey)
 {
@@ -614,6 +616,33 @@ void AICC_Player::Input_ToggleBestiary(const FInputActionValue& InputActionValue
 	{
 		OpenBestiary();
 	}
+}
+
+
+float AICC_Player::GetExpRequiredForNextLevel() const
+{
+	if(!Stats) return 100.0f; // default value;
+
+	// formula : Base EXP * Moltiplicatore per livello
+
+	float BaseExp = 100.0f; // exp for lv 1
+
+	float Multiplier = 1.0f + (Stats->Level * 0.5f);
+
+	return BaseExp * Multiplier;
+
+}
+
+
+float AICC_Player::GetCurrentExpPercentage() const
+{
+    if(!Stats) return 0.0f;
+
+	float ExpRequired = GetExpRequiredForNextLevel();
+
+	if(ExpRequired <= 0.0f) return 0.0f;
+
+	return FMath::Clamp(Stats->Experience / ExpRequired, 0.0f, 1.0f);
 }
 
 

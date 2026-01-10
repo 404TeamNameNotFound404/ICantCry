@@ -20,6 +20,7 @@
 #include "ICantCry/ICC/UI/InGameMenu.h"
 #include "ICantCry/ICC/UI/BattleHUD.h"
 #include "ICantCry/ICC/UI/BestiaryUI.h"
+#include "ICantCry/ICC/Mechanics/Core/Data/PlayerStats.h"
 #include "ICC_Player.generated.h"
 
 UCLASS()
@@ -123,6 +124,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void ResetStepCounter();
+
+	UFUNCTION(BlueprintCallable,  Category = "Level System")
+	float GetExpRequiredForNextLevel()  const;
+
+	UFUNCTION(BlueprintCallable,  Category = "Level System")
+	float GetCurrentExpPercentage()  const; 
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Movement")
