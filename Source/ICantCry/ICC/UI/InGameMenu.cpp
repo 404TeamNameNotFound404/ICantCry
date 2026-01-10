@@ -5,12 +5,9 @@
 #include "ICantCry/ICC/UI/InventoryHUD.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 
-
 void UInGameMenu::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	
 	Character->OnClicked.AddDynamic(this, &UInGameMenu::OpenCharacter);
 	Inventory->OnClicked.AddDynamic(this, &UInGameMenu::OpenInventory);
 	// Map->OnClicked.AddDynamic(this, &UInGameMenu::OpenMap);
@@ -24,8 +21,6 @@ void UInGameMenu::NativeConstruct()
 	{
 		InventoryHud = CreateWidget<UInventoryHUD>(GetWorld(), InventoryHUDClass);
 		InventoryHud->SetVisibility(ESlateVisibility::Hidden);
-		// Main->AddChild(InventoryHud);
-		// InventoryHud->Refresh();
 	}
 
 	
@@ -39,26 +34,32 @@ void UInGameMenu::NativeConstruct()
 }
 
 
+/*
+ * Il ragionamento di base è -> Io Apro il menu ---[Character]--------[Inventory]-------------[Map]---
+ *                                                      |
+ *                                                      |
+ *                                           Default View---AddChild CharaUI <- Remove Child ->AddChild Inv
+ *                                                      |         |
+ *                                                      | -----< ---- - Click->     |
+ *
+ *    Disegno un po del cazzo ma in sostanza carichiamo tutto in native constructor poi premi C ,
+ *    si apre il menu con character ui come window principale
+ *    clicchi inventory, characterui viene rimossa da child e nascosta per aggiungere inventory e viceversa
+ *    il crash del cazzo avveniva perche refresh veniva chiamato sul "else" quando ancora non stava in gioco la ui, refresh si fa una volta sola ogni volta che
+ *    viene cliccato.
+ */
+
 void UInGameMenu::OpenInventory()
 {
-
-	
-	if (!InventoryHud)
+	if (CharacterUI)
 	{
-		InventoryHud = CreateWidget<UInventoryHUD>(GetWorld(), InventoryHUDClass);
-		InventoryHud->SetVisibility(ESlateVisibility::Visible);
-		Main->AddChild(InventoryHud);
-		InventoryHud->Refresh();
-
-	}
-	else
-	{
-		Main->AddChild(InventoryHud);
-		InventoryHud->Refresh();
-		InventoryHud->SetVisibility(ESlateVisibility::Visible);
+		Main->RemoveChild(CharacterUI);
 	}
 	
-	
+	Main->AddChild(InventoryHud);
+	InventoryHud->Refresh();
+	CharacterUI->SetVisibility(ESlateVisibility::Hidden);
+	InventoryHud->SetVisibility(ESlateVisibility::Visible);
 }
 
 
@@ -68,21 +69,13 @@ void UInGameMenu::OpenCharacter()
 
 	if (InventoryHud)
 	{
-		//Main->RemoveChild(InventoryHud);
+		Main->RemoveChild(InventoryHud);
 		InventoryHud->SetVisibility(ESlateVisibility::Hidden);
 	}
-
-	
-	// if (!CharacterUI)
-	// {
-	// 	CharacterUI = CreateWidget<UCharacterUI>(GetWorld(), CharacterUIClass);
-	// 	CharacterUI->SetVisibility(ESlateVisibility::Visible);
-	// 	Main->AddChild(CharacterUI);
-	// 	CharacterUI->RefreshUI();
-	// }
 	
 	Main->AddChild(CharacterUI);
 	CharacterUI->RefreshUI();
+	InventoryHud->SetVisibility(ESlateVisibility::Hidden);
 	CharacterUI->SetVisibility(ESlateVisibility::Visible);
 
 }

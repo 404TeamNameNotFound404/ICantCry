@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "../Actors/Player/ICC_Player.h"
 #include "CharacterUI.h"
+#include "../Actors/Player/ICC_Player.h"
 
 void UCharacterUI::NativeConstruct()
 {

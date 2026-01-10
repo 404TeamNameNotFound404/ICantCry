@@ -89,7 +89,11 @@ void UBulletBottonItem::DisplayBulletInfo()
     
     bIsHovered = true;
 
-    checkf(OwnerHUD, TEXT("OwnerHUD invalid"))
+    if (!OwnerHUD)
+    {
+        DebugHelper::LogError("OwnerHUD is invalid");
+        return;
+    }
 
     OwnerHUD->SelectedBulletImage->SetBrushFromTexture(MyBullet.GetBulletData()->Icon);
     OwnerHUD->SelectedBulletName->SetText(FText::FromString(MyBullet.GetBulletData()->BulletName));
