@@ -54,7 +54,7 @@ void UBulletBottonItem::SetOwner(UInventoryHUD* Owner, int32 Index)
     
     if (SelectButton)
     {
-        SelectButton->OnClicked.AddDynamic(this, &UBulletBottonItem::OnButtonClicked);
+        SelectButton->OnHovered.AddDynamic(this, &UBulletBottonItem::OnButtonClicked);
     }
 }
 
@@ -68,6 +68,25 @@ void UBulletBottonItem::SetIsSelected(const bool& Value)
     bIsHovered = Value;
 }
 
+UImage *UBulletBottonItem::GetBulletIcon()
+{
+    return BulletIconImage;
+}
+
+UTextBlock *UBulletBottonItem::GetBulletName()
+{
+    return BulletNameText;
+}
+
+UTextBlock *UBulletBottonItem::GetBulletQuantity()
+{
+    return BulletQuantityText;
+}
+
+UButton *UBulletBottonItem::GetBulletButton()
+{
+    return SelectButton;
+}
 
 void UBulletBottonItem::OnButtonClicked()
 {

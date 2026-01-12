@@ -4,7 +4,6 @@
 #include "../Source/ICantCry/ICC/Debug/DebugHelper.h"
 #include "ICantCry/ICC/UI/CasingWidget.h"
 
-
 void UInventoryHUD::NativeConstruct()
 {
     Super::NativeConstruct();
@@ -14,114 +13,121 @@ void UInventoryHUD::NativeConstruct()
     checkf(GameInstance, TEXT("game instance invalid"))
 
     ImmutableInventory = GameInstance->GetInventory();
+
+    for (UBulletBottonItem *Btn : BulletButtons)
+    {
+
+        if (!Btn)
+            continue;
+
+        Btn->GetBulletButton()->SetIsEnabled(false);
+        Btn->GetBulletIcon()->SetVisibility(ESlateVisibility::Hidden);
+        Btn->GetBulletName()->SetVisibility(ESlateVisibility::Hidden);
+        Btn->GetBulletQuantity()->SetVisibility(ESlateVisibility::Hidden);
+        DebugHelper::LogSuccess("Name : " + Btn->GetName());
+    }
 }
 
-void UInventoryHUD::UpdateInventoryDisplay(const FInventory& Inventory)
+void UInventoryHUD::UpdateInventoryDisplay(const FInventory &Inventory)
 {
-    ClearBulletList();
-    DebugHelper::LogWarning("UpdateInventoryDisplay chiamato!");
-    PopulateBulletList(Inventory.Items);
+    // ClearBulletList();
+    // DebugHelper::LogWarning("UpdateInventoryDisplay chiamato!");
+    // PopulateBulletList(Inventory.Items);
 }
-
 
 void UInventoryHUD::DisplayCasings()
 {
-    DebugHelper::LogError("CASING SIZE " + FString::FromInt(ImmutableInventory.GoldCasings.Num()));
-    BulletBox->ClearChildren();
-    
+    // DebugHelper::LogError("CASING SIZE " + FString::FromInt(ImmutableInventory.GoldCasings.Num()));
+    // BulletBox->ClearChildren();
 }
 
 void UInventoryHUD::ClearBulletList()
 {
-    if(BulletBox)
-    {
-        BulletBox->ClearChildren();
-    }
-    
-    DisplayedBullets.Empty(); // svuota i dati visualizzati
-    BulletButtons.Empty();
+    // if(BulletBox)
+    // {
+    //     BulletBox->ClearChildren();
+    // }
+
+    // DisplayedBullets.Empty(); // svuota i dati visualizzati
+    // BulletButtons.Empty();
 }
 
-
-void UInventoryHUD::PopulateBulletList(const TArray<FInventoryItem>& Items)
+void UInventoryHUD::PopulateBulletList(const TArray<FInventoryItem> &Items)
 {
-    ClearBulletList();
+    // ClearBulletList();
 
-    int32 Index = 0;
+    // int32 Index = 0;
 
-    for (const FInventoryItem& Item : Items)
-    {
-        if (Item.ItemType != EItemType::Bullet) continue;
+    // for (const FInventoryItem& Item : Items)
+    // {
+    //     if (Item.ItemType != EItemType::Bullet) continue;
 
-        if (!BulletBox)
-        {
-            DebugHelper::LogError("BulletListContainer è null!");
-            return;
-        }
+    //     if (!BulletBox)
+    //     {
+    //         DebugHelper::LogError("BulletListContainer è null!");
+    //         return;
+    //     }
 
-        //AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
+    //     //AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
 
-        UBulletBottonItem* BulletButton = CreateWidget<UBulletBottonItem>(this, BulletButtonClass);
+    //     UBulletBottonItem* BulletButton = CreateWidget<UBulletBottonItem>(this, BulletButtonClass);
 
+    //     if (!BulletButton)
+    //     {
+    //         DebugHelper::LogError("Failed to create BulletButton widget.");
+    //         continue;
+    //     }
 
-        if (!BulletButton)
-        {
-            DebugHelper::LogError("Failed to create BulletButton widget.");
-            continue;
-        }
-        
-            BulletButton->Setup(Item.Bullet, Item.Quantity);   // imposta nome, icona, quantità
-            BulletButton->SetOwner(this, Index);               // collega all'HUD + index
+    //         BulletButton->Setup(Item.Bullet, Item.Quantity);   // imposta nome, icona, quantità
+    //         BulletButton->SetOwner(this, Index);               // collega all'HUD + index
 
-            BulletBox->AddChild(BulletButton);       // aggiungi visivamente
-            BulletButtons.Add(BulletButton);                   // salva riferimento per selezione
-            DisplayedBullets.Add(Item.Bullet);                 // salva i dati del proiettile
+    //         BulletBox->AddChild(BulletButton);       // aggiungi visivamente
+    //         BulletButtons.Add(BulletButton);                   // salva riferimento per selezione
+    //         DisplayedBullets.Add(Item.Bullet);                 // salva i dati del proiettile
 
-            Index++;
-    }
+    //         Index++;
+    // }
 
-    // Se ci sono proiettili, seleziona il primo
-    if (DisplayedBullets.Num() > 0)
-    {
-        SelectBullet(0);
-    }
+    // // Se ci sono proiettili, seleziona il primo
+    // if (DisplayedBullets.Num() > 0)
+    // {
+    //     SelectBullet(0);
+    // }
 }
 
 void UInventoryHUD::DisplayBullets()
 {
-    if (GameInstance->GetInventory().Bullets.IsEmpty())
-    {
-        return;
-    }
-    
-    BulletBox->ClearChildren();
-    
-    for (auto& StoredBullet : GameInstance->GetInventory().BulletsStored)
-    {
-        FBullet& Bullet = StoredBullet.Value;
-        UBulletBottonItem* Item = CreateWidget<UBulletBottonItem>(this, BulletButtonClass);
-        Item->Setup(Bullet.GetBulletData(), Bullet.GetQuantity());
-        Item->SetOwner(this, 0);
-        BulletBox->AddChild(Item);
-    }
+    // if (GameInstance->GetInventory().Bullets.IsEmpty())
+    // {
+    //     return;
+    // }
 
-    DebugHelper::LogError("Bullet refreshed");
+    // BulletBox->ClearChildren();
+
+    // for (auto& StoredBullet : GameInstance->GetInventory().BulletsStored)
+    // {
+    //     FBullet& Bullet = StoredBullet.Value;
+    //     UBulletBottonItem* Item = CreateWidget<UBulletBottonItem>(this, BulletButtonClass);
+    //     Item->Setup(Bullet.GetBulletData(), Bullet.GetQuantity());
+    //     Item->SetOwner(this, 0);
+    //     BulletBox->AddChild(Item);
+    // }
+
+    // DebugHelper::LogError("Bullet refreshed");
 }
-
 
 void UInventoryHUD::SelectBullet(int32 Index)
 {
-   if (GameInstance->GetInventory().BulletsStored.IsEmpty())
-   {
-       return;
-   }
+    //    if (GameInstance->GetInventory().BulletsStored.IsEmpty())
+    //    {
+    //        return;
+    //    }
 
-    for (auto& Bullet : GameInstance->GetInventory().BulletsStored)
-    {
-        FBullet& B = Bullet.Value;
+    //     for (auto& Bullet : GameInstance->GetInventory().BulletsStored)
+    //     {
+    //         FBullet& B = Bullet.Value;
 
-        
-    }
+    //     }
 
     // // Reset all selections
     // for (UBulletBottonItem* Button : BulletButtons)
@@ -140,14 +146,15 @@ void UInventoryHUD::SelectBullet(int32 Index)
 
 void UInventoryHUD::Refresh()
 {
-    DisplayCasings();
-    //DisplayBullets();
-    RefreshEssence();
+    // DisplayCasings();
+    // DisplayBullets();
+    // RefreshEssence();
 }
 
-void UInventoryHUD::UpdateDetailPanel(const FBullet& Bullet)
+void UInventoryHUD::UpdateDetailPanel(const FBullet &Bullet)
 {
-    if (!Bullet.GetBulletData()) return;
+    if (!Bullet.GetBulletData())
+        return;
 
     if (SelectedBulletName)
     {
@@ -158,9 +165,7 @@ void UInventoryHUD::UpdateDetailPanel(const FBullet& Bullet)
     {
         SelectedBulletPower->SetText(FText::AsNumber(Bullet.GetBulletData()->Power));
     }
-
 }
-
 
 void UInventoryHUD::MoveSelectionUp()
 {
@@ -184,15 +189,13 @@ void UInventoryHUD::RefreshEssence()
 {
     EssenceBox->ClearChildren();
 
-    for (const auto& Essence : GameInstance->GetInventory().EssencesStored)
+    for (const auto &Essence : GameInstance->GetInventory().EssencesStored)
     {
-        UEssenceWidget* EssenceWidget = CreateWidget<UEssenceWidget>(GetWorld(), UEssenceWidgetClass);
+        UEssenceWidget *EssenceWidget = CreateWidget<UEssenceWidget>(GetWorld(), UEssenceWidgetClass);
         checkf(EssenceWidget, TEXT("Essence widget is null"))
 
-        EssenceBox->AddChild(EssenceWidget);
-        const FEssence& E = Essence.Value;
+            EssenceBox->AddChild(EssenceWidget);
+        const FEssence &E = Essence.Value;
         EssenceWidget->Setup(E, E.Quantity);
     }
 }
-
-

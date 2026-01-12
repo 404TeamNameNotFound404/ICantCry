@@ -31,14 +31,18 @@ public:
 
     bool IsHoverSelected() const;
     void SetIsSelected(const bool& Value);
-   
+
+    UImage* GetBulletIcon();
+    UTextBlock* GetBulletName();
+    UTextBlock* GetBulletQuantity();
+    UButton* GetBulletButton();
 
 protected:
 
     virtual void NativeConstruct() override;
     
     UPROPERTY(meta = (BindWidget)) UButton* SelectButton;
-    UPROPERTY(meta = (BindWidget)) UBorder* SelectionBorder; // dave avere Abbia IsVariable attivo
+    UPROPERTY(meta = (BindWidget)) UBorder* SelectionBorder; // dave avere  IsVariable attivo
 
     
     UFUNCTION()

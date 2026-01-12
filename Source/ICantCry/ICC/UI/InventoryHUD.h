@@ -7,7 +7,7 @@
 #include "../Inventory/Inventory.h"
 #include "Components/ScrollBox.h"
 #include "Components/Button.h"
-#include "Components/UniformGridPanel.h"
+#include "Components/GridPanel.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/Border.h"
@@ -49,7 +49,7 @@ public:
 
 	// LEFT PANEL
 	UPROPERTY(meta = (BindWidget))  UWidgetSwitcher* BulletSwitcher; // page switcher for bullets
-	UPROPERTY(meta = (BindWidget))  UUniformGridPanel* BulletBox;
+	UPROPERTY(meta = (BindWidget))  UGridPanel* BulletBox;
 
 	// MID
 	UPROPERTY(meta = (BindWidget)) UImage* SelectedBulletImage;  // icon proiettile (pannello centrale)
@@ -79,6 +79,7 @@ protected:
 
 private:
 
+
  	void ClearBulletList();
     void PopulateBulletList(const TArray<FInventoryItem>& Items);
 
@@ -89,11 +90,17 @@ private:
 	void MoveSelectionUp();
 	void MoveSelectionDown();
 
+	UPROPERTY()
     TArray<FBullet> DisplayedBullets;
 
+	UPROPERTY()
     int32 CurrentSelectedIndex;
 
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
     TArray<UBulletBottonItem*> BulletButtons;
+
+	UPROPERTY()
+	TArray<UBulletBottonItem*> GoldBulletButtons;
 
 	UPROPERTY()
 	UICantCryGameInstance* GameInstance;
