@@ -598,6 +598,7 @@ void UBattleHUD::HideBulletMagazineOnReload()
     TargetNameText->SetVisibility(ESlateVisibility::Hidden);
     BulletName->SetVisibility(ESlateVisibility::Hidden);
     Quantity->SetVisibility(ESlateVisibility::Hidden);
+    Description->SetVisibility(ESlateVisibility::Hidden);
     //UBulletSelector::SetCanSelect(false);
 }
 
@@ -824,6 +825,7 @@ void UBattleHUD::ConfirmBulletSelection() // this is for the confirm button
     BulletName->SetVisibility(ESlateVisibility::Hidden);
     Quantity->SetVisibility(ESlateVisibility::Hidden);
     Displayer->SetVisibility(ESlateVisibility::Hidden);
+    Description->SetVisibility(ESlateVisibility::Hidden);
     SwitchToBattleUI();
     bBulletSetupFinished = true;
     bStartFight = true;
