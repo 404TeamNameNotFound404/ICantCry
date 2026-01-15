@@ -51,14 +51,16 @@ void UInGameMenu::NativeConstruct()
 
 void UInGameMenu::OpenInventory()
 {
+	
 	if (CharacterUI)
 	{
 		Main->RemoveChild(CharacterUI);
 	}
 	
 	Main->AddChild(InventoryHud);
-	InventoryHud->Refresh();
-	CharacterUI->SetVisibility(ESlateVisibility::Hidden);
+	InventoryHud->Setup();
+	//InventoryHud->Refresh();
+	//CharacterUI->SetVisibility(ESlateVisibility::Hidden);
 	InventoryHud->SetVisibility(ESlateVisibility::Visible);
 }
 
@@ -75,7 +77,7 @@ void UInGameMenu::OpenCharacter()
 	
 	Main->AddChild(CharacterUI);
 	CharacterUI->RefreshUI();
-	InventoryHud->SetVisibility(ESlateVisibility::Hidden);
+	//InventoryHud->SetVisibility(ESlateVisibility::Hidden);
 	CharacterUI->SetVisibility(ESlateVisibility::Visible);
 
 }

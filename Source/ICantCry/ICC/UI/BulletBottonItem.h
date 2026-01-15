@@ -37,6 +37,11 @@ public:
     UTextBlock* GetBulletQuantity();
     UButton* GetBulletButton();
 
+    
+    bool GetIsUnlocked() const;
+ 
+    void SetIsUnlocked(const bool& Value);
+
 protected:
 
     virtual void NativeConstruct() override;
@@ -70,5 +75,11 @@ private:
     
     UFUNCTION() void DisplayBulletInfo();
     UFUNCTION() void HideBulletInfo();
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bool", meta=(AllowPrivateAccess="true"))
+	bool IsUnlocked;
+    
+
+   
     
 };

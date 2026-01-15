@@ -11,6 +11,14 @@ void UBulletBottonItem::NativeConstruct()
 {
     Super::NativeConstruct();
 
+
+    IsUnlocked = false;
+
+    SelectButton->SetIsEnabled(false);
+    BulletIconImage->SetVisibility(ESlateVisibility::Hidden);
+    BulletNameText->SetVisibility(ESlateVisibility::Hidden);
+    BulletQuantityText->SetVisibility(ESlateVisibility::Hidden);
+
     SelectButton->OnHovered.AddDynamic(this, &UBulletBottonItem::DisplayBulletInfo);
     SelectButton->OnUnhovered.AddDynamic(this, &UBulletBottonItem::HideBulletInfo);
 }
@@ -88,6 +96,17 @@ UButton *UBulletBottonItem::GetBulletButton()
     return SelectButton;
 }
 
+bool UBulletBottonItem::GetIsUnlocked() const
+{
+    return IsUnlocked;
+}
+
+void UBulletBottonItem::SetIsUnlocked(const bool& Value)
+{
+    IsUnlocked = Value;
+}
+
+
 void UBulletBottonItem::OnButtonClicked()
 {
     if (OwnerHUD)
@@ -126,3 +145,4 @@ void UBulletBottonItem::HideBulletInfo()
 {
     bIsHovered = false;
 }
+

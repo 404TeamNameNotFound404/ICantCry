@@ -44,6 +44,8 @@ public:
 
 	void RefreshEssence();
 
+	void Setup();
+
 
 public: 
 
@@ -75,15 +77,13 @@ protected:
     UPROPERTY(EditDefaultsOnly, Category = "UI")
     FLinearColor UnselectedColor;
 
-	void DisplayCasings();
 
 private:
 
+	
 
  	void ClearBulletList();
-    void PopulateBulletList(const TArray<FInventoryItem>& Items);
 
-	void DisplayBullets();
 	
     void UpdateDetailPanel(const FBullet& Bullet);
     
