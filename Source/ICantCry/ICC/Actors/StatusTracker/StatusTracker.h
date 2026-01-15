@@ -297,7 +297,9 @@ private:
 	void Heal();
 
 	void DebuffAtkF();
+	void DebuffAtkF(AICC_Actor* Target);
 	void DebuffDefF();
+	void DebuffDefF(AICC_Actor* Target);
 
 	/**
 	 * Rollback the current status state
