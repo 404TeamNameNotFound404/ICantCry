@@ -42,6 +42,10 @@ public:
  
     void SetIsUnlocked(const bool& Value);
 
+    void SetUnlocked(bool bUnlocked);
+
+    void Show();
+
 protected:
 
     virtual void NativeConstruct() override;
@@ -77,7 +81,7 @@ private:
     UFUNCTION() void HideBulletInfo();
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bool", meta=(AllowPrivateAccess="true"))
-	bool IsUnlocked;
+	bool bIsUnlocked = false;
     
 
    

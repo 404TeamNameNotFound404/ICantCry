@@ -11,14 +11,6 @@ void UBulletBottonItem::NativeConstruct()
 {
     Super::NativeConstruct();
 
-
-    IsUnlocked = false;
-
-    SelectButton->SetIsEnabled(false);
-    BulletIconImage->SetVisibility(ESlateVisibility::Hidden);
-    BulletNameText->SetVisibility(ESlateVisibility::Hidden);
-    BulletQuantityText->SetVisibility(ESlateVisibility::Hidden);
-
     SelectButton->OnHovered.AddDynamic(this, &UBulletBottonItem::DisplayBulletInfo);
     SelectButton->OnUnhovered.AddDynamic(this, &UBulletBottonItem::HideBulletInfo);
 }
@@ -26,24 +18,53 @@ void UBulletBottonItem::NativeConstruct()
 
 void UBulletBottonItem::Setup(const FBullet& NewBullet, int32 InQuantity)
 {
-    MyBullet = NewBullet;
+    // MyBullet = NewBullet;
 
+    // UBulletData* Data = MyBullet.GetBulletData();
+    // if (!Data) return;
+
+    // if (BulletIconImage && Data->Icon)
+    // {
+    //     BulletIconImage->SetBrushFromTexture(Data->Icon, true);
+    // }
+
+    // if (BulletNameText)
+    // {
+    //     BulletNameText->SetText(FText::FromString(Data->BulletName));
+    // }
+
+    // if (BulletQuantityText)
+    // {
+    //     BulletQuantityText->SetText(FText::Format(NSLOCTEXT("Inventory", "QuantityFormat", "x{0}"), FText::AsNumber(InQuantity)));
+    // }
+
+
+     MyBullet = NewBullet;
     UBulletData* Data = MyBullet.GetBulletData();
     if (!Data) return;
 
     if (BulletIconImage && Data->Icon)
     {
         BulletIconImage->SetBrushFromTexture(Data->Icon, true);
+        BulletIconImage->SetVisibility(ESlateVisibility::Visible); // AGGIUNTO
     }
 
     if (BulletNameText)
     {
         BulletNameText->SetText(FText::FromString(Data->BulletName));
+        BulletNameText->SetVisibility(ESlateVisibility::Visible); // AGGIUNTO
     }
 
     if (BulletQuantityText)
     {
         BulletQuantityText->SetText(FText::Format(NSLOCTEXT("Inventory", "QuantityFormat", "x{0}"), FText::AsNumber(InQuantity)));
+        BulletQuantityText->SetVisibility(ESlateVisibility::Visible); // AGGIUNTO
+    }
+    
+    // Anche il bottone deve essere abilitato
+    if (SelectButton)
+    {
+        SelectButton->SetIsEnabled(true);
     }
 }
 
@@ -98,14 +119,47 @@ UButton *UBulletBottonItem::GetBulletButton()
 
 bool UBulletBottonItem::GetIsUnlocked() const
 {
-    return IsUnlocked;
+    return bIsUnlocked;
 }
 
 void UBulletBottonItem::SetIsUnlocked(const bool& Value)
 {
-    IsUnlocked = Value;
+    bIsUnlocked = Value;
 }
 
+void UBulletBottonItem::SetUnlocked(bool bUnlocked)
+{
+    bIsUnlocked = bUnlocked;
+
+    if (SelectButton)
+    {
+        SelectButton->SetIsEnabled(bUnlocked);
+
+        SelectButton->SetVisibility(
+            bUnlocked ? ESlateVisibility::Visible : ESlateVisibility::HitTestInvisible
+        );
+    }
+}
+
+void UBulletBottonItem::Show()
+{
+    // SelectButton->SetIsEnabled(true);
+    // BulletIconImage->SetVisibility(ESlateVisibility::Visible);
+    // BulletNameText->SetVisibility(ESlateVisibility::Visible);
+    // BulletQuantityText->SetVisibility(ESlateVisibility::Visible);
+
+
+    const bool bUnlocked = GetIsUnlocked();
+
+            SelectButton->SetIsEnabled(bUnlocked);
+
+            const ESlateVisibility Vis =
+                bUnlocked ? ESlateVisibility::Visible : ESlateVisibility::Hidden;
+
+            BulletIconImage->SetVisibility(Vis);
+            BulletNameText->SetVisibility(Vis);
+            BulletQuantityText->SetVisibility(Vis);
+}
 
 void UBulletBottonItem::OnButtonClicked()
 {

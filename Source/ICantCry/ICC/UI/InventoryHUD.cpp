@@ -120,27 +120,11 @@ void UInventoryHUD::RefreshEssence()
 void UInventoryHUD::Setup()
 {
    
-
-    for (UBulletBottonItem *Btn : BulletButtons)
-    {
-
-        if (!Btn->GetIsUnlocked())
-            continue;
-
-        DebugHelper::LogSuccess("Valid");
-
-       
-        Btn->GetBulletButton()->SetIsEnabled(true);
-            
-       
-
-         Btn->GetBulletIcon()->SetVisibility(ESlateVisibility::Visible);
-         Btn->GetBulletName()->SetVisibility(ESlateVisibility::Visible);
-         Btn->GetBulletQuantity()->SetVisibility(ESlateVisibility::Visible);
-         //DebugHelper::LogSuccess("Name : " + Btn->GetName());
-    }
-
+    StandardBulletDisplayer->Refresh();
    
 }
+
+
+
 
 

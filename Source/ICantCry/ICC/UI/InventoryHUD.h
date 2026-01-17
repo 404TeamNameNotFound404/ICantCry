@@ -16,6 +16,8 @@
 #include "Components/CanvasPanel.h"
 #include "Components/WidgetSwitcher.h"
 #include "../UI/EssenceWidget.h" 
+#include "Inventory/StandardBulletDisplayer.h"
+#include "Inventory/GoldBulletDisplayer.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "InventoryHUD.generated.h"
 
@@ -47,11 +49,11 @@ public:
 	void Setup();
 
 
+
 public: 
 
 	// LEFT PANEL
 	UPROPERTY(meta = (BindWidget))  UWidgetSwitcher* BulletSwitcher; // page switcher for bullets
-	UPROPERTY(meta = (BindWidget))  UGridPanel* BulletBox;
 
 	// MID
 	UPROPERTY(meta = (BindWidget)) UImage* SelectedBulletImage;  // icon proiettile (pannello centrale)
@@ -65,6 +67,8 @@ public:
 	
 	// RIGHT PANEL
 	UPROPERTY(meta = (BindWidget))  UScrollBox* EssenceBox;
+
+	UPROPERTY(meta = (BindWidget)) UStandardBulletDisplayer* StandardBulletDisplayer;
 
 protected:
 
@@ -95,12 +99,6 @@ private:
 
 	UPROPERTY()
     int32 CurrentSelectedIndex;
-
-	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-    TArray<UBulletBottonItem*> BulletButtons;
-
-	UPROPERTY()
-	TArray<UBulletBottonItem*> GoldBulletButtons;
 
 	UPROPERTY()
 	UICantCryGameInstance* GameInstance;
