@@ -11,6 +11,7 @@
 #include "Components/Border.h"
 #include "../Actors/Bullet/Bullet.h"
 #include "../Actors/Bullet/BulletData.h"
+#include "ICantCry/ICC/Inventory/Recipe.h"
 #include "BulletBottonItem.generated.h"
 
 
@@ -28,6 +29,7 @@ public:
     void Setup(const FBullet& NewBullet, int32 InQuantity);
     void SetSelected(bool bIsSelected);
     void SetOwner(UInventoryHUD* Owner, int32 Index);
+    void SetOwner(UInventoryHUD* Owner);
 
     bool IsHoverSelected() const;
     void SetIsSelected(const bool& Value);
@@ -45,6 +47,9 @@ public:
     void SetUnlocked(bool bUnlocked);
 
     void Show();
+    void Hide();
+
+    FRecipe& GetBlueprint();
 
 protected:
 
@@ -69,21 +74,22 @@ private:
     UPROPERTY()
     UInventoryHUD* OwnerHUD;
 
-    int32 MyIndex;
+    int32 MyIndex; // Non credo ci serva piu 
 
     UPROPERTY()
     bool bIsHovered = false;
 
-    UPROPERTY()
-    FBullet MyBullet;;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Bullets", meta=(AllowPrivateAccess=true))
+    FBullet MyBullet;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Bullets", meta=(AllowPrivateAccess=true))
+    FRecipe BulletBlueprint;
     
     UFUNCTION() void DisplayBulletInfo();
     UFUNCTION() void HideBulletInfo();
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bool", meta=(AllowPrivateAccess="true"))
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullets", meta=(AllowPrivateAccess="true"))
 	bool bIsUnlocked = false;
     
-
-   
     
 };

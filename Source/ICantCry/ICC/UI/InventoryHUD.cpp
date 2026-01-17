@@ -14,8 +14,7 @@ void UInventoryHUD::NativeConstruct()
 
     ImmutableInventory = GameInstance->GetInventory();
 
-    
-   
+    //StandardBulletDisplayer->Init(this);
 }
 
 void UInventoryHUD::UpdateInventoryDisplay(const FInventory &Inventory)
@@ -119,9 +118,9 @@ void UInventoryHUD::RefreshEssence()
 
 void UInventoryHUD::Setup()
 {
-   
+    StandardBulletDisplayer->Init(this);
     StandardBulletDisplayer->Refresh();
-   
+    DebugHelper::LogWarning("Setup InventoryHUD called");
 }
 
 

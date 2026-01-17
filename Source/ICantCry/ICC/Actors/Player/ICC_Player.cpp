@@ -423,22 +423,34 @@ void AICC_Player::ToggleInventory()
 		return;
 	}
 
-	if (InventoryHUD->IsInViewport())
+	// if (InventoryHUD->IsInViewport())
+	// {
+	// 	CloseInventory();
+	// }
+	// else
+	// {
+	// 	InventoryHUD->AddToViewport();
+	// 	InventoryHUD->UpdateInventoryDisplay(PlayerInventory); //  aggiorna quando riapri
+	//
+	// 	AICC_PlayerController* PC = Cast<AICC_PlayerController>(GetController());
+	// 	if (PC)
+	// 	{
+	// 		PC->SetInputMode(FInputModeUIOnly());
+	// 		PC->bShowMouseCursor = true;
+	// 	}
+	// }
+
+	if (InventoryHUD->IsVisible())
 	{
+		InventoryHUD->SetVisibility(ESlateVisibility::Hidden);
 		CloseInventory();
 	}
 	else
 	{
-		InventoryHUD->AddToViewport();
-		InventoryHUD->UpdateInventoryDisplay(PlayerInventory); //  aggiorna quando riapri
-
-		AICC_PlayerController* PC = Cast<AICC_PlayerController>(GetController());
-		if (PC)
-		{
-			PC->SetInputMode(FInputModeUIOnly());
-			PC->bShowMouseCursor = true;
-		}
+		InventoryHUD->SetVisibility(ESlateVisibility::Visible);
+		InventoryHUD->UpdateInventoryDisplay(PlayerInventory);
 	}
+
 }
 
 void AICC_Player::ToggleCraftingHUD()

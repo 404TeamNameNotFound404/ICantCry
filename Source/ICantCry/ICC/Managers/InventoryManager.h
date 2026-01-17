@@ -12,6 +12,7 @@
 class UInventoryHUD;
 class UCraftingHUD;
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnRecipeUnlocked, ERecipeType);
 
 UCLASS(Blueprintable)
 class ICANTCRY_API UInventoryManager : public UObject
@@ -39,6 +40,8 @@ class ICANTCRY_API UInventoryManager : public UObject
  
 	// Recipe
 	void AddRecipe(const FRecipe& RecipeToAdd, int32 Quantity = 1);
+
+	FOnRecipeUnlocked RecipeUnlocked;
 
 
 private:

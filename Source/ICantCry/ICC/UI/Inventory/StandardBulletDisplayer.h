@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "../BulletBottonItem.h"
+#include "ICantCry/ICC/Inventory/Recipe.h"
+#include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "StandardBulletDisplayer.generated.h"
 
 /**
@@ -16,6 +18,7 @@ class ICANTCRY_API UStandardBulletDisplayer : public UUserWidget
 	GENERATED_BODY()
 protected:
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 
 	UPROPERTY(meta = (BindWidget)) UBulletBottonItem* AngerDV;
 	UPROPERTY(meta = (BindWidget)) UBulletBottonItem* AngerEV;
@@ -36,7 +39,9 @@ protected:
 
 public:
 	TArray<UBulletBottonItem*> GetBullet() const;
-
+	
+	void Init(UInventoryHUD* Hud); // calls to set the OwnerHUD of each bulletbottomitem
+	void Unlock(ERecipeType Type);
 	void Refresh();
 
 
@@ -44,6 +49,11 @@ private:
 	UPROPERTY()
 	TArray<UBulletBottonItem*> StandardBullet;
 
+	UPROPERTY()
+	bool bBound = false;
 
+	UPROPERTY()
+	UICantCryGameInstance* GameInstance;
+	
 	
 };

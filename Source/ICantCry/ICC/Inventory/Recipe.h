@@ -47,7 +47,7 @@ struct ICANTCRY_API FRecipe
 
 public:
 	// Tipo blueprint richiesto
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	ERecipeType RequiredBlueprintType; // Base o Gold
 
 	// Tipo di casing richiesto (base/gold)
@@ -78,48 +78,11 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 Index;
 	
-	FString GetName(const ERecipeType& RecipeType) const
-	{
-		switch (RecipeType)
-		{
-		case ERecipeType::Gold:
-			return FString("Gold");
-		case ERecipeType::Anger:
-			return FString("Anger");
-		case ERecipeType::Sadness:
-			return FString("Sadness");
-		case ERecipeType::Anxiety:
-			return FString("Anxiety");
-		case ERecipeType::Shame:
-			return FString("Shame");
-		case ERecipeType::Base:
-			return FString("Base");
-		case ERecipeType::Disgust:
-			return FString("Disgust");
-		case ERecipeType::Joy:
-			return FString("Joy");
-		case ERecipeType::JoyEv:
-			return FString("Joy (Ev)");
-		case ERecipeType::Fear:
-			return FString("Fear");
-		case ERecipeType::FearEv:
-			return FString("Fear (Ev)");
-		case ERecipeType::Calm:
-			return FString("Calm");
-		case ERecipeType::AngerEv:
-			return FString("Anger (Ev)");
-		case ERecipeType::CalmEv:
-			return FString("Calm (Ev)");
-		case ERecipeType::Jealousy:
-			return FString("Jealousy");
-		case ERecipeType::JealousyEv:
-			return FString("Jealousy (Ev)");
-		case ERecipeType::Indifference:
-			return FString("Indifference");
-		default:
-			return FString("None");
-		}
-	}
+	FString GetName(const ERecipeType& RecipeType) const;
+
+	FString GetCaseType(const ECasingType& Type) const;
+
+	FString GetEssencesName() const;
 
 	FText DisplayDescription() const
 	{

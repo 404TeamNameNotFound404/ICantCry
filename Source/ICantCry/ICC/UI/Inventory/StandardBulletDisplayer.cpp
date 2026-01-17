@@ -1,13 +1,53 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "StandardBulletDisplayer.h"
+
+#include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 
 void UStandardBulletDisplayer::NativeConstruct()
 {
     Super::NativeConstruct();
 
+    // StandardBullet = {
+    //     AngerDV,
+    //     AngerEV,
+    //     FearDV,
+    //     FearEV,
+    //     DisgustDV,
+    //     DisgustEV,
+    //     SadnessDV,
+    //     SadnessEV,
+    //     JoyDV,
+    //     JoyEV,
+    //     NoneBullet,
+    //     CalmEV,
+    //     JealousyDV,
+    //     JealousyEV,
+    //     Anxiety,
+    //     Shame
+    // };
+    //
+    // RecipeUnlocked.AddUObject(this, &UStandardBulletDisplayer::Unlock);
+}
+
+void UStandardBulletDisplayer::NativeDestruct()
+{
+    Super::NativeDestruct();
+
+    GameInstance->GetCurrentPlayer()->GetInventoryManager()->RecipeUnlocked.RemoveAll(this);
+    bBound = false;
+}
+
+TArray<UBulletBottonItem*> UStandardBulletDisplayer::GetBullet() const
+{
+    return StandardBullet;
+}
+
+void UStandardBulletDisplayer::Init(UInventoryHUD* Hud)
+{
+    GameInstance = Cast<UICantCryGameInstance>(GetGameInstance());
+    
     StandardBullet = {
         AngerDV,
         AngerEV,
@@ -27,37 +67,73 @@ void UStandardBulletDisplayer::NativeConstruct()
         Shame
     };
 
-
-    for(UBulletBottonItem* Btn : StandardBullet)
+    if (!bBound)
     {
-        DebugHelper::LogWarning(Btn->GetName() + "  IsUnlocked   " + FString::FromInt(Btn->GetIsUnlocked()));
+        FTimerHandle DelayHandle;
+        GetWorld()->GetTimerManager().SetTimer(DelayHandle, [this]()
+        {
+            GameInstance->GetCurrentPlayer()->GetInventoryManager()->RecipeUnlocked.AddUObject(this, &UStandardBulletDisplayer::Unlock);
+            bBound = true;
+        }, 0.65f, false);
     }
+    
+    
+    for (UBulletBottonItem *Btn : StandardBullet)
+    {
+        if (!Btn)
+        {
+            continue;
+        }
 
-
+        Btn->SetOwner(Hud);
+    }
 }
 
-TArray<UBulletBottonItem*> UStandardBulletDisplayer::GetBullet() const
+// qua non faccio altro che vedere il tipo di blueprint e confrontarlo con quello richiesto
+// se è quello in teoria dovrebbe sbloccare il bottone corrispondente al tipo
+
+void UStandardBulletDisplayer::Unlock(ERecipeType Type)
 {
-    return StandardBullet;
+    if (StandardBullet.IsEmpty())
+    {
+        DebugHelper::LogError("Empty");
+        return;
+    }
+    
+    
+    for (UBulletBottonItem *Btn : StandardBullet)
+    {
+        if (!Btn)
+        {
+            continue;
+        }
+
+        if (Btn->GetBlueprint().RequiredBlueprintType == Type)
+        {
+            DebugHelper::LogSuccess("Unlocked " + Btn->GetBlueprint().GetName(Type));
+            Btn->SetUnlocked(true);
+        }
+    }
+
+    Refresh();
 }
 
 void UStandardBulletDisplayer::Refresh()
 {
-
-    DebugHelper::LogSuccess("Funziona REFRESH");
-
     for (UBulletBottonItem *Btn : StandardBullet)
     {
         if (!Btn)
+        {
             continue;
-
-        Btn->SetUnlocked(Btn->GetIsUnlocked());
+        }
 
         if (Btn->GetIsUnlocked())
         {
-            
             Btn->Show();
-            DebugHelper::LogWarning("Funziona SHOW");
+        }
+        else
+        {
+            Btn->Hide();
         }
     }
 }

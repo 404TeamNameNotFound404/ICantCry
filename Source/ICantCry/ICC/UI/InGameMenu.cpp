@@ -21,6 +21,7 @@ void UInGameMenu::NativeConstruct()
 	{
 		InventoryHud = CreateWidget<UInventoryHUD>(GetWorld(), InventoryHUDClass);
 		InventoryHud->SetVisibility(ESlateVisibility::Hidden);
+		InventoryHud->Setup();
 	}
 
 	

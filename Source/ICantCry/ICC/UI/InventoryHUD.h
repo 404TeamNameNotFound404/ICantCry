@@ -63,6 +63,7 @@ public:
     UPROPERTY(meta = (BindWidget)) UTextBlock* SelectedBulletWeakness;
 	UPROPERTY(meta = (BindWidget)) UTextBlock* CraftInfo;
 	UPROPERTY(meta = (BindWidget))  UButton* CraftButton;
+	UPROPERTY(meta = (BindWidget)) UTextBlock* BlueprintRequirementTxt;
 	
 	
 	// RIGHT PANEL

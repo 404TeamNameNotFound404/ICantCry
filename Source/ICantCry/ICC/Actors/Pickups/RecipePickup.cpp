@@ -6,6 +6,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "../Source/ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "../Source/ICantCry/ICC/Debug/DebugHelper.h"
+#include "ICantCry/ICC/UI/InventoryHUD.h"
 
 FRecipe ARecipePickup::CurrentRecipe;
 
@@ -70,11 +71,13 @@ void ARecipePickup::OnPickedUp(AActor* OtherActor)
     
     if (AICC_Player* Player = Cast<AICC_Player>(OtherActor))
     {
-        if (UInventoryManager* InvMgr = Player->GetInventoryManager())
-        {
-            InvMgr->AddRecipe(Self);
-            CurrentRecipe = Self;
-        }
+        // if (UInventoryManager* InvMgr = Player->GetInventoryManager())
+        // {
+        //     InvMgr->AddRecipe(Self);
+        //     CurrentRecipe = Self;
+        // }
+
+        Player->GetInventoryManager()->RecipeUnlocked.Broadcast(Self.RequiredBlueprintType);
 
         Player->SetIsPickedUp(false);
     }
