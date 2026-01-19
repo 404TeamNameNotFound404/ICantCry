@@ -352,7 +352,10 @@ private:
 	AICC_Actor* SelectedActorTarget = nullptr;
 
 	void PrepareToEngage();
-	
+
+	AMob* RetrieveSelectedTarget();
+	void PrepareToEngageEv(const EBuffStatus& BuffToReceive);
+	void PrepareToEngageEv(const EAfflictedStatus& StatusToInflict);
 
 	/**
 	 *-----------------------------

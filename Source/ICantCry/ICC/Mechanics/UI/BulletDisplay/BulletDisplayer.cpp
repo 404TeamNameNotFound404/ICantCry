@@ -19,7 +19,7 @@ void UBulletDisplayer::Setup()
 {
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
 
-	Main->ClearChildren();       
+	BulletGrid->ClearChildren();       
 	Bullets.Empty();
 	
 	if (Instance->GetInventory().BulletsStored.IsEmpty())
@@ -27,15 +27,33 @@ void UBulletDisplayer::Setup()
 		DebugHelper::LogMessage(10, FColor::Yellow,"Inventory empty during Setup");
 		return;
 	}
-
+	
+	int32 Index = 0;
+	
 	for (auto& Bullet : Instance->GetInventory().BulletsStored)
 	{
 		FBullet& B = Bullet.Value;
+		
 		UBulletSelector* Item = CreateWidget<UBulletSelector>(GetWorld(), BulletButtonItemClass);
 		Item->Setup(B, B.GetQuantity());
 		Item->SetPadding(FMargin(2,2));
-		Main->AddChild(Item);
+
+		UGridSlot* BulletSlot = Cast<UGridSlot>(BulletGrid->AddChild(Item));
+		if (!BulletSlot)
+		{
+			continue;
+		}
+
+		const int32 Row = Index / BulletSlotPadding;
+		const int32 Column = Index % BulletSlotPadding;
+
+		BulletSlot->SetRow(Row);
+		BulletSlot->SetColumn(Column);
+
+		//BulletGrid->AddChild(Item);
 		Bullets.Add(Item);
+		Index++;
+		
 		DebugHelper::LogWarning("Found " + B.GetBulletData()->BulletName);
 	}
 }
@@ -45,7 +63,7 @@ void UBulletDisplayer::Refresh()
 {
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
 	
-	Main->ClearChildren();              
+	BulletGrid->ClearChildren();              
 	Bullets.Empty();
 
 	if (Instance->GetInventory().BulletsStored.IsEmpty())
@@ -68,7 +86,7 @@ void UBulletDisplayer::Refresh()
 		}
 		
 		Item->SetPadding(FMargin(2,2));
-		Main->AddChild(Item);
+		BulletGrid->AddChild(Item);
 		Item->SetIsFocusable(true);
 		Item->SetIsEnabled(true);
 		Bullets.Add(Item);
@@ -76,7 +94,7 @@ void UBulletDisplayer::Refresh()
 		Item->SetVisibility(ESlateVisibility::Visible);
 	}
 
-	Main->SetVisibility(ESlateVisibility::Visible);
+	BulletGrid->SetVisibility(ESlateVisibility::Visible);
 
 	DebugHelper::LogWarning("Refreshing avaiable bullets");
 }
@@ -143,12 +161,13 @@ void UBulletDisplayer::InstantiateBullet(TArray<FBullet> InstantiateBullets)
 {
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
 	
+	
 	for (FBullet& b : InstantiateBullets)
 	{
 		b.SetQuantity(100);
 		Instance->GetInventory().BulletsStored.Add(b.GetBulletData()->Type, b);
 	}
-
+	
 	auto* SpawnManager = Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetEnemySpawnManager();
 	const auto Turn  =  Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().Queue;
 
