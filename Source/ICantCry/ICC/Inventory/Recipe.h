@@ -62,6 +62,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FEssence> RequiredEssences;
 
+	TArray<FEssence>& GetRequiredEssences();
+
 	// Proiettile che si ottiene
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FBullet ResultBullet;

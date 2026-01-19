@@ -3,6 +3,11 @@
 
 #include "Recipe.h"
 
+TArray<FEssence>& FRecipe::GetRequiredEssences()
+{
+	return RequiredEssences;
+}
+
 FString FRecipe::GetName(const ERecipeType& RecipeType) const
 {
 	switch (RecipeType)

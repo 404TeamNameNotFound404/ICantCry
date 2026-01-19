@@ -13,6 +13,11 @@ void UBulletBottonItem::NativeConstruct()
 
 	SelectButton->OnHovered.AddDynamic(this, &UBulletBottonItem::DisplayBulletInfo);
 	SelectButton->OnUnhovered.AddDynamic(this, &UBulletBottonItem::HideBulletInfo);
+
+	if (UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance()))
+	{
+		Instance->GetInventory().OnBulletCrafted.AddUObject(this, &UBulletBottonItem::UpdateQuantity);
+	}
 }
 
 
@@ -199,6 +204,42 @@ void UBulletBottonItem::OnButtonClicked()
 	}
 }
 
+FText UBulletBottonItem::RefreshQuantity()
+{
+	if (!MyBullet.GetBulletData())
+	{
+		return FText::FromString("x 0");
+	}
+	
+	for (UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+		auto B : Instance->GetInventory().BulletsStored)
+	{
+		FBullet& Bullet = B.Value;
+		
+		if (!Bullet.GetBulletData())
+		{
+			continue;
+		}
+		
+		if (Bullet.GetBulletData()->Type == MyBullet.GetBulletData()->Type)
+		{
+			const FString Txt = FString("x " + FString::FromInt(Bullet.GetQuantity()));
+			return FText::FromString(Txt);
+		}
+	}
+	
+	return FText::FromString("x 0");
+}
+
+void UBulletBottonItem::UpdateQuantity()
+{
+	FTimerHandle DelayHandle;
+	GetWorld()->GetTimerManager().SetTimer(DelayHandle, [this]()
+	{
+		BulletQuantityText->SetText(RefreshQuantity());
+	}, 0.24f, false);
+}
+
 void UBulletBottonItem::DisplayBulletInfo()
 {
 	const AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
@@ -226,6 +267,19 @@ void UBulletBottonItem::DisplayBulletInfo()
 	OwnerHUD->SelectedBulletEffectiveness->SetText(
 		FText::FromString("Strong against: " + MyBullet.GetStrongAgainstName()));
 	OwnerHUD->SelectedBulletWeakness->SetText(FText::FromString("Weak against: " + MyBullet.GetWeakAgainstName()));
+
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	Instance->GetInventory().SetSelectedRecipe(BulletBlueprint);
+
+	OwnerHUD->GetTable()->ScanResources(GetWorld());
+	OwnerHUD->CraftButton->SetIsEnabled(false);
+	
+	if (OwnerHUD->GetTable()->CanCraft())
+	{
+		DebugHelper::LogSuccess(OwnerHUD->SelectedBulletName->GetText().ToString() + " can be crafted");
+		OwnerHUD->CraftButton->SetIsEnabled(true);
+	}
+
 }
 
 void UBulletBottonItem::HideBulletInfo()

@@ -26,6 +26,7 @@ public:
 	void Initialize(UWorld* World); 
 
 	void CraftBullet(const FBullet& BulletToCraft, ERecipeType BlueprintType, ECasingType CasingType);
+	void CraftSelectedBullet(UWorld* World);
 
 	bool CanCraft() const { return IsCraftable; };
 
@@ -38,9 +39,12 @@ public:
 	 * to craft 
 	 * @return true if requirements are met 
 	 */
-	bool ScanResources(); 
+	bool ScanResources();
+
+	bool ScanResources(UWorld* World); 
 
 	void Craft(); // crafting (consumes resources and adds bullet)
+	void Craft(UWorld* World);
 
 	//void SetInventoryReference(FInventory* InventoryRef);
 

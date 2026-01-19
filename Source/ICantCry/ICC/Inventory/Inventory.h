@@ -17,6 +17,8 @@
 
 class UCraftingHUD;
 
+DECLARE_MULTICAST_DELEGATE(FOnBulletCrafted)
+
 USTRUCT(BlueprintType)
 struct ICANTCRY_API FInventory
 {
@@ -116,6 +118,8 @@ public:
     void SetSelectedRecipe(const FRecipe& SelectedRecipe);
 
     FRecipe& GetSelectedRecipe();
+
+	FOnBulletCrafted OnBulletCrafted;
 
 private:
     

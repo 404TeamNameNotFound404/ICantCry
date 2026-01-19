@@ -267,6 +267,7 @@ void FInventory::SetSelectedRecipe(const FRecipe& SelectedRecipe)
 	CurrentRecipe = SelectedRecipe;
 	CurrentRecipe.ResultBullet.SetBulletData(nullptr);
 	CurrentRecipe.ResultBullet.SetBulletData(SelectedRecipe.ResultBullet.GetBulletData());
+	DebugHelper::LogSuccess(SelectedRecipe.ResultBullet.GetBulletData()->BulletName);
 }
 
 FRecipe& FInventory::GetSelectedRecipe()

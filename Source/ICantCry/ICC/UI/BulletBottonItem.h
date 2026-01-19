@@ -50,6 +50,7 @@ public:
     void Hide();
 
     FRecipe& GetBlueprint();
+    FRecipe& GetSelectedRecipe();
 
 protected:
 
@@ -65,11 +66,14 @@ protected:
     UPROPERTY(meta = (BindWidget)) UImage* BulletIconImage;
     UPROPERTY(meta = (BindWidget)) UTextBlock* BulletNameText;
     UPROPERTY(meta = (BindWidget)) UTextBlock* BulletQuantityText;
+
+    UFUNCTION(BlueprintPure) FText RefreshQuantity();
     
 
 private:
 
     void SetBrushFromTexture(UTexture2D* Texture, bool bMatchSize = false);
+    void UpdateQuantity();
 
     UPROPERTY()
     UInventoryHUD* OwnerHUD;

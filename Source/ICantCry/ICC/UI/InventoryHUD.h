@@ -16,6 +16,7 @@
 #include "Components/CanvasPanel.h"
 #include "Components/WidgetSwitcher.h"
 #include "../UI/EssenceWidget.h" 
+#include "ICantCry/ICC/Inventory/CraftingTable.h"
 #include "Inventory/StandardBulletDisplayer.h"
 #include "Inventory/GoldBulletDisplayer.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
@@ -44,8 +45,6 @@ public:
 
 	void Refresh();
 
-	void RefreshEssence();
-
 	void Setup();
 
 
@@ -71,6 +70,8 @@ public:
 
 	UPROPERTY(meta = (BindWidget)) UStandardBulletDisplayer* StandardBulletDisplayer;
 
+	UCraftingTable* GetTable();
+
 protected:
 
 	// Template per i bottoni dei proiettili
@@ -85,8 +86,7 @@ protected:
 
 private:
 
-	
-
+	void RefreshEssence();
  	void ClearBulletList();
 
 	
@@ -94,6 +94,10 @@ private:
     
 	void MoveSelectionUp();
 	void MoveSelectionDown();
+
+	UFUNCTION() void OnCraftClicked();
+	UFUNCTION(BlueprintPure) FText OnQuantityChanged();
+	UFUNCTION(BlueprintPure) FText OnGoldQuantityChanged();
 
 	UPROPERTY()
     TArray<FBullet> DisplayedBullets;
@@ -115,4 +119,7 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI-Class", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UEssenceWidget> UEssenceWidgetClass;
+
+	UPROPERTY()
+	UCraftingTable* CraftingTable;
 };

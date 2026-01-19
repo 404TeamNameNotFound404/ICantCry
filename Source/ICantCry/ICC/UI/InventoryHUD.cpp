@@ -7,12 +7,18 @@
 void UInventoryHUD::NativeConstruct()
 {
     Super::NativeConstruct();
+
+    CraftingTable = NewObject<UCraftingTable>();
+    CraftingTable->Initialize(GetWorld());
+    
     CurrentSelectedIndex = -1;
 
     GameInstance = Cast<UICantCryGameInstance>(GetGameInstance());
     checkf(GameInstance, TEXT("game instance invalid"))
 
     ImmutableInventory = GameInstance->GetInventory();
+
+    CraftButton->OnClicked.AddDynamic(this, &UInventoryHUD::OnCraftClicked);
 
     //StandardBulletDisplayer->Init(this);
 }
@@ -64,7 +70,7 @@ void UInventoryHUD::Refresh()
 {
     // DisplayCasings();
     // DisplayBullets();
-    // RefreshEssence();
+     RefreshEssence();
 }
 
 void UInventoryHUD::UpdateDetailPanel(const FBullet &Bullet)
@@ -101,6 +107,40 @@ void UInventoryHUD::MoveSelectionDown()
     }
 }
 
+void UInventoryHUD::OnCraftClicked()
+{
+    CraftingTable->CraftSelectedBullet(GetWorld());
+}
+
+FText UInventoryHUD::OnQuantityChanged()
+{
+    for (UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+       const auto& Pair : Instance->GetInventory().CasingsStored)
+    {
+        const FString Txt = FString("x " + FString::FromInt(Pair.Value.GetQuantity()));
+        return FText(FText::FromString(Txt));
+    }
+
+    return FText::FromString("x 0");
+}
+
+FText UInventoryHUD::OnGoldQuantityChanged()
+{
+    for (UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+     const auto& Pair : Instance->GetInventory().GoldCasings)
+    {
+        const FString Txt = FString("x " + FString::FromInt(Pair.GetQuantity()));
+        return FText(FText::FromString(Txt));
+    }
+
+    return FText::FromString("x 0");
+}
+
+UCraftingTable* UInventoryHUD::GetTable()
+{
+    return CraftingTable;
+}
+
 void UInventoryHUD::RefreshEssence()
 {
     EssenceBox->ClearChildren();
@@ -110,7 +150,7 @@ void UInventoryHUD::RefreshEssence()
         UEssenceWidget *EssenceWidget = CreateWidget<UEssenceWidget>(GetWorld(), UEssenceWidgetClass);
         checkf(EssenceWidget, TEXT("Essence widget is null"))
 
-            EssenceBox->AddChild(EssenceWidget);
+        EssenceBox->AddChild(EssenceWidget);
         const FEssence &E = Essence.Value;
         EssenceWidget->Setup(E, E.Quantity);
     }

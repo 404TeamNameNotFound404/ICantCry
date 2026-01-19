@@ -60,7 +60,7 @@ void UInGameMenu::OpenInventory()
 	
 	Main->AddChild(InventoryHud);
 	InventoryHud->Setup();
-	//InventoryHud->Refresh();
+	InventoryHud->Refresh();
 	//CharacterUI->SetVisibility(ESlateVisibility::Hidden);
 	InventoryHud->SetVisibility(ESlateVisibility::Visible);
 }
