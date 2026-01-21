@@ -19,14 +19,16 @@
 #include "ICantCry/ICC/Inventory/CraftingTable.h"
 #include "Inventory/StandardBulletDisplayer.h"
 #include "Inventory/GoldBulletDisplayer.h"
+#include "Components/ProgressBar.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "InventoryHUD.generated.h"
 
 class AICC_Player;
 
-/**
- * 
- */
+
+
+
+
 UCLASS()
 class ICANTCRY_API UInventoryHUD : public UUserWidget
 {
@@ -53,6 +55,12 @@ public:
 
 	// LEFT PANEL
 	UPROPERTY(meta = (BindWidget))  UWidgetSwitcher* BulletSwitcher; // page switcher for bullets
+	UPROPERTY(meta = (BindWidget))  UButton* ButtonSwitcher;
+
+	// contentswitcher pages
+    UPROPERTY(meta = (BindWidget))  UWidget* StandardBulletPage;
+	UPROPERTY(meta = (BindWidget)) UWidget* GoldBulletPage;
+    
 
 	// MID
 	UPROPERTY(meta = (BindWidget)) UImage* SelectedBulletImage;  // icon proiettile (pannello centrale)
@@ -62,6 +70,7 @@ public:
     UPROPERTY(meta = (BindWidget)) UTextBlock* SelectedBulletWeakness;
 	UPROPERTY(meta = (BindWidget)) UTextBlock* CraftInfo;
 	UPROPERTY(meta = (BindWidget))  UButton* CraftButton;
+	UPROPERTY(meta = (BindWidget))  UProgressBar* CraftingProgressBar;
 	UPROPERTY(meta = (BindWidget)) UTextBlock* BlueprintRequirementTxt;
 	
 	
@@ -95,9 +104,25 @@ private:
 	void MoveSelectionUp();
 	void MoveSelectionDown();
 
+	// CRAFT
 	UFUNCTION() void OnCraftClicked();
 	UFUNCTION(BlueprintPure) FText OnQuantityChanged();
 	UFUNCTION(BlueprintPure) FText OnGoldQuantityChanged();
+
+	UFUNCTION() void OnToggleSwitcher();
+
+	UFUNCTION() void UpdateCraft();
+
+	UPROPERTY() bool bIsHolding = false;
+
+	UFUNCTION() void OnCraftReleased();
+    
+	UPROPERTY() float CurrentProgress;
+
+	UPROPERTY() FTimerHandle Timer;
+
+
+
 
 	UPROPERTY()
     TArray<FBullet> DisplayedBullets;
@@ -119,6 +144,9 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI-Class", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UEssenceWidget> UEssenceWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI-Class", meta = (AllowPrivateAccess = "true"))
+	float ProgressBarSpeed = 1.0f;
 
 	UPROPERTY()
 	UCraftingTable* CraftingTable;

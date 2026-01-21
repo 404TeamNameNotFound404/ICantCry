@@ -5,8 +5,11 @@
 #include "ICantCry/ICC/UI/CasingWidget.h"
 
 void UInventoryHUD::NativeConstruct()
-{
+{   
+
     Super::NativeConstruct();
+
+    
 
     CraftingTable = NewObject<UCraftingTable>();
     CraftingTable->Initialize(GetWorld());
@@ -19,6 +22,10 @@ void UInventoryHUD::NativeConstruct()
     ImmutableInventory = GameInstance->GetInventory();
 
     CraftButton->OnClicked.AddDynamic(this, &UInventoryHUD::OnCraftClicked);
+    ButtonSwitcher->OnClicked.AddDynamic(this, &UInventoryHUD::OnToggleSwitcher);
+
+
+    CraftButton->OnReleased.AddDynamic(this, &UInventoryHUD::OnCraftReleased);
 
     //StandardBulletDisplayer->Init(this);
 }
@@ -70,7 +77,7 @@ void UInventoryHUD::Refresh()
 {
     // DisplayCasings();
     // DisplayBullets();
-     RefreshEssence();
+    RefreshEssence();
 }
 
 void UInventoryHUD::UpdateDetailPanel(const FBullet &Bullet)
@@ -107,10 +114,7 @@ void UInventoryHUD::MoveSelectionDown()
     }
 }
 
-void UInventoryHUD::OnCraftClicked()
-{
-    CraftingTable->CraftSelectedBullet(GetWorld());
-}
+
 
 FText UInventoryHUD::OnQuantityChanged()
 {
@@ -134,6 +138,51 @@ FText UInventoryHUD::OnGoldQuantityChanged()
     }
 
     return FText::FromString("x 0");
+}
+
+void UInventoryHUD::OnToggleSwitcher()
+{
+    if (!BulletSwitcher) return; 
+    
+    int32 Current = BulletSwitcher->GetActiveWidgetIndex(); 
+    int32 Next = (Current == 0) ? 1 : 0; 
+    BulletSwitcher->SetActiveWidgetIndex(Next);
+}
+
+void UInventoryHUD::UpdateCraft()
+{
+    CurrentProgress += ProgressBarSpeed * 0.02f;
+
+    CraftingProgressBar->SetPercent(CurrentProgress);
+
+    if(CurrentProgress >= 1.0f)
+    {
+        GetWorld()->GetTimerManager().ClearTimer(Timer);
+        CraftingProgressBar->SetPercent(0.0f);
+        CraftingTable->CraftSelectedBullet(GetWorld());
+    }
+
+
+}
+
+void UInventoryHUD::OnCraftClicked()
+{
+
+    bIsHolding = true;
+
+    CurrentProgress = 0;
+
+    //GetWorld()->GetTimerManager().ClearTimer(Timer);
+    GetWorld()->GetTimerManager().SetTimer(Timer, this, &UInventoryHUD::UpdateCraft, 0.05f, true);
+    //CraftingTable->CraftSelectedBullet(GetWorld());
+
+}
+
+void UInventoryHUD::OnCraftReleased()
+{
+    bIsHolding = false;
+    GetWorld()->GetTimerManager().ClearTimer(Timer);
+    CraftingProgressBar->SetPercent(0.0f);
 }
 
 UCraftingTable* UInventoryHUD::GetTable()
