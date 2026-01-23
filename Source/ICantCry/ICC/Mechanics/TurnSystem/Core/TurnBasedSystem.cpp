@@ -367,6 +367,7 @@ void UTurnBasedSystem::ExitBattle()
 	Turn.Queue.Empty();
 	EnemySpawnManager->GetMemory().Clear();
 	BattleTurnCounter = 0;
+	Instance->GetCurrentPlayer()->GetStatusTracker()->Reset();
 }
 
 void UTurnBasedSystem::Reload()
