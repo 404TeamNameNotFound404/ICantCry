@@ -7,6 +7,7 @@
 void UInventoryHUD::NativeConstruct()
 {   
 
+    GetWorld()->GetTimerManager().ClearTimer(Timer);
     Super::NativeConstruct();
 
     
@@ -21,11 +22,16 @@ void UInventoryHUD::NativeConstruct()
 
     ImmutableInventory = GameInstance->GetInventory();
 
-    CraftButton->OnClicked.AddDynamic(this, &UInventoryHUD::OnCraftClicked);
     ButtonSwitcher->OnClicked.AddDynamic(this, &UInventoryHUD::OnToggleSwitcher);
-
-
+    
+    
+    CraftButton->OnPressed.AddDynamic(this, &UInventoryHUD::OnCraftPressed);
     CraftButton->OnReleased.AddDynamic(this, &UInventoryHUD::OnCraftReleased);
+
+    if (CraftingProgressBar)
+    {
+        CraftingProgressBar->SetPercent(0.0f);
+    }
 
     //StandardBulletDisplayer->Init(this);
 }
@@ -114,8 +120,6 @@ void UInventoryHUD::MoveSelectionDown()
     }
 }
 
-
-
 FText UInventoryHUD::OnQuantityChanged()
 {
     for (UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
@@ -149,41 +153,141 @@ void UInventoryHUD::OnToggleSwitcher()
     BulletSwitcher->SetActiveWidgetIndex(Next);
 }
 
-void UInventoryHUD::UpdateCraft()
+
+
+// PROGRESS BAR
+
+void UInventoryHUD::OnCraftPressed()
 {
-    CurrentProgress += ProgressBarSpeed * 0.02f;
-
-    CraftingProgressBar->SetPercent(CurrentProgress);
-
-    if(CurrentProgress >= 1.0f)
+    if (!CraftingTable || !GetWorld()) 
     {
-        GetWorld()->GetTimerManager().ClearTimer(Timer);
-        CraftingProgressBar->SetPercent(0.0f);
-        CraftingTable->CraftSelectedBullet(GetWorld());
+        return;
     }
-
-
-}
-
-void UInventoryHUD::OnCraftClicked()
-{
-
-    bIsHolding = true;
-
-    CurrentProgress = 0;
-
-    //GetWorld()->GetTimerManager().ClearTimer(Timer);
-    GetWorld()->GetTimerManager().SetTimer(Timer, this, &UInventoryHUD::UpdateCraft, 0.05f, true);
-    //CraftingTable->CraftSelectedBullet(GetWorld());
+    
+   
+    UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+    if (!Instance) 
+    {
+        return;
+    }
+    
+  
+    FRecipe& CurrentRecipe = Instance->GetInventory().GetSelectedRecipe();
+    if (CurrentRecipe.Requirements == nullptr) // <-- QUESTO È IL CONTROLLO CHIAVE
+    {
+        DebugHelper::LogError("No recipe selected!");
+        
+        // Feedback opzionale
+        if (CraftInfo)
+        {
+            CraftInfo->SetText(FText::FromString("Select recipe first"));
+        }
+        
+        return; 
+    }
+    
+   
+    if (CraftingTable->ScanResources(GetWorld()))
+    {
+        bIsHolding = true;
+        CurrentProgress = 0.0f;
+        
+        GetWorld()->GetTimerManager().ClearTimer(Timer);
+        GetWorld()->GetTimerManager().SetTimer(
+            Timer, 
+            this, 
+            &UInventoryHUD::UpdateProgressBar, 
+            0.02f,
+            true
+        );
+    }
 
 }
 
 void UInventoryHUD::OnCraftReleased()
 {
+    if (!bIsHolding)
+    {
+        return;
+    }
+
     bIsHolding = false;
+
     GetWorld()->GetTimerManager().ClearTimer(Timer);
-    CraftingProgressBar->SetPercent(0.0f);
+
+    CurrentProgress = 0.0f;
+
+
+   if (CraftingProgressBar)
+    {
+        CraftingProgressBar->SetPercent(0.0f);
+    }
+    
+    DebugHelper::LogWarning("Progress bar reset to 0");
+
+
 }
+
+void UInventoryHUD::UpdateProgressBar()
+{
+   
+    if (!bIsHolding)
+    {
+        return;
+    }
+    
+    CurrentProgress += ProgressBarSpeed * 0.02f;
+    
+    
+    if (CurrentProgress > 1.0f)
+    {
+        CurrentProgress = 1.0f;
+    }
+    
+    if (CraftingProgressBar)
+    {
+        CraftingProgressBar->SetPercent(CurrentProgress);
+    }
+    
+    
+    if (CurrentProgress >= 1.0f)
+    {
+        GetWorld()->GetTimerManager().ClearTimer(Timer);
+        CompleteCrafting();
+    }
+}
+
+void UInventoryHUD::CompleteCrafting()
+{
+    if (!bIsHolding)
+    {
+        CurrentProgress = 0.0f;
+        if (CraftingProgressBar)
+        {
+            CraftingProgressBar->SetPercent(0.0f);
+        }
+        return;
+    }
+    
+    DebugHelper::LogSuccess("Crafting completed at 100%!");
+    
+    // Esegui il craft
+    if (CraftingTable)
+    {
+        CraftingTable->CraftSelectedBullet(GetWorld());
+        Refresh();
+    }
+    
+    // Resetta immediatamente dopo il craft
+    bIsHolding = false;
+    CurrentProgress = 0.0f;
+    
+    if (CraftingProgressBar)
+    {
+        CraftingProgressBar->SetPercent(0.0f);
+    }
+}
+
 
 UCraftingTable* UInventoryHUD::GetTable()
 {

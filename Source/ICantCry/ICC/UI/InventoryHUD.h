@@ -105,19 +105,25 @@ private:
 	void MoveSelectionDown();
 
 	// CRAFT
-	UFUNCTION() void OnCraftClicked();
 	UFUNCTION(BlueprintPure) FText OnQuantityChanged();
 	UFUNCTION(BlueprintPure) FText OnGoldQuantityChanged();
 
 	UFUNCTION() void OnToggleSwitcher();
 
-	UFUNCTION() void UpdateCraft();
+
+	// PROGRESS BAR
+	
+	UFUNCTION()void OnCraftPressed();
+	
+	UFUNCTION() void OnCraftReleased();
+
+    UFUNCTION() void UpdateProgressBar();
+
+	UFUNCTION() void CompleteCrafting();
 
 	UPROPERTY() bool bIsHolding = false;
-
-	UFUNCTION() void OnCraftReleased();
     
-	UPROPERTY() float CurrentProgress;
+	UPROPERTY() float CurrentProgress = 0.0f;
 
 	UPROPERTY() FTimerHandle Timer;
 
@@ -147,6 +153,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI-Class", meta = (AllowPrivateAccess = "true"))
 	float ProgressBarSpeed = 1.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
+    float DrainSpeed = 2.0f;
 
 	UPROPERTY()
 	UCraftingTable* CraftingTable;

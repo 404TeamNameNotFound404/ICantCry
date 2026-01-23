@@ -46,6 +46,7 @@ public:
     // UPROPERTY(EditAnywhere, BlueprintReadWrite)
     // FGoldEmptyCasing GoldCasing;
 
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 EmptyCasingCount;
 

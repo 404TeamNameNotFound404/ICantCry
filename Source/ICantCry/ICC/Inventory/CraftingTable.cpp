@@ -137,14 +137,23 @@ bool UCraftingTable::ScanResources(UWorld* World)
 {
     DebugHelper::LogSuccess("Scanning ...");
     UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(World->GetGameInstance());
+
+    if (!Instance)
+    {
+        DebugHelper::LogError("Game Instance is null!");
+        return IsCraftable = false;
+    }
+
     Inventory = Instance->GetInventory();
     
 
     FRecipe& SelectedRecipe = Inventory.GetSelectedRecipe();
+
+
     checkf(SelectedRecipe.Requirements, TEXT("REQUIREMENT INVALID"))
     
     int32 AvailableCasing = 0;
-    
+
     for (auto& Casing : Instance->GetInventory().CasingsStored)
     {
         if (Casing.Value.GetType() == SelectedRecipe.RequiredCasingType)
@@ -154,6 +163,7 @@ bool UCraftingTable::ScanResources(UWorld* World)
             break;
         }
     }
+
 
     if (AvailableCasing < SelectedRecipe.Requirements->CasingQuantity)
     {
