@@ -321,7 +321,15 @@ void UBattleHUD::OnFocusPressed()
 	BattleHandler->GetTurnBasedSystem()->EndTurn();
 	GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateStatus();
 	GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateBuffStatus();
-	BattleHandler->GetTurnBasedSystem()->StartNextTurn();
+	//BattleHandler->GetTurnBasedSystem()->StartNextTurn();
+	
+	FTimerHandle StartNextHandle;
+	
+	GetWorld()->GetTimerManager().SetTimer(StartNextHandle, [this]()
+	{
+		BattleHandler->GetTurnBasedSystem()->StartNextTurn();
+	}, 0.35f, false);
+	
 	DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(
 		BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
 	BattleHandler->GetTurnBasedSystem()->SetTurnOverlayApplied(false);
@@ -388,9 +396,15 @@ void UBattleHUD::OnPassPressed()
 	DebugHelper::LogSuccess("Player passed the turn");
 	DebugHelper::AddMessageToLog("[BattleHUD]: Player passed the turn");
 	BattleHandler->GetTurnBasedSystem()->EndTurn();
-	BattleHandler->GetTurnBasedSystem()->StartNextTurn();
+	FTimerHandle StartNextHandle;
+	
+	GetWorld()->GetTimerManager().SetTimer(StartNextHandle, [this]()
+	{
+		BattleHandler->GetTurnBasedSystem()->StartNextTurn();
+	}, 0.35f, false);
+	
 	DebugHelper::RemoveTurnMaterialOverlayToStaticMesh(
-		BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
+	BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
 	BattleHandler->GetTurnBasedSystem()->SetTurnOverlayApplied(false);
 	DebugHelper::RemoveOverlayMaterialFromStaticMesh(
 		BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
@@ -540,8 +554,13 @@ void UBattleHUD::RefreshBulletUI()
 
 void UBattleHUD::ReflectBullets()
 {
-	Displayer = CreateWidget<UBulletDisplayer>(GetWorld(), BulletDisplayerClass);
-	BulletPanel->AddChild(Displayer);
+	if (!Displayer)
+	{
+		Displayer = CreateWidget<UBulletDisplayer>(GetWorld(), BulletDisplayerClass);
+		BulletPanel->AddChild(Displayer);
+	}
+
+	Displayer->Refresh();
 	SetSelectedBullet(0);
 }
 
@@ -646,55 +665,55 @@ void UBattleHUD::IncreaseShootPower()
 	{
 	case 1:
 		{
-			GameInstance->GetPlayerStats()->ApModifier = 1.0f;
+			GameInstance->GetPlayerStats()->RuntimeStats.ApModifier = 1.0f;
 			DebugHelper::AddMessageToLog(
 				"[BattleHUD]: Player spent 1 extra ap " + FString::SanitizeFloat(
-					GameInstance->GetPlayerStats()->ApModifier));
+					GameInstance->GetPlayerStats()->RuntimeStats.ApModifier));
 			DebugHelper::LogWarning(
 				"[BattleHUD]: Player spent 1 extra ap " + FString::SanitizeFloat(
-					GameInstance->GetPlayerStats()->ApModifier));
+					GameInstance->GetPlayerStats()->RuntimeStats.ApModifier));
 			break;
 		}
 	case 2:
 		{
-			GameInstance->GetPlayerStats()->ApModifier = 1.5f;
+			GameInstance->GetPlayerStats()->RuntimeStats.ApModifier = 1.5f;
 			DebugHelper::AddMessageToLog(
 				"[BattleHUD]: Player spent 2 extra ap " + FString::SanitizeFloat(
-					GameInstance->GetPlayerStats()->ApModifier));
+					GameInstance->GetPlayerStats()->RuntimeStats.ApModifier));
 			DebugHelper::LogWarning(
 				"[BattleHUD]: Player spent 2 extra ap " + FString::SanitizeFloat(
-					GameInstance->GetPlayerStats()->ApModifier));
+					GameInstance->GetPlayerStats()->RuntimeStats.ApModifier));
 			break;
 		}
 	case 3:
 		{
-			GameInstance->GetPlayerStats()->ApModifier = 2.0f;
+			GameInstance->GetPlayerStats()->RuntimeStats.ApModifier = 2.0f;
 			DebugHelper::AddMessageToLog(
 				"[BattleHUD]: Player spent 3 extra ap " + FString::SanitizeFloat(
-					GameInstance->GetPlayerStats()->ApModifier));
+					GameInstance->GetPlayerStats()->RuntimeStats.ApModifier));
 			DebugHelper::LogWarning(
 				"[BattleHUD]: Player spent 3 extra ap " + FString::SanitizeFloat(
-					GameInstance->GetPlayerStats()->ApModifier));
+					GameInstance->GetPlayerStats()->RuntimeStats.ApModifier));
 			break;
 		}
 	case 4:
 		{
-			GameInstance->GetPlayerStats()->ApModifier = 2.5f;
+			GameInstance->GetPlayerStats()->RuntimeStats.ApModifier = 2.5f;
 			DebugHelper::AddMessageToLog(
 				"[BattleHUD]: Player spent 4 extra ap " + FString::SanitizeFloat(
-					GameInstance->GetPlayerStats()->ApModifier));
+					GameInstance->GetPlayerStats()->RuntimeStats.ApModifier));
 			DebugHelper::LogWarning(
 				"[BattleHUD]: Player spent 4 extra ap " + FString::SanitizeFloat(
-					GameInstance->GetPlayerStats()->ApModifier));
+					GameInstance->GetPlayerStats()->RuntimeStats.ApModifier));
 			break;
 		}
 
 	default:
 		{
-			GameInstance->GetPlayerStats()->ApModifier = 1.0f;
+			GameInstance->GetPlayerStats()->RuntimeStats.ApModifier = 1.0f;
 			DebugHelper::AddMessageToLog(
 				"[BattleHUD]: Player spent 1 extra ap (default) " + FString::SanitizeFloat(
-					GameInstance->GetPlayerStats()->ApModifier));
+					GameInstance->GetPlayerStats()->RuntimeStats.ApModifier));
 			break;
 		}
 	}
@@ -732,7 +751,7 @@ void UBattleHUD::DecreaseShootPower()
 		break;
 	}
 
-	GameInstance->GetPlayerStats()->ApModifier = NewModifier;
+	GameInstance->GetPlayerStats()->RuntimeStats.ApModifier = NewModifier;
 	DebugHelper::AddMessageToLog(
 		"[BattleHUD]: Player decided to decrease boost, now has: " + FString::SanitizeFloat(NewModifier));
 
