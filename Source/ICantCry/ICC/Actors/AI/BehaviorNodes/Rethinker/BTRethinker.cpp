@@ -19,35 +19,82 @@ UBTRethinker::UBTRethinker()
 	bNotifyTaskFinished = true;
 }
 
+// EBTNodeResult::Type UBTRethinker::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+// {
+// 	Super::ExecuteTask(OwnerComp, NodeMemory);
+//
+// 	BlackBoard = OwnerComp.GetBlackboardComponent();
+// 	TreeComp = &OwnerComp;
+// 	
+// 	const AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner());
+// 	Current = Cast<AMob>(Controller->GetPawn());
+// 	
+// 	DebugHelper::AddMessageToLog("[Behavior Tree - Rethinker]: " + Current->GetData()->EnemyName.ToString() + " can't buff other .. rethinking a new action");
+// 	const AICC_Player* Target = Cast<AICC_Player>(BlackBoard->GetValueAsObject("Target"));
+//
+//     Current->SetRethink(true);
+//     BlackBoard->SetValueAsBool("Rethinker", Current->GetRethink());
+//     
+// 	bWaitingForThinkCompletion = true;
+// 	bBusy = true;
+//
+// 	DecisionMaker.Clear();
+// 	DecisionMaker.Setup(Current);
+// 	Decision = DecisionMaker.Thought();
+//
+// 	Target->GetBattleHUD()->DecisionDisplayer->Show();
+// 	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(
+// 		FText::FromString(Current->GetData()->EnemyName.ToString() + " is re-thinking...")
+// 	);
+// 	
+// 	Controller->GetWorld()->GetTimerManager().ClearTimer(DelayHandle);
+//
+// 	if (Delay > 0.f)
+// 	{
+// 		Controller->GetWorld()->GetTimerManager().SetTimer(
+// 			DelayHandle,
+// 			this,
+// 			&UBTRethinker::OnThinkComplete_Internal,
+// 			Delay,
+// 			false
+// 		);
+// 	}
+// 	else
+// 	{
+// 		OnThinkComplete_Internal();
+// 	}
+// 	
+// 	return EBTNodeResult::InProgress;
+// }
+
 EBTNodeResult::Type UBTRethinker::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
 	BlackBoard = OwnerComp.GetBlackboardComponent();
 	TreeComp = &OwnerComp;
-	
-	const AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner());
-	Current = Cast<AMob>(Controller->GetPawn());
-	
-	DebugHelper::AddMessageToLog("[Behavior Tree - Rethinker]: " + Current->GetData()->EnemyName.ToString() + " can't buff other .. rethinking a new action");
-	const AICC_Player* Target = Cast<AICC_Player>(BlackBoard->GetValueAsObject("Target"));
 
-    Current->SetRethink(true);
-    BlackBoard->SetValueAsBool("Rethinker", Current->GetRethink());
-    
-	bWaitingForThinkCompletion = true;
-	bBusy = true;
+	AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner());
+	Current = Cast<AMob>(Controller->GetPawn());
+
+	if (!Controller || !Current || !BlackBoard)
+		return EBTNodeResult::Failed;
+
+	const AICC_Player* Target = Cast<AICC_Player>(BlackBoard->GetValueAsObject("Target"));
+	if (!Target)
+		return EBTNodeResult::Failed;
+
+	bFinish = false;
+
+	Current->SetRethink(true);
+	BlackBoard->SetValueAsBool("Rethinker", true);
+
+	Target->GetBattleHUD()->DecisionDisplayer->Show();
+	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetData()->EnemyName.ToString() + " is re-thinking..."));
 
 	DecisionMaker.Clear();
 	DecisionMaker.Setup(Current);
 	Decision = DecisionMaker.Thought();
-
-	Target->GetBattleHUD()->DecisionDisplayer->Show();
-	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(
-		FText::FromString(Current->GetData()->EnemyName.ToString() + " is re-thinking...")
-	);
-	
-	Controller->GetWorld()->GetTimerManager().ClearTimer(DelayHandle);
 
 	if (Delay > 0.f)
 	{
@@ -63,9 +110,10 @@ EBTNodeResult::Type UBTRethinker::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	{
 		OnThinkComplete_Internal();
 	}
-	
+
 	return EBTNodeResult::InProgress;
 }
+
 
 // probably I won't need this?
 
@@ -90,8 +138,16 @@ void UBTRethinker::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 		return;
 	}
 	
-	if (!Current->IsMinigameStarted() || !Current->IsMinigameEnded() || !Target->GetMinigameHandler()->IsPlayerMinigameEnded())
+	// if (!Current->IsMinigameStarted() || !Current->IsMinigameEnded() || !Target->GetMinigameHandler()->IsPlayerMinigameEnded())
+	// 	return;
+
+	if (!(Current->IsMinigameStarted() &&
+	  Current->IsMinigameEnded() &&
+	  Target->GetMinigameHandler()->IsPlayerMinigameEnded()))
+	{
 		return;
+	}
+
 	
 	// Current->SetTreeId(-1);
 	// Current->SetIsBuffedAtk(false);
@@ -114,48 +170,70 @@ void UBTRethinker::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* Node
 	Super::OnTaskFinished(OwnerComp, NodeMemory, TaskResult);
 }
 
+// void UBTRethinker::OnThinkComplete(UBehaviorTreeComponent* OwnerComp, AICC_AIController* Controller)
+// {
+// 	if (!OwnerComp || !Controller || !Current || !BlackBoard)
+// 		return;
+//
+// 	bWaitingForThinkCompletion = true;
+//
+// 	AICC_Player* Target = Cast<AICC_Player>(BlackBoard->GetValueAsObject("Target"));
+// 	if (!Target)
+// 	{
+// 		FinishLatentTask(*OwnerComp, EBTNodeResult::Failed);
+// 		return;
+// 	}
+// 	
+// 	if (Current->IsAshamed() || Current != Target->GetBattleHUD()->GetCurrentPlayingEmotion())
+// 	{
+// 		if (Current->IsAshamed())
+// 		{
+// 			Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetData()->EnemyName.ToString() + " skipped the turn (Ashamed)"));
+// 			DebugHelper::AddMessageToLog("[Behavior Tree - Rethinker]: " + Current->GetData()->EnemyName.ToString() + " skipped the turn (Ashamed)");
+//
+// 			Current->SetTreeId(-1);
+// 			Current->SetIsBuffedAtk(false);
+// 			BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
+// 			BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
+// 			BlackBoard->SetValueAsBool("IsDefenceDebuffed?", Current->GetIsTargetDefenceDebuffed());
+// 			Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
+// 		}
+//
+// 		FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
+// 		return;
+// 	}
+// 	
+// 	if (Decision != EDecision::None)
+// 	{
+// 		ProcessDecision(Decision, Current, BlackBoard, OwnerComp ,Target);
+// 		FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
+// 		return;
+// 	}
+// 	
+// 	StartAttackMinigame(Current, Target, Controller);
+// }
+
 void UBTRethinker::OnThinkComplete(UBehaviorTreeComponent* OwnerComp, AICC_AIController* Controller)
 {
 	if (!OwnerComp || !Controller || !Current || !BlackBoard)
 		return;
 
-	bWaitingForThinkCompletion = true;
-
 	AICC_Player* Target = Cast<AICC_Player>(BlackBoard->GetValueAsObject("Target"));
 	if (!Target)
 	{
-		FinishLatentTask(*OwnerComp, EBTNodeResult::Failed);
+		FinishTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}
-	
-	if (Current->IsAshamed() || Current != Target->GetBattleHUD()->GetCurrentPlayingEmotion())
-	{
-		if (Current->IsAshamed())
-		{
-			Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetData()->EnemyName.ToString() + " skipped the turn (Ashamed)"));
-			DebugHelper::AddMessageToLog("[Behavior Tree - Rethinker]: " + Current->GetData()->EnemyName.ToString() + " skipped the turn (Ashamed)");
 
-			Current->SetTreeId(-1);
-			Current->SetIsBuffedAtk(false);
-			BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
-			BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
-			BlackBoard->SetValueAsBool("IsDefenceDebuffed?", Current->GetIsTargetDefenceDebuffed());
-			Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
-		}
-
-		FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
-		return;
-	}
-	
 	if (Decision != EDecision::None)
 	{
-		ProcessDecision(Decision, Current, BlackBoard, OwnerComp ,Target);
-		FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
+		ProcessDecision(Decision, Current, BlackBoard, OwnerComp, Target);
 		return;
 	}
-	
+
 	StartAttackMinigame(Current, Target, Controller);
 }
+
 
 void UBTRethinker::OnThinkComplete_Internal()
 {
@@ -222,6 +300,7 @@ void UBTRethinker::ProcessDecision(EDecision Dec, AMob* CurrentMob, UBlackboardC
             	BlackBoard->SetValueAsBool("Rethinker", CurrentMob->GetRethink());
                 CurrentMob->SetIsBuffedAtk(true);
                 BlackBoard->SetValueAsBool("IsBuffed?", CurrentMob->GetIsIsBuffedAtk());
+            	FinishTask(OwnerComp, EBTNodeResult::Succeeded);
             }
             break;
 
@@ -232,6 +311,7 @@ void UBTRethinker::ProcessDecision(EDecision Dec, AMob* CurrentMob, UBlackboardC
             	BlackBoard->SetValueAsBool("Rethinker", CurrentMob->GetRethink());
             	CurrentMob->SetHeal(true);
             	BlackBoard->SetValueAsBool("IsHealing?", CurrentMob->GetIsHeal());
+            	FinishTask(OwnerComp, EBTNodeResult::Succeeded);
             }
             break;
 
@@ -242,6 +322,7 @@ void UBTRethinker::ProcessDecision(EDecision Dec, AMob* CurrentMob, UBlackboardC
             	BlackBoard->SetValueAsBool("Rethinker", CurrentMob->GetRethink());
             	CurrentMob->SetHealOther(true);
             	BlackBoard->SetValueAsBool("IsHealingOther?", CurrentMob->GetIsHealOther());
+            	FinishTask(OwnerComp, EBTNodeResult::Succeeded);
             }
             break;
 
@@ -253,6 +334,7 @@ void UBTRethinker::ProcessDecision(EDecision Dec, AMob* CurrentMob, UBlackboardC
                 CurrentMob->GetBattleHandler()->GetBattleInfo()->SetTurnInfo(FText::FromString(Current->GetActorLabel() + " de-buff"));
                 CurrentMob->SetIsTargetDefDebuffed(true);
                 BlackBoard->SetValueAsBool("IsDefenceDebuffed?", CurrentMob->GetIsTargetDefenceDebuffed());
+            	FinishTask(OwnerComp, EBTNodeResult::Succeeded);
             }
             break;
 
@@ -263,6 +345,7 @@ void UBTRethinker::ProcessDecision(EDecision Dec, AMob* CurrentMob, UBlackboardC
             	BlackBoard->SetValueAsBool("Rethinker", CurrentMob->GetRethink());
                 CurrentMob->SetBuffedDefence(true);
                 BlackBoard->SetValueAsBool("IsDefenceBuffed?", CurrentMob->GetIsBuffedDefence());
+            	FinishTask(OwnerComp, EBTNodeResult::Succeeded);
             }
             break;
 
@@ -273,6 +356,7 @@ void UBTRethinker::ProcessDecision(EDecision Dec, AMob* CurrentMob, UBlackboardC
             	BlackBoard->SetValueAsBool("Rethinker", CurrentMob->GetRethink());
                 CurrentMob->SetBuffOtherDefence(true);
                 BlackBoard->SetValueAsBool("IsBuffedOtherDef?", CurrentMob->GetBuffOtherDefence());
+            	FinishTask(OwnerComp, EBTNodeResult::Succeeded);
             }
             break;
 
@@ -283,6 +367,7 @@ void UBTRethinker::ProcessDecision(EDecision Dec, AMob* CurrentMob, UBlackboardC
             	BlackBoard->SetValueAsBool("Rethinker", CurrentMob->GetRethink());
                 CurrentMob->SetPlayerDebuffAttack(true);
                 BlackBoard->SetValueAsBool("IsAttackDebuffed?", CurrentMob->GetPlayerDebuffAttack());
+            	FinishTask(OwnerComp, EBTNodeResult::Succeeded);
             }
             break;
 
@@ -293,6 +378,7 @@ void UBTRethinker::ProcessDecision(EDecision Dec, AMob* CurrentMob, UBlackboardC
             	BlackBoard->SetValueAsBool("Rethinker", CurrentMob->GetRethink());
                 CurrentMob->SetIsFreezedUp(true);
                 BlackBoard->SetValueAsBool("IsFreezedUp?", CurrentMob->GetIsIsFreezedUp());
+            	FinishTask(OwnerComp, EBTNodeResult::Succeeded);
             }
             break;
 
@@ -303,6 +389,7 @@ void UBTRethinker::ProcessDecision(EDecision Dec, AMob* CurrentMob, UBlackboardC
             	BlackBoard->SetValueAsBool("Rethinker", CurrentMob->GetRethink());
                 CurrentMob->SetBuffOtherAtk(true);
                 BlackBoard->SetValueAsBool("IsBuffOtherAtk?", CurrentMob->GetBuffOtherAtk());
+            	FinishTask(OwnerComp, EBTNodeResult::Succeeded);
             }
             break;
 
@@ -313,6 +400,7 @@ void UBTRethinker::ProcessDecision(EDecision Dec, AMob* CurrentMob, UBlackboardC
             	BlackBoard->SetValueAsBool("Rethinker", CurrentMob->GetRethink());
                 CurrentMob->SetIsEnvyBurned(true);
                 BlackBoard->SetValueAsBool("IsEnvyBurnedState?", CurrentMob->GetIsIsEnvyBurned());
+            	FinishTask(OwnerComp, EBTNodeResult::Succeeded);
             }
             break;
 
@@ -323,6 +411,7 @@ void UBTRethinker::ProcessDecision(EDecision Dec, AMob* CurrentMob, UBlackboardC
             	BlackBoard->SetValueAsBool("Rethinker", CurrentMob->GetRethink());
                 CurrentMob->SetDebuffShield(true);
                 BlackBoard->SetValueAsBool("IsShieldDebuffed?", CurrentMob->GetIsDebuffShield());
+            	FinishTask(OwnerComp, EBTNodeResult::Succeeded);
             }
             break;
 
@@ -333,6 +422,7 @@ void UBTRethinker::ProcessDecision(EDecision Dec, AMob* CurrentMob, UBlackboardC
             	BlackBoard->SetValueAsBool("Rethinker", CurrentMob->GetRethink());
                 CurrentMob->SetDebuffOtherShield(true);
                 BlackBoard->SetValueAsBool("IsOtherShieldDebuffed?", CurrentMob->GetIsDebuffOtherShield());
+            	FinishTask(OwnerComp, EBTNodeResult::Succeeded);
             }
             break;
 
@@ -362,4 +452,11 @@ void UBTRethinker::OnMinigameEndedCallback()
 	BlackBoard->SetValueAsBool("Rethinker", Current->GetRethink());
 	
 	FinishLatentTask(*TreeComp, EBTNodeResult::Succeeded);
+}
+
+void UBTRethinker::FinishTask(UBehaviorTreeComponent* OwnerComp, EBTNodeResult::Type Result)
+{
+	if (bFinish || !OwnerComp) return;
+	bFinish = true;
+	FinishLatentTask(*OwnerComp, Result);
 }

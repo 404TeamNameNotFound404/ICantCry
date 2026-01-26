@@ -94,8 +94,8 @@ void AICC_Player::BeginPlay()
 	DontDestroyOnLoad->SetPlayerStats(Stats);
 	//DontDestroyOnLoad->GetInventory().StarterPack(); 
 	DontDestroyOnLoad->SetPersistentPlayer(this);
-	DontDestroyOnLoad->GetPersistentData()->InitialAttackPower = GetStats()->RuntimeStats.AttackPower;
-	DontDestroyOnLoad->GetPersistentData()->InitialDefencePower = GetStats()->RuntimeStats.DefencePower;
+	DontDestroyOnLoad->GetPersistentData()->InitialAttackPower = DontDestroyOnLoad->GetRuntimeStats().AttackPower;
+	DontDestroyOnLoad->GetPersistentData()->InitialDefencePower = DontDestroyOnLoad->GetRuntimeStats().DefencePower;
 	//bIsInFight = false;
 
 	BestiaryUI= CreateWidget<UBestiaryUI>(GetWorld(), BestiaryUIClass);

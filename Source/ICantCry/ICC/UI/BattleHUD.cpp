@@ -665,55 +665,55 @@ void UBattleHUD::IncreaseShootPower()
 	{
 	case 1:
 		{
-			GameInstance->GetPlayerStats()->RuntimeStats.ApModifier = 1.0f;
+			GameInstance->GetRuntimeStats().ApModifier = 1.0f;
 			DebugHelper::AddMessageToLog(
 				"[BattleHUD]: Player spent 1 extra ap " + FString::SanitizeFloat(
-					GameInstance->GetPlayerStats()->RuntimeStats.ApModifier));
+					GameInstance->GetRuntimeStats().ApModifier));
 			DebugHelper::LogWarning(
 				"[BattleHUD]: Player spent 1 extra ap " + FString::SanitizeFloat(
-					GameInstance->GetPlayerStats()->RuntimeStats.ApModifier));
+					GameInstance->GetRuntimeStats().ApModifier));
 			break;
 		}
 	case 2:
 		{
-			GameInstance->GetPlayerStats()->RuntimeStats.ApModifier = 1.5f;
+			GameInstance->GetRuntimeStats().ApModifier = 1.5f;
 			DebugHelper::AddMessageToLog(
 				"[BattleHUD]: Player spent 2 extra ap " + FString::SanitizeFloat(
-					GameInstance->GetPlayerStats()->RuntimeStats.ApModifier));
+					GameInstance->GetRuntimeStats().ApModifier));
 			DebugHelper::LogWarning(
 				"[BattleHUD]: Player spent 2 extra ap " + FString::SanitizeFloat(
-					GameInstance->GetPlayerStats()->RuntimeStats.ApModifier));
+					GameInstance->GetRuntimeStats().ApModifier));
 			break;
 		}
 	case 3:
 		{
-			GameInstance->GetPlayerStats()->RuntimeStats.ApModifier = 2.0f;
+			GameInstance->GetRuntimeStats().ApModifier = 2.0f;
 			DebugHelper::AddMessageToLog(
 				"[BattleHUD]: Player spent 3 extra ap " + FString::SanitizeFloat(
-					GameInstance->GetPlayerStats()->RuntimeStats.ApModifier));
+					GameInstance->GetRuntimeStats().ApModifier));
 			DebugHelper::LogWarning(
 				"[BattleHUD]: Player spent 3 extra ap " + FString::SanitizeFloat(
-					GameInstance->GetPlayerStats()->RuntimeStats.ApModifier));
+					GameInstance->GetRuntimeStats().ApModifier));
 			break;
 		}
 	case 4:
 		{
-			GameInstance->GetPlayerStats()->RuntimeStats.ApModifier = 2.5f;
+			GameInstance->GetRuntimeStats().ApModifier = 2.5f;
 			DebugHelper::AddMessageToLog(
 				"[BattleHUD]: Player spent 4 extra ap " + FString::SanitizeFloat(
-					GameInstance->GetPlayerStats()->RuntimeStats.ApModifier));
+					GameInstance->GetRuntimeStats().ApModifier));
 			DebugHelper::LogWarning(
 				"[BattleHUD]: Player spent 4 extra ap " + FString::SanitizeFloat(
-					GameInstance->GetPlayerStats()->RuntimeStats.ApModifier));
+					GameInstance->GetRuntimeStats().ApModifier));
 			break;
 		}
 
 	default:
 		{
-			GameInstance->GetPlayerStats()->RuntimeStats.ApModifier = 1.0f;
+			GameInstance->GetRuntimeStats().ApModifier = 1.0f;
 			DebugHelper::AddMessageToLog(
 				"[BattleHUD]: Player spent 1 extra ap (default) " + FString::SanitizeFloat(
-					GameInstance->GetPlayerStats()->RuntimeStats.ApModifier));
+					GameInstance->GetRuntimeStats().ApModifier));
 			break;
 		}
 	}
@@ -751,7 +751,7 @@ void UBattleHUD::DecreaseShootPower()
 		break;
 	}
 
-	GameInstance->GetPlayerStats()->RuntimeStats.ApModifier = NewModifier;
+	GameInstance->GetRuntimeStats().ApModifier = NewModifier;
 	DebugHelper::AddMessageToLog(
 		"[BattleHUD]: Player decided to decrease boost, now has: " + FString::SanitizeFloat(NewModifier));
 

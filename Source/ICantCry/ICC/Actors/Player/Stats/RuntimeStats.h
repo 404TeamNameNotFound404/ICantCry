@@ -24,7 +24,4 @@ struct FRuntimeStats
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Modifiers")
 	float ApModifier = 1.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Modifiers")
-	float WeaknessModifier = 0.0f;
 };

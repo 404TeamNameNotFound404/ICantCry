@@ -94,9 +94,16 @@ void UUBTTask_DefaultAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 		return;
 	}
 	
-	if (!CurrentMob->IsMinigameStarted() || !CurrentMob->IsMinigameEnded() || !Target->GetMinigameHandler()->
-		IsPlayerMinigameEnded())
+	// if (!CurrentMob->IsMinigameStarted() || !CurrentMob->IsMinigameEnded() || !Target->GetMinigameHandler()->
+	// 	IsPlayerMinigameEnded())
+	// 	return;
+
+	if (!(CurrentMob->IsMinigameStarted() && CurrentMob->IsMinigameEnded() &&
+	  Target->GetMinigameHandler()->IsPlayerMinigameEnded()))
+	{
 		return;
+	}
+
 	
 	CurrentMob->SetTreeId(-1);
 	CurrentMob->SetIsBuffedAtk(false);

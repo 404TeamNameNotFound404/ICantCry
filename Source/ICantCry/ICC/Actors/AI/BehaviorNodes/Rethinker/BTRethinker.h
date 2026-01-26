@@ -29,6 +29,9 @@ protected:
 	void ProcessDecision(EDecision Dec, AMob* CurrentMob, UBlackboardComponent* Board, UBehaviorTreeComponent* OwnerComp, AICC_Player* Target);
 	UFUNCTION() void OnMinigameEndedCallback();
 
+	void FinishTask(UBehaviorTreeComponent* OwnerComp, EBTNodeResult::Type Result);
+
+
 	UPROPERTY()
 	UBlackboardComponent* BlackBoard;
 
@@ -55,4 +58,8 @@ protected:
 
 	UPROPERTY()
 	float Delay = 1.5f;
+
+	UPROPERTY()
+	bool bFinish = false;
+	
 };

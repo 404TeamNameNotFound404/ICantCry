@@ -24,11 +24,11 @@ int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 	checkf(EnemyData, TEXT("E data is null"))
 	checkf(AIMoves, TEXT("Moves null"))
 	
+	FRuntimeStats& RuntimeStats = Instance->GetRuntimeStats();
+	UPlayerStats* Stats = Instance->GetPlayerStats();
+	
 	if (IsPlayerAttacking)
 	{
-		UPlayerStats* Stats = Instance->GetPlayerStats();
-		FRuntimeStats& RuntimeStats = Instance->GetPlayerStats()->RuntimeStats;
-		
 		float Coefficient = 0.5f; // fallback in case of invalid parameters
 
 		if (BulletData->Coefficients.Contains(EnemyData->Type))
@@ -63,8 +63,6 @@ int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 			DebugHelper::LogError("Player stats or EData or AIMoves are null!");
 			return 0;
 		}
-		
-		FRuntimeStats& RuntimeStats = PlayerStats->RuntimeStats;
 		
 		const float AIDamageResult = ((((AIMoves->MovePower / (2 - AIMoves->MinigamePower)) * (EnemyData->AttackPower / RuntimeStats.DefencePower))) * AIMoves->ActionPointsModifier * AIMoves->WeaknessModifier) * PlayerStats->MinigameModifier;
 		const int RoundedResult = FMath::RoundToInt(AIDamageResult);

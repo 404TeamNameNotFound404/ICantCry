@@ -37,11 +37,13 @@ EBTNodeResult::Type UBTTask_DebuffDef::ExecuteTask(UBehaviorTreeComponent& Owner
 	Target->GetStatusTracker()->MalusFlow();
 	Target->GetStatusTracker()->InflictStatus(EAfflictedStatus::DebuffDef, Target);
 
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " de-buffed " + Target->GetActorLabel() + " def"));
-	Current->GetBattleHandler()->GetBattleInfo()->SetTurnInfo(FText::FromString("Target def is now -> " + FString::SanitizeFloat(Target->GetStats()->RuntimeStats.DefencePower)));
+	Current->GetBattleHandler()->GetBattleInfo()->SetTurnInfo(FText::FromString("Target def is now -> " + FString::SanitizeFloat(Instance->GetRuntimeStats().DefencePower)));
 
 	DebugHelper::AddMessageToLog("[Behavior Tree - Debuff Def]: " + Current->GetActorLabel() + " de-buffed " + Target->GetActorLabel() + " def");
-	DebugHelper::AddMessageToLog("[Behavior Tree - Debuff Def]: Target def is now -> " + FString::SanitizeFloat(Target->GetStats()->RuntimeStats.DefencePower));
+	DebugHelper::AddMessageToLog("[Behavior Tree - Debuff Def]: Target def is now -> " + FString::SanitizeFloat(Instance->GetRuntimeStats().DefencePower));
 
 	Target->GetBattleHUD()->DecisionDisplayer->Show();
 	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetActorLabel() + "De-buffed " + Target->GetActorLabel() + " def"));
