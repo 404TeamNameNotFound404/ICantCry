@@ -269,24 +269,58 @@ void UInventoryHUD::CompleteCrafting()
         return;
     }
     
-    DebugHelper::LogSuccess("Crafting completed!");
+    DebugHelper::LogSuccess("Crafting completed! Crafting 1 bullet...");
     
-    // Crafta finché ci sono risorse
-    while (CraftingTable->ScanResources(GetWorld()))
+    // 1. Crafta UN SOLO bullet
+    CraftingTable->CraftSelectedBullet(GetWorld());
+    Refresh();
+    
+    // 2. Controlla se l'utente sta ancora tenendo premuto
+    if (!bIsHolding)
     {
-        CraftingTable->CraftSelectedBullet(GetWorld()); 
+        // Utente ha rilasciato, resetta tutto
+        CurrentProgress = 0.0f;
+        if (CraftingProgressBar)
+        {
+            CraftingProgressBar->SetPercent(0.0f);
+        }
+        return;
     }
     
-    // Resetta
-    bIsHolding = false;
-    CurrentProgress = 0.0f;
+    // 3. Controlla se ci sono ancora risorse per craftare un altro bullet
+    if (!CraftingTable->ScanResources(GetWorld()))
+    {
+        DebugHelper::LogWarning("No more resources available");
+        
+        // Nessuna risorsa, resetta tutto
+        bIsHolding = false;
+        CurrentProgress = 0.0f;
+        if (CraftingProgressBar)
+        {
+            CraftingProgressBar->SetPercent(0.0f);
+        }
+        return;
+    }
     
+    // 4. Se l'utente tiene ancora premuto E ci sono risorse...
+    //    Ricomincia la progress bar da 0 per craftare il prossimo bullet
+    DebugHelper::LogWarning("User still holding - starting next bullet craft...");
+    
+    CurrentProgress = 0.0f;
     if (CraftingProgressBar)
     {
         CraftingProgressBar->SetPercent(0.0f);
     }
     
-    Refresh();
+    // Ricomincia il timer per la prossima progress bar
+    GetWorld()->GetTimerManager().ClearTimer(Timer);
+    GetWorld()->GetTimerManager().SetTimer(
+        Timer, 
+        this, 
+        &UInventoryHUD::UpdateProgressBar, 
+        0.02f,
+        true
+    );
 }
 
 
