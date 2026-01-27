@@ -66,7 +66,7 @@ EBTNodeResult::Type UBTTask_HealOther::ExecuteTask(UBehaviorTreeComponent& Owner
 	}
 	
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " heals " + CurrentToBuff->GetActorLabel()));
-	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(""));
+	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetActorLabel() + " heals " + CurrentToBuff->GetActorLabel()));
 	DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " heals " + CurrentToBuff->GetActorLabel());
 	
 	return EBTNodeResult::InProgress;

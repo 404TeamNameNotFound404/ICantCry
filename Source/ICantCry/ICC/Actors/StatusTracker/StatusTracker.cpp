@@ -148,16 +148,6 @@ void FStatusPriority::CommitNextBuff()
 	NextBuffSource   = EPrioritySource::Source_None;
 }
 
-void FInternalPerkData::CheckPriority(AMob* Mob)
-{
-	UStatusTracker* StatusTracker = Mob->GetStatusTracker();
-	
-	if (!StatusTracker->IsAfflicted() || !StatusTracker->IsBuffed())
-	{
-		return;
-	}
-}
-
 bool FInternalPerkData::HasBuffHighPriority(AMob* Emotion) const
 {
 	return   Emotion->GetStatusTracker()->GetStatusPriority().GetNextBuffPriority() >
@@ -1074,39 +1064,6 @@ void UStatusTracker::BuffFlow(const EBuffStatus& NewBuffStatus)
 		Priority.ClearNextBuff();
 		return;
 	}
-	
-	BuffWith(NewBuffStatus);
-
-	if (PerkData.HasBuffHighPriority(Cast<AMob>(GetOwner())))
-	{
-		CurrentBuffedStatus = NewBuffStatus;
-		int32& Counter = BuffCounters.FindOrAdd(CurrentBuffedStatus);
-		Counter = 0;
-
-		switch (CurrentBuffedStatus)
-		{
-		case EBuffStatus::AtkBuff:
-			Emotion->GetData()->AttackPower = Emotion->GetAIMemory().InitialAttackPower;
-			DebugHelper::AddMessageToLog("[Status Tracker]: " + Emotion->GetActorLabel() + " reverted it's atk power into " + FString::FromInt(Emotion->GetData()->AttackPower));
-			break;
-		case EBuffStatus::DefBuff:
-			Emotion->GetData()->DefencePower = Emotion->GetAIMemory().InitialDefencePower;
-			DebugHelper::AddMessageToLog("[Status Tracker]: " + Emotion->GetActorLabel() + " reverted it's def power into " + FString::FromInt(Emotion->GetData()->DefencePower));
-			break;
-		case EBuffStatus::Shield:
-		case EBuffStatus::LowHealth:
-		case EBuffStatus::NoBuff:
-		default:
-			break;
-		}
-		
-		DebugHelper::AddMessageToLog("[Status Tracker]: High priority detected  ... " + GetOwner()->GetActorLabel() +
-			" received " + GetBuffName(NewBuffStatus) + " and counter has been reset to" + FString::FromInt(Counter));
-		PerkData.AssignPriority(Cast<AMob>(GetOwner()));
-	}
-	
-	CurrentBuffedStatus = NewBuffStatus;
-	int32& Counter = BuffCounters.FindOrAdd(CurrentBuffedStatus);
 
 	switch (CurrentBuffedStatus)
 	{
@@ -1124,6 +1081,22 @@ void UStatusTracker::BuffFlow(const EBuffStatus& NewBuffStatus)
 	default:
 		break;
 	}
+	
+	BuffWith(NewBuffStatus);
+
+	if (PerkData.HasBuffHighPriority(Cast<AMob>(GetOwner())))
+	{
+		CurrentBuffedStatus = NewBuffStatus;
+		int32& Counter = BuffCounters.FindOrAdd(CurrentBuffedStatus);
+		Counter = 0;
+		
+		DebugHelper::AddMessageToLog("[Status Tracker]: High priority detected  ... " + GetOwner()->GetActorLabel() +
+			" received " + GetBuffName(NewBuffStatus) + " and counter has been reset to" + FString::FromInt(Counter));
+		PerkData.AssignPriority(Cast<AMob>(GetOwner()));
+	}
+	
+	CurrentBuffedStatus = NewBuffStatus;
+	int32& Counter = BuffCounters.FindOrAdd(CurrentBuffedStatus);
 	
 	Counter = 0;
 	// CurrentBuffedStatus = NewBuffStatus;
@@ -1268,7 +1241,7 @@ void UStatusTracker::BuffDefence()
 
 	if (Target->IsA(AICC_Player::StaticClass()))
 	{
-		AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+		const AICC_Player* Player = Cast<AICC_Player>(GetOwner());
 		Instance->GetRuntimeStats().DefencePower += FMath::FloorToInt(Instance->GetRuntimeStats().DefencePower * Player->GetBattleData()->BuffDefIncrement);
 		DebugHelper::LogWarning("[Status Tracker]: " + Player->GetActorLabel() +  "buffed it's Defence - " + FString::SanitizeFloat(Instance->GetRuntimeStats().DefencePower));
 		DebugHelper::AddMessageToLog("[Status Tracker]: " + Player->GetActorLabel() +  "buffed it's Defence - " + FString::SanitizeFloat(Instance->GetRuntimeStats().DefencePower));
@@ -1283,15 +1256,19 @@ void UStatusTracker::BuffDefence()
 		switch (Mob->GetMobType())
 		{
 		case MobAnger:
+			PerkData.Clear();
 			PerkData.bBuffDef = false;
 			break;
 		case MobShame:
+			PerkData.Clear();
 			PerkData.bBuffDef = false;
 			break;
 		case MobJoy:
+			PerkData.Clear();
 			PerkData.bBuffDef = true;
 			break;
 		case MobDisgust:
+			PerkData.Clear();
 			PerkData.bBuffDef = false;
 			break;
 		case MobFear:
@@ -1299,18 +1276,23 @@ void UStatusTracker::BuffDefence()
 			PerkData.bBuffDef = true;
 			break;
 		case MobJealousy:
+			PerkData.Clear();
 			PerkData.bBuffDef = false;
 			break;
 		case MobSadness:
+			PerkData.Clear();
 			PerkData.bBuffDef = false;
 			break;
 		case MobAnxiety:
+			PerkData.Clear();
 			PerkData.bBuffDef = false;
 			break;
 		case MobCalm:
+			PerkData.Clear();
 			PerkData.bBuffDef = true;
 			break;
 		default:
+			PerkData.Clear();
 			PerkData.bBuffDef = false;
 			break;
 		}
@@ -1360,6 +1342,7 @@ void UStatusTracker::BuffShield()
 		case MobAnxiety:
 			break;
 		case MobCalm:
+			PerkData.Clear();
 			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table for " + Target->GetActorLabel() + " has changed into Shield");
 			PerkData.bShieldDebuff = true;
 			break;

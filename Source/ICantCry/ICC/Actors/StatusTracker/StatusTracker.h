@@ -117,8 +117,6 @@ struct FInternalPerkData
 	UPROPERTY() bool bIdle;
 
 	FStatusPriority Priority;
-
-	void CheckPriority(AMob* Mob);
 	
 	void Clear()
 	{
