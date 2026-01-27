@@ -367,6 +367,7 @@ void UTurnBasedSystem::ExitBattle()
 	Turn.Queue.Empty();
 	EnemySpawnManager->GetMemory().Clear();
 	BattleTurnCounter = 0;
+	Instance->GetCurrentPlayer()->GetStatusTracker()->Reset();
 }
 
 void UTurnBasedSystem::Reload()
@@ -377,7 +378,8 @@ void UTurnBasedSystem::Reload()
 	bVictory = false;
 	bIsPlayerTurn = false;
 	bIsAiTurn = false;
-	//Instance->GetInventory().BulletsStored = EnemySpawnManager->GetMemory().InBattleBullets;
+	Instance->GetRuntimeStats().ApModifier = 0;
+	Instance->GetPlayerStats()->RuntimeStats = Instance->GetRuntimeStats();
 	Instance->GetCurrentPlayer()->GetBattleHUD()->SetBulletSetupFinished(false);
 	Turn.CurrentTurn = 0;
 	BattleTurnCounter = 0;

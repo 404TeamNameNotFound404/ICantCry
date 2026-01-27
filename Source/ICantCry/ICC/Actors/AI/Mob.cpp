@@ -65,6 +65,7 @@ void AMob::BeginPlay()
 	Damage.EnemyData = EnemyData;
 	Damage.PlayerStats = Instance->GetPlayerStats(); //MinigameHandler->GetBattlePlayer()->GetStats();
 	Damage.AIMoves = Moves;
+	Damage.Instance = Instance;
 	Handler = MinigameHandler;
 	Memory.DefaultBattleLocation = GetActorLocation();
 	Memory.DefaultBattleOrientation = GetActorRotation();

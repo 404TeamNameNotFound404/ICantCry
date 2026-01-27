@@ -20,6 +20,7 @@
 #include "ICantCry/ICC/UI/InGameMenu.h"
 #include "ICantCry/ICC/UI/BattleHUD.h"
 #include "ICantCry/ICC/UI/BestiaryUI.h"
+#include "ICantCry/ICC/Actors/Player/Stats/RuntimeStats.h"
 #include "ICC_Player.generated.h"
 
 UCLASS()
@@ -75,6 +76,7 @@ public:
 	UMinigameUserWidget* GetCurrentMinigameDisplayed() const;
 	AMinigameHandler* GetMinigameHandler() const;
 	UPlayerStats* GetStats() const;
+	
 	/**
  * Battle Data simple data asset used to edit buff and debuff increment values 
  * 

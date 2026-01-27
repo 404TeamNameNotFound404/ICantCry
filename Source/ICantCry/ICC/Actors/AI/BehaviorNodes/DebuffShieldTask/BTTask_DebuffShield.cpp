@@ -81,7 +81,7 @@ void UBTTask_DebuffShield::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* No
 			return;
 
 		DebugHelper::LogSuccess("Debuff Defence Task Completed");
-		DebugHelper::AddMessageToLog("[Behavior Tree - DS]: Debuff Defence Task Completed");
+		DebugHelper::AddMessageToLog("[Behavior Tree - DS]: Shield Task Completed");
 		FinishLatentTask(*OwnerCompWeak.Get(), EBTNodeResult::Succeeded);
 	}), 1.0f, false);
 }

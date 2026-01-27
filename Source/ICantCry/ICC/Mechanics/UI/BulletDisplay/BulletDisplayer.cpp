@@ -62,41 +62,40 @@ void UBulletDisplayer::Setup()
 void UBulletDisplayer::Refresh()
 {
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
-	
-	BulletGrid->ClearChildren();              
-	Bullets.Empty();
-
-	if (Instance->GetInventory().BulletsStored.IsEmpty())
-	{
-		DebugHelper::LogMessage(8, FColor::White,"No inventory available");
-		return;
-	}
+	int32 Index = 0;
 
 	for (auto& Bullet : Instance->GetInventory().BulletsStored)
 	{
 		FBullet& B = Bullet.Value;
-		
-		UBulletSelector* Item = CreateWidget<UBulletSelector>(GetWorld(), BulletButtonItemClass);
-		Item->Setup(B, B.GetQuantity());
 
 		if (B.GetQuantity() <= 0)
 		{
-			DebugHelper::LogMessage(8, FColor::Yellow, B.GetBulletData()->BulletName + " is 0");
 			continue;
 		}
-		
+
+		UBulletSelector* Item = CreateWidget<UBulletSelector>(GetWorld(), BulletButtonItemClass);
+		Item->Setup(B, B.GetQuantity());
 		Item->SetPadding(FMargin(2,2));
-		BulletGrid->AddChild(Item);
+
+		UGridSlot* Slot = Cast<UGridSlot>(BulletGrid->AddChild(Item));
+		if (!Slot)
+		{
+			continue;
+		}
+
+		const int32 Row = Index / BulletSlotPadding;
+		const int32 Column = Index % BulletSlotPadding;
+
+		Slot->SetRow(Row);
+		Slot->SetColumn(Column);
+
 		Item->SetIsFocusable(true);
-		Item->SetIsEnabled(true);
-		Bullets.Add(Item);
-		DebugHelper::LogMessage(4, FColor::Purple, B.GetBulletData()->BulletName + " added");
 		Item->SetVisibility(ESlateVisibility::Visible);
+
+		Bullets.Add(Item);
+		Index++;
 	}
 
-	BulletGrid->SetVisibility(ESlateVisibility::Visible);
-
-	DebugHelper::LogWarning("Refreshing avaiable bullets");
 }
 
 TArray<UBulletSelector*> UBulletDisplayer::GetBullets() const

@@ -117,8 +117,6 @@ struct FInternalPerkData
 	UPROPERTY() bool bIdle;
 
 	FStatusPriority Priority;
-
-	void CheckPriority(AMob* Mob);
 	
 	void Clear()
 	{
@@ -245,6 +243,11 @@ public:
 
 	FStatusPriority& GetStatusPriority();
 
+	/**
+	 * Reset all the malus / buff on battle end
+	 */
+	void Reset();
+
 	/*-------------------- PLAYER CHECKS --------------------**/
 	/*----------DO NOT WRITE ANYTHING IN THIS SPACE -------------*/
 
@@ -252,6 +255,9 @@ public:
 	FString GetBuffName(const EBuffStatus& Buff) const;
 
 private:
+
+	UPROPERTY()
+	TMap<TEnumAsByte<EBuffStatus>, int32> BuffCounters;
 
 	UPROPERTY()
 	int32 StatusCounter = 0;
