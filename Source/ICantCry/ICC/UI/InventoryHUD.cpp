@@ -269,16 +269,15 @@ void UInventoryHUD::CompleteCrafting()
         return;
     }
     
-    DebugHelper::LogSuccess("Crafting completed at 100%!");
+    DebugHelper::LogSuccess("Crafting completed!");
     
-    // Esegui il craft
-    if (CraftingTable)
+    // Crafta finché ci sono risorse
+    while (CraftingTable->ScanResources(GetWorld()))
     {
-        CraftingTable->CraftSelectedBullet(GetWorld());
-        Refresh();
+        CraftingTable->CraftSelectedBullet(GetWorld()); 
     }
     
-    // Resetta immediatamente dopo il craft
+    // Resetta
     bIsHolding = false;
     CurrentProgress = 0.0f;
     
@@ -286,6 +285,8 @@ void UInventoryHUD::CompleteCrafting()
     {
         CraftingProgressBar->SetPercent(0.0f);
     }
+    
+    Refresh();
 }
 
 

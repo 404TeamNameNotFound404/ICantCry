@@ -31,8 +31,6 @@ public:
 	bool CanCraft() const { return IsCraftable; };
 
 	void SetRecipe( const FRecipe& InRecipe); // sets which recipe to evaluate
-    
-	void CheckResources(); // check if u can craft
 
  	/**
 	 * Scan and check the avaiable resources and returns true if all the requirements are met

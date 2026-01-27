@@ -220,31 +220,8 @@ void FInventory::StarterPack()
 
 void FInventory::AddCraftedBullet(FBullet& Bullet)
 {
-	// Bullets.Add(Bullet);
-        
-	// checkf(Bullet.GetBulletData(), TEXT("Bullet data is null during add"))
-
-	// EBulletType Key = Bullet.GetBulletData()->Type;
-        
-	// if (BulletsStored.Contains(Key))
-	// {
-	// 	int32 ExistingQuantity = BulletsStored[Key].GetQuantity();
-	// 	BulletsStored[Key].SetQuantity(ExistingQuantity + 1);
-	// 	DebugHelper::LogWarning("Already registered updating it's quantity " + FString::FromInt(BulletsStored[Key].GetQuantity()));
-	// }
-	// else
-	// {
-	// 	FBullet NewBullet;
-	// 	NewBullet.SetBulletData(Bullet.GetBulletData());
-	// 	NewBullet.SetQuantity(1);
-
-	// 	BulletsStored.Add(Key, NewBullet);
-	// 	DebugHelper::LogSuccess("New bullet crafted and added: " + Bullet.GetBulletData()->BulletName);
-	// }
-
-
-	 // DEBUG
-     if (!Bullet.GetBulletData())
+	
+    if (!Bullet.GetBulletData())
     {
         UE_LOG(LogTemp, Error, TEXT("AddCraftedBullet: Bullet data is null!"));
         return;
@@ -258,12 +235,11 @@ void FInventory::AddCraftedBullet(FBullet& Bullet)
         *Bullet.GetBulletData()->BulletName, 
         (int32)BulletType.GetValue());
     
-    // Cerca usando TEnumAsByte<EBulletType>
+
     FBullet* ExistingBullet = BulletsStored.Find(BulletType);
     
     if (ExistingBullet)
     {
-        // Se FBullet ha metodi pubblici per Quantity:
         int32 CurrentQuantity = ExistingBullet->GetQuantity();
         ExistingBullet->SetQuantity(CurrentQuantity + 1);
         
@@ -272,11 +248,10 @@ void FInventory::AddCraftedBullet(FBullet& Bullet)
     }
     else
     {
-        // Crea una nuova copia
-        FBullet NewBullet = Bullet;
-        NewBullet.SetQuantity(1);  // Imposta quantità a 1
         
-        // Aggiungi alla mappa con TEnumAsByte<EBulletType>
+        FBullet NewBullet = Bullet;
+        NewBullet.SetQuantity(1);  
+        
         BulletsStored.Add(BulletType, NewBullet);
         
         UE_LOG(LogTemp, Log, TEXT("Created new stack. Quantity: 1"));
