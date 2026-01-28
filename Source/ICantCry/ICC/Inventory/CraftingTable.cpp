@@ -327,6 +327,9 @@ void UCraftingTable::Craft()
 
 void UCraftingTable::Craft(UWorld* World)
 {
+
+    
+
     UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(World->GetGameInstance());
     FRecipe& SelectedRecipe = Inventory.GetSelectedRecipe();
     
