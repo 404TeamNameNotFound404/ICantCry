@@ -38,7 +38,7 @@ void UBulletDisplayer::Setup()
 		Item->Setup(B, B.GetQuantity());
 		Item->SetPadding(FMargin(2,2));
 
-		UGridSlot* BulletSlot = Cast<UGridSlot>(BulletGrid->AddChild(Item));
+		UGridSlot* BulletSlot = Cast<UGridSlot>(BulletGrid->AddChild(Item)); // Commento
 		if (!BulletSlot)
 		{
 			continue;
