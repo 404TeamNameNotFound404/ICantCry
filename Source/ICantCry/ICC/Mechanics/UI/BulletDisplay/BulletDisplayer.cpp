@@ -65,36 +65,31 @@ void UBulletDisplayer::Refresh()
 	int32 Index = 0;
 
 	for (auto& Bullet : Instance->GetInventory().BulletsStored)
-	{
-		FBullet& B = Bullet.Value;
+    {
+        FBullet& B = Bullet.Value;
 
-		if (B.GetQuantity() <= 0)
-		{
-			continue;
-		}
+        UBulletSelector* Item = CreateWidget<UBulletSelector>(GetWorld(), BulletButtonItemClass);
+        Item->Setup(B, B.GetQuantity());
+        Item->SetPadding(FMargin(2,2));
 
-		UBulletSelector* Item = CreateWidget<UBulletSelector>(GetWorld(), BulletButtonItemClass);
-		Item->Setup(B, B.GetQuantity());
-		Item->SetPadding(FMargin(2,2));
+        UGridSlot* BulletSlot = Cast<UGridSlot>(BulletGrid->AddChild(Item));
+        if (!BulletSlot)
+        {
+            continue;
+        }
 
-		UGridSlot* Slot = Cast<UGridSlot>(BulletGrid->AddChild(Item));
-		if (!Slot)
-		{
-			continue;
-		}
+        const int32 Row = Index / BulletSlotPadding;
+        const int32 Column = Index % BulletSlotPadding;
 
-		const int32 Row = Index / BulletSlotPadding;
-		const int32 Column = Index % BulletSlotPadding;
+        BulletSlot->SetRow(Row);
+        BulletSlot->SetColumn(Column);
 
-		Slot->SetRow(Row);
-		Slot->SetColumn(Column);
+        //BulletGrid->AddChild(Item);
+        Bullets.Add(Item);
+        Index++;
 
-		Item->SetIsFocusable(true);
-		Item->SetVisibility(ESlateVisibility::Visible);
-
-		Bullets.Add(Item);
-		Index++;
-	}
+        DebugHelper::LogWarning("Found " + B.GetBulletData()->BulletName);
+    }
 
 }
 
