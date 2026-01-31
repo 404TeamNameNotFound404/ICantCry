@@ -5,150 +5,89 @@
 #include "ICantCry/ICC/UI/InventoryHUD.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 
-
 void UInGameMenu::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	
-	// Overview->OnClicked.AddDynamic(this, &UInGameMenu::OpenOverview);
-	Craft->OnClicked.AddDynamic(this, &UInGameMenu::OpenCraft);
+	Character->OnClicked.AddDynamic(this, &UInGameMenu::OpenCharacter);
 	Inventory->OnClicked.AddDynamic(this, &UInGameMenu::OpenInventory);
 	// Map->OnClicked.AddDynamic(this, &UInGameMenu::OpenMap);
-	//Bestiary->OnClicked.AddDynamic(this, &UInGameMenu::OpenBestiary);
+	
 
 	// For debugging purposes only!
 	Map->SetIsEnabled(false);
-	Overview->SetIsEnabled(false);
-}
 
-
-void UInGameMenu::OpenOverview()
-{
-	
-	if (CraftingHud)
-	{
-		CraftingHud->SetVisibility(ESlateVisibility::Hidden);
-	}
-}
-
-void UInGameMenu::OpenCraft()
-{
-
-	// if (BestiaryUI)
-    // {
-    //     Main->RemoveChild(BestiaryUI);
-    //     BestiaryUI->SetVisibility(ESlateVisibility::Hidden);
-    // }
-
-	if (InventoryHud)
-	{
-		Main->RemoveChild(InventoryHud);
-	}
-	
-	if (!CraftingHud)
-	{
-		CraftingHud = CreateWidget<UCraftingHUD>(GetWorld(), CraftingHUDClass);
-		CraftingHud->SetCraftingTable(Table);
-		Main->AddChild(CraftingHud);
-		CraftingHud->RefreshUI();
-	}
-	
-	Main->AddChild(CraftingHud);
-	CraftingHud->RefreshUI();
-	CraftingHud->SetVisibility(ESlateVisibility::Visible);
-
-}
-
-void UInGameMenu::OpenInventory()
-{
-
-
-	// if (BestiaryUI)
-    // {
-    //     Main->RemoveChild(BestiaryUI);
-    //     BestiaryUI->SetVisibility(ESlateVisibility::Hidden);
-    // }
-
-	if (CraftingHud)
-	{
-		Main->RemoveChild(CraftingHud);
-	}
 
 	if (!InventoryHud)
 	{
 		InventoryHud = CreateWidget<UInventoryHUD>(GetWorld(), InventoryHUDClass);
-		InventoryHud->SetVisibility(ESlateVisibility::Visible);
-		Main->AddChild(InventoryHud);
-		InventoryHud->Refresh();
+		InventoryHud->SetVisibility(ESlateVisibility::Hidden);
+		InventoryHud->Setup();
+	}
+
+	
+	if (!CharacterUI)
+	{
+		CharacterUI = CreateWidget<UCharacterUI>(GetWorld(), CharacterUIClass);
+		CharacterUI->SetVisibility(ESlateVisibility::Visible);
+		Main->AddChild(CharacterUI);
+		CharacterUI->RefreshUI();
+	}
+}
+
+
+/*
+ * Il ragionamento di base è -> Io Apro il menu ---[Character]--------[Inventory]-------------[Map]---
+ *                                                      |
+ *                                                      |
+ *                                           Default View---AddChild CharaUI <- Remove Child ->AddChild Inv
+ *                                                      |         |
+ *                                                      | -----< ---- - Click->     |
+ *
+ *    Disegno un po del cazzo ma in sostanza carichiamo tutto in native constructor poi premi C ,
+ *    si apre il menu con character ui come window principale
+ *    clicchi inventory, characterui viene rimossa da child e nascosta per aggiungere inventory e viceversa
+ *    il crash del cazzo avveniva perche refresh veniva chiamato sul "else" quando ancora non stava in gioco la ui, refresh si fa una volta sola ogni volta che
+ *    viene cliccato.
+ */
+
+void UInGameMenu::OpenInventory()
+{
+	
+	if (CharacterUI)
+	{
+		Main->RemoveChild(CharacterUI);
 	}
 	
 	Main->AddChild(InventoryHud);
+	InventoryHud->Setup();
 	InventoryHud->Refresh();
+	//CharacterUI->SetVisibility(ESlateVisibility::Hidden);
 	InventoryHud->SetVisibility(ESlateVisibility::Visible);
 }
 
-// void UInGameMenu::OpenBestiary()
-// {
-// 	if (CraftingHud)
-//     {
-//         Main->RemoveChild(CraftingHud);
-//         CraftingHud->SetVisibility(ESlateVisibility::Hidden);
-//     }
 
-//     if (InventoryHud)
-//     {
-//         Main->RemoveChild(InventoryHud);
-//         InventoryHud->SetVisibility(ESlateVisibility::Hidden);
-//     }
 
-// 	if(!BestiaryUI)
-// 	{
-// 		if(BestiaryUIClass)
-// 		{
-// 			BestiaryUI = CreateWidget<UBestiaryUI>(GetWorld(), BestiaryUIClass);
-// 			if (BestiaryUI)
-//             {
-//                 // BestiaryUI->SetupEmotionsData(EmotionsData);
-//             	// BestiaryUI->SetupNoteData(NoteData);
+void UInGameMenu::OpenCharacter()
+{
 
-//                 Main->AddChild(BestiaryUI);  	
-// 				DebugHelper::LogError("UInGameMenu::OpenBestiary -> BestiaryUI created successfully");
-//             }
-//             else
-//             {
-// 				DebugHelper::LogError("UInGameMenu::OpenBestiary -> Failed to create BestiaryUI widget");
-//                 return;
-//             }
-//         }
-//         else
-//         {
-
-// 			DebugHelper::LogError("UInGameMenu::OpenBestiary -> BestiaryUIClass not set in InGameMenu");
-//             return;
-//         }
-		
-// 	}
-
-// 	if (!BestiaryUI->IsInViewport())
-//     {
-//         Main->AddChild(BestiaryUI);
-//     }
-    
-//     BestiaryUI->SetVisibility(ESlateVisibility::Visible);
-// 	DebugHelper::LogError("UInGameMenu::OpenBestiary -> Bestiary opened");
-    
-
+	if (InventoryHud)
+	{
+		Main->RemoveChild(InventoryHud);
+		InventoryHud->SetVisibility(ESlateVisibility::Hidden);
+	}
 	
-   
-// }
+	Main->AddChild(CharacterUI);
+	CharacterUI->RefreshUI();
+	//InventoryHud->SetVisibility(ESlateVisibility::Hidden);
+	CharacterUI->SetVisibility(ESlateVisibility::Visible);
+
+}
+
+
 
 void UInGameMenu::OpenMap()
 {
-	if (CraftingHud)
-	{
-		CraftingHud->SetVisibility(ESlateVisibility::Hidden);
-	}
+	
 }
 
 void UInGameMenu::InstantiateTable(AICC_Player* Player)

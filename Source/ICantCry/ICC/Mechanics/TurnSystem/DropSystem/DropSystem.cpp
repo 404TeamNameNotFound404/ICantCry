@@ -113,8 +113,8 @@ void UDropSystem::Drop(UWorld* World, UVictoryVisualizer* VictoryVisualizer, con
 			continue;
 		}
 
-		Instance->GetCurrentPlayer()->GetInventoryManager()->AddEssence2(MobEssence);
-		Instance->GetCurrentPlayer()->GetInventoryManager()->AddEssence2(Indifference);
+		Instance->GetCurrentPlayer()->GetInventoryManager()->AddEssence(MobEssence);
+		Instance->GetCurrentPlayer()->GetInventoryManager()->AddEssence(Indifference);
 
 		if (!PrintedTypes.Contains(MobEssence.EssenceType))
 		{

@@ -9,97 +9,280 @@
 
 void UBulletBottonItem::NativeConstruct()
 {
-    Super::NativeConstruct();
+	Super::NativeConstruct();
 
-    SelectButton->OnHovered.AddDynamic(this, &UBulletBottonItem::DisplayBulletInfo);
-    SelectButton->OnUnhovered.AddDynamic(this, &UBulletBottonItem::HideBulletInfo);
+	SelectButton->OnHovered.AddDynamic(this, &UBulletBottonItem::DisplayBulletInfo);
+	SelectButton->OnUnhovered.AddDynamic(this, &UBulletBottonItem::HideBulletInfo);
+
+	if (UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance()))
+	{
+		Instance->GetInventory().OnBulletCrafted.AddUObject(this, &UBulletBottonItem::UpdateQuantity);
+	}
 }
 
 
 void UBulletBottonItem::Setup(const FBullet& NewBullet, int32 InQuantity)
 {
-    MyBullet = NewBullet;
+	// MyBullet = NewBullet;
 
-    UBulletData* Data = MyBullet.GetBulletData();
-    if (!Data) return;
+	// UBulletData* Data = MyBullet.GetBulletData();
+	// if (!Data) return;
 
-    if (BulletIconImage && Data->Icon)
-    {
-        BulletIconImage->SetBrushFromTexture(Data->Icon, true);
-    }
+	// if (BulletIconImage && Data->Icon)
+	// {
+	//     BulletIconImage->SetBrushFromTexture(Data->Icon, true);
+	// }
 
-    if (BulletNameText)
-    {
-        BulletNameText->SetText(FText::FromString(Data->BulletName));
-    }
+	// if (BulletNameText)
+	// {
+	//     BulletNameText->SetText(FText::FromString(Data->BulletName));
+	// }
 
-    if (BulletQuantityText)
-    {
-        BulletQuantityText->SetText(FText::Format(NSLOCTEXT("Inventory", "QuantityFormat", "x{0}"), FText::AsNumber(InQuantity)));
-    }
+	// if (BulletQuantityText)
+	// {
+	//     BulletQuantityText->SetText(FText::Format(NSLOCTEXT("Inventory", "QuantityFormat", "x{0}"), FText::AsNumber(InQuantity)));
+	// }
+
+
+	MyBullet = NewBullet;
+	UBulletData* Data = MyBullet.GetBulletData();
+	if (!Data) return;
+
+	if (BulletIconImage && Data->Icon)
+	{
+		BulletIconImage->SetBrushFromTexture(Data->Icon, true);
+		BulletIconImage->SetVisibility(ESlateVisibility::Visible); // AGGIUNTO
+	}
+
+	if (BulletNameText)
+	{
+		BulletNameText->SetText(FText::FromString(Data->BulletName));
+		BulletNameText->SetVisibility(ESlateVisibility::Visible); // AGGIUNTO
+	}
+
+	if (BulletQuantityText)
+	{
+		BulletQuantityText->SetText(
+			FText::Format(NSLOCTEXT("Inventory", "QuantityFormat", "x{0}"), FText::AsNumber(InQuantity)));
+		BulletQuantityText->SetVisibility(ESlateVisibility::Visible); // AGGIUNTO
+	}
+
+	// Anche il bottone deve essere abilitato
+	if (SelectButton)
+	{
+		SelectButton->SetIsEnabled(true);
+	}
 }
 
 void UBulletBottonItem::SetSelected(bool bIsSelected)
 {
-    if (SelectionBorder)
-    {       
-        SelectionBorder->SetBrushColor(bIsSelected ? FLinearColor::Green : FLinearColor::Transparent);
-    }
+	if (SelectionBorder)
+	{
+		SelectionBorder->SetBrushColor(bIsSelected ? FLinearColor::Green : FLinearColor::Transparent);
+	}
 }
 
 void UBulletBottonItem::SetOwner(UInventoryHUD* Owner, int32 Index)
 {
-    OwnerHUD = Owner;
-    MyIndex = Index;
-    
-    if (SelectButton)
-    {
-        SelectButton->OnClicked.AddDynamic(this, &UBulletBottonItem::OnButtonClicked);
-    }
+	OwnerHUD = Owner;
+	MyIndex = Index;
+
+	if (SelectButton)
+	{
+		SelectButton->OnHovered.AddDynamic(this, &UBulletBottonItem::OnButtonClicked);
+	}
+}
+
+void UBulletBottonItem::SetOwner(UInventoryHUD* Owner)
+{
+	OwnerHUD = Owner;
 }
 
 bool UBulletBottonItem::IsHoverSelected() const
 {
-    return bIsHovered;
+	return bIsHovered;
 }
 
 void UBulletBottonItem::SetIsSelected(const bool& Value)
 {
-    bIsHovered = Value;
+	bIsHovered = Value;
 }
 
+UImage* UBulletBottonItem::GetBulletIcon()
+{
+	return BulletIconImage;
+}
+
+UTextBlock* UBulletBottonItem::GetBulletName()
+{
+	return BulletNameText;
+}
+
+UTextBlock* UBulletBottonItem::GetBulletQuantity()
+{
+	return BulletQuantityText;
+}
+
+UButton* UBulletBottonItem::GetBulletButton()
+{
+	return SelectButton;
+}
+
+bool UBulletBottonItem::GetIsUnlocked() const
+{
+	return bIsUnlocked;
+}
+
+void UBulletBottonItem::SetIsUnlocked(const bool& Value)
+{
+	bIsUnlocked = Value;
+}
+
+// questo è entry point di tutto e verrà chiamato anche per le blueprint ottenute invece di aggiungerle perche sono gia aggiunte tutte
+// noi le nascondiamo di default ma gia le blueprint le settiamo per ogni bottone creato 
+void UBulletBottonItem::SetUnlocked(bool bUnlocked) 
+{
+	bIsUnlocked = bUnlocked;
+
+	if (SelectButton)
+	{
+		SelectButton->SetIsEnabled(bUnlocked);
+
+		SelectButton->SetVisibility(
+			bUnlocked ? ESlateVisibility::Visible : ESlateVisibility::HitTestInvisible
+		);
+	}
+}
+
+void UBulletBottonItem::Show()
+{
+	// SelectButton->SetIsEnabled(true);
+	// BulletIconImage->SetVisibility(ESlateVisibility::Visible);
+	// BulletNameText->SetVisibility(ESlateVisibility::Visible);
+	// BulletQuantityText->SetVisibility(ESlateVisibility::Visible);
+
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+	const bool bUnlocked = GetIsUnlocked();
+
+	SelectButton->SetIsEnabled(bUnlocked);
+
+	const ESlateVisibility Vis =
+		bUnlocked ? ESlateVisibility::Visible : ESlateVisibility::Hidden;
+
+	BulletIconImage->SetVisibility(Vis);
+	BulletNameText->SetVisibility(Vis);
+	BulletQuantityText->SetVisibility(Vis);
+
+	if (!Instance->GetInventory().BulletsStored.IsEmpty())
+	{
+		BulletQuantityText->SetText(FText::FromString("x " + FString::FromInt(Instance->GetInventory().BulletsStored[MyBullet.GetBulletData()->Type].GetQuantity())));
+	}
+	else
+	{
+		BulletQuantityText->SetText(FText::FromString("x 0"));
+	}
+}
+
+void UBulletBottonItem::Hide()
+{
+	SelectButton->SetIsEnabled(false);
+	BulletIconImage->SetVisibility(ESlateVisibility::Hidden);
+	BulletNameText->SetVisibility(ESlateVisibility::Hidden);
+	BulletQuantityText->SetVisibility(ESlateVisibility::Hidden);
+}
+
+FRecipe& UBulletBottonItem::GetBlueprint()
+{
+	return BulletBlueprint;
+}
 
 void UBulletBottonItem::OnButtonClicked()
 {
-    if (OwnerHUD)
-    {
-        OwnerHUD->SelectBullet(MyIndex);
-    }
+	if (OwnerHUD)
+	{
+		OwnerHUD->SelectBullet(MyIndex);
+	}
+}
+
+FText UBulletBottonItem::RefreshQuantity()
+{
+	if (!MyBullet.GetBulletData())
+	{
+		return FText::FromString("x 0");
+	}
+	
+	for (UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+		auto B : Instance->GetInventory().BulletsStored)
+	{
+		FBullet& Bullet = B.Value;
+		
+		if (!Bullet.GetBulletData())
+		{
+			continue;
+		}
+		
+		if (Bullet.GetBulletData()->Type == MyBullet.GetBulletData()->Type)
+		{
+			const FString Txt = FString("x " + FString::FromInt(Bullet.GetQuantity()));
+			return FText::FromString(Txt);
+		}
+	}
+	
+	return FText::FromString("x 0");
+}
+
+void UBulletBottonItem::UpdateQuantity()
+{
+	FTimerHandle DelayHandle;
+	GetWorld()->GetTimerManager().SetTimer(DelayHandle, [this]()
+	{
+		BulletQuantityText->SetText(RefreshQuantity());
+	}, 0.24f, false);
 }
 
 void UBulletBottonItem::DisplayBulletInfo()
 {
-    AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
-    AICC_Player* Player = Cast<AICC_Player>(Controller->GetPawn());
+	const AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
+	
+	if (const AICC_Player* Player = Cast<AICC_Player>(Controller->GetPawn()); Player->bIsInFight)
+	{
+		return;
+	}
 
-    if (Player->bIsInFight)
-    {
-        return;
-    }
-    
-    bIsHovered = true;
+	bIsHovered = true;
 
-    checkf(OwnerHUD, TEXT("OwnerHUD invalid"))
+	if (!OwnerHUD)
+	{
+		return;
+	}
 
-    OwnerHUD->SelectedBulletImage->SetBrushFromTexture(MyBullet.GetBulletData()->Icon);
-    OwnerHUD->SelectedBulletName->SetText(FText::FromString(MyBullet.GetBulletData()->BulletName));
-    OwnerHUD->CraftInfo->SetText(FText::FromString("Crafted with -" ));
-    OwnerHUD->SelectedBulletPower->SetText(FText::FromString("Bullet Power: " + FString::FromInt(MyBullet.GetBulletData()->Power)));
-    OwnerHUD->SelectedBulletEffectiveness->SetText(FText::FromString("Strong against: " + MyBullet.GetStrongAgainstName()));
-    OwnerHUD->SelectedBulletWeakness->SetText(FText::FromString("Weak against: " + MyBullet.GetWeakAgainstName()));
+	OwnerHUD->BlueprintRequirementTxt->SetText(FText::FromString(FString(BulletBlueprint.GetCaseType(BulletBlueprint.RequiredCasingType) + ": " +
+		FString::FromInt(BulletBlueprint.Requirements->CasingQuantity) + " - " +  BulletBlueprint.GetEssencesName() + " " +  FString::FromInt(BulletBlueprint.Requirements->EssenceQuantity))));
+
+	OwnerHUD->SelectedBulletImage->SetBrushFromTexture(MyBullet.GetBulletData()->Icon);
+	OwnerHUD->SelectedBulletName->SetText(FText::FromString(MyBullet.GetBulletData()->BulletName));
+	OwnerHUD->CraftInfo->SetText(FText::FromString("Crafted with -"));
+	OwnerHUD->SelectedBulletPower->SetText(
+		FText::FromString("Bullet Power: " + FString::FromInt(MyBullet.GetBulletData()->Power)));
+	OwnerHUD->SelectedBulletEffectiveness->SetText(
+		FText::FromString("Strong against: " + MyBullet.GetStrongAgainstName()));
+	OwnerHUD->SelectedBulletWeakness->SetText(FText::FromString("Weak against: " + MyBullet.GetWeakAgainstName()));
+
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	Instance->GetInventory().SetSelectedRecipe(BulletBlueprint);
+
+	OwnerHUD->GetTable()->ScanResources(GetWorld());
+	OwnerHUD->CraftButton->SetIsEnabled(false);
+	
+	if (OwnerHUD->GetTable()->CanCraft())
+	{
+		DebugHelper::LogSuccess(OwnerHUD->SelectedBulletName->GetText().ToString() + " can be crafted");
+		OwnerHUD->CraftButton->SetIsEnabled(true);
+	}
+
 }
 
 void UBulletBottonItem::HideBulletInfo()
 {
-    bIsHovered = false;
+	bIsHovered = false;
 }

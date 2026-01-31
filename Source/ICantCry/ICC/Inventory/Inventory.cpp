@@ -4,18 +4,6 @@
 #include "Inventory.h"
 #include "ICantCry/ICC/UI/CraftingHUD.h"
 
-bool FInventory::HasBlueprint(ERecipeType RecipeType) const
-{
-	return OwnedBlueprints.Contains(RecipeType);
-}
-
-void FInventory::AddBlueprint(ERecipeType BlueprintType)
-{
-	if (!OwnedBlueprints.Contains(BlueprintType))
-	{
-		OwnedBlueprints.Add(BlueprintType);
-	}
-}
 
 void FInventory::AddToInventory(EItemType ItemType, FBullet Bullet, const TArray<FEssence>& ItemEssences,
 	FRecipe Recipe, int32 Quantity)
@@ -56,10 +44,6 @@ void FInventory::AddEssenceInMap(const EEssenceType& EssenceType, const int32& Q
 	}
 }
 
-int32 FInventory::GetEssenceQuantityInMap(const EEssenceType& EssenceType) const
-{
-	return EssencesInInventory.Contains(EssenceType) ? EssencesInInventory[EssenceType] : 0;
-}
 
 void FInventory::RemoveEssence(EEssenceType EssenceType, int32 Quantity)
 {
@@ -157,18 +141,6 @@ bool FInventory::CompareItemData(const FInventoryItem& Item, const FBullet& Bull
 	return true;
 }
 
-int32 FInventory::GetBulletQuantity(const FBullet& Bullet) const
-{
-	for (const FInventoryItem& Item : Items)
-	{
-		if (Item.Bullet == Bullet)  // usa operator== definito in FBullet
-		{
-			return Item.Quantity;
-		}
-	}
-
-	return 0;
-}
 
 void FInventory::StarterPack()
 {
@@ -248,27 +220,43 @@ void FInventory::StarterPack()
 
 void FInventory::AddCraftedBullet(FBullet& Bullet)
 {
-	Bullets.Add(Bullet);
-        
-	checkf(Bullet.GetBulletData(), TEXT("Bullet data is null during add"))
+	
+    if (!Bullet.GetBulletData())
+    {
+        UE_LOG(LogTemp, Error, TEXT("AddCraftedBullet: Bullet data is null!"));
+        return;
+    }
+    
+    // Ottieni il BulletType dal BulletData
+    TEnumAsByte<EBulletType> BulletType = Bullet.GetBulletData()->Type;
+    
+    // DEBUG
+    UE_LOG(LogTemp, Log, TEXT("AddCraftedBullet: %s (Type: %d)"), 
+        *Bullet.GetBulletData()->BulletName, 
+        (int32)BulletType.GetValue());
+    
 
-	EBulletType Key = Bullet.GetBulletData()->Type;
+    FBullet* ExistingBullet = BulletsStored.Find(BulletType);
+    
+    if (ExistingBullet)
+    {
+        int32 CurrentQuantity = ExistingBullet->GetQuantity();
+        ExistingBullet->SetQuantity(CurrentQuantity + 1);
         
-	if (BulletsStored.Contains(Key))
-	{
-		int32 ExistingQuantity = BulletsStored[Key].GetQuantity();
-		BulletsStored[Key].SetQuantity(ExistingQuantity + 1);
-		DebugHelper::LogWarning("Already registered updating it's quantity " + FString::FromInt(BulletsStored[Key].GetQuantity()));
-	}
-	else
-	{
-		FBullet NewBullet;
-		NewBullet.SetBulletData(Bullet.GetBulletData());
-		NewBullet.SetQuantity(1);
+        UE_LOG(LogTemp, Log, TEXT("Added to existing stack. New quantity: %d"), 
+            ExistingBullet->GetQuantity());
+    }
+    else
+    {
+        
+        FBullet NewBullet = Bullet;
+        NewBullet.SetQuantity(1);  
+        
+        BulletsStored.Add(BulletType, NewBullet);
+        
+        UE_LOG(LogTemp, Log, TEXT("Created new stack. Quantity: 1"));
+    }
 
-		BulletsStored.Add(Key, NewBullet);
-		DebugHelper::LogSuccess("New bullet crafted and added: " + Bullet.GetBulletData()->BulletName);
-	}
 }
 
 int32 FInventory::GetEssenceQuantity(EEssenceType EssenceType) const
@@ -283,18 +271,6 @@ int32 FInventory::GetEssenceQuantity(EEssenceType EssenceType) const
 	return 0;
 }
 
-int32 FInventory::GetRecipeQuantity(ERecipeType RecipeType) const
-{
-	int32 Count = 0;
-	for (const FInventoryItem& Item : Items)
-	{
-		if (Item.ItemType == EItemType::Recipe && Item.Recipe.RequiredBlueprintType == RecipeType)
-		{
-			Count += Item.Quantity;
-		}
-	}
-	return Count;
-}
 
 const TArray<FInventoryItem>& FInventory::GetAllItems() const
 {
@@ -307,6 +283,7 @@ void FInventory::SetSelectedRecipe(const FRecipe& SelectedRecipe)
 	CurrentRecipe = SelectedRecipe;
 	CurrentRecipe.ResultBullet.SetBulletData(nullptr);
 	CurrentRecipe.ResultBullet.SetBulletData(SelectedRecipe.ResultBullet.GetBulletData());
+	DebugHelper::LogSuccess(SelectedRecipe.ResultBullet.GetBulletData()->BulletName);
 }
 
 FRecipe& FInventory::GetSelectedRecipe()
