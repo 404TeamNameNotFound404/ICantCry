@@ -46,6 +46,10 @@ FString FRecipe::GetName(const ERecipeType& RecipeType) const
 		return FString("Jealousy (Ev)");
 	case ERecipeType::Indifference:
 		return FString("Indifference");
+	case ERecipeType::DisgustEv:
+		return FString("Disgust (Ev)");
+	case ERecipeType::SadnessEv:
+		return FString("Sadness (Ev)");
 	default:
 		return FString("None");
 	}
