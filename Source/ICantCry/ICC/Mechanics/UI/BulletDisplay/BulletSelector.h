@@ -36,6 +36,8 @@ public:
 	static bool CanSelect();
 	static void SetCanSelect(const bool& InCanSelect);
 
+	void SetCanSelectBullet(const bool& InCanSelect);
+
 protected:
 	virtual void NativeConstruct() override;
 
@@ -49,7 +51,7 @@ protected:
 	void AddToRevolver();
 
 	UPROPERTY()
-	AICC_Player* Player;
+	AICC_Player* Player = nullptr;
 
 	UPROPERTY()
 	FBullet BulletRef;
@@ -59,5 +61,7 @@ protected:
 	FBullet* BulletRefPtr = nullptr;
 	
 	static bool gCanSelect;
+
+	UPROPERTY() bool bCanSelect = true;
 	
 };

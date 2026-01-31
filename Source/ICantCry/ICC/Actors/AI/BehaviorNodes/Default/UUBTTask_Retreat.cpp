@@ -72,30 +72,33 @@ void UUUBTTask_Retreat::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 
     if (bRetreated && !bTimerStarted)
     {
-        bTimerStarted = true; // Prevent starting multiple timers
+        bTimerStarted = true; 
         
-        Controller->GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, &OwnerComp, Controller, Current]()
+        Controller->GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, OwnerComp = TWeakObjectPtr<UBehaviorTreeComponent>(&OwnerComp), Controller, Current]()
         {
 			
             Current->SetTreeId(0);
             Current->SetIsAttacked(false);
             BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
-            BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked()); // Now attack mode
+            BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked()); 
             AMob::MinigameEnded = false;
             AMob::SetMinigameStarted(false);
 
             Controller->BrainComponent->StopLogic("End Turn");
-
-            // Target->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->EndTurn();
-            // Target->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->StartNextTurn();
+            
             Target->GetBattleHUD()->GetCurrentPlayingEmotion()->SetIsBusy(false);
             Target->GetBattleHUD()->DecisionDisplayer->Hide();
             bRetreated = false;
             bTimerStarted = false;
 
-            FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+            if (!OwnerComp.IsValid())
+            {
+                return;
+            }
 
-        }, 0.5f, false); // Half-second delay
+            FinishLatentTask(*OwnerComp.Get(), EBTNodeResult::Succeeded);
+
+        }, 0.5f, false); 
     }
 }
 
@@ -107,8 +110,7 @@ void UUUBTTask_Retreat::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8*
     AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner());
     AMob* Current = Cast<AMob>(Controller->GetPawn());
     checkf(Current, TEXT("Current is invalid at OnTaskFinished"));
-
-    // End turn properly
+    
     Current->GetBattleHandler()->GetTurnBasedSystem()->EndTurn();
     Current->GetBattleHandler()->GetTurnBasedSystem()->StartNextTurn();
     Current->GetStatusTracker()->UpdateStatus();

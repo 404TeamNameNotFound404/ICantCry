@@ -210,7 +210,6 @@ void FInventory::StarterPack()
 	//
 	// Shame.SetBulletData(ShameData);
 	// Shame.SetQuantity(4);
- //        
 	// BulletsStored.Add(Data->Type, Indifference);
 	// BulletsStored.Add(SadnessData->Type, Sadness);
 	// BulletsStored.Add(AngerData->Type, Anger);

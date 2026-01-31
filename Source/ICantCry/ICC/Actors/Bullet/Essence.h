@@ -23,7 +23,9 @@ enum class EEssenceType : uint8
     CalmEV,
     Jealousy,
     JealousyEv,
-    Shame
+    Shame,
+    DisgustEv,
+    SadnessEv
 };
 
 
@@ -88,6 +90,10 @@ public:
                return "Calm (Ev)";
             case EEssenceType::JealousyEv:
                 return "Jealousy (Ev)";
+            case EEssenceType::DisgustEv:
+                return "Disgust (Ev)";
+            case EEssenceType::SadnessEv:
+                return "Sadness (Ev)";
             default:
                 return "";
         }

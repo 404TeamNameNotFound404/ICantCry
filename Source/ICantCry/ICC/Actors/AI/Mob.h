@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "ICC_AIController.h"
 #include "BehaviorTree/BehaviorTree.h"
+#include "DecisionMaker/DecisionTable.h"
 #include "ICantCry/ICC/Actors/ICC_Actor.h"
 #include "ICantCry/ICC/Mechanics/Core/Data/EnemyDatas.h"
 #include "ICantCry/ICC/Mechanics/Core/Data/EnemyTactics.h"
@@ -179,6 +180,9 @@ protected:
 
 	UPROPERTY()
 	int Bt_Id;
+
+	UPROPERTY()
+	bool bRethink = false;
 	
 	//------
 
@@ -364,6 +368,8 @@ public:
 	bool GetPlayerDebuffAttack() const;
 	bool GetBuffOtherDefence() const;
 	int GetTreeId() const;
+	bool GetRethink() const;
+	void SetRethink(const bool& Value);
 	
 	UFUNCTION() void UpdateBestiaryUI();
 
@@ -374,6 +380,14 @@ public:
 	EEmotionType GetEmotionForMobType() const;
 	UFUNCTION(BlueprintCallable, Category = "Bestiary")
 	void UnlockContentOnDeath();
+
+	UDecisionTable* GetDecisionTable() const;
+
+	/**
+	 * If the health is 20% of the max health, health will be considered low
+	 * @return true if low health
+	 */
+	bool IsLowHealth() const;
 
 private:
 
@@ -419,4 +433,7 @@ private:
 
 	UPROPERTY()
 	bool bHasUnlockedContent = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Behaviors", meta=(AllowPrivateAccess=true))
+	UDecisionTable* DecisionTable;
 };

@@ -6,6 +6,7 @@
 #include "ICantCry/ICC/Mechanics/TurnSystem/BattleMemory/FBattleMemory.h"
 #include "ICantCry/ICC/Mechanics/UI/BattleVisualization/Victory/VictoryVisualizer.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
+#include "ICantCry/ICC/Mechanics/TurnSystem/Core/ICCBattlePhase.h"
 #include "TurnBasedSystem.generated.h"
 
 class AICC_Player;
@@ -24,7 +25,7 @@ public:
 	
 	void Start(UWorld* World);
 	void Start2(UWorld* World, FBattleMemory* Memory = nullptr);
-	void Update(UWorld* World);
+	void Update(UWorld* World, FBattleMemory* Memory = nullptr);
 	void StartNextTurn();
 	void EndTurn();
 	FTurn& GetTurn();
@@ -47,6 +48,11 @@ public:
 
 	void ExitBattle();
 	void Reload();
+
+	EBattlePhase GetBattlePhase() const;
+	void SetBattlePhase(const EBattlePhase &Phase);
+
+	void PrePrepareToBattle();
 	
 	/**
      * --------- WIP FUNCTIONS -----------
@@ -109,4 +115,9 @@ private:
 
 	UPROPERTY()
 	UICantCryGameInstance* Instance;
+
+	UPROPERTY()
+	TEnumAsByte<EBattlePhase> BattlePhase;
+
+	UPROPERTY() int32 BattleTurnCounter = -1;
 };

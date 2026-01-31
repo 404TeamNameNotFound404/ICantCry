@@ -65,11 +65,16 @@ void AMob::BeginPlay()
 	Damage.EnemyData = EnemyData;
 	Damage.PlayerStats = Instance->GetPlayerStats(); //MinigameHandler->GetBattlePlayer()->GetStats();
 	Damage.AIMoves = Moves;
+	Damage.Instance = Instance;
 	Handler = MinigameHandler;
 	Memory.DefaultBattleLocation = GetActorLocation();
 	Memory.DefaultBattleOrientation = GetActorRotation();
 	Memory.InitialAttackPower = GetData()->AttackPower;
 	Memory.InitialDefencePower = GetData()->DefencePower;
+
+	DebugHelper::AddMessageToLog("[AMob]: Memory registered InitialAttackPower as: " + FString::SanitizeFloat(Memory.InitialAttackPower));
+	DebugHelper::AddMessageToLog("[AMob]: Memory registered InitialDefPower as: " + FString::SanitizeFloat(Memory.InitialDefencePower));
+	
 	EnemyData->Alive = true;
 	EnemyData->Type = Type;
 	Stats.Health = GetData()->MaxHealth;
@@ -152,6 +157,12 @@ bool AMob::IsRespawned() const
 
 void AMob::ReinizializeTree()
 {
+	if (!AIController)
+	{
+		DebugHelper::LogMessage(10, FColor::Red, "AI controller is invalid at AMob::ReinizializeTree()");
+		return;
+	}
+	
 	AIController->GetBlackboardComponent()->SetValueAsObject("Target", DebugPlayer);
 	AIController->GetBlackboardComponent()->SetValueAsObject("SelfActor", this);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsBuffed?", bIsBuffedAtk);
@@ -345,6 +356,16 @@ int AMob::GetTreeId() const
 	return Bt_Id;
 }
 
+bool AMob::GetRethink() const
+{
+	return bRethink;
+}
+
+void AMob::SetRethink(const bool& Value)
+{
+	bRethink = Value;
+}
+
 void AMob::UnlockContentOnDeath()
 {
 	 if (!Instance)
@@ -375,6 +396,17 @@ void AMob::UnlockContentOnDeath()
 
     // Aggiorna Bestiary UI
     Instance->UpdateBestiaryUI();
+}
+
+UDecisionTable* AMob::GetDecisionTable() const
+{
+	return DecisionTable;
+}
+
+bool AMob::IsLowHealth() const
+{
+	constexpr float Threshold = 0.2f;
+	return Stats.Health <= GetData()->MaxHealth * Threshold;
 }
 
 FString AMob::GetNoteKeyForMobType() const
@@ -522,6 +554,7 @@ void AMob::PlayTurn()
 	bHeal = false;
 	bHealOther = false;
 	Bt_Id = 0;
+	bRethink = false;
 	
 	AIController = Cast<AICC_AIController>(GetController());
 	checkf(AIController, TEXT("AI Controller is invalid at AMob::PlayTurn"));
@@ -543,6 +576,7 @@ void AMob::PlayTurn()
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsBuffOtherAtk?", bBuffOtherAtk);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsHealing?", bHeal);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsHealingOther?", bHealOther);
+	AIController->GetBlackboardComponent()->SetValueAsBool("Rethinker", bRethink);
 
 	GetWorld()->GetTimerManager().SetTimer(BehaviorTreeTimerHandle, [this]()
 	{

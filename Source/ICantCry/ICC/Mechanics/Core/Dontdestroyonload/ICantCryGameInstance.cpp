@@ -8,7 +8,12 @@ void UICantCryGameInstance::Init()
 	Super::Init();
 
 	ActiveBestiaryUI = nullptr;
-	
+
+	if (PlayerStats)
+	{
+		DebugHelper::LogError("Stats are valid!");
+		RuntimeStats = PlayerStats->RuntimeStats;
+	}
 }
 
 void UICantCryGameInstance::Shutdown()
@@ -163,6 +168,11 @@ void UICantCryGameInstance::SetCanRecreatePlayer(const bool& Value)
 FPlayerMemory& UICantCryGameInstance::GetPlayerRuntimeData()
 {
 	return PlayerRuntimeData;
+}
+
+FRuntimeStats& UICantCryGameInstance::GetRuntimeStats()
+{
+	return RuntimeStats;
 }
 
 UWorld* UICantCryGameInstance::TryGetWorld() const

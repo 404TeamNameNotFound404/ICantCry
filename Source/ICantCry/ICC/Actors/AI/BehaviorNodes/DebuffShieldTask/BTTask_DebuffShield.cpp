@@ -33,10 +33,11 @@ EBTNodeResult::Type UBTTask_DebuffShield::ExecuteTask(UBehaviorTreeComponent& Ow
 	AICC_Player* Target = Cast<AICC_Player>(Blackboard->GetValueAsObject("Target"));
 	checkf(Target, TEXT("Player invalid at UBTTask_DebuffShield::ExecuteTask"))
 
-	Current->GetStatusTracker()->InflictStatus(EAfflictedStatus::ShieldDebuff, Current);
+	Current->GetStatusTracker()->BuffFlow(EBuffStatus::Shield);
+	Current->GetStatusTracker()->BuffWith(EBuffStatus::Shield);
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " de-buffed it's shield"));
-	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " de-buffed it's shield");
+	DebugHelper::AddMessageToLog("[Behavior Tree - DS]: " + Current->GetActorLabel() + " de-buffed it's shield");
 
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 
@@ -67,7 +68,7 @@ void UBTTask_DebuffShield::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* No
 	if (Current != Current->GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
 		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
-		DebugHelper::AddMessageToLog("It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
+		DebugHelper::AddMessageToLog("[Behavior Tree - DS]: It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}
@@ -80,7 +81,7 @@ void UBTTask_DebuffShield::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* No
 			return;
 
 		DebugHelper::LogSuccess("Debuff Defence Task Completed");
-		DebugHelper::AddMessageToLog("Debuff Defence Task Completed");
+		DebugHelper::AddMessageToLog("[Behavior Tree - DS]: Shield Task Completed");
 		FinishLatentTask(*OwnerCompWeak.Get(), EBTNodeResult::Succeeded);
 	}), 1.0f, false);
 }

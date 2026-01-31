@@ -1,6 +1,7 @@
 #include "BTTask_Heal.h"
 #include "ICantCry/ICC/Actors/AI/ICC_AIController.h"
 #include "ICantCry/ICC/Actors/AI/Mob.h"
+#include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Mechanics/TurnSystem/Core/BattleHandler.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 
@@ -24,7 +25,10 @@ EBTNodeResult::Type UBTTask_Heal::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	
 	
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " uses Heal"));
-	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " uses Heal");
+	DebugHelper::AddMessageToLog("[Behavior Tree - Heal]: " + Current->GetActorLabel() + " uses Heal");
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
+	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetActorLabel() + " uses heal"));
 	FDecisionMaker DecisionMaker;
 	DecisionMaker.DecisionMap.Add(EDecision::HealItSelf, 0.70f); // from 0.0 to 0.7 heal itself 70%
 	DecisionMaker.DecisionMap.Add(EDecision::HealOther, 0.30f); // from 0.7 to 1.0 heal other  7%
@@ -52,8 +56,10 @@ void UBTTask_Heal::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 		{
 			Current->Heal(Current->GetTactics()->HealingPoint); // Can be edited via editor on the EnemyTactics data asset
 			Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " Healed ItSelf"));
-			DebugHelper::AddMessageToLog(Current->GetActorLabel() + " Healed ItSelf");
+			DebugHelper::AddMessageToLog("[Behavior Tree - Heal]: " + Current->GetActorLabel() + " Healed ItSelf");
 			Timer = 0.0f;
+			UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+			Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 		}
 
@@ -63,8 +69,10 @@ void UBTTask_Heal::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 			checkf(Other, TEXT("Other Mob is invalid heal TickTask"));
 			Other->Heal(Current->GetTactics()->HealingPoint);
 			Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " Healed " + Other->GetActorLabel()));
-			DebugHelper::AddMessageToLog(Current->GetActorLabel() + " Healed " + Other->GetActorLabel());
+			DebugHelper::AddMessageToLog("[Behavior Tree - Heal]: " + Current->GetActorLabel() + " Healed " + Other->GetActorLabel());
 			Timer = 0.0f;
+			UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+			Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 		}
 	}

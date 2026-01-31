@@ -6,6 +6,9 @@
 #include "BulletData.h" 
 #include "Bullet.generated.h"
 
+
+class AICC_Actor;
+
 USTRUCT(Blueprintable)
 struct ICANTCRY_API FBullet
 {
@@ -46,5 +49,5 @@ public:
 
 	FString GetWeakAgainstName() const;
 
-
+	FBullet Clone() const;
 };

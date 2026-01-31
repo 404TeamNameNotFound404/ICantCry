@@ -39,7 +39,7 @@ EBTNodeResult::Type UBTTask_FreezedUp::ExecuteTask(UBehaviorTreeComponent& Owner
 	//TODO Implement Player->Freeze();
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " freezed " + Target->GetActorLabel()));
-	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " freezed " + Target->GetActorLabel());
+	DebugHelper::AddMessageToLog("[Behavior Tree - FreezedUp]: " + Current->GetActorLabel() + " freezed " + Target->GetActorLabel());
 
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 
@@ -70,7 +70,7 @@ void UBTTask_FreezedUp::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	if (Current != Current->GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
 		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
-		DebugHelper::AddMessageToLog("It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
+		DebugHelper::AddMessageToLog("[Behavior Tree - FreezedUp]: It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}
@@ -83,7 +83,7 @@ void UBTTask_FreezedUp::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 			return;
 
 		DebugHelper::LogSuccess("Debuff Defence Task Completed");
-		DebugHelper::AddMessageToLog("Debuff Defence Task Completed");
+		DebugHelper::AddMessageToLog("[Behavior Tree - FreezedUp]: Debuff Defence Task Completed");
 		FinishLatentTask(*OwnerCompWeak.Get(), EBTNodeResult::Succeeded);
 	}), 1.0f, false);
 }

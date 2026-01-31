@@ -29,19 +29,15 @@ void UGameOverVisualizer::RetryBattle()
 	for (AMob* Emotion : SpawnManager->GetMemory().EmotionsSpawned)
 	{
 		SpawnManager->ResetBattle(Emotion);
+		Emotion->ReinizializeTree();
 	}
 
-	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().RejoinQueue(SpawnManager->GetMemory().EmotionsSpawned);
+	Instance->GetCurrentPlayer()->GetBattleHUD()->RequestBulletPreparation();
+	Instance->GetCurrentPlayer()->GetBattleHUD()->Reset(SpawnManager->GetMemory().InBattleBullets);
 
-	for (AMob* E : SpawnManager->GetMemory().EmotionsSpawned)
-	{
-		E->ReinizializeTree();
-	}
-	
+	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().RejoinQueue(SpawnManager->GetMemory().EmotionsSpawned, Instance->GetCurrentPlayer());
 	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->Reload();
-	
 	this->SetVisibility(ESlateVisibility::Hidden);
-	// DebugHelper::SaveLogToFile();
 }
 
 void UGameOverVisualizer::LoadPrevious()

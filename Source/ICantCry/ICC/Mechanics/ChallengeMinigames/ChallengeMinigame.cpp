@@ -2,11 +2,12 @@
 
 
 #include "ChallengeMinigame.h"
-
+#include "PuzzleAssembled.h"
 #include "Algo/RandomShuffle.h"
 #include "Blueprint/UserWidget.h"
 #include "ICantCry/ICC/Actors/MinigameSpawnables/Papers/Paper.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
+#include "PuzzleAssembled.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 
 AChallengeMinigame* AChallengeMinigame::Singleton = nullptr;
@@ -35,18 +36,21 @@ void AChallengeMinigame::BeginPlay()
 	TriggerWidgetBlueprint->SetVisibility(ESlateVisibility::Hidden);
 
 	Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+
+	DebugHelper::LogWarning("Slot size: " + FString::FromInt(TerrainSlots.Num()));
 }
 
 void AChallengeMinigame::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 
-	if (OtherActor != Cast<AActor>(Instance->GetCurrentPlayer()))
+	if (OtherActor != Cast<AActor>(Instance->GetCurrentPlayer()) || bInArea)
 	{
 		return;
 	}
 
 	bInArea = true;
+	bIsMinigameStarted = true;
 	AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
 	Controller->SetViewTargetWithBlend(CameraActor, 0.5f);
 	TriggerWidgetBlueprint->SetVisibility(ESlateVisibility::Hidden); 
@@ -111,29 +115,95 @@ void AChallengeMinigame::InitSlots()
 	TriggerWidgetBlueprint->SetVisibility(ESlateVisibility::Hidden); // For now i re-hide the text ui once it enters this line will go to the input logic
 
 	Algo::RandomShuffle(TerrainSlots);
-
-	for (TSoftObjectPtr<AActor> Slot : TerrainSlots)
+	
+	for (int i = 0; i < TerrainSlots.Num(); ++i)
 	{
-		FVector SpawnLocation = Slot->GetActorLocation();
-		GetWorld()->SpawnActor<APaper>(Papers[0], SpawnLocation + LocationOffset, Slot->GetActorRotation());
+		auto Slot = TerrainSlots[i];
+		if (!Slot)
+		{
+			DebugHelper::LogError("Slot is nullptr!");
+			continue;
+		}
+
+		const FVector SpawnLocation = Slot->GetActorLocation();
+		
+		TSubclassOf<APaper> ChosenPaperClass = Papers[i % Papers.Num()]; 
+		
+		if (APaper* Paper = GetWorld()->SpawnActor<APaper>(ChosenPaperClass, SpawnLocation + LocationOffset, Slot->GetActorRotation()); Paper)
+		{
+			Paper->SetActorLabel("Paper " + FString::FromInt(i));
+			Paper->SetMinigameOwner(this);
+			Paper->SetCurrentSlot(Slot);
+			PaperMap.Add(Slot, Paper);
+
+			DebugHelper::LogMessage(8, FColor::FromHex("434E78"), Paper->GetActorLabel() + " id is " + FString::FromInt(Paper->GetId()));
+			DebugHelper::LogMessage(8, FColor::FromHex("434E78"), Slot->GetActorLabel() + " id is " + FString::FromInt(Slot->GetId()));
+		}
+	}
+	
+	DebugHelper::LogSuccess("Papers spawned");
+	DebugHelper::LogSuccess("Papers in map: " + FString::FromInt(PaperMap.Num()));
+}
+
+void AChallengeMinigame::Resolve()
+{
+	bool bSolutionFound = true;
+
+	for (AFieldSlot* Slot : TerrainSlots)
+	{
+		if (!Slot) continue;
+
+		APaper* const* PaperPtr = PaperMap.Find(Slot);
+		if (!PaperPtr || !*PaperPtr)
+		{
+			bSolutionFound = false;
+			DebugHelper::LogError("No paper in slot " + Slot->GetActorLabel());
+			continue;
+		}
+
+		const APaper* Paper = *PaperPtr;
+
+		if (Paper->GetId() == Slot->GetId())
+		{
+			DebugHelper::LogSuccess(Slot->GetActorLabel() + " correctly occupied by paper " + FString::FromInt(Paper->GetId()));
+		}
+		else
+		{
+			bSolutionFound = false;
+			DebugHelper::LogError("Paper " + FString::FromInt(Paper->GetId()) +
+				" is in wrong slot " + FString::FromInt(Slot->GetId()));
+		}
+	}
+
+	if (bSolutionFound)
+	{
+		DebugHelper::LogSuccess("All papers are correctly placed!");
+		UPuzzleAssembled* Victory = CreateWidget<UPuzzleAssembled>(GetWorld(), VictoryWidgetClass);
+		Victory->SetMinigameOwner(this);
+		Victory->AddToViewport();
+		Victory->Display();
+		Victory->SetVisibility(ESlateVisibility::Visible);
 	}
 }
 
+
 void AChallengeMinigame::PickPaper()
 {
+	if (!bInArea) // prevent to try to pick any papers on the game (T.T)
+	{
+		return;
+	}
+		
 	FHitResult Hit;
-	AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
+	const AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
 	Controller->GetHitResultUnderCursor(ECC_Visibility, false, Hit);
 
 	if (!Hit.bBlockingHit)
 	{
 		return;
 	}
-
-
 	
 	APaper* HitActor = Cast<APaper>(Hit.GetActor());
-	//checkf(HitActor, TEXT("APaper is invalid at AChallengeMinigame::CalculateCursorCameraProjection"))
 	
 	if (!HitActor || !HitActor->Tags.Contains("Challenge"))
 	{
@@ -141,13 +211,9 @@ void AChallengeMinigame::PickPaper()
 		return;
 	}
 	
-	// const FVector LiftLocation = HitActor->GetActorLocation() + FVector{0, 0, 10};
-	// HitActor->Lift(LiftLocation);
-
-	FVector WorldLocation, WorldDirection;
-	if (Controller->DeprojectMousePositionToWorld(WorldLocation, WorldDirection))
+	
+	if (FVector WorldLocation, WorldDirection; Controller->DeprojectMousePositionToWorld(WorldLocation, WorldDirection))
 	{
-		// Trace forward to find ground or target point
 		FHitResult GroundHit;
 		const FVector TraceStart = WorldLocation;
 		const FVector TraceEnd = TraceStart + WorldDirection * 10000.0f;
@@ -159,14 +225,100 @@ void AChallengeMinigame::PickPaper()
 			CurrentPaper = HitActor;
 		}
 	}
-
-	// Fallback: lift slightly from current location
-	// const FVector FallbackLift = HitActor->GetActorLocation() + FVector(0, 0, 3.5f);
-	// HitActor->Lift(FallbackLift);
 }
 
 APaper* AChallengeMinigame::GetCurrentPaper() const
 {
 	return CurrentPaper;
+}
+
+TArray<TObjectPtr<AFieldSlot>> AChallengeMinigame::GetFieldSlots() const
+{
+	return TerrainSlots;
+}
+
+void AChallengeMinigame::PlacePaperInSlot(APaper* Paper, AFieldSlot* Slot)
+{
+	if (!Paper || !Slot) return;
+
+	AFieldSlot* OldSlot = Paper->GetCurrentSlot();
+	
+	if (OldSlot && OldSlot != Slot)
+	{
+		PaperMap.Remove(OldSlot);
+	}
+	
+	if (APaper* OverlappedPaper = PaperMap.FindRef(Slot); OverlappedPaper && OverlappedPaper != Paper)
+	{
+		if (OldSlot)
+		{
+			OverlappedPaper->SetCurrentSlot(OldSlot);
+			OverlappedPaper->SetActorLocation(OldSlot->GetActorLocation() + FVector{0, 0, 1.0f});
+			PaperMap.Add(OldSlot, OverlappedPaper);
+		}
+		else
+		{
+			OverlappedPaper->SetCurrentSlot(nullptr);
+			OverlappedPaper->SetActorLocation(OverlappedPaper->GetStartLocation());
+		}
+	}
+
+	Paper->SetCurrentSlot(Slot);
+	Paper->SetActorLocation(Slot->GetActorLocation() + FVector{0,0,1.5f});
+	PaperMap.Add(Slot, Paper);
+	DebugHelper::LogSuccess("Paper swapped");
+}
+
+AFieldSlot* AChallengeMinigame::FindSlot(const FVector& PaperLocation) const
+{
+	AFieldSlot* Slot = nullptr;
+	float Dist = SnapDistance;
+
+	for (AFieldSlot* Field : TerrainSlots)
+	{
+		if (!Field) continue;
+		
+		if (const float Distance = FVector::Dist(PaperLocation, Field->GetActorLocation()); Distance < Dist)
+		{
+			Dist = Distance;
+			Slot = Field;
+		}
+	}
+
+	return Slot;
+}
+
+void AChallengeMinigame::ReleasePaper()
+{
+	if (!CurrentPaper) return;
+	
+	if (AFieldSlot* ClosestSlot = FindSlot(CurrentPaper->GetActorLocation()); ClosestSlot)
+	{
+		PlacePaperInSlot(CurrentPaper, ClosestSlot);
+	}
+	else
+	{
+		CurrentPaper->SetActorLocation(CurrentPaper->GetStartLocation());
+		CurrentPaper->SetCurrentSlot(nullptr);
+	}
+
+	CurrentPaper->SetIsDragged(false);
+	CurrentPaper = nullptr;
+	Resolve();
+}
+
+float AChallengeMinigame::GetSnapDistance() const
+{
+	return SnapDistance;
+}
+
+void AChallengeMinigame::SetMinigameStarted(const bool& Value)
+{
+	bIsMinigameStarted = Value;
+}
+
+UBoxComponent* AChallengeMinigame::GetTriggerComponent() const
+{
+	return Trigger;
 }
 

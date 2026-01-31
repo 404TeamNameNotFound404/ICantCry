@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DecisionTable.h"
 #include "ICantCry/ICC/Actors/AI/Mob.h"
 #include "DecisionMaker.generated.h"
 
@@ -24,6 +25,7 @@ enum class EDecision : uint8
 	DebuffShieldOther UMETA(DisplayName = "Debuff Shield Other"),
 	EnvyBurned UMETA(DisplayName = "Envy Burned"),
 	None UMETA(DisplayName = "Attack"),
+	Low UMETA(DisplayName = "LowHealth"),
 	Invalid UMETA(DisplayName = "Invalid")
 };
 
@@ -48,6 +50,7 @@ struct FDecisionMaker
 	 */
 	EDecision Thought();
 	
+	
 	TMap<EDecision, float> DecisionMap;
 
 	/**
@@ -60,6 +63,7 @@ struct FDecisionMaker
 	 */
 	void ResetDecision();
 
+	FString GetDecisionString(const EDecision& Decision) const;
 private:
 	UPROPERTY()
 	EDecision LastDecision = EDecision::None;

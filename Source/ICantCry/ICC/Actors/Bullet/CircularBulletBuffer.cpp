@@ -154,3 +154,18 @@ int32 UCircularBulletBuffer::GetTailIndex() const
 {
     return Tail;
 }
+
+void UCircularBulletBuffer::Clear()
+{
+    for (int32 i = 0; i < Capacity; ++i)
+    {
+        Buffer[i] = nullptr;
+    }
+
+    Head = 0;
+    Tail = 0;
+    CurrentIndex = 0;
+    bIsFull = false;
+
+    DebugHelper::LogMessage(5, FColor::Green, TEXT("Circular bullet buffer cleared."));
+}

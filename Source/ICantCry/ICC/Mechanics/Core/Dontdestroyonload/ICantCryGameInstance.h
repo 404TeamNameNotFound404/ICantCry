@@ -55,6 +55,8 @@ public:
 	void SetCanRecreatePlayer(const bool& Value);
 	FPlayerMemory& GetPlayerRuntimeData();
 
+	FRuntimeStats& GetRuntimeStats();
+
 
 	// Bestiary
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Bestiary")
@@ -100,6 +102,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))
 	UPlayerStats* PlayerStats;
+
+	UPROPERTY()
+	FRuntimeStats RuntimeStats;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))
 	FDamage StoredDamage;

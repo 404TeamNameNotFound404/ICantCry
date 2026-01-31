@@ -125,4 +125,5 @@ void UVictoryVisualizer::ReturnToWorld()
 	USceneLoader::LoadSceneByName(GetWorld(), "EncounterTest", true);
 	DebugHelper::LogSuccess("ReturnToWorld");
 	DebugHelper::SaveLogToFile();
+	DebugHelper::ClearAllLogs();
 }

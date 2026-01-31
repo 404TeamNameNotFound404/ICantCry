@@ -30,7 +30,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Bullet Buffer")
 	UBulletData* RemoveBullet();
-
+	
 	void RemoveAt(const int32& Index);
 
 	UFUNCTION(BlueprintCallable, Category = "Bullet Buffer")
@@ -60,17 +60,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Bullet Buffer")
     int32 GetTailIndex() const;
 
+	void Clear();
+
 
 private:
 
 	UPROPERTY()
 	TArray<UBulletData*> Buffer;
 
-	int32 Head = 0;
-	int32 Tail = 0;
-	int32 CurrentIndex = 0;
-	int32 Capacity = 0;
+	UPROPERTY() int32 Head = 0;
+	UPROPERTY() int32 Tail = 0;
+	UPROPERTY() int32 CurrentIndex = 0;
+	UPROPERTY() int32 Capacity = 0;
+	UPROPERTY() int32 BulletCount = 0;
 
-	bool bIsFull = false;
+	UPROPERTY() bool bIsFull = false;
 
 };

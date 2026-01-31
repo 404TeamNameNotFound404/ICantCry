@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "ICantCry/ICC/Actors/Player/Stats/RuntimeStats.h"
 #include "PlayerStats.generated.h"
 
 /**
@@ -18,7 +19,12 @@ public:
 	/**
 	 * Current Player Level
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stats")
+
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Runtime Stats")
+	FRuntimeStats RuntimeStats;
+	
+	[[deprecated("Use FRuntimeStats instead")]] UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stats")
 	int32 Level = 0;
 	/**
 	 * Level Cap , Assign it yourself
@@ -28,7 +34,7 @@ public:
 	/**
 	 * Actual Experience
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stats")
+	[[deprecated("Use FRuntimeStats instead")]] UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stats")
 	float Experience;
 
 	/**
@@ -55,12 +61,12 @@ public:
 	/**
 	 * Attack Power
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle")
+	[[deprecated("Use FRuntimeStats instead")]] UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle")
 	int32 AttackPower;
 	/**
 	 * Defence Power
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle")
+	[[deprecated("Use FRuntimeStats instead")]] UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle")
 	int32 DefencePower;
 	/**
 	 * Battle Fast forward 
@@ -84,13 +90,13 @@ public:
 	/**
 	 * Ap modifier
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Modifiers")
+	[[deprecated("Use FRuntimeStats instead")]] UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Modifiers")
 	float ApModifier = 1.0f;
 
 	/**
  * Weakness modifier
  */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Modifiers")
+	[[deprecated("Use FRuntimeStats instead")]] UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Modifiers")
 	float WeaknessModifier = 0.0f;
 
 	

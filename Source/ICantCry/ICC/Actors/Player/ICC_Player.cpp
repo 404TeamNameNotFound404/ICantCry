@@ -94,8 +94,8 @@ void AICC_Player::BeginPlay()
 	DontDestroyOnLoad->SetPlayerStats(Stats);
 	//DontDestroyOnLoad->GetInventory().StarterPack(); 
 	DontDestroyOnLoad->SetPersistentPlayer(this);
-	DontDestroyOnLoad->GetPersistentData()->InitialAttackPower = GetStats()->AttackPower;
-	DontDestroyOnLoad->GetPersistentData()->InitialDefencePower = GetStats()->DefencePower;
+	DontDestroyOnLoad->GetPersistentData()->InitialAttackPower = DontDestroyOnLoad->GetRuntimeStats().AttackPower;
+	DontDestroyOnLoad->GetPersistentData()->InitialDefencePower = DontDestroyOnLoad->GetRuntimeStats().DefencePower;
 	//bIsInFight = false;
 
 	BestiaryUI= CreateWidget<UBestiaryUI>(GetWorld(), BestiaryUIClass);
@@ -160,6 +160,7 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Crafting, ETriggerEvent::Started, this, &ThisClass::Input_OpenCrafting);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_CloseCrafting, ETriggerEvent::Triggered, this, &ThisClass::Input_CloseCrafting);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_LMBInteract, ETriggerEvent::Triggered, this, &ThisClass::Input_ChallengeInteraction);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_LMBInteract, ETriggerEvent::Completed, this, &ThisClass::Input_ChallengeReleaseInteraction);
 	//  LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Bestiary, ETriggerEvent::Started, this, &ThisClass::Input_OpenBestiary);
 	// LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_CloseBestiary, ETriggerEvent::Triggered, this, &ThisClass::Input_CloseBestiary);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Bestiary, ETriggerEvent::Started, this, &ThisClass::Input_ToggleBestiary);
@@ -222,6 +223,7 @@ UPlayerStats* AICC_Player::GetStats() const
 {
 	return Stats;
 }
+
 
 UBattleData* AICC_Player::GetBattleData() const
 {
@@ -659,3 +661,42 @@ float AICC_Player::GetCurrentExpPercentage() const
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void AICC_Player::Input_ChallengeReleaseInteraction(const FInputActionValue& InputActionValue)
+{
+	if (AChallengeMinigame::Singleton)
+	{
+		if (APaper* Paper = AChallengeMinigame::Singleton->GetCurrentPaper())
+		{
+			Paper->Release();
+		}
+	}
+}

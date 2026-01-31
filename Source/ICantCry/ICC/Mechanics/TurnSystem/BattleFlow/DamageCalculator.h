@@ -29,6 +29,9 @@ struct FDamage
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
 	UEnemyDatas* EnemyData = nullptr;
 
+	UPROPERTY()
+	UICantCryGameInstance* Instance;
+
 	FDamage();
 
 	/**
@@ -41,9 +44,6 @@ struct FDamage
 	 */
 	FDamage(UBulletData* BData, UPlayerStats* PStats, UEnemyTactics* AITactics, UEnemyDatas* EData, UICantCryGameInstance* GI = nullptr);
 	int CalculateDamage(const bool& IsPlayerAttacking);
-
-private:
-	UPROPERTY()
-	UICantCryGameInstance* Instance;
+	
 	
 };

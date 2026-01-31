@@ -34,22 +34,24 @@ EBTNodeResult::Type UBTTask_BuffOtherAtk::ExecuteTask(UBehaviorTreeComponent& Ow
 	BlackBoard->SetValueAsBool("IsBuffOtherAtk?", Current->GetBuffOtherAtk());
 	BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 
-	//TODO ADD a counter for the buff (must last 3 turns)
-
 	if (Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().CantBuffOthers())
 	{
-		DebugHelper::LogError(Current->GetActorLabel() +  " is alone can't buff");
-		DebugHelper::AddMessageToLog(Current->GetActorLabel() +  " is alone can't buff");
-		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+		DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Atk]: " + Current->GetActorLabel() + " attempted to buff other atk but it's alone! , rethink the action");
+		BlackBoard->SetValueAsBool("Rethinker", true);
 		return EBTNodeResult::Succeeded;
 	}
 
-	AMob* TargetToBuff = Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetMobInQueue();
-	checkf(TargetToBuff, TEXT("TargetToBuff is invalid Type UBTTask_BuffDefence::ExecuteTask"))
+	AMob* TargetToBuff = Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetMobInQueue(Current);
+	if (!TargetToBuff) // rethink if target buff appears to be nullptr again 
+	{
+		BlackBoard->SetValueAsBool("Rethinker", true);
+		DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Atk]: " + Current->GetActorLabel() + " attempted to buff other def but it didn't find a valid target (scrivetemelo se entra qua dentro)! , rethinking the action");
+		return EBTNodeResult::Succeeded;
+	}
 
 
 	// check first if 'TargetToBuff' has active buff , if so it removes it to apply the new one
-	TargetToBuff->GetStatusTracker()->BuffFlow(EBuffStatus::AtkBuff);
+	TargetToBuff->GetStatusTracker()->BuffFlow(EBuffStatus::AtkBuff, TargetToBuff);
 	
 	TargetToBuff->GetStatusTracker()->BuffWith(EBuffStatus::AtkBuff);
 	
@@ -57,7 +59,7 @@ EBTNodeResult::Type UBTTask_BuffOtherAtk::ExecuteTask(UBehaviorTreeComponent& Ow
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(
 		FText::FromString(Current->GetActorLabel() + " buffed " + TargetToBuff->GetActorLabel() + " atk"));
 
-	DebugHelper::AddMessageToLog(Current->GetActorLabel() + " buffed " + TargetToBuff->GetActorLabel() + " atk");
+	DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Atk]: " + Current->GetActorLabel() + " buffed " + TargetToBuff->GetActorLabel() + " atk");
 
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 
@@ -100,7 +102,7 @@ void UBTTask_BuffOtherAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* No
 			return;
 
 		DebugHelper::LogSuccess("buff atk target task completed");
-		DebugHelper::AddMessageToLog("buff atk target task completed");
+		DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Atk]: buff atk target task completed");
 		FinishLatentTask(*OwnerCompWeak.Get(), EBTNodeResult::Succeeded);
 	}), 1.0f, false);
 }

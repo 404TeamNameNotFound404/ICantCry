@@ -35,7 +35,8 @@ enum EBulletType
 	JealousyDv,
 	JealousyEv,
 	SadnessEv,
-	Shame
+	Shame,
+	DisgustEv
 };
 
 UENUM(BlueprintType)

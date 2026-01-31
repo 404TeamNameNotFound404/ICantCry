@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "Bullet.h"
 
-
 UBulletData* FBullet::GetBulletData() const
 {
 	return BulletData;
@@ -116,4 +115,12 @@ FString FBullet::GetWeakAgainstName() const
 	}
 
 	return Result;
+}
+
+FBullet FBullet::Clone() const
+{
+	FBullet Clone;
+	Clone.BulletData = BulletData;
+	Clone.Quantity = Quantity;
+	return Clone;
 }
