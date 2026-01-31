@@ -49,9 +49,7 @@ public:
 	void SetCraftingTable(UCraftingTable* InTable);
 	void RefreshUI(); // Pulisce tutti i widget da inventario e popola la lista delle recipe, essenze e bossoli
     void RefreshRecipesList();
-	void UpdateEssenceList();
 	void UpdateSelectedRecipeDetails(); //Mostra dati bullet, materiali, effetto
-    void UpdateMaterialList(); //Mostra essenze richieste con quantità
     void UpdateCraftButton(); // Attiva/disattiva bottone in base alle risorse
 	void OnRecipeSelected( const FRecipe& NewRecipe); // Seleziona una blueprint, aggiorna i dettagli
 	void SetupCraftingHUD(UCraftingTable* InCraftingTable, UInventoryManager* InInventoryManager);

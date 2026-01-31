@@ -40,7 +40,7 @@ void UCraftingHUD::NativeConstruct()
 
     
     CraftingTable = NewObject<UCraftingTable>(this);
-    CraftingTable->Initialize();
+    CraftingTable->Initialize(GetWorld());
 
     CraftButton->SetIsEnabled(false);
     
@@ -61,9 +61,13 @@ void UCraftingHUD::RefreshUI()
         InventoryManager = NewObject<UInventoryManager>(this);
     }
 
-    CraftingTable->Initialize();
+    CraftingTable->Initialize(GetWorld());
     
-    checkf(CraftingTable, TEXT("Crafting table is null at CraftingHUD"))
+    //checkf(CraftingTable, TEXT("Crafting table is null at CraftingHUD"))
+    if(!CraftingTable)
+    {
+        DebugHelper::LogError("Crafting table is null at CraftingHUD");
+    }
     checkf(InventoryManager, TEXT("InventoryManager is null at CraftingHUD"))
 
 
@@ -141,30 +145,6 @@ void UCraftingHUD::RefreshRecipesList()
     // }
 }
 
-void UCraftingHUD::UpdateEssenceList()
-{
-   if (!CraftingTable)
-        return;
-
-   // EssenceList->ClearChildren();
-
-    
-    
-    for (const FEssence& Essence : Inventory.Essences)
-    {
-        if (Essence.Quantity <= 0) continue;
-
-        UEssenceWidget* Widget = CreateWidget<UEssenceWidget>(this, EssenceWidgetClass);
-        if (Widget)
-        {
-            // La quantità posseduta è la stessa di quella in Inventory
-            Widget->Setup(Essence, Essence.Quantity);
-            //EssenceList->AddChild(Widget);
-            EssenceListScrollBar->AddChild(Widget);
-        }
-    }
-}
-
 void UCraftingHUD::UpdateSelectedRecipeDetails()
 {
     if (!CraftingTable) 
@@ -217,25 +197,6 @@ void UCraftingHUD::UpdateSelectedRecipeDetails()
     //UpdateCraftButton();
 }
 
-void UCraftingHUD::UpdateMaterialList()
-{
-   if (!CraftingTable) return;
-
-    //EssenceList->ClearChildren();
-    
-
-    for (const FEssence& Required : SelectedRecipe.RequiredEssences)
-    {
-        UEssenceWidget* Widget = CreateWidget<UEssenceWidget>(this, EssenceWidgetClass);
-        if (Widget)
-        {
-            int32 OwnedQty = Inventory.GetEssenceQuantity(Required.EssenceType);
-            Widget->Setup(Required, OwnedQty);
-            EssenceListScrollBar->AddChild(Widget);
-        }
-    }
-    
-}
 
 void UCraftingHUD::UpdateCraftButton()
 {

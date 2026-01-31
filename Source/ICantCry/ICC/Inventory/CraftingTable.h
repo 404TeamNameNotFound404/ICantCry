@@ -21,26 +21,28 @@ class ICANTCRY_API UCraftingTable : public UObject
 
 public:
 
-    void Initialize(FInventory* InInventory); 
+    void Initialize(FInventory* InInventory, UWorld* World); 
 	
-	void Initialize(); 
+	void Initialize(UWorld* World); 
 
 	void CraftBullet(const FBullet& BulletToCraft, ERecipeType BlueprintType, ECasingType CasingType);
+	void CraftSelectedBullet(UWorld* World);
 
 	bool CanCraft() const { return IsCraftable; };
 
 	void SetRecipe( const FRecipe& InRecipe); // sets which recipe to evaluate
-    
-	void CheckResources(); // check if u can craft
 
  	/**
 	 * Scan and check the avaiable resources and returns true if all the requirements are met
 	 * to craft 
 	 * @return true if requirements are met 
 	 */
-	bool ScanResources(); 
+	bool ScanResources();
+
+	bool ScanResources(UWorld* World); 
 
 	void Craft(); // crafting (consumes resources and adds bullet)
+	void Craft(UWorld* World);
 
 	//void SetInventoryReference(FInventory* InventoryRef);
 

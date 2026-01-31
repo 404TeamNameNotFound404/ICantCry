@@ -50,25 +50,8 @@ void UInventoryManager::RemoveItem(EItemType ItemType, const FBullet& Bullet, co
     RefreshHUD();
 }
 
-void UInventoryManager::AddCasing(ECasingType CasingType, int32 Quantity)
-{
-    //Inventory.AddCasing();
-   // RefreshHUD();
-    
-}
 
-void UInventoryManager::RemoveCasing(ECasingType CasingType, int32 Quantity)
-{
-    Inventory.RemoveCasing(CasingType, Quantity);
-    RefreshHUD();
-}
-
-void UInventoryManager::AddEssence(EEssenceType EssenceType, int32 Quantity)
-{
-    
-}
-
-void UInventoryManager::AddEssence2(const FEssence& Essence)
+void UInventoryManager::AddEssence(const FEssence& Essence)
 {
     Instance->GetInventory().AddEssenceInMap(Essence.EssenceType, Essence.Quantity);
     Instance->GetInventory().Essences.Add(Essence);
@@ -129,55 +112,6 @@ void UInventoryManager::StoreEssenceInMap(const FEssence& Essence, const int32& 
     }
 }
 
-int32 UInventoryManager::GetEssenceQuantityForType(const EEssenceType& EssenceType)
-{
-    switch (EssenceType)
-    {
-    case EEssenceType::Indifference:
-        return IndifferenceCounter;
-    case EEssenceType::Anger:
-        return AngerCounter;
-    case EEssenceType::Fear:
-        return FearCounter;
-    case EEssenceType::Disgust:
-        return DisgustCounter;
-    case EEssenceType::Sadness:
-        return SadnessCounter;
-    case EEssenceType::Joy:
-        return JoyCounter;
-    case EEssenceType::Anxiety:
-        return AnxietyCounter;
-    case EEssenceType::Calm:
-        return CalmCounter;
-    case EEssenceType::Jealousy:
-        return JealousyCounter;
-    case EEssenceType::Shame:
-       // DebugHelper::LogSuccess("GetEssenceQuantityForShame");
-        return ShameCounter;
-    }
-
-    return 0;
-}
-
-void UInventoryManager::AddEssence(const FEssence& Essence, const int32& Quantity)
-{
-    Instance->GetInventory().Essences.Add(Essence);
-}
-
-void UInventoryManager::RemoveEssence(EEssenceType EssenceType, int32 Quantity)
-{
-    Inventory.RemoveEssence(EssenceType, Quantity);
-    RefreshHUD();
-}
-
-
-void UInventoryManager::AddRecipe(ERecipeType RecipeType, int32 Quantity)
-{
-    Inventory.OwnedBlueprints.Add(RecipeType);
-  //  RefreshHUD();
-}
-
-
 
 void UInventoryManager::AddRecipe(const FRecipe& RecipeToAdd, int32 Quantity)
 {
@@ -186,27 +120,6 @@ void UInventoryManager::AddRecipe(const FRecipe& RecipeToAdd, int32 Quantity)
     Instance->GetInventory().OwnedBlueprints.Add(RecipeToAdd.RequiredBlueprintType);
 }
 
-void UInventoryManager::RemoveRecipe(ERecipeType RecipeType, int32 Quantity)
-{
-    int32 Count = 0;
-
-    for (int32 i = Inventory.OwnedBlueprints.Num() - 1; i >= 0 && Count < Quantity; --i)
-    {
-        if (Inventory.OwnedBlueprints[i] == RecipeType)
-        {
-            Inventory.OwnedBlueprints.RemoveAt(i);
-            ++Count;
-        }
-    }
-
-    //RefreshHUD();
-}
-
-void UInventoryManager::RemoveBullet(UBulletData* BulletData, int32 Quantity)
-{
-    Inventory.RemoveBullet(BulletData, Quantity);
-    RefreshHUD();
-}
 
 void UInventoryManager::RefreshHUD()
 {

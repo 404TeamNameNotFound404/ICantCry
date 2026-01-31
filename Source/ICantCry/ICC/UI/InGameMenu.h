@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "CraftingHUD.h"
 #include "BestiaryUI.h"
+#include "CharacterUI.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Button.h"
 #include "InGameMenu.generated.h"
@@ -21,17 +22,13 @@ class ICANTCRY_API UInGameMenu : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	UFUNCTION()
-	void OpenOverview();
-	
-	UFUNCTION()
-	void OpenCraft();
 
 	UFUNCTION()
 	void OpenInventory();
 
-	// UFUNCTION()
-	// void OpenBestiary();
+	UFUNCTION()
+	void OpenCharacter();
+
 
 	UFUNCTION()
 	void OpenMap();
@@ -52,13 +49,10 @@ protected:
 	UScaleBox* Main;
 
 	UPROPERTY(meta = (BindWidget))
-	UButton* Overview;
-
-	UPROPERTY(meta = (BindWidget))
-	UButton* Craft;
-
-	UPROPERTY(meta = (BindWidget))
 	UButton* Inventory;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* Character;
 
 	UPROPERTY(meta = (BindWidget))
 	UButton* Map;
@@ -72,11 +66,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UInventoryHUD> InventoryHUDClass;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<UCraftingHUD> CraftingHUDClass;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))  
-    TSubclassOf<UBestiaryUI> BestiaryUIClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UCharacterUI> CharacterUIClass;
 	
 	UPROPERTY()
 	UCraftingHUD* CraftingHud;
@@ -88,10 +80,13 @@ private:
 	UBestiaryUI* BestiaryUI;
 
 	UPROPERTY()
+	UCharacterUI* CharacterUI;
+
+	UPROPERTY()
 	bool bMenuOpen = false;
 
 	UPROPERTY()
 	bool bDisable = false;
 	
-	// TODO Create UI Blueprint of Map and Overview
+	
 };

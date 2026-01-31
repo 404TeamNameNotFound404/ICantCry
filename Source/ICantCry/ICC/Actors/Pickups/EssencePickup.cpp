@@ -37,7 +37,7 @@ void AEssencePickup::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor*
 	AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
 	AICC_Player* Player = Cast<AICC_Player>(Controller->GetPawn());
 
-	Player->GetInventoryManager()->AddEssence2(Self);
+	Player->GetInventoryManager()->AddEssence(Self);
 	Destroy();
 }
 

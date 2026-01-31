@@ -425,22 +425,34 @@ void AICC_Player::ToggleInventory()
 		return;
 	}
 
-	if (InventoryHUD->IsInViewport())
+	// if (InventoryHUD->IsInViewport())
+	// {
+	// 	CloseInventory();
+	// }
+	// else
+	// {
+	// 	InventoryHUD->AddToViewport();
+	// 	InventoryHUD->UpdateInventoryDisplay(PlayerInventory); //  aggiorna quando riapri
+	//
+	// 	AICC_PlayerController* PC = Cast<AICC_PlayerController>(GetController());
+	// 	if (PC)
+	// 	{
+	// 		PC->SetInputMode(FInputModeUIOnly());
+	// 		PC->bShowMouseCursor = true;
+	// 	}
+	// }
+
+	if (InventoryHUD->IsVisible())
 	{
+		InventoryHUD->SetVisibility(ESlateVisibility::Hidden);
 		CloseInventory();
 	}
 	else
 	{
-		InventoryHUD->AddToViewport();
-		InventoryHUD->UpdateInventoryDisplay(PlayerInventory); //  aggiorna quando riapri
-
-		AICC_PlayerController* PC = Cast<AICC_PlayerController>(GetController());
-		if (PC)
-		{
-			PC->SetInputMode(FInputModeUIOnly());
-			PC->bShowMouseCursor = true;
-		}
+		InventoryHUD->SetVisibility(ESlateVisibility::Visible);
+		InventoryHUD->UpdateInventoryDisplay(PlayerInventory);
 	}
+
 }
 
 void AICC_Player::ToggleCraftingHUD()
@@ -521,6 +533,8 @@ void AICC_Player::ResetStepCounter()
     StepCounter = 0;
     StepDistanceAccumulator = 0.0f;
 }
+
+
 
 // BESTIARY
 void AICC_Player::CollectNote(const FString& NoteKey)
@@ -616,6 +630,33 @@ void AICC_Player::Input_ToggleBestiary(const FInputActionValue& InputActionValue
 	{
 		OpenBestiary();
 	}
+}
+
+
+float AICC_Player::GetExpRequiredForNextLevel() const
+{
+	if(!Stats) return 100.0f; // default value;
+
+	// formula : Base EXP * Moltiplicatore per livello
+
+	float BaseExp = 100.0f; // exp for lv 1
+
+	float Multiplier = 1.0f + (Stats->Level * 0.5f);
+
+	return BaseExp * Multiplier;
+
+}
+
+
+float AICC_Player::GetCurrentExpPercentage() const
+{
+    if(!Stats) return 0.0f;
+
+	float ExpRequired = GetExpRequiredForNextLevel();
+
+	if(ExpRequired <= 0.0f) return 0.0f;
+
+	return FMath::Clamp(Stats->Experience / ExpRequired, 0.0f, 1.0f);
 }
 
 

@@ -12,6 +12,7 @@
 class UInventoryHUD;
 class UCraftingHUD;
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnRecipeUnlocked, ERecipeType);
 
 UCLASS(Blueprintable)
 class ICANTCRY_API UInventoryManager : public UObject
@@ -32,29 +33,16 @@ class ICANTCRY_API UInventoryManager : public UObject
     void AddItem(EItemType ItemType, const FBullet& Bullet, const TArray<FEssence>& Essences, const FRecipe& Recipe, int32 Quantity = 1);
     void RemoveItem(EItemType ItemType, const FBullet& Bullet, const TArray<FEssence>& Essences, const FRecipe& Recipe, int32 Quantity = 1);
 
-    // Casing
-    void AddCasing(ECasingType CasingType, int32 Quantity);
-    void RemoveCasing(ECasingType CasingType, int32 Quantity);
-
     // Essence
-    void AddEssence(EEssenceType EssenceType, int32 Quantity);
-
-
-	void AddEssence2(const FEssence& Essence);
+	void AddEssence(const FEssence& Essence);
 	void StoreEssenceInMap(const FEssence& Essence, const int32& NewQuantity = 1);
-	int32 GetEssenceQuantityForType(const EEssenceType& EssenceType);
-
 	
-	void AddEssence(const FEssence& Essence, const int32& Quantity);
-    void RemoveEssence(EEssenceType EssenceType, int32 Quantity);
-
+ 
 	// Recipe
-	void AddRecipe(ERecipeType RecipeType, int32 Quantity = 1);
 	void AddRecipe(const FRecipe& RecipeToAdd, int32 Quantity = 1);
-	void RemoveRecipe(ERecipeType RecipeType, int32 Quantity = 1);
 
-    // Bullet diretto (es. da BattleHUD)
-    void RemoveBullet(UBulletData* BulletData, int32 Quantity);
+	FOnRecipeUnlocked RecipeUnlocked;
+
 
 private:
 
