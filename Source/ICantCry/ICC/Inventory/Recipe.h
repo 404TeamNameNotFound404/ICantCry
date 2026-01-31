@@ -29,7 +29,9 @@ enum class ERecipeType : uint8
 	CalmEv,
 	Jealousy,
 	JealousyEv,
-	Indifference
+	Indifference,
+	DisgustEv,
+	SadnessEv,
 };
 
 UENUM(BlueprintType)
@@ -116,6 +118,10 @@ public:
 			return FString("Jealousy (Ev)");
 		case ERecipeType::Indifference:
 			return FString("Indifference");
+		case ERecipeType::DisgustEv:
+			return FString("Disgust (Ev)");
+		case ERecipeType::SadnessEv:
+			return FString("Sadness (Ev)");
 		default:
 			return FString("None");
 		}
