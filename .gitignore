@@ -75,8 +75,11 @@ Plugins/**/Intermediate/*
 # Cache files for the editor to use
 DerivedDataCache/*
 
-
+#plugin folder
 Plugins/
+
+#3d models ignore
+Content/ICC/Assets/3dModels
 
 Logs/
 

@@ -49,8 +49,9 @@ EBTNodeResult::Type UBTTask_DebuffOtherShield::ExecuteTask(UBehaviorTreeComponen
 		return EBTNodeResult::Succeeded;
 	}
 
-	TargetToBuff->GetStatusTracker()->BuffFlow(EBuffStatus::DefBuff, TargetToBuff);
-	TargetToBuff->GetStatusTracker()->BuffWith(EBuffStatus::Shield);
+	// TargetToBuff->GetStatusTracker()->BuffFlow(EBuffStatus::DefBuff, TargetToBuff);
+	// TargetToBuff->GetStatusTracker()->BuffWith(EBuffStatus::Shield);
+	TargetToBuff->GetStatusTracker()->InflictStatus(EAfflictedStatus::ShieldDebuff, TargetToBuff);
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " de-buffed " + TargetToBuff->GetActorLabel() + " shield"));
 	DebugHelper::AddMessageToLog("[Behavior Tree - DOS]: " + Current->GetActorLabel() + " de-buffed " + TargetToBuff->GetActorLabel() + " shield");

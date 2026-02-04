@@ -16,10 +16,16 @@ enum EAfflictedStatus
 	Burn,
 	EAShame,
 	ShieldDebuff,
-	DebuffAtk,
-	DebuffDef,
 	CriticHealth,
 	None
+};
+
+UENUM()
+enum EDebuffStatus
+{
+	DebuffAtk,
+	DebuffDef,
+	NoDebuff
 };
 
 UENUM()
@@ -27,7 +33,6 @@ enum EBuffStatus
 {
 	AtkBuff,
 	DefBuff,
-	Shield,
 	LowHealth,
 	NoBuff
 };
@@ -67,7 +72,7 @@ struct FStatusPriority
 	void SetBuffCurrentPriority(const int32& Value) { CurrentBuffPriority = Value; }
 	
 	void SetNextPriorityFromBuff(const EBuffStatus& BuffStatus);
-	void SetNextPriorityFromDebuff(const EAfflictedStatus& Status);
+	void SetNextPriorityFromDebuff(const EDebuffStatus& Status);
 	bool CanUsePriority(const EMobType& EmotionType, const EPrioritySource& SourcePriority) const;
 	void ClearNextBuff();
 
@@ -155,10 +160,16 @@ protected:
 	bool bIsOwnerAfflicted;
 
 	UPROPERTY()
+	bool bIsOwnerDebuffed;
+
+	UPROPERTY()
 	bool bIsOwnerAlreadyBuffed;
 
 	UPROPERTY()
 	TEnumAsByte<EAfflictedStatus> CurrentActiveStatus;
+
+	UPROPERTY()
+	TEnumAsByte<EDebuffStatus> CurrentDebuffStatus;
 
 	UPROPERTY()
 	TEnumAsByte<EBuffStatus> CurrentBuffedStatus = EBuffStatus::NoBuff;
@@ -196,6 +207,14 @@ public:
 	 */
 	void InflictStatus(const EAfflictedStatus& Status, AICC_Actor* Target);
 
+
+	/**
+	 * Assign Debuff Status for the chosen target
+	 * @param Status Desired status to inflict
+	 * @param Target Target
+	 */
+	void InflictDebuffStatus(const EDebuffStatus& Status, AICC_Actor* Target);
+
 	/**
 	 * Assing the buff to give to target
 	 * @param BuffStatus Buff
@@ -211,6 +230,8 @@ public:
  * activated the buff
  */
 	void UpdateStatus();
+
+	void UpdateDebuffStatus();
 
 	/**
 	 * Update the buff status counting 3 turns starting from the turn Player / AI
@@ -231,6 +252,7 @@ public:
 *  check if Another buff is applied and the AI is buffed the current buff is replaced with the new one
 */
 	void BuffFlow(const EBuffStatus& NewBuffStatus);
+	void DebuffFlow(const EDebuffStatus& NewDebuffStatus, AICC_Actor* Target = nullptr);
 	void BuffFlow(const EBuffStatus& NewBuffStatus, AMob* Target);
 
 
@@ -252,6 +274,7 @@ public:
 	/*----------DO NOT WRITE ANYTHING IN THIS SPACE -------------*/
 
 	FString GetStatusName(const EAfflictedStatus& Status) const;
+	FString GetDebuffName(const EDebuffStatus& Status) const;
 	FString GetBuffName(const EBuffStatus& Buff) const;
 
 private:
@@ -262,6 +285,9 @@ private:
 	UPROPERTY()
 	int32 StatusCounter = 0;
 
+	UPROPERTY()
+	int32 DebuffCounter = 0;
+	
 	UPROPERTY()
 	int32 BuffStatusCounter = 0;
 
@@ -311,6 +337,8 @@ private:
 	 * Rollback the current status state
 	 */
 	void RevertInflictedMalus(const EAfflictedStatus& Status);
+
+	void RevertDebuff();
 
 	void RevertBuff();
 

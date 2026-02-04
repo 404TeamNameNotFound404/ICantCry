@@ -31,8 +31,10 @@ EBTNodeResult::Type UBTTask_DebuffAtk::ExecuteTask(UBehaviorTreeComponent& Owner
 	BlackBoard->SetValueAsBool("IsAttackDebuffed?", Current->GetPlayerDebuffAttack());
 	BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 	
-	Target->GetStatusTracker()->MalusFlow();
-	Target->GetStatusTracker()->InflictStatus(EAfflictedStatus::DebuffAtk, Target);
+	//Target->GetStatusTracker()->MalusFlow();
+	Target->GetStatusTracker()->DebuffFlow(EDebuffStatus::DebuffAtk, Target);
+	//Target->GetStatusTracker()->InflictStatus(EAfflictedStatus::DebuffAtk, Target);
+	Target->GetStatusTracker()->InflictDebuffStatus(EDebuffStatus::DebuffAtk, Target);
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(
 		FText::FromString(Current->GetActorLabel() + " De-buffed " + Target->GetActorLabel() + " atk"));

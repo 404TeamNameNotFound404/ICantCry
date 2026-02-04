@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ICantCry/ICC/Mechanics/TurnSystem/BattleFlow/DamageCalculator.h"
 #include "RuntimeStats.generated.h"
 
 USTRUCT(Blueprintable)
@@ -24,4 +25,7 @@ struct FRuntimeStats
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Modifiers")
 	float ApModifier = 1.0f;
+
+	UPROPERTY()
+	FDamage Stats;
 };

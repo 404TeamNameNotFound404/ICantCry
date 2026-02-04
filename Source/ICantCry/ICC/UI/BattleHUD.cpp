@@ -175,7 +175,7 @@ void UBattleHUD::NativeConstruct()
 
 	ConfirmReloadBullet->SetVisibility(ESlateVisibility::Hidden);
 
-	//UBulletSelector::SetCanSelect(true);
+	UBulletSelector::SetCanSelect(true);
 
 	OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
 }
@@ -356,7 +356,7 @@ void UBattleHUD::OnReloadPressed()
 		return;
 	}
 
-	//UBulletSelector::SetCanSelect(true);
+	UBulletSelector::SetCanSelect(true);
 
 	ConfirmReloadBullet->SetVisibility(ESlateVisibility::Visible);
 	CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Visible);
@@ -368,12 +368,14 @@ void UBattleHUD::OnReloadPressed()
 	bShootFired = false;
 	bTargetSelection = false;
 	CanvasAmmoSelection->SetVisibility(ESlateVisibility::Visible);
-	TargetText->SetVisibility(ESlateVisibility::Hidden);
+	TargetText->SetVisibility(ESlateVisibility::Visible);
+	TargetText_2->SetVisibility(ESlateVisibility::Visible);
 	TargetNameText->SetVisibility(ESlateVisibility::Hidden);
 	CanvasBulletStats->SetVisibility(ESlateVisibility::Visible);
 	BulletName->SetVisibility(ESlateVisibility::Visible);
 	Quantity->SetVisibility(ESlateVisibility::Visible);
 	CanvasStatus->SetVisibility(ESlateVisibility::Hidden);
+	CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Visible);
 	Displayer->SetVisibility(ESlateVisibility::Visible);
 	Displayer->Refresh();
 	OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
@@ -633,7 +635,8 @@ void UBattleHUD::HideBulletMagazineOnReload()
 	BulletName->SetVisibility(ESlateVisibility::Hidden);
 	Quantity->SetVisibility(ESlateVisibility::Hidden);
 	Description->SetVisibility(ESlateVisibility::Hidden);
-	//UBulletSelector::SetCanSelect(false);
+	//bBulletSetupFinished = true;
+	UBulletSelector::SetCanSelect(false);
 }
 
 void UBattleHUD::IncreaseShootPower()
@@ -769,19 +772,24 @@ void UBattleHUD::PrepareToEngage()
 	FDamage DummyDamage(CurrentBulletData, GameInstance->GetPlayerStats(),
 	                    Cast<AMob>(SelectedActorTarget)->GetTactics(),
 	                    Cast<AMob>(SelectedActorTarget)->GetData(), GameInstance);
-	GameInstance->SetDamageData(&DummyDamage);
+
+	GameInstance->GetRuntimeStats().Stats = DummyDamage;
+	
+	GameInstance->SetDamageData(&GameInstance->GetRuntimeStats().Stats);
 	DebugHelper::LogMessage(3, FColor::White, "Targeting " + SelectedEnemy->GetActorLabel());
 	DebugHelper::AddMessageToLog(
 		"[BattleHUD]: Targeting " + SelectedEnemy->GetActorLabel() + " using " + CurrentBulletData->BulletName);
 	DebugHelper::LogMessage(5, FColor::Emerald,
 	                        "Minigame modifier -> " + FString::SanitizeFloat(
-		                        DummyDamage.PlayerStats->MinigameModifier));
+		                        GameInstance->GetRuntimeStats().Stats.PlayerStats->MinigameModifier));
 	checkf(MinigameHandler, TEXT("Minigame handler is null at UBattleHUD::Engage"));
 	MinigameHandler->StartMinigame(true);
 	EngageBtn->SetVisibility(ESlateVisibility::Hidden);
 	CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
 	BulletName->SetVisibility(ESlateVisibility::Hidden);
 	Quantity->SetVisibility(ESlateVisibility::Hidden);
+	ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Visible);
+	ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Visible);
 }
 
 AMob* UBattleHUD::RetrieveSelectedTarget()
@@ -795,11 +803,13 @@ void UBattleHUD::PrepareToEngageEv(const EBuffStatus& BuffToReceive)
 {
 	EngageBtn->SetVisibility(ESlateVisibility::Hidden);
 	CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
+	ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+	ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 	SelectedActorTarget = GameInstance->GetCurrentPlayer();
 
 	if (!SelectedActorTarget)
 	{
-		DebugHelper::LogError("Target is invalid");
+		DebugHelper::LogError("Target is invalid - buff bullet");
 		return;
 	}
 
@@ -813,15 +823,47 @@ void UBattleHUD::PrepareToEngageEv(const EAfflictedStatus& StatusToInflict)
 {
 	EngageBtn->SetVisibility(ESlateVisibility::Hidden);
 	CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
-	SelectedActorTarget = RetrieveSelectedTarget();
+	ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+	ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+	
+	//SelectedActorTarget = RetrieveSelectedTarget();
+
+	if (CurrentBulletData->Type == EBulletType::CalmEV)
+	{
+		SelectedActorTarget = GameInstance->GetCurrentPlayer();
+	}
+	else
+	{
+		SelectedActorTarget = RetrieveSelectedTarget();
+	}
 
 	if (!SelectedActorTarget)
 	{
-		DebugHelper::LogError("Target is invalid");
+		DebugHelper::LogError("Target is invalid - status bullet");
 		return;
 	}
 
 	GameInstance->GetCurrentPlayer()->GetStatusTracker()->InflictStatus(StatusToInflict, SelectedActorTarget);
+	GetBulletDisplayer()->RemoveBullet();
+	UpdateAp();
+	EnableButtonsAfterShooting();
+}
+
+void UBattleHUD::PrepareToEngageEv(const EDebuffStatus& StatusToDebuff)
+{
+	EngageBtn->SetVisibility(ESlateVisibility::Hidden);
+	CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
+	ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+	ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+	SelectedActorTarget = RetrieveSelectedTarget();
+
+	if (!SelectedActorTarget)
+	{
+		DebugHelper::LogError("Target is invalid - debuff bullet");
+		return;
+	}
+
+	GameInstance->GetCurrentPlayer()->GetStatusTracker()->InflictDebuffStatus(StatusToDebuff, SelectedActorTarget);
 	GetBulletDisplayer()->RemoveBullet();
 	UpdateAp();
 	EnableButtonsAfterShooting();
@@ -961,6 +1003,9 @@ void UBattleHUD::ScrollBulletSelection(float ScrollValue)
 	CanvasBulletStats->SetVisibility(ESlateVisibility::Visible);
 	BulletName->SetVisibility(ESlateVisibility::Visible);
 	Quantity->SetVisibility(ESlateVisibility::Visible);
+	TargetText->SetVisibility(ESlateVisibility::Visible);
+	TargetText_2->SetVisibility(ESlateVisibility::Visible);
+	bTargetSelection = false;
 
 	if (Instance->GetInventory().BulletsStored.IsEmpty())
 	{
@@ -1062,7 +1107,7 @@ void UBattleHUD::Engage()
 		}
 	case DisgustEv:
 		{
-			PrepareToEngageEv(EAfflictedStatus::DebuffAtk);
+			PrepareToEngageEv(EDebuffStatus::DebuffAtk);
 			break;
 		}
 	case SadnessDv:
@@ -1092,7 +1137,7 @@ void UBattleHUD::Engage()
 		}
 	case CalmEV:
 		{
-			PrepareToEngageEv(EBuffStatus::Shield);
+			PrepareToEngageEv(EAfflictedStatus::ShieldDebuff);
 			break;
 		}
 	case JealousyDv:

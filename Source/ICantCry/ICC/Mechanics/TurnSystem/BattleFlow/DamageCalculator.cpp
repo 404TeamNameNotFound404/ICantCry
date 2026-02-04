@@ -1,5 +1,5 @@
 #include "DamageCalculator.h"
-
+#include "ICantCry/ICC/Mechanics/Core/Data/PlayerStats.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
@@ -19,10 +19,15 @@ FDamage::FDamage(UBulletData* BData, UPlayerStats* PStats, UEnemyTactics* AITact
 
 int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 {
-	checkf(PlayerStats, TEXT("PlayerStats is null"));
-	checkf(AIMoves, TEXT("AIMoves is null"));
-	checkf(EnemyData, TEXT("E data is null"))
-	checkf(AIMoves, TEXT("Moves null"))
+	// checkf(PlayerStats, TEXT("PlayerStats is null"));
+	// checkf(AIMoves, TEXT("AIMoves is null"));
+	// checkf(EnemyData, TEXT("E data is null"))
+	// checkf(AIMoves, TEXT("Moves null"))
+
+	if (!PlayerStats || !AIMoves || !EnemyData || !AIMoves)
+	{
+		return 0;
+	}
 	
 	FRuntimeStats& RuntimeStats = Instance->GetRuntimeStats();
 	UPlayerStats* Stats = Instance->GetPlayerStats();
