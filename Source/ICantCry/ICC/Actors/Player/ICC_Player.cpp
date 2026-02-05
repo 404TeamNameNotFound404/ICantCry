@@ -362,14 +362,7 @@ void AICC_Player::Input_Scroll(const FInputActionValue &InputActionValue)
 		DebugHelper::LogError("Can't get scroll is in fight = false");
 		return;
 	}
-
-	// if (!Hud->IsSelectingTarget())
-	// {
-	// 	DebugHelper::LogError("You can't do that yet");
-	// 	return;
-	// }
 	
-	//DebugHelper::LogSuccess("Scrolling something");
 	
 	if(!Hud)
 	{
@@ -382,13 +375,11 @@ void AICC_Player::Input_Scroll(const FInputActionValue &InputActionValue)
 	if (Hud->GetSelectTarget())
 	{
 		Hud->ScrollTargetSelection(Scroll);
-		// DebugHelper::LogSuccess("Selecting target ");
 	}
 	else
 	{
 		if(Scroll && !Hud->IsBulletSelectionOver())
 		{
-			// DebugHelper::LogSuccess("Scrolling over bullets ");
 			Hud->ScrollBulletSelection(Scroll);
 		}
 	}

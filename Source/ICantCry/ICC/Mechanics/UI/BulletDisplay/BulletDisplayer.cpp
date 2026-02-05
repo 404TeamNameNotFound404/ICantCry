@@ -61,12 +61,16 @@ void UBulletDisplayer::Setup()
 
 void UBulletDisplayer::Refresh()
 {
+	Bullets.Empty();
+	BulletGrid->ClearChildren();
+	
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
 	int32 Index = 0;
 
 	for (auto& Bullet : Instance->GetInventory().BulletsStored)
     {
         FBullet& B = Bullet.Value;
+		if (B.GetQuantity() <= 0) continue;
 
         UBulletSelector* Item = CreateWidget<UBulletSelector>(GetWorld(), BulletButtonItemClass);
         Item->Setup(B, B.GetQuantity());

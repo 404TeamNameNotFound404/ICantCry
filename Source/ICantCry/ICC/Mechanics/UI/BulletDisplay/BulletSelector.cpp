@@ -30,6 +30,11 @@ void UBulletSelector::DisplayBulletInfo() // NB no need to display quantity here
 	{
 		return;
 	}
+
+	if (!DebugHelper::IsGamepadPlugged())
+	{
+		Player->GetBattleHUD()->SetHoveredSelectedBullet(this);
+	}
 	
 	Player->GetBattleHUD()->BulletName->SetText(FText::FromString(BulletRefPtr->GetBulletData()->BulletName));
 	Player->GetBattleHUD()->Description->SetText(FText::FromString(BulletRefPtr->GetBulletData()->Description));
@@ -115,6 +120,16 @@ void UBulletSelector::SetCanSelect(const bool& InCanSelect)
 	gCanSelect = InCanSelect;
 }
 
+bool UBulletSelector::CanBeSelected() const
+{
+	return bCanSelect;
+}
+
+void UBulletSelector::SetCanBeSelected(const bool& Value)
+{
+	bCanSelect = Value;
+}
+
 void UBulletSelector::SetCanSelectBullet(const bool& InCanSelect)
 {
 	bCanSelect = InCanSelect;
@@ -142,10 +157,19 @@ void UBulletSelector::NativeConstruct()
 
 void UBulletSelector::AddToRevolver()
 {
-	// if (!gCanSelect)
-	// {
-	// 	return;
-	// }
+	if (DebugHelper::IsGamepadPlugged())
+	{
+		if (!bCanSelect)
+		{
+			return;
+		}
+	
+		if (const UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletSelector() != this)
+		{
+			return;
+		}
+	}
 	
 	DebugHelper::LogSuccess("Bullet " +  BulletRefPtr->GetBulletData()->BulletName + " inserted");
 

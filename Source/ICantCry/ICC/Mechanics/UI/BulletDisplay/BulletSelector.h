@@ -36,6 +36,9 @@ public:
 	static bool CanSelect();
 	static void SetCanSelect(const bool& InCanSelect);
 
+	bool CanBeSelected() const;
+	void SetCanBeSelected(const bool& Value);
+
 	void SetCanSelectBullet(const bool& InCanSelect);
 
 protected:

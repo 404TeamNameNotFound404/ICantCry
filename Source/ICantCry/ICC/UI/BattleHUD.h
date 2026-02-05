@@ -146,6 +146,10 @@ public:
 	AMob* GetCurrentPlayingEmotion() const;
 	AMob* GetSelectedEmotion() const;
 	AICC_Actor* GetSelectedActor() const;
+
+	UBulletSelector* GetBulletSelector() const;
+	UBulletSelector* GetHoveredSelectedBullet() const;
+	void SetHoveredSelectedBullet(UBulletSelector* Hovered);
 	
 	/**
 	 * Proceed to the battle phase
@@ -300,6 +304,9 @@ private:
 
 	UPROPERTY()
 	UBulletSelector* CurrentSelectedBullet;
+
+	UPROPERTY()
+	UBulletSelector* HoveredSelectedBullet;
 
 	// this variable will handle the target selection and will proceed to start the minigame
 	UPROPERTY()

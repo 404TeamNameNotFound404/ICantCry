@@ -116,7 +116,7 @@ void UBattleHUD::NativeConstruct()
 		return;
 	}
 
-	// SetSelectedBullet(0);
+	 SetSelectedBullet(0);
 
 	//Bullet Selection 
 	SelectedBulletIndex = 0;
@@ -175,7 +175,7 @@ void UBattleHUD::NativeConstruct()
 
 	ConfirmReloadBullet->SetVisibility(ESlateVisibility::Hidden);
 
-	UBulletSelector::SetCanSelect(true);
+	//UBulletSelector::SetCanSelect(true);
 
 	OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
 }
@@ -345,40 +345,47 @@ void UBattleHUD::OnFocusPressed()
 
 void UBattleHUD::OnReloadPressed()
 {
+	bBulletSetupFinished = false;
+	bShootFired = false;
+	bTargetSelection = false;
+	bSelectTarget = false;
+	
+	if (!Displayer || Displayer->GetBullets().IsEmpty())
+	{
+		OutOfBulletTxt->SetVisibility(ESlateVisibility::Visible);
+		return;
+	}
+	
 	if (!GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn())
 	{
+		DebugHelper::AddMessageToLog("[BattleHUD]: Player clicked reload to reload but Detective is freezed");
 		return;
 	}
 
 	if (GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->IsFreezed())
 	{
 		DecreaseAP(1);
+		DebugHelper::AddMessageToLog("[BattleHUD]: Attempted to reload but Detective is freezed");
 		return;
 	}
-
-	UBulletSelector::SetCanSelect(true);
-
-	ConfirmReloadBullet->SetVisibility(ESlateVisibility::Visible);
-	CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Visible);
+	
 	DecreaseAP(1);
 	UpdateAPBar();
 	Bar->DecreaseAP(1);
-
-	bBulletSetupFinished = false;
-	bShootFired = false;
-	bTargetSelection = false;
+	
+	CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Visible);
+	Displayer->SetVisibility(ESlateVisibility::Visible);
 	CanvasAmmoSelection->SetVisibility(ESlateVisibility::Visible);
-	TargetText->SetVisibility(ESlateVisibility::Visible);
-	TargetText_2->SetVisibility(ESlateVisibility::Visible);
+	TargetText->SetVisibility(ESlateVisibility::Hidden);
 	TargetNameText->SetVisibility(ESlateVisibility::Hidden);
 	CanvasBulletStats->SetVisibility(ESlateVisibility::Visible);
 	BulletName->SetVisibility(ESlateVisibility::Visible);
 	Quantity->SetVisibility(ESlateVisibility::Visible);
 	CanvasStatus->SetVisibility(ESlateVisibility::Hidden);
-	CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Visible);
 	Displayer->SetVisibility(ESlateVisibility::Visible);
 	Displayer->Refresh();
 	OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
+	Description->SetVisibility(ESlateVisibility::Visible);
 	RefreshBulletMagazine();
 	FSlateApplication::Get().ClearAllUserFocus();
 }
@@ -632,6 +639,8 @@ void UBattleHUD::HideBulletMagazineOnReload()
 	Displayer->SetVisibility(ESlateVisibility::Hidden);
 	TargetText->SetVisibility(ESlateVisibility::Hidden);
 	TargetNameText->SetVisibility(ESlateVisibility::Hidden);
+	TargetText_2->SetVisibility(ESlateVisibility::Hidden);
+	TargetText_3->SetVisibility(ESlateVisibility::Hidden);
 	BulletName->SetVisibility(ESlateVisibility::Hidden);
 	Quantity->SetVisibility(ESlateVisibility::Hidden);
 	Description->SetVisibility(ESlateVisibility::Hidden);
@@ -887,6 +896,11 @@ void UBattleHUD::SpawnVisualizer()
 
 void UBattleHUD::SetSelectedBullet(int32 Index)
 {
+	if (!Displayer)
+	{
+		return;
+	}
+	
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
 	if (!Instance || Instance->GetInventory().BulletsStored.IsEmpty())
 	{
@@ -999,6 +1013,11 @@ void UBattleHUD::SwitchToBattleUI()
 
 void UBattleHUD::ScrollBulletSelection(float ScrollValue)
 {
+	if (!DebugHelper::IsGamepadPlugged())
+	{
+		return;
+	}
+	
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
 	CanvasBulletStats->SetVisibility(ESlateVisibility::Visible);
 	BulletName->SetVisibility(ESlateVisibility::Visible);
@@ -1020,13 +1039,15 @@ void UBattleHUD::ScrollBulletSelection(float ScrollValue)
 
 	if (Displayer && Displayer->GetBullets().IsValidIndex(NewIndex))
 	{
+		
 		CurrentSelectedBullet = Displayer->GetBullets()[NewIndex];
+		CurrentSelectedBullet->SetCanBeSelected(true);
 		DebugHelper::LogSuccess("Scrolling " + CurrentSelectedBullet->GetBulletPtr()->GetBulletData()->BulletName);
 
 		CurrentSelectedBullet->DisplayBulletInfo();
 
-		FVector2D AbsPos = CurrentSelectedBullet->GetCachedGeometry().GetAbsolutePosition();
-		FVector2D LocalPos = AmmoSelectionIndicator->GetParent()->GetCachedGeometry().AbsoluteToLocal(AbsPos);
+		const FVector2D AbsPos = CurrentSelectedBullet->GetCachedGeometry().GetAbsolutePosition();
+		const FVector2D LocalPos = AmmoSelectionIndicator->GetParent()->GetCachedGeometry().AbsoluteToLocal(AbsPos);
 
 		if (UCanvasPanelSlot* IndicatorSlot = Cast<UCanvasPanelSlot>(AmmoSelectionIndicator->Slot))
 		{
@@ -1180,6 +1201,22 @@ AICC_Actor* UBattleHUD::GetSelectedActor() const
 	return SelectedActorTarget;
 }
 
+UBulletSelector* UBattleHUD::GetBulletSelector() const
+{
+	return CurrentSelectedBullet;
+}
+
+UBulletSelector* UBattleHUD::GetHoveredSelectedBullet() const
+{
+	return HoveredSelectedBullet;
+}
+
+void UBattleHUD::SetHoveredSelectedBullet(UBulletSelector* Hovered)
+{
+	HoveredSelectedBullet = Hovered;
+}
+
+
 void UBattleHUD::SetCurrentPlayingEmotion(AMob* Current)
 {
 	CurrentActiveAI = Current;
@@ -1251,12 +1288,22 @@ void UBattleHUD::SetBulletSetupFinished(const bool& Value)
 
 FText UBattleHUD::GetHoveredBulletQuantity()
 {
-	if (!CurrentSelectedBullet)
+	if (DebugHelper::IsGamepadPlugged())
 	{
-		return FText::FromString("0");
+		if (!CurrentSelectedBullet)
+		{
+			return  FText::FromString("0");
+		}
+		
+		return FText::FromString("Quantity: " + FString::FromInt(CurrentSelectedBullet->GetBulletPtr()->GetQuantity()));
 	}
 
-	return FText::FromString("Quantity: " + FString::FromInt(CurrentSelectedBullet->GetBulletPtr()->GetQuantity()));
+	if (HoveredSelectedBullet)
+	{
+		return FText::FromString("Quantity: " + FString::FromInt(HoveredSelectedBullet->GetBulletPtr()->GetQuantity()));
+	}
+
+	return FText::FromString("");
 }
 
 FText UBattleHUD::UpdateTargetSelectionInfos()
@@ -1340,27 +1387,54 @@ void UBattleHUD::EnableButtonsAfterShooting()
 
 void UBattleHUD::RefreshBulletMagazine()
 {
-	UCircularBulletBuffer* Buffer = GetCircularBulletBuffer();
-	const int32 NumSlots = MagazineBullets.Num();
+	const UCircularBulletBuffer* Buffer = GetCircularBulletBuffer();
+	if (!Buffer) return;
 
-	int32 FilledSlots = 0;
+	const int32 Tail = Buffer->GetTailIndex();
+	const int32 Cap = Buffer->GetCapacity();
 
-	for (int32 i = 0; i < Buffer->GetCount() && FilledSlots < NumSlots; ++i)
+	for (int32 i = 0; i < PistolMagazines.Num(); ++i)
 	{
-		const int32 BufferIndex =
-			(Buffer->GetTailIndex() + i) % Buffer->GetCapacity();
-
-		UBulletData* BulletData = Buffer->PeekAt(BufferIndex);
-		if (!BulletData) continue;
-
-		MagazineBullets[FilledSlots]->Setup(Buffer, BulletData, BufferIndex);
-		FilledSlots++;
+		const int32 BufferIndex = (Tail + i) % Cap;
+		
+		if (const UBulletData* Data = Buffer->PeekAt(BufferIndex); Data)
+		{
+			PistolMagazines[i]->SetBrushFromTexture(Data->Icon, true);
+			PistolMagazines[i]->SetColorAndOpacity(FLinearColor::White);
+		}
+		else
+		{
+			PistolMagazines[i]->SetBrushFromTexture(nullptr);
+			PistolMagazines[i]->SetColorAndOpacity(FLinearColor::Transparent);
+		}
 	}
-
-	for (int32 i = FilledSlots; i < NumSlots; ++i)
-	{
-		MagazineBullets[i]->Setup(nullptr, nullptr, -1);
-	}
+	// UCircularBulletBuffer* Buffer = GetCircularBulletBuffer();
+	//
+	// if (!Buffer)
+	// {
+	// 	return;
+	// }
+	//
+	// const int32 NumSlots = MagazineBullets.Num();
+	//
+	// int32 FilledSlots = 0;
+	//
+	// for (int32 i = 0; i < Buffer->GetCount() && FilledSlots < NumSlots; ++i)
+	// {
+	// 	const int32 BufferIndex =
+	// 		(Buffer->GetTailIndex() + i) % Buffer->GetCapacity();
+	//
+	// 	UBulletData* BulletData = Buffer->PeekAt(BufferIndex);
+	// 	if (!BulletData) continue;
+	//
+	// 	MagazineBullets[FilledSlots]->Setup(Buffer, BulletData, BufferIndex);
+	// 	FilledSlots++;
+	// }
+	//
+	// for (int32 i = FilledSlots; i < NumSlots; ++i)
+	// {
+	// 	MagazineBullets[i]->Setup(nullptr, nullptr, -1);
+	// }
 }
 
 void UBattleHUD::ResetBulletMagazine()
@@ -1443,7 +1517,7 @@ bool UBattleHUD::IsShootFired() const
 }
 
 bool UBattleHUD::IsBulletSelectionOver() const
-{
+{ 
 	return bBulletSetupFinished;
 }
 

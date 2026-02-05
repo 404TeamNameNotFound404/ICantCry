@@ -96,5 +96,7 @@ public:
 	 * Write File to log
 	 */
 	static void SaveLogToFile();
+
+	static bool IsGamepadPlugged();
 	
 };
