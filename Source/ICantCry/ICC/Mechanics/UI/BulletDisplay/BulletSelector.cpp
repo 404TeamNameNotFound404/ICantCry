@@ -254,7 +254,7 @@ void UBulletSelector::AddToRevolver()
 		}
 	}
 	
-	Player->GetBattleHUD()->RefreshBulletMagazine();
+	Player->GetBattleHUD()->RefreshPistolMagazine();
 }
 
 

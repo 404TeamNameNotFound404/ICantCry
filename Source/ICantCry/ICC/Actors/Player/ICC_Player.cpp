@@ -372,16 +372,18 @@ void AICC_Player::Input_Scroll(const FInputActionValue &InputActionValue)
 	
 	const float Scroll = InputActionValue.Get<float>();
 
-	if (Hud->GetSelectTarget())
+	if (Scroll == 0.f)
+	{
+		return;
+	}
+
+	if (Hud->IsBulletSelectionOver())
 	{
 		Hud->ScrollTargetSelection(Scroll);
 	}
 	else
 	{
-		if(Scroll && !Hud->IsBulletSelectionOver())
-		{
-			Hud->ScrollBulletSelection(Scroll);
-		}
+		Hud->ScrollBulletSelection(Scroll);
 	}
 }
 

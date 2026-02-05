@@ -207,7 +207,8 @@ public:
 	void EnableButtonsAfterShooting();
 
 	void RefreshBulletMagazine();
-	void ResetBulletMagazine();
+	void RefreshPistolMagazine();
+	void ResetPistolMagazine();
 	void ResetAp();
 	void RequestBulletPreparation();
 
@@ -277,7 +278,9 @@ private:
 	void ReflectBullets();
 	
 	UFUNCTION() void UpdateBulletIcons(const TArray<FInventoryItem>& InventoryItems);
-	
+
+	void ApplyBulletDisplayerFocus();
+	void RevertBulletDisplayerFocus();
     
     // Targetting
     

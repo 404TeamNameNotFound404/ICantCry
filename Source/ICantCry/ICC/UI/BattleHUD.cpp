@@ -4,6 +4,7 @@
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
 #include "EngineUtils.h"
+#include "HeadMountedDisplayTypes.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "ICantCry/ICC/Mechanics/UI/BattleVisualization/GameOver/GameOverVisualizer.h"
 #include "Framework/Application/SlateApplication.h"
@@ -289,8 +290,9 @@ void UBattleHUD::OnShootPressed()
 			}
 		}
 	}
+	bTargetSelection = true;
 
-	FSlateApplication::Get().ClearAllUserFocus();
+	//FSlateApplication::Get().ClearAllUserFocus();
 }
 
 void UBattleHUD::OnShootBoostPressed()
@@ -350,7 +352,13 @@ void UBattleHUD::OnReloadPressed()
 	bTargetSelection = false;
 	bSelectTarget = false;
 	
-	if (!Displayer || Displayer->GetBullets().IsEmpty())
+	// if (!Displayer || Displayer->GetBullets().IsEmpty())
+	// {
+	// 	OutOfBulletTxt->SetVisibility(ESlateVisibility::Visible);
+	// 	return;
+	// }
+
+	if (GameInstance->GetInventory().BulletsStored.IsEmpty())
 	{
 		OutOfBulletTxt->SetVisibility(ESlateVisibility::Visible);
 		return;
@@ -383,11 +391,13 @@ void UBattleHUD::OnReloadPressed()
 	Quantity->SetVisibility(ESlateVisibility::Visible);
 	CanvasStatus->SetVisibility(ESlateVisibility::Hidden);
 	Displayer->SetVisibility(ESlateVisibility::Visible);
+	
 	Displayer->Refresh();
+	//RefreshBulletMagazine();
+	RefreshPistolMagazine();
 	OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
 	Description->SetVisibility(ESlateVisibility::Visible);
-	RefreshBulletMagazine();
-	FSlateApplication::Get().ClearAllUserFocus();
+	//FSlateApplication::Get().ClearAllUserFocus();
 }
 
 void UBattleHUD::OnPassPressed()
@@ -436,6 +446,7 @@ void UBattleHUD::ScrollTargetSelection(float ScrollValue)
 		DebugHelper::LogError("Queue is empty at ScrollTargetSelection");
 		return;
 	}
+	
 	AICC_Actor* SelectedActor = Queue[0];
 
 	bTargetSelection = true;
@@ -571,6 +582,7 @@ void UBattleHUD::ReflectBullets()
 
 	Displayer->Refresh();
 	SetSelectedBullet(0);
+	ApplyBulletDisplayerFocus();
 }
 
 void UBattleHUD::UpdateBulletIcons(const TArray<FInventoryItem>& InventoryItems)
@@ -591,6 +603,55 @@ void UBattleHUD::UpdateBulletIcons(const TArray<FInventoryItem>& InventoryItems)
 				BulletPanel->AddChild(NewIcon);
 			}
 		}
+	}
+}
+
+void UBattleHUD::ApplyBulletDisplayerFocus()
+{
+	AICC_PlayerController* PC = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
+	if (!PC)
+	{
+		DebugHelper::LogError("PC invalid on apply focus");
+		return;
+	}
+
+	FInputModeUIOnly InputMode;
+	InputMode.SetWidgetToFocus(Displayer->TakeWidget());
+	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+	PC->SetInputMode(InputMode);
+	PC->bEnableClickEvents = true;
+	PC->bEnableMouseOverEvents = true;
+	PC->bShowMouseCursor = true;
+	
+	Displayer->SetUserFocus(PC);
+	PC->GetLocalPlayer()->ViewportClient->SetMouseCaptureMode(EMouseCaptureMode::NoCapture);
+}
+
+void UBattleHUD::RevertBulletDisplayerFocus()
+{
+	AICC_PlayerController* PC = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
+	if (!PC)
+	{
+		DebugHelper::LogError("PC invalid on RevertBulletDisplayerFocus");
+		return;
+	}
+
+	FInputModeGameAndUI InputMode;
+	InputMode.SetHideCursorDuringCapture(false);
+	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+	
+	InputMode.SetWidgetToFocus(TakeWidget());
+
+	PC->SetInputMode(InputMode);
+
+	PC->bEnableClickEvents = true;
+	PC->bEnableMouseOverEvents = true;
+	PC->bShowMouseCursor = true;
+
+	
+	if (PC->GetLocalPlayer() && PC->GetLocalPlayer()->ViewportClient)
+	{
+		PC->GetLocalPlayer()->ViewportClient->SetMouseCaptureMode(EMouseCaptureMode::NoCapture);
 	}
 }
 
@@ -994,6 +1055,7 @@ void UBattleHUD::ConfirmBulletSelection() // this is for the confirm button
 	bBulletSetupFinished = true;
 	bStartFight = true;
 	BattleHandler->GetTurnBasedSystem()->PrePrepareToBattle();
+	RevertBulletDisplayerFocus();
 }
 
 void UBattleHUD::SwitchToBattleUI()
@@ -1013,7 +1075,7 @@ void UBattleHUD::SwitchToBattleUI()
 
 void UBattleHUD::ScrollBulletSelection(float ScrollValue)
 {
-	if (!DebugHelper::IsGamepadPlugged())
+	if (!DebugHelper::IsGamepadPlugged() )
 	{
 		return;
 	}
@@ -1024,7 +1086,7 @@ void UBattleHUD::ScrollBulletSelection(float ScrollValue)
 	Quantity->SetVisibility(ESlateVisibility::Visible);
 	TargetText->SetVisibility(ESlateVisibility::Visible);
 	TargetText_2->SetVisibility(ESlateVisibility::Visible);
-	bTargetSelection = false;
+	//bTargetSelection = false;
 
 	if (Instance->GetInventory().BulletsStored.IsEmpty())
 	{
@@ -1303,6 +1365,8 @@ FText UBattleHUD::GetHoveredBulletQuantity()
 		return FText::FromString("Quantity: " + FString::FromInt(HoveredSelectedBullet->GetBulletPtr()->GetQuantity()));
 	}
 
+	// It must reset the quantity of the correct type of bullet! , right now , readding them will mean that the updated "text" quantity will go to the hovered / Current indexed one
+
 	return FText::FromString("");
 }
 
@@ -1387,12 +1451,51 @@ void UBattleHUD::EnableButtonsAfterShooting()
 
 void UBattleHUD::RefreshBulletMagazine()
 {
-	const UCircularBulletBuffer* Buffer = GetCircularBulletBuffer();
+	UCircularBulletBuffer* Buffer = GetCircularBulletBuffer();
 	if (!Buffer) return;
 
 	const int32 Tail = Buffer->GetTailIndex();
-	const int32 Cap = Buffer->GetCapacity();
+	const int32 Capacity = Buffer->GetCapacity();
+	const int32 BulletCount = Buffer->GetCount(); 
 
+	for (int32 i = 0; i < MagazineBullets.Num(); ++i)
+	{
+		if (!MagazineBullets[i]) continue;
+
+		if (i < BulletCount)
+		{
+			const int32 BufferIndex = (Tail + i) % Capacity;
+			UBulletData* BulletData = Buffer->PeekAt(BufferIndex);
+
+			MagazineBullets[i]->Setup(Buffer, BulletData, BufferIndex);
+			MagazineBullets[i]->SetRenderOpacity(1.0f);
+			MagazineBullets[i]->GetMagazineBulletButton()->SetBackgroundColor(BulletData->DisplayColor);
+			MagazineBullets[i]->GetMagazineBulletButton()->SetIsEnabled(true);
+		}
+		else
+		{
+			MagazineBullets[i]->Setup(Buffer, nullptr, -1);
+			MagazineBullets[i]->SetRenderOpacity(0.25f);
+			MagazineBullets[i]->GetMagazineBulletButton()->SetBackgroundColor(FLinearColor::Transparent);
+			MagazineBullets[i]->GetMagazineBulletButton()->SetIsEnabled(false);
+		}
+	}
+
+	if (BulletCount == 0)
+	{
+		SelectedBulletIndex = 0;
+		CurrentSelectedBullet = nullptr;
+	}
+}
+
+void UBattleHUD::RefreshPistolMagazine()
+{
+	const UCircularBulletBuffer* Buffer = GetCircularBulletBuffer();
+	if (!Buffer) return;
+	
+	const int32 Tail = Buffer->GetTailIndex();
+	const int32 Cap = Buffer->GetCapacity();
+	
 	for (int32 i = 0; i < PistolMagazines.Num(); ++i)
 	{
 		const int32 BufferIndex = (Tail + i) % Cap;
@@ -1408,36 +1511,9 @@ void UBattleHUD::RefreshBulletMagazine()
 			PistolMagazines[i]->SetColorAndOpacity(FLinearColor::Transparent);
 		}
 	}
-	// UCircularBulletBuffer* Buffer = GetCircularBulletBuffer();
-	//
-	// if (!Buffer)
-	// {
-	// 	return;
-	// }
-	//
-	// const int32 NumSlots = MagazineBullets.Num();
-	//
-	// int32 FilledSlots = 0;
-	//
-	// for (int32 i = 0; i < Buffer->GetCount() && FilledSlots < NumSlots; ++i)
-	// {
-	// 	const int32 BufferIndex =
-	// 		(Buffer->GetTailIndex() + i) % Buffer->GetCapacity();
-	//
-	// 	UBulletData* BulletData = Buffer->PeekAt(BufferIndex);
-	// 	if (!BulletData) continue;
-	//
-	// 	MagazineBullets[FilledSlots]->Setup(Buffer, BulletData, BufferIndex);
-	// 	FilledSlots++;
-	// }
-	//
-	// for (int32 i = FilledSlots; i < NumSlots; ++i)
-	// {
-	// 	MagazineBullets[i]->Setup(nullptr, nullptr, -1);
-	// }
 }
 
-void UBattleHUD::ResetBulletMagazine()
+void UBattleHUD::ResetPistolMagazine()
 {
 	const UCircularBulletBuffer* Buffer = GetCircularBulletBuffer();
 
@@ -1491,10 +1567,12 @@ void UBattleHUD::RequestBulletPreparation()
 	CanvasStatus->SetVisibility(ESlateVisibility::Hidden);
 	Displayer->SetVisibility(ESlateVisibility::Visible);
 	OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
-
+	
 	DebugHelper::LogWarning("Entered Preparation Phase");
 
 	GetBattleHandler()->GetTurnBasedSystem()->SetBattlePhase(EBattlePhase::Preparation);
+
+	GetWorld()->GetTimerManager().SetTimerForNextTick(this, &UBattleHUD::ApplyBulletDisplayerFocus);
 }
 
 void UBattleHUD::Reset(const TMap<TEnumAsByte<EBulletType>, FBullet>& Bullets)

@@ -42,6 +42,8 @@ public:
 	void RefreshBullets();
 
 	void RemoveBullet();
+
+	UGridPanel* GetBulletGrid() const;
 	
 	/**
 	 * DEBUG ONLY!

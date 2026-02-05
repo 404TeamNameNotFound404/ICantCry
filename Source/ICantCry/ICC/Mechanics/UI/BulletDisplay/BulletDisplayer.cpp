@@ -33,6 +33,7 @@ void UBulletDisplayer::Setup()
 	for (auto& Bullet : Instance->GetInventory().BulletsStored)
 	{
 		FBullet& B = Bullet.Value;
+		if (B.GetQuantity() <= 0) continue;
 		
 		UBulletSelector* Item = CreateWidget<UBulletSelector>(GetWorld(), BulletButtonItemClass);
 		Item->Setup(B, B.GetQuantity());
@@ -153,6 +154,11 @@ void UBulletDisplayer::RemoveBullet()
 	Target->GetHealthBar()->SetCurrentHealth(Target->GetStats().Health);
 	
 	DebugHelper::AddMessageToLog("Minigame modifier post engage -> " + FString::SanitizeFloat(Instance->GetPlayerStats()->MinigameModifier));
+}
+
+UGridPanel* UBulletDisplayer::GetBulletGrid() const
+{
+	return BulletGrid;
 }
 
 void UBulletDisplayer::InstantiateBullet(TArray<FBullet> InstantiateBullets)
