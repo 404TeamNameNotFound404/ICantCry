@@ -269,7 +269,6 @@ private:
     
     // Button Handlers
     UFUNCTION() void OnShootPressed();
-    UFUNCTION() void OnShootBoostPressed();
     UFUNCTION() void OnFocusPressed();
     UFUNCTION() void OnReloadPressed();
     UFUNCTION() void OnPassPressed();

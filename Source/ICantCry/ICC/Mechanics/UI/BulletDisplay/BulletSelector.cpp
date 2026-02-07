@@ -170,14 +170,19 @@ void UBulletSelector::AddToRevolver()
 			return;
 		}
 	}
-	
-	DebugHelper::LogSuccess("Bullet " +  BulletRefPtr->GetBulletData()->BulletName + " inserted");
 
-	if (BulletRefPtr->GetQuantity() <= 0)
+	UCircularBulletBuffer* Buffer = Player->GetBattleHUD()->GetCircularBulletBuffer();
+
+	if (Buffer->IsEmpty())
 	{
-		DebugHelper::LogWarning(BulletRef.GetBulletData()->BulletName + " is empty");
-		return;
+		Buffer->Clear();
 	}
+	
+	if (const bool bIsEmpty = BulletRefPtr->GetQuantity() <= 0; bIsEmpty)
+	{
+		DebugHelper::LogWarning(BulletRefPtr->GetBulletData()->BulletName + " is empty");
+	}
+	
 
 	if (Player->GetBattleHUD()->GetCircularBulletBuffer()->IsFull())
 	{
@@ -185,75 +190,28 @@ void UBulletSelector::AddToRevolver()
 		return;
 	}
 	
-	Player->GetBattleHUD()->GetCircularBulletBuffer()->AddBullet(BulletRefPtr->GetBulletData());
+	Buffer->AddBullet(BulletRefPtr->GetBulletData());
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
 
 	BulletRefPtr->SetQuantity(BulletRefPtr->GetQuantity() - 1);
 	DebugHelper::LogMessage(8, FColor::Red, "Decreasing quantity of " + BulletRefPtr->GetBulletData()->BulletName + ": " + FString::FromInt(BulletRefPtr->GetQuantity()));
 	
-	const TArray<URevolverSlot*>& Slots = Player->GetBattleHUD()->RevolverSlots;
 	const TArray<UImage*>& PistolMagazines = Player->GetBattleHUD()->PistolMagazines;
 	const TArray<UMagazineBullet*>& MagazineBullets = Player->GetBattleHUD()->MagazineBullets;
 	
-	UCircularBulletBuffer* Buffer = Player->GetBattleHUD()->GetCircularBulletBuffer();
 	const int32 NumSlots = MagazineBullets.Num();
-	const int32 NumBullets = Buffer->GetCount();
-	const int32 Count = Buffer->GetCount();
-	int32 FilledSlots = 0;
 
-	for (int32 i = 0; i < Buffer->GetCount(); ++i)
+	for (int32 i = 0; i < NumSlots; ++i)
 	{
+		UMagazineBullet* MagazineSlot = MagazineBullets[i];
+
 		const int32 BufferIndex = (Buffer->GetTailIndex() + i) % Buffer->GetCapacity();
 		UBulletData* BulletData = Buffer->PeekAt(BufferIndex);
 
-		if (!BulletData)
-		{
-			continue;
-		}
-
-		if (FilledSlots >= NumSlots)
-			break;
-
-		UMagazineBullet* MagazineSlot = MagazineBullets[FilledSlots];
+		MagazineSlot->SetEnableRemoval(BulletData != nullptr);
 		MagazineSlot->Setup(Buffer, BulletData, BufferIndex);
-		MagazineSlot->SetRenderOpacity(1.0f);
-		MagazineSlot->GetMagazineBulletButton()->SetBackgroundColor(BulletData->DisplayColor);
-		MagazineSlot->GetMagazineBulletButton()->SetIsEnabled(true);
-
-		FilledSlots++;
 	}
 
-	for (int32 i = FilledSlots; i < NumSlots; ++i)
-	{
-		if (UMagazineBullet* MagazineSlot = MagazineBullets[i]; MagazineSlot->GetMagazineBulletButton()->GetIsEnabled())
-		{
-			MagazineSlot->Setup(Buffer, nullptr, -1);
-			MagazineSlot->SetRenderOpacity(0.25f);
-			MagazineSlot->GetMagazineBulletButton()->SetBackgroundColor(FLinearColor::Transparent);
-			MagazineSlot->GetMagazineBulletButton()->SetIsEnabled(false);
-		}
-	}
-
-	for (int32 i = 0; i < PistolMagazines.Num(); ++i)
-	{
-		const int32 BufferIndex = (Player->GetBattleHUD()->GetCircularBulletBuffer()->GetTailIndex() + i) % Player->GetBattleHUD()->GetCircularBulletBuffer()->GetCapacity();
-		const UBulletData* BulletData = Player->GetBattleHUD()->GetCircularBulletBuffer()->PeekAt(BufferIndex);
-
-		if (const UImage* BulletImage = PistolMagazines[i]; BulletImage)
-		{
-			if (BulletData)
-			{
-				PistolMagazines[i]->SetBrushTintColor(FSlateColor{FColor::White});
-				PistolMagazines[i]->SetColorAndOpacity(FLinearColor::White);
-				PistolMagazines[i]->SetBrushFromTexture(BulletData->Icon, true);
-			}
-			else
-			{
-				PistolMagazines[i]->SetBrushFromTexture(nullptr);
-			}
-		}
-	}
-	
 	Player->GetBattleHUD()->RefreshPistolMagazine();
 }
 

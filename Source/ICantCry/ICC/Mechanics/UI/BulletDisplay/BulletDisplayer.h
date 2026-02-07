@@ -40,7 +40,7 @@ public:
 	TArray<UBulletSelector*> GetBullets() const;
 
 	void RefreshBullets();
-
+	
 	void RemoveBullet();
 
 	UGridPanel* GetBulletGrid() const;
