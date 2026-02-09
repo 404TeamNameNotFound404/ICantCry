@@ -212,10 +212,23 @@ public:
 	void ResetAp();
 	void RequestBulletPreparation();
 
+	int32 GetSelectedBulletIndex() const;
+	void SetSelectedBulletIndex(const int32& Value);
+
 	/**
 	 * Reset the hud and all it's call at game over's retry
 	 */
 	void Reset(const TMap<TEnumAsByte<EBulletType>, FBullet>& Bullets);
+
+	UFUNCTION()
+	void IncreaseShootPower();
+
+	UFUNCTION()
+	void DecreaseShootPower();
+
+	void MoveFocusOn(const float& Value);
+
+	UFUNCTION() void ConfirmBulletSelection();
 
 private:
 
@@ -230,6 +243,10 @@ private:
     int32 CurrentEnemyIndex = 0;
     int32 SelectedBulletIndex = 0;
     int32 CurrentRevolverSlot = 0;
+
+	UPROPERTY()
+	int32 CachedBulletQuantity = 0;
+	
     UPROPERTY(EditDefaultsOnly, Category = "Bullets") int32 MaxRevolverSlots = 6;
 	
     UPROPERTY() UBulletData* CurrentBulletData;
@@ -287,7 +304,6 @@ private:
     UFUNCTION() void UpdateBulletSelection();
 	UFUNCTION() void UpdateBulletInfo(UBulletData* BulletData);
     UFUNCTION() void UpdateTargetInfo(const FString& EnemyName, UBulletData* BulletData = nullptr); 
-    UFUNCTION() void ConfirmBulletSelection();
     UFUNCTION() void SwitchToBattleUI();
 	UFUNCTION()	void SetSelectedBullet(int32 Index);
 	UFUNCTION() void UpdateRevolverUI();
@@ -335,14 +351,6 @@ private:
 	 */
 	UPROPERTY()
 	int32 ApPowerBoost = 0;
-	
-	UFUNCTION()
-	void IncreaseShootPower();
-
-	UFUNCTION()
-	void DecreaseShootPower();
-
-	
 
 	/*
 	 *-------------------------------------------------------
@@ -381,11 +389,20 @@ private:
 
 	UPROPERTY()
 	UGameOverVisualizer* GameOverVisualizer = nullptr;
+
+	UPROPERTY()
+	UWidget* CurrentFocusedWidget = nullptr;
 	
 	/**
 	 * -----------------------------------
 	 *         END BATTLE
 	 * ----------------------------------
 	 */
+
+	// Gamepad shit
+	UPROPERTY() TArray<UWidget*> ActionPhaseButtons;
+	UPROPERTY() TArray<UWidget*> BulletPhaseButtons;
+	UPROPERTY() int32 CurrentWidgetIndex = 0;
+	UPROPERTY() bool bNavigatingBullets = true;
 	
 };

@@ -15,6 +15,9 @@ class ICANTCRY_API UGameOverVisualizer : public UBattleVisualizer
 {
 	GENERATED_BODY()
 
+public:
+	UButton* GetButton() const;
+
 protected:
 	virtual void NativeConstruct() override;
 

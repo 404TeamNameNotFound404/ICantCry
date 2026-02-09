@@ -13,6 +13,7 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "ICantCry/ICC/Actors/Player/Camera/WorldCamera.h"
+#include "ICantCry/ICC/Input/Gamepad/ICC_GamepadBinder.h"
 #include "ICantCry/ICC/Managers/InventoryManager.h"
 #include "ICantCry/ICC/Mechanics/Core/Data/BattleData.h"
 #include "ICantCry/ICC/Mechanics/Core/Minigame/MinigameHandler.h"
@@ -129,7 +130,10 @@ public:
 	float GetExpRequiredForNextLevel()  const;
 
 	UFUNCTION(BlueprintCallable,  Category = "Level System")
-	float GetCurrentExpPercentage()  const; 
+	float GetCurrentExpPercentage()  const;
+
+	UICC_GamepadBinder* GetBinder() const;
+	USpringArmComponent* GetCameraBoom() const;
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Movement")
@@ -173,6 +177,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	UBattleHUD* Hud;
+
+	UPROPERTY()
+	UICC_GamepadBinder* PadBinder;
 
 	UPROPERTY()
 	UMinigameUserWidget* CurrentMinigameDisplayed = nullptr;

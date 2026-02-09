@@ -87,6 +87,11 @@ UTextBlock* UVictoryVisualizer::GetEssenceDrop3() const
 	return EssenceDrop3;
 }
 
+UButton* UVictoryVisualizer::GetButton() const
+{
+	return BackToWorld;
+}
+
 
 int32 UVictoryVisualizer::CalculateExp(const TArray<AICC_Actor*>& Queue)
 {

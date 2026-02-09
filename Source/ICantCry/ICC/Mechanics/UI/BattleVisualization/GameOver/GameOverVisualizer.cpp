@@ -4,6 +4,11 @@
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 
+UButton* UGameOverVisualizer::GetButton() const
+{
+	return LoadPreviousSave;
+}
+
 void UGameOverVisualizer::NativeConstruct()
 {
 	Super::NativeConstruct();

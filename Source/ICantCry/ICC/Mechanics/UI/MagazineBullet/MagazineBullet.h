@@ -28,6 +28,8 @@ public:
 
 	bool IsAllowedToRemoveBullet() const;
 	void SetEnableRemoval(const bool& NewEnableRemoval);
+
+	void Clear();
 	
 protected:
 	virtual void NativeConstruct() override;

@@ -140,6 +140,11 @@ void UBulletSelector::SetCanSelectBullet(const bool& InCanSelect)
 	}
 }
 
+UButton* UBulletSelector::GetButton()
+{
+	return Bullet;
+}
+
 void UBulletSelector::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -161,14 +166,28 @@ void UBulletSelector::AddToRevolver()
 	{
 		if (!bCanSelect)
 		{
+			DebugHelper::LogError("b is not selected");
 			return;
 		}
 	
 		if (const UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
 			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletSelector() != this)
 		{
+			DebugHelper::LogError("b is not this");
 			return;
 		}
+		
+		if (AICC_PlayerController* PC = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController()); PC)
+		{
+			const FInputModeGameAndUI InputMode;
+			PC->SetInputMode(InputMode);
+
+			PC->bEnableClickEvents = true;
+			PC->bEnableMouseOverEvents = true;
+			PC->bShowMouseCursor = false;
+			PC->GetLocalPlayer()->ViewportClient->SetMouseCaptureMode(EMouseCaptureMode::NoCapture);
+		}
+		
 	}
 
 	UCircularBulletBuffer* Buffer = Player->GetBattleHUD()->GetCircularBulletBuffer();
@@ -183,7 +202,15 @@ void UBulletSelector::AddToRevolver()
 		DebugHelper::LogWarning(BulletRefPtr->GetBulletData()->BulletName + " is empty");
 	}
 	
-
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	
+	if ((DebugHelper::IsGamepadPlugged() && Player->GetBattleHUD()->GetCircularBulletBuffer()->IsFull()) ||
+		(DebugHelper::IsGamepadPlugged() && Instance->GetInventory().BulletsStored.IsEmpty()))
+	{
+		Player->GetBinder()->SetIsNavigatingInsideWidget(false); 
+		Player->GetBinder()->FocusOn(Player->GetBattleHUD()->GetBulletDisplayer()->GetBulletConfirmGamepad());
+	}
+	
 	if (Player->GetBattleHUD()->GetCircularBulletBuffer()->IsFull())
 	{
 		DebugHelper::LogWarning("Revolver is already full");
@@ -191,7 +218,7 @@ void UBulletSelector::AddToRevolver()
 	}
 	
 	Buffer->AddBullet(BulletRefPtr->GetBulletData());
-	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	
 
 	BulletRefPtr->SetQuantity(BulletRefPtr->GetQuantity() - 1);
 	DebugHelper::LogMessage(8, FColor::Red, "Decreasing quantity of " + BulletRefPtr->GetBulletData()->BulletName + ": " + FString::FromInt(BulletRefPtr->GetQuantity()));

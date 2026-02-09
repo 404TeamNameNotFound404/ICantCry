@@ -31,6 +31,8 @@ void ABattleHandler::BeginPlay()
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	checkf(PlayerController, TEXT("PlayerController is null at ABattleHandler::BeginPlay"));
 
+	PC = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
+
 }
 
 // Called every frame
@@ -39,6 +41,17 @@ void ABattleHandler::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	TurnBasedSystem->Update(GetWorld(), &SpawnManager->GetMemory());
+
+	if (DebugHelper::IsGamepadPlugged())
+	{
+		PC->bShowMouseCursor = false;
+		bControllerPlugged = true;
+	}
+	else
+	{
+		PC->bShowMouseCursor = true;
+		bControllerPlugged = false;
+	}
 }
 
 UTurnBasedSystem *ABattleHandler::GetTurnBasedSystem() const
@@ -55,5 +68,10 @@ UBattleInfo* ABattleHandler::GetBattleInfo() const
 AEnemySpawnManager* ABattleHandler::GetEnemySpawnManager()
 {
 	return SpawnManager;
+}
+
+bool ABattleHandler::IsControllerPlugged() const
+{
+	return bControllerPlugged;
 }
 

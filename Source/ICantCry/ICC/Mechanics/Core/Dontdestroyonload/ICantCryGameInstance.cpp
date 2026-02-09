@@ -41,10 +41,10 @@ void UICantCryGameInstance::RecreatePlayer() const
 	}
 
 	AICC_Player* Player = GetWorld()->SpawnActor<AICC_Player>(PlayerBp, PlayerRuntimeData.CurrentLocation, PlayerRuntimeData.CurrentOrientation, SpawnParams);
-
 	checkf(Player, TEXT("Player is null in UICantCryGameInstance::RecreatePlayer"));
 	
 	PlayerController->Possess(Player);
+	PlayerController->SetControlRotation(CameraMemory.SavedControlRotation);
 	
 	DebugHelper::LogSuccess("Player recreated successfully at " + PersistentData->PlayerPosition.ToString());
 }
@@ -72,6 +72,7 @@ void UICantCryGameInstance::StoreLastPlayerTransform(AICC_Player* Player, const 
 {
 	PlayerRuntimeData.LastPositionBeforeBattle = LastPosition;
 	PlayerRuntimeData.LastOrientationBeforeBattle = LastOrientation;
+	CameraMemory.SavedControlRotation = Player->GetController()->GetControlRotation();
 }
 
 void UICantCryGameInstance::StoreLastPlayerTransform(const FVector& LastPosition, const FRotator& LastOrientation) const

@@ -46,6 +46,24 @@ void UMagazineBullet::SetEnableRemoval(const bool& NewEnableRemoval)
 	bEnableRemoval = NewEnableRemoval;
 }
 
+void UMagazineBullet::Clear()
+{
+	if (!bEnableRemoval || !Buffer)
+		return;
+
+	if (Buffer->IsEmpty())
+	{
+		return;
+	}
+	
+	Instance->GetInventory().BulletsStored = Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetEnemySpawnManager()->GetMemory().InBattleBullets;
+	
+	Buffer->Clear();
+	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->Refresh();
+	Instance->GetCurrentPlayer()->GetBattleHUD()->RefreshPistolMagazine();
+	Instance->GetCurrentPlayer()->GetBattleHUD()->RefreshBulletMagazine();
+}
+
 
 void UMagazineBullet::Setup(UCircularBulletBuffer* InBuffer,  UBulletData* BulletData, int32 Index)
 {

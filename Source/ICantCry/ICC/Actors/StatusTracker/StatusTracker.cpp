@@ -1348,7 +1348,7 @@ void UStatusTracker::Reset()
 	bShieldBuffed = false;
 	Instance->GetRuntimeStats().AttackPower = Instance->GetPersistentData()->InitialAttackPower;
 	Instance->GetRuntimeStats().DefencePower = Instance->GetPersistentData()->InitialDefencePower;
-	Instance->GetRuntimeStats().ApModifier = 0;
+	Instance->GetRuntimeStats().ApModifier = 1;
 	DebugHelper::LogMessage(8, FColor::Blue, "Stats successfully restored");
 }
 

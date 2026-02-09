@@ -57,6 +57,10 @@ void UBulletDisplayer::Setup()
 
 		DebugHelper::LogWarning("Found " + B.GetBulletData()->BulletName);
 	}
+
+	ConfirmGamepadBtn->SetVisibility(DebugHelper::IsGamepadPlugged() ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+
+	ConfirmGamepadBtn->OnClicked.AddDynamic(Instance->GetCurrentPlayer()->GetBattleHUD(), &UBattleHUD::ConfirmBulletSelection);
 }
 
 
@@ -74,6 +78,7 @@ void UBulletDisplayer::Refresh()
 		if (B.GetQuantity() <= 0) continue;
 
 		UBulletSelector* Item = CreateWidget<UBulletSelector>(GetWorld(), BulletButtonItemClass);
+		Item->SetIsFocusable(true);
 		Item->Setup(B, B.GetQuantity());
 		Item->SetPadding(FMargin(2, 2));
 
@@ -95,6 +100,12 @@ void UBulletDisplayer::Refresh()
 
 		DebugHelper::LogWarning("Found " + B.GetBulletData()->BulletName);
 	}
+	
+	if (GetBullets().IsValidIndex(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedBulletIndex()))
+	{
+		Instance->GetCurrentPlayer()->GetBattleHUD()->SetSelectedBulletIndex(0);
+	}
+
 }
 
 TArray<UBulletSelector*> UBulletDisplayer::GetBullets() const
@@ -170,11 +181,18 @@ void UBulletDisplayer::RemoveBullet()
 
 	DebugHelper::AddMessageToLog(
 		"Minigame modifier post engage -> " + FString::SanitizeFloat(Instance->GetPlayerStats()->MinigameModifier));
+
+	Player->GetBattleHUD()->RefreshPistolMagazine();
 }
 
 UGridPanel* UBulletDisplayer::GetBulletGrid() const
 {
 	return BulletGrid;
+}
+
+UButton* UBulletDisplayer::GetBulletConfirmGamepad() const
+{
+	return ConfirmGamepadBtn;
 }
 
 void UBulletDisplayer::InstantiateBullet(TArray<FBullet> InstantiateBullets)

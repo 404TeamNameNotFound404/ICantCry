@@ -48,6 +48,8 @@ AICC_Player::AICC_Player()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.0f;
 
 	MinigameHandler = nullptr;
+
+	PadBinder = CreateDefaultSubobject<UICC_GamepadBinder>(TEXT("GamepadBinder"));
 }
 
 // Called when the game starts or when spawned
@@ -101,6 +103,8 @@ void AICC_Player::BeginPlay()
 	BestiaryUI= CreateWidget<UBestiaryUI>(GetWorld(), BestiaryUIClass);
 	BestiaryUI->AddToViewport();
 	BestiaryUI->SetVisibility(ESlateVisibility::Hidden);
+	
+	PadBinder->Init(this);
 }
 
 // Called every frame
@@ -161,8 +165,12 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_CloseCrafting, ETriggerEvent::Triggered, this, &ThisClass::Input_CloseCrafting);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_LMBInteract, ETriggerEvent::Triggered, this, &ThisClass::Input_ChallengeInteraction);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_LMBInteract, ETriggerEvent::Completed, this, &ThisClass::Input_ChallengeReleaseInteraction);
-	//  LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Bestiary, ETriggerEvent::Started, this, &ThisClass::Input_OpenBestiary);
-	// LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_CloseBestiary, ETriggerEvent::Triggered, this, &ThisClass::Input_CloseBestiary);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_GamepadInteraction, ETriggerEvent::Completed, PadBinder, &UICC_GamepadBinder::Input_GamepadEngageInteraction);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_GamepadInteraction, ETriggerEvent::Triggered, PadBinder, &UICC_GamepadBinder::Input_GamepadSelectionInteraction);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_GamepadRemoveBullet, ETriggerEvent::Triggered, PadBinder, &UICC_GamepadBinder::Input_GamepadRemoveBullet);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_GamepadShootBoost, ETriggerEvent::Triggered, PadBinder, &UICC_GamepadBinder::Input_GamepadShootBoost);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_GamepadNavigate, ETriggerEvent::Triggered, PadBinder, &UICC_GamepadBinder::Input_GamepadNavigateUi);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_GamepadSimulateClick, ETriggerEvent::Triggered, PadBinder, &UICC_GamepadBinder::Input_GamepadSimulateClick);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Bestiary, ETriggerEvent::Started, this, &ThisClass::Input_ToggleBestiary);
 }
 
@@ -372,19 +380,25 @@ void AICC_Player::Input_Scroll(const FInputActionValue &InputActionValue)
 	
 	const float Scroll = InputActionValue.Get<float>();
 
-	if (Scroll == 0.f)
+	if (FMath::IsNearlyZero(Scroll))
 	{
 		return;
 	}
-
+	
 	if (Hud->IsBulletSelectionOver())
 	{
 		Hud->ScrollTargetSelection(Scroll);
+		return;
 	}
-	else
+	if (PadBinder->IsNavigating())
 	{
 		Hud->ScrollBulletSelection(Scroll);
+		return;
 	}
+	// else
+	// {
+	// 	Hud->ScrollBulletSelection(Scroll);
+	// }
 }
 
 void AICC_Player::Input_OpenInventory(const FInputActionValue& InputActionValue)
@@ -467,7 +481,7 @@ void AICC_Player::CloseCraftingHUD()
 
 void AICC_Player::Input_OpenCrafting(const FInputActionValue& InputActionValue)
 {
-	if (InGameMenu->IsDisabled())
+	if (InGameMenu->IsDisabled() || bIsInFight)
 	{
 		return;
 	}
@@ -488,6 +502,7 @@ void AICC_Player::Input_OpenCrafting(const FInputActionValue& InputActionValue)
 
 void AICC_Player::Input_CloseCrafting(const FInputActionValue& InputActionValue)
 {
+	if (bIsInFight) return;
 	if (const bool Pressed = InputActionValue.Get<bool>() && CraftingCounter == 1 && InGameMenu->IsOpen())
 	{
 		DebugHelper::LogSuccess("Closing Crafting");
@@ -652,36 +667,15 @@ float AICC_Player::GetCurrentExpPercentage() const
 	return FMath::Clamp(Stats->Experience / ExpRequired, 0.0f, 1.0f);
 }
 
+UICC_GamepadBinder* AICC_Player::GetBinder() const
+{
+	return PadBinder;
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+USpringArmComponent* AICC_Player::GetCameraBoom() const
+{
+	return CameraBoom;
+}
 
 void AICC_Player::Input_ChallengeReleaseInteraction(const FInputActionValue& InputActionValue)
 {

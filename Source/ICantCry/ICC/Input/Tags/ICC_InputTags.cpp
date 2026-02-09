@@ -13,4 +13,9 @@ namespace Icc_InputTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_LMBInteract, "InputTag.LMBInteract")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Bestiary, "InputTag.OpenBestiary")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_CloseBestiary, "InputTag.CloseBestiary")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_GamepadInteraction, "InputTag.GamepadInteraction")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_GamepadRemoveBullet, "InputTag.RemoveBullet")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_GamepadShootBoost, "InputTag.ShootBoost")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_GamepadNavigate, "InputTag.Navigate")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_GamepadSimulateClick, "InputTag.SimulateClick")
 }
