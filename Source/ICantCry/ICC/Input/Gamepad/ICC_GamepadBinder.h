@@ -28,12 +28,16 @@ public:
 	void Input_GamepadShootBoost(const FInputActionValue& InputActionValue);
 	void Input_GamepadNavigateUi(const FInputActionValue& InputActionValue);
 	void Input_GamepadSimulateClick(const FInputActionValue& InputActionValue);
+	void Input_GamepadMinigameRelease(const FInputActionValue& InputActionValue);
 
 	void FocusOn(UWidget* Target);
 	UWidget* GetCurrentFocusedWidget() const;
 
 	bool IsNavigating() const;
 	void SetIsNavigatingInsideWidget(const bool& inIsNavigating);
+	
+	bool GetDecreaseMinigameScrollValue() const;
+	void SetDecreaseMinigameScrollValue(const bool& Value);
 
 private:
 	UPROPERTY()
@@ -50,6 +54,9 @@ private:
 
 	UPROPERTY()
 	bool bWasSimulationButtonPressed = false;
+	
+	UPROPERTY()
+	bool bDecreaseScrollValueMinigame = false;
 	
 	void SimulateClick();
 };

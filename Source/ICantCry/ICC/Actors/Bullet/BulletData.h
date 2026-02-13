@@ -53,6 +53,14 @@ enum EEmotionDataType
 	Emotion_Calm
 };
 
+UENUM(BlueprintType)
+enum EMinigameType
+{
+	Default,
+	Anger, 
+	GuitarHero,
+	Curling
+};
 
 /**
  * 
@@ -76,9 +84,6 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet Properties")
     FString Effect;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet Properties")
-    FString MinigameType;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet Properties")
 	FString Description;
@@ -109,6 +114,9 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifiers")
 	TEnumAsByte<EBulletType> Type;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifiers")
+	TEnumAsByte<EMinigameType> MinigameTemplate;
 	
 	/**
  * Weakness modifier

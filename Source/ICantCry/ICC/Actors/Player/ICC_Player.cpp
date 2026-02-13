@@ -159,6 +159,7 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Run, ETriggerEvent::Triggered, this, &ThisClass::Input_Run);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Interact, ETriggerEvent::Triggered, this, &ThisClass::Input_Interact);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Minigame, ETriggerEvent::Triggered, this, &ThisClass::Input_Minigame);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Minigame, ETriggerEvent::Completed, this, &ThisClass::Input_MinigameReleased);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_BulletScroll, ETriggerEvent::Triggered, this, &ThisClass::Input_Scroll);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Inventory, ETriggerEvent::Triggered, this, &ThisClass::Input_OpenInventory);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Crafting, ETriggerEvent::Started, this, &ThisClass::Input_OpenCrafting);
@@ -193,6 +194,11 @@ UCameraComponent* AICC_Player::GetCamera() const
 bool AICC_Player::IsAlive() const
 {
 	return Stats->CurrentHealth > 0;
+}
+
+bool AICC_Player::GetIsMinigameInputEnabled() const
+{
+	return bEnableInputToMinigame;
 }
 
 void AICC_Player::EnableMinigameInput(const bool& Enable)
@@ -331,18 +337,23 @@ void AICC_Player::Input_Run(const FInputActionValue& InputActionValue)
 
 void AICC_Player::Input_Minigame(const FInputActionValue& InputActionValue)
 {
-	if (!bEnableInputToMinigame)
+	if (!bEnableInputToMinigame || !CurrentMinigameDisplayed)
 	{
 		return;
 	}
-
-	if (const bool Pressed = InputActionValue.Get<bool>() && CurrentMinigameDisplayed)
+	
+	const float Value = InputActionValue.Get<float>();
+	CurrentMinigameDisplayed->SetScrollValue(Value);
+	
+	if (Value <= 0.f)
 	{
-		DebugHelper::LogSuccess("Minigame input enabled and i pressed P");
-		CurrentMinigameDisplayed->SetStopSlider(true);
+		return;
+	}
+	
+	if (Value > 0.f && CurrentMinigameDisplayed)
+	{
+		CurrentMinigameDisplayed->Handle(GetBattleHUD()->GetCurrentBulletData(), GetMinigameHandler());
 		CurrentMinigameDisplayed->Flow();
-		
-		MinigameHandler->EndMinigame();
 	}
 	else
 	{
@@ -350,6 +361,10 @@ void AICC_Player::Input_Minigame(const FInputActionValue& InputActionValue)
 	}
 }
 
+void AICC_Player::Input_MinigameReleased(const FInputActionValue& InputActionValue)
+{
+	PadBinder->Input_GamepadMinigameRelease(InputActionValue);
+}
 
 void AICC_Player::Input_Interact(const FInputActionValue& InputActionValue)
 {

@@ -167,6 +167,21 @@ void UICC_GamepadBinder::Input_GamepadSimulateClick(const FInputActionValue& Inp
 	}
 }
 
+void UICC_GamepadBinder::Input_GamepadMinigameRelease(const FInputActionValue& InputActionValue)
+{
+	if (!Player->GetCurrentMinigameDisplayed())
+	{
+		return;
+	}
+
+	FTimerHandle Handle;
+	GetWorld()->GetTimerManager().SetTimer(Handle, [&]
+	{
+		bDecreaseScrollValueMinigame = true;
+		DebugHelper::LogMessage(15, FColor::White, "Minigame released!");
+	}, 0.25f, false);
+}
+
 void UICC_GamepadBinder::FocusOn(UWidget* Target)
 {
 	if (!DebugHelper::IsGamepadPlugged() || !Target)
@@ -225,4 +240,14 @@ bool UICC_GamepadBinder::IsNavigating() const
 void UICC_GamepadBinder::SetIsNavigatingInsideWidget(const bool& inIsNavigating)
 {
 	bNavigateInWidget = inIsNavigating;
+}
+
+bool UICC_GamepadBinder::GetDecreaseMinigameScrollValue() const
+{
+	return bDecreaseScrollValueMinigame;
+}
+
+void UICC_GamepadBinder::SetDecreaseMinigameScrollValue(const bool& Value)
+{
+	bDecreaseScrollValueMinigame = Value;
 }

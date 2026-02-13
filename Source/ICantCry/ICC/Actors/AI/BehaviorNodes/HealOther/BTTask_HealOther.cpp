@@ -42,32 +42,25 @@ EBTNodeResult::Type UBTTask_HealOther::ExecuteTask(UBehaviorTreeComponent& Owner
 	}
 	
 	AMob* TargetToBuff = Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetMobInQueue(Current);
-	if (!TargetToBuff) // rethink if targetto buff appears to be nullptr again 
+	if (!TargetToBuff) 
 	{
 		Blackboard->SetValueAsBool("Rethinker", true);
 		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " attempted to buff other def but it didn't find a valid target (scrivetemelo se entra qua dentro)! , rethinking the action");
 		return EBTNodeResult::Succeeded;
 	}
 
-	//TODO  Debuff TargetToBuff shield
-	
-	AMob* CurrentToBuff = Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetMobInQueue();
-	checkf(CurrentToBuff, TEXT("Invalid"));
-	
-
-	// if (CurrentToBuff->GetData()->Health < CurrentToBuff->GetData()->MaxHealth)
-	// {
-	// 	CurrentToBuff->Heal(Current->GetData()->Health *= 0.20f);
-	// }
-
-	if (CurrentToBuff->GetStats().Health < CurrentToBuff->GetData()->MaxHealth)
+	if (TargetToBuff->GetStats().Health >= TargetToBuff->GetData()->MaxHealth)
 	{
-		CurrentToBuff->Heal(CurrentToBuff->GetStats().Health *= 0.20f);
+		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " casted heal on " + TargetToBuff->GetActorLabel() + " but it's health is full .. rethinking");
+		Blackboard->SetValueAsBool("Rethinker", true);
+		return EBTNodeResult::Succeeded;
 	}
 	
-	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " heals " + CurrentToBuff->GetActorLabel()));
-	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetActorLabel() + " heals " + CurrentToBuff->GetActorLabel()));
-	DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " heals " + CurrentToBuff->GetActorLabel());
+	TargetToBuff->Heal(TargetToBuff->GetStats().Health *= 0.20f);
+	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " heals " + TargetToBuff->GetActorLabel()));
+	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetActorLabel() + " heals " + TargetToBuff->GetActorLabel()));
+	Target->GetBattleHUD()->DecisionDisplayer->Show();
+	DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " heals " + TargetToBuff->GetActorLabel());
 	
 	return EBTNodeResult::InProgress;
 }

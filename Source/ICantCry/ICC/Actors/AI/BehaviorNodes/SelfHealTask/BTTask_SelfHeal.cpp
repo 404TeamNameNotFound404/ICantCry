@@ -33,18 +33,22 @@ EBTNodeResult::Type UBTTask_SelfHeal::ExecuteTask(UBehaviorTreeComponent& OwnerC
 	Blackboard->SetValueAsBool("IsHealing?", Current->GetIsHeal());
 	Blackboard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 	
-	AICC_Player* Target = Cast<AICC_Player>(Blackboard->GetValueAsObject("Target"));
-	checkf(Target, TEXT("Player invalid at UBTTask_DebuffOtherShield::ExecuteTask"))
+	Current->GetStatusTracker()->BuffWith(EBuffStatus::LowHealth);
 
-	AMob* TargetToBuff = Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetMobInQueue();
-	checkf(TargetToBuff, TEXT("TargetToBuff is invalid Type at UBTTask_DebuffOtherShield::ExecuteTask"))
-
-	if (Current->GetStats().Health < Current->GetData()->MaxHealth)
+	if (Current->GetStats().Health >= Current->GetData()->MaxHealth)
 	{
-		Current->Heal(Current->GetStats().Health*= 0.20f);
+		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " casted heal on itself but heal is full ... rethinking");
+		Blackboard->SetValueAsBool("Rethinker", true);
+		return EBTNodeResult::Succeeded;
 	}
-
+	
+	Current->Heal(Current->GetStats().Health*= 0.20f);
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " use Heal"));
+	
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(Current->GetWorld()->GetGameInstance());
+	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
+	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetActorLabel() + " uses Heal"));
+	
 	DebugHelper::AddMessageToLog("[Behavior Tree - Healing]: "+ Current->GetActorLabel() + " use Heal");
 	
 	return EBTNodeResult::InProgress;
@@ -110,6 +114,9 @@ void UBTTask_SelfHeal::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* 
 		}
 
 		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
+		const UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(Current->GetWorld()->GetGameInstance());
+		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(""));
+		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 		
 	}
 

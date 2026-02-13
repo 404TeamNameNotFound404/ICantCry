@@ -51,25 +51,25 @@ void UDefenceMinigame::HandleScore()
 	case EMinigameThreshold::Bad:
 		DebugHelper::LogMessage(3, FColor::FromHex("640D5F"), "33% damage reduction");
 		DebugHelper::AddMessageToLog("[Defence Minigame]: 33% damage reduction");
-		Instance->GetPlayerStats()->MinigameModifier = 0.66f; // previously 0.70
+		Instance->GetRuntimeStats().MinigameModifier = 0.66f; // previously 0.70
 		AMob::DealDamage();
 		break;
 	case EMinigameThreshold::Good:
 		DebugHelper::LogMessage(3, FColor::FromHex("D91656"), "66% reduction");
 		DebugHelper::AddMessageToLog("[Defence Minigame]: 66% damage reduction");
-		Instance->GetPlayerStats()->MinigameModifier = 0.33f;
+		Instance->GetRuntimeStats().MinigameModifier = 0.33f;
 		AMob::DealDamage();
 		break;
 	case EMinigameThreshold::Perfect:
 		DebugHelper::LogMessage(3, FColor::FromHex("EB5B00"), "Perfect parry");
 		DebugHelper::AddMessageToLog("[Defence Minigame]: Perfect parry");
-		Instance->GetPlayerStats()->MinigameModifier = 0.0f;
+		Instance->GetRuntimeStats().MinigameModifier = 0.0f;
 		AMob::DealDamage();
 		break;
 	default:
 		DebugHelper::LogError("You suck! miss");
 		DebugHelper::AddMessageToLog("[Defence Minigame]: You suck! miss");
-		Instance->GetPlayerStats()->MinigameModifier = 1.0f;
+		Instance->GetRuntimeStats().MinigameModifier = 1.0f;
 		AMob::DealDamage();
 		break;
 	}

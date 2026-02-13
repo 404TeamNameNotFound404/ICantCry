@@ -18,4 +18,5 @@ namespace Icc_InputTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_GamepadShootBoost, "InputTag.ShootBoost")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_GamepadNavigate, "InputTag.Navigate")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_GamepadSimulateClick, "InputTag.SimulateClick")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_MinigameHold, "InputTag.MinigameHold")
 }

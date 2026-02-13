@@ -70,6 +70,7 @@ public:
 
 	bool IsAlive() const;
 
+	bool GetIsMinigameInputEnabled() const;
 	void EnableMinigameInput(const bool& Enable);
 	void SetActiveMinigameUserWidget(UMinigameUserWidget* Minigame);
 
@@ -240,6 +241,7 @@ private:
 	void Input_Interact(const FInputActionValue& InputActionValue);
 	void Input_Run(const FInputActionValue& InputActionValue);
 	void Input_Minigame(const FInputActionValue& InputActionValue);
+	void Input_MinigameReleased(const FInputActionValue& InputActionValue);
 	void Input_Scroll(const FInputActionValue& InputActionValue);
 	void Input_OpenInventory(const FInputActionValue& InputActionValue);
 	void Input_OpenCrafting(const FInputActionValue& InputActionValue);

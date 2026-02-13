@@ -80,9 +80,9 @@ void UAttackMinigame::HandleScore()
 	{
 	case EMinigameThreshold::Bad:
 		DebugHelper::LogError("Bad minigame score!");
-		Instance->GetPlayerStats()->MinigameModifier = 0.5f;
-		DebugHelper::LogWarning("Minigame modifier On Bad" + FString::SanitizeFloat(Instance->GetPlayerStats()->MinigameModifier));
-		DebugHelper::AddMessageToLog("[Attack Minigame]: Player Minigame modifier " + FString::SanitizeFloat(Instance->GetPlayerStats()->MinigameModifier) + "\nBad minigame score!");
+		Instance->GetRuntimeStats().MinigameModifier = 0.5f;
+		DebugHelper::LogWarning("Minigame modifier On Bad" + FString::SanitizeFloat(Instance->GetRuntimeStats().MinigameModifier));
+		DebugHelper::AddMessageToLog("[Attack Minigame]: Player Minigame modifier " + FString::SanitizeFloat(Instance->GetRuntimeStats().MinigameModifier) + "\nBad minigame score!");
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
@@ -99,9 +99,9 @@ void UAttackMinigame::HandleScore()
 		break;
 	case EMinigameThreshold::Good:
 		DebugHelper::LogWarning("Good minigame score!");
-		Instance->GetPlayerStats()->MinigameModifier = 1.0f;
-		DebugHelper::LogWarning("Minigame modifier on Good " + FString::SanitizeFloat(Instance->GetPlayerStats()->MinigameModifier));
-		DebugHelper::AddMessageToLog("[Attack Minigame]: Player Minigame modifier " + FString::SanitizeFloat(Instance->GetPlayerStats()->MinigameModifier));
+		Instance->GetRuntimeStats().MinigameModifier = 1.0f;
+		DebugHelper::LogWarning("Minigame modifier on Good " + FString::SanitizeFloat(Instance->GetRuntimeStats().MinigameModifier));
+		DebugHelper::AddMessageToLog("[Attack Minigame]: Player Minigame modifier " + FString::SanitizeFloat(Instance->GetRuntimeStats().MinigameModifier));
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
@@ -117,9 +117,9 @@ void UAttackMinigame::HandleScore()
 		break;
 	case EMinigameThreshold::Perfect:
 		DebugHelper::LogSuccess("Perfect minigame score!");
-		Instance->GetPlayerStats()->MinigameModifier = 1.5f;
-		DebugHelper::LogWarning("Minigame modifier on Perfect" + FString::SanitizeFloat(Instance->GetPlayerStats()->MinigameModifier));
-		DebugHelper::AddMessageToLog("[Attack Minigame]: Player Minigame modifier " + FString::SanitizeFloat(Instance->GetPlayerStats()->MinigameModifier));
+		Instance->GetRuntimeStats().MinigameModifier = 1.5f;
+		DebugHelper::LogWarning("Minigame modifier on Perfect" + FString::SanitizeFloat(Instance->GetRuntimeStats().MinigameModifier));
+		DebugHelper::AddMessageToLog("[Attack Minigame]: Player Minigame modifier " + FString::SanitizeFloat(Instance->GetRuntimeStats().MinigameModifier));
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
@@ -135,7 +135,7 @@ void UAttackMinigame::HandleScore()
 		break;
 	default:
 		DebugHelper::LogMessage(3, FColor::FromHex("ADB2D4"), "Unknown minigame score!");
-		Instance->GetPlayerStats()->MinigameModifier = 0.5f;
+		Instance->GetRuntimeStats().MinigameModifier = 0.5f;
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);

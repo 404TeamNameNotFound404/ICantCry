@@ -887,7 +887,7 @@ void UBattleHUD::PrepareToEngage()
 	                        "Minigame modifier -> " + FString::SanitizeFloat(
 		                        GameInstance->GetRuntimeStats().Stats.PlayerStats->MinigameModifier));
 	checkf(MinigameHandler, TEXT("Minigame handler is null at UBattleHUD::Engage"));
-	MinigameHandler->StartMinigame(true);
+	MinigameHandler->StartMinigame(CurrentBulletData,true);
 	EngageBtn->SetVisibility(ESlateVisibility::Hidden);
 	CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
 	BulletName->SetVisibility(ESlateVisibility::Hidden);

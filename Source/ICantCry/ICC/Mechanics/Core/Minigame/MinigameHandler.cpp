@@ -4,8 +4,9 @@
 #include "EngineUtils.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "Blueprint/UserWidget.h"
-#include "ICantCry/ICC/Mechanics/UI/Defense Minigame/DefenceMinigame.h"
-#include "ICantCry/ICC/Mechanics/UI/AttackMinigame/AttackMinigame.h"
+#include "ICantCry/ICC/Mechanics/UI/Minigames/Defense Minigame//DefenceMinigame.h"
+#include "ICantCry/ICC/Mechanics/UI/Minigames/AttackMinigame/AttackMinigame.h"
+#include "ICantCry/ICC/Mechanics/UI/Minigames/AttackMinigame/AngerMinigame/AngerAtkMinigame.h"
 
 
 // Sets default values
@@ -40,6 +41,84 @@ void AMinigameHandler::StartMinigame(const bool& EnableAttack)
 		CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, AttackMinigame);
 		UAttackMinigame* CastedWidget = Cast<UAttackMinigame>(CurrentMinigameDisplayed);
 
+		if (!CurrentMinigameDisplayed)
+		{
+			DebugHelper::LogError("Couldn't create minigame, something is null");
+			return;
+		}
+		
+		//CurrentMinigameDisplayed->AddToViewport();
+		Player->GetBattleHUD()->MinigameSlot->AddChild(CurrentMinigameDisplayed);
+		Player->GetBattleHUD()->HideInfo();
+		Player->EnableMinigameInput(true);
+		Player->SetActiveMinigameUserWidget(CastedWidget);
+		CurrentMinigameDisplayed->SetKeyboardFocus();
+		bPlayerMinigameEnded = false;
+	}
+
+	
+	//otherwise call defence minigame 
+	if (!EnableAttack)
+	{
+		CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, DefenseMinigame);
+		UDefenceMinigame* CastedWidget = Cast<UDefenceMinigame>(CurrentMinigameDisplayed);
+		
+		if (!CurrentMinigameDisplayed)
+		{
+			DebugHelper::LogError("Couldn't create minigame, something is null");
+			return;
+		}
+		
+		//CurrentMinigameDisplayed->AddToViewport();
+		Player->GetBattleHUD()->MinigameSlot->AddChild(CurrentMinigameDisplayed);
+		Player->GetBattleHUD()->HideInfo();
+		Player->EnableMinigameInput(true);
+		Player->SetActiveMinigameUserWidget(CastedWidget);
+		CurrentMinigameDisplayed->SetKeyboardFocus();
+		Player->GetBattleHUD()->GetCurrentPlayingEmotion()->SetMinigameHasStarted(true);
+		
+		AMob::SetMinigameStarted(true);
+		AMob::MinigameEnded = false;
+		Player->GetBattleHUD()->GetCurrentPlayingEmotion()->SetMinigameEnd(false);
+		Player->GetBattleHUD()->GetCurrentPlayingEmotion()->SetIsBusy(true);
+	}
+}
+
+void AMinigameHandler::StartMinigame(UBulletData* BulletData, const bool& EnableAttack)
+{
+	APlayerController* Controller = GetWorld()->GetFirstPlayerController();
+	checkf(Controller, TEXT("Controller is null at AMinigameHandler::StartMinigame"));
+	
+	
+	if (EnableAttack)
+	{
+		// switch according to MinigameTemplate inside BulletData
+		// CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, AttackMinigame);
+		// UAttackMinigame* CastedWidget = Cast<UAttackMinigame>(CurrentMinigameDisplayed);
+		UMinigameUserWidget* CastedWidget = nullptr;
+		
+		switch (BulletData->MinigameTemplate)
+		{
+		default:
+		case Default:
+			{
+				CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, AttackMinigame);
+				CastedWidget = Cast<UAttackMinigame>(CurrentMinigameDisplayed);
+				break;
+			}
+		case Anger:
+			CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["Anger"]);
+			CastedWidget = Cast<UAngerAtkMinigame>(CurrentMinigameDisplayed);
+			break;
+		case GuitarHero:
+			CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["GuitarHero"]);
+			break;
+		case Curling:
+			CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["Curling"]);
+			break;
+		}
+
+		
 		if (!CurrentMinigameDisplayed)
 		{
 			DebugHelper::LogError("Couldn't create minigame, something is null");

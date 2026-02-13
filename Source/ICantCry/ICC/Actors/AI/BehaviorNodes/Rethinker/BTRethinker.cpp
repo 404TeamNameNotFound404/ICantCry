@@ -167,7 +167,7 @@ void UBTRethinker::StartAttackMinigame(AMob* CurrentMob, AICC_Player* Target, AI
 
     CurrentMob->GetAIMemory().AttackLocation = CurrentMob->GetActorLocation();
 	Target->GetBattleHUD()->DecisionDisplayer->Hide();
-    Target->GetMinigameHandler()->StartMinigame(false);
+    Target->GetMinigameHandler()->StartMinigame(nullptr,false);
 	Target->GetMinigameHandler()->OnMinigameEnded.AddDynamic(this, &UBTRethinker::OnMinigameEndedCallback);
     bBusy = true;
 }
