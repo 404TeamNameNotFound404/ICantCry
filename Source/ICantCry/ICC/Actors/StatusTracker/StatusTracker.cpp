@@ -1319,16 +1319,15 @@ void UStatusTracker::BuffFlow(const EBuffStatus& NewBuffStatus, AMob* Target)
 	CurrentBuffedStatus = NewBuffStatus;
 }
 
-void UStatusTracker::MalusFlow()
+void UStatusTracker::MalusFlow(const EAfflictedStatus& NewStatus)
 {
-	if (!bIsOwnerAfflicted || CurrentActiveStatus == EAfflictedStatus::None)
+	if (!bIsOwnerAfflicted)
 	{
 		return;
 	}
-
-	DebugHelper::LogMessage(9, FColor::Green, "Malus flow called");
 	
-	//RevertInflictedMalus(CurrentActiveStatus);
+	StatusCounter = 0;
+	CurrentActiveStatus = NewStatus;
 }
 
 FInternalPerkData& UStatusTracker::GetPerkData()

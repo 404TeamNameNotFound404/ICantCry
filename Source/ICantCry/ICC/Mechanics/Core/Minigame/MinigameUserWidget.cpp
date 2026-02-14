@@ -30,12 +30,12 @@ bool UMinigameUserWidget::OffsideChecker()
 	return false;
 }
 
-void UMinigameUserWidget::Handle(UBulletData* BulletData, AMinigameHandler* Handler)
+void UMinigameUserWidget::Handle(UBulletData* BulletData, AMinigameHandler* MinigameHandler)
 {
 	if (!BulletData)
 	{
 		DebugHelper::LogError("Bullet data is null!");
-		Handler->EndMinigame();
+		MinigameHandler->EndMinigame();
 		return;
 	}
 	const UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
@@ -45,7 +45,7 @@ void UMinigameUserWidget::Handle(UBulletData* BulletData, AMinigameHandler* Hand
 	default:
 	case Default:
 		SetStopSlider(true);
-		Handler->EndMinigame();
+		MinigameHandler->EndMinigame();
 		break;
 	case Anger:
 		Instance->GetCurrentPlayer()->GetBinder()->SetDecreaseMinigameScrollValue(false);

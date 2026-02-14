@@ -34,6 +34,7 @@ EBTNodeResult::Type UBTTask_FreezedUp::ExecuteTask(UBehaviorTreeComponent& Owner
 	AICC_Player* Target = Cast<AICC_Player>(Blackboard->GetValueAsObject("Target"));
 	checkf(Target, TEXT("Player invalid at UBTTask_FreezedUp::ExecuteTask"))
 	
+	Target->GetStatusTracker()->MalusFlow(EAfflictedStatus::Freezed);
 	Target->GetStatusTracker()->InflictStatus(EAfflictedStatus::Freezed, Target);
 
 	//TODO Implement Player->Freeze();

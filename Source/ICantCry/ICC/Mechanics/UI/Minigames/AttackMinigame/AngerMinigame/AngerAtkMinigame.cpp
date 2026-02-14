@@ -17,15 +17,19 @@ void UAngerAtkMinigame::NativeConstruct()
 
 EMinigameThreshold UAngerAtkMinigame::CheckBar()
 {
-	const FGeometry& Geo = Slider->GetCachedGeometry();
-	const float SliderThreshold = Geo.GetAbsolutePosition().Y;
+	const float SliderThreshold = Slider->GetPercent();
+	const FGeometry& Geometry = Slider->GetCachedGeometry();
+	const float SliderLeft = Geometry.GetAbsolutePosition().X;
+	const float SliderWidth = Geometry.GetLocalSize().X;
 	
 	const float FirstLeft = FirstThreshold->GetCachedGeometry().GetAbsolutePosition().X;
 	const float SecondLeft = SecondThreshold->GetCachedGeometry().GetAbsolutePosition().Y;
 	
-	const bool bInside = SliderThreshold >= FirstLeft && SliderThreshold <= SecondLeft;
-	const bool bPastSecond = SliderThreshold > SecondLeft;
-	const bool bBeginning = SliderThreshold < FirstLeft;
+	const float FirstBarrier = (FirstLeft - SliderLeft) / SliderWidth;
+	const float SecondBarrier = (SecondLeft - SliderLeft) / SliderWidth;
+	
+	const bool bInside = SliderThreshold >= FirstBarrier && SliderThreshold <= SecondBarrier;
+	const bool bPastSecond = SliderThreshold > SecondBarrier;
 	
 	if (bInside)
 	{
@@ -35,11 +39,6 @@ EMinigameThreshold UAngerAtkMinigame::CheckBar()
 	if (bPastSecond)
 	{
 		return EMinigameThreshold::Perfect;
-	}
-	
-	if (bBeginning)
-	{
-		return EMinigameThreshold::Bad;
 	}
 	
 	return EMinigameThreshold::Bad;

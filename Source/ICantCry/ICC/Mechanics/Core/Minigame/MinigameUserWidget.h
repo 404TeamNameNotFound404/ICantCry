@@ -32,7 +32,7 @@ public:
 	virtual void Flow();
 	virtual bool OffsideChecker();
 	
-	void Handle(UBulletData* BulletData, AMinigameHandler* Handler);
+	void Handle(UBulletData* BulletData, AMinigameHandler* MinigameHandler);
 	
 	void SetScrollValue(const float& Value);
 	float& GetScrollValue();
