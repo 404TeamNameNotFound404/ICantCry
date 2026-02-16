@@ -72,6 +72,10 @@ protected:
 	UPROPERTY()
 	TEnumAsByte<EMinigameThreshold> MinigameResult;
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Minigame")
+	TArray<UTexture2D*> ButtonTextures;
+	
+	
 private:
 	FString GetMinigameScore(const EMinigameThreshold& Value) const;
 };

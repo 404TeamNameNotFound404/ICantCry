@@ -13,6 +13,17 @@ void UAngerAtkMinigame::NativeConstruct()
 	Slider->SetFillColorAndOpacity(FLinearColor::Red);
 	
 	Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	
+	if (DebugHelper::IsGamepadPlugged())
+	{
+		ButtonTexture->SetBrushFromTexture(ButtonTextures[1]);
+		ButtonTexture->SetDesiredSizeOverride({50,50});
+	}
+	else
+	{
+		ButtonTexture->SetBrushFromTexture(ButtonTextures[0]);
+		ButtonTexture->SetDesiredSizeOverride({50,50});
+	}
 }
 
 EMinigameThreshold UAngerAtkMinigame::CheckBar()

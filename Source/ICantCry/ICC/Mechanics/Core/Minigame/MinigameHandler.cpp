@@ -7,6 +7,7 @@
 #include "ICantCry/ICC/Mechanics/UI/Minigames/Defense Minigame//DefenceMinigame.h"
 #include "ICantCry/ICC/Mechanics/UI/Minigames/AttackMinigame/AttackMinigame.h"
 #include "ICantCry/ICC/Mechanics/UI/Minigames/AttackMinigame/AngerMinigame/AngerAtkMinigame.h"
+#include "ICantCry/ICC/Mechanics/UI/Minigames/AttackMinigame/NoteHighway/NoteHighwayMinigame.h"
 
 
 // Sets default values
@@ -107,15 +108,50 @@ void AMinigameHandler::StartMinigame(UBulletData* BulletData, const bool& Enable
 				break;
 			}
 		case Anger:
-			CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["Anger"]);
-			CastedWidget = Cast<UAngerAtkMinigame>(CurrentMinigameDisplayed);
-			break;
+			{
+				CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["Anger"]);
+				CastedWidget = Cast<UAngerAtkMinigame>(CurrentMinigameDisplayed);
+				break;
+			}
 		case GuitarHero:
-			CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["GuitarHero"]);
-			break;
+			{
+				switch (BulletData->Type)
+				{
+				default:
+				case Indifference:
+				case AngerDv:
+				case AngerEv:
+				case FearEV:
+				case JoyEv:
+				case CalmEV:
+				case Shame:
+				case JealousyEv:
+				case DisgustEv:
+				case SadnessEv:
+				case FearDv:
+				case Disgust:
+					break;
+				case Anxiety:
+					DebugHelper::LogMessage(10, FColor::White, "Guitar hero spawned");
+					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["GuitarHero"]);
+					CastedWidget = Cast<UNoteHighwayMinigame>(CurrentMinigameDisplayed);
+					break;
+				case SadnessDv:
+					break;
+				case JoyDv:
+					break;
+				case CalmDv:
+					break;
+				case JealousyDv:
+					break;
+				}
+				break;
+			}
 		case Curling:
-			CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["Curling"]);
-			break;
+			{
+				CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["Curling"]);
+				break;
+			}
 		}
 
 		
@@ -125,13 +161,31 @@ void AMinigameHandler::StartMinigame(UBulletData* BulletData, const bool& Enable
 			return;
 		}
 		
+		UGameplayStatics::PlaySound2D(this, CtvFx);
+		
+		FTimerHandle Delay;
+		
+		Player->GetBattleHUD()->CTR->SetVisibility(ESlateVisibility::Visible);
+	
+		GetWorld()->GetTimerManager().SetTimer(Delay, [this, CastedWidget]()
+		{
+			CurrentMinigameDisplayed->AddToViewport();
+			Player->GetBattleHUD()->MinigameSlot->AddChild(CurrentMinigameDisplayed);
+			Player->GetBattleHUD()->HideInfo();
+			Player->EnableMinigameInput(true);
+			Player->SetActiveMinigameUserWidget(CastedWidget);
+			CurrentMinigameDisplayed->SetKeyboardFocus();
+			bPlayerMinigameEnded = false;
+			Player->GetBattleHUD()->CTR->SetVisibility(ESlateVisibility::Hidden);
+		}, 1.f , false);
+		
 		//CurrentMinigameDisplayed->AddToViewport();
-		Player->GetBattleHUD()->MinigameSlot->AddChild(CurrentMinigameDisplayed);
-		Player->GetBattleHUD()->HideInfo();
-		Player->EnableMinigameInput(true);
-		Player->SetActiveMinigameUserWidget(CastedWidget);
-		CurrentMinigameDisplayed->SetKeyboardFocus();
-		bPlayerMinigameEnded = false;
+		// Player->GetBattleHUD()->MinigameSlot->AddChild(CurrentMinigameDisplayed);
+		// Player->GetBattleHUD()->HideInfo();
+		// Player->EnableMinigameInput(true);
+		// Player->SetActiveMinigameUserWidget(CastedWidget);
+		// CurrentMinigameDisplayed->SetKeyboardFocus();
+		// bPlayerMinigameEnded = false;
 	}
 
 	

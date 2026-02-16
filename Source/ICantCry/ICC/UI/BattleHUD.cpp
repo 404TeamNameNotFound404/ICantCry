@@ -202,6 +202,8 @@ void UBattleHUD::NativeConstruct()
 
 	OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
 	ApAccumulator = 0;
+	
+	CTR->SetVisibility(ESlateVisibility::Hidden);
 }
 
 // TARGET

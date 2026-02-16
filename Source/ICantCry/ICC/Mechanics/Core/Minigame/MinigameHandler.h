@@ -71,6 +71,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Minigame", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> DefenseMinigame;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Minigame", meta = (AllowPrivateAccess = "true"))
+	USoundBase* CtvFx;
 
 	/**
 	 * Display the current minigame displayed

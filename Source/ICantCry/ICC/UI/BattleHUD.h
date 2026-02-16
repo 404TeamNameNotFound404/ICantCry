@@ -126,6 +126,8 @@ public:
 	UPROPERTY(meta = (BindWidget)) UMagazineBullet* MagazineBullet5;
 	
 	UPROPERTY(meta = (BindWidget)) UCanvasPanel* CanvasBulletStats;
+	
+	UPROPERTY(meta = (BindWidget)) UImage* CTR;
 
 	UPROPERTY() TArray<UImage*> PistolMagazines;
 
