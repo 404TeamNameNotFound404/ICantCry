@@ -25,6 +25,9 @@ struct FRuntimeStats
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Modifiers")
 	float ApModifier = 1.0f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Modifiers")
+	float MinigameModifier = 0.5f;
 
 	UPROPERTY()
 	FDamage Stats;

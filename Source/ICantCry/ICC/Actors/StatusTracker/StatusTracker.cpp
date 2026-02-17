@@ -1319,16 +1319,15 @@ void UStatusTracker::BuffFlow(const EBuffStatus& NewBuffStatus, AMob* Target)
 	CurrentBuffedStatus = NewBuffStatus;
 }
 
-void UStatusTracker::MalusFlow()
+void UStatusTracker::MalusFlow(const EAfflictedStatus& NewStatus)
 {
-	if (!bIsOwnerAfflicted || CurrentActiveStatus == EAfflictedStatus::None)
+	if (!bIsOwnerAfflicted)
 	{
 		return;
 	}
-
-	DebugHelper::LogMessage(9, FColor::Green, "Malus flow called");
 	
-	//RevertInflictedMalus(CurrentActiveStatus);
+	StatusCounter = 0;
+	CurrentActiveStatus = NewStatus;
 }
 
 FInternalPerkData& UStatusTracker::GetPerkData()
@@ -1348,7 +1347,7 @@ void UStatusTracker::Reset()
 	bShieldBuffed = false;
 	Instance->GetRuntimeStats().AttackPower = Instance->GetPersistentData()->InitialAttackPower;
 	Instance->GetRuntimeStats().DefencePower = Instance->GetPersistentData()->InitialDefencePower;
-	Instance->GetRuntimeStats().ApModifier = 0;
+	Instance->GetRuntimeStats().ApModifier = 1;
 	DebugHelper::LogMessage(8, FColor::Blue, "Stats successfully restored");
 }
 

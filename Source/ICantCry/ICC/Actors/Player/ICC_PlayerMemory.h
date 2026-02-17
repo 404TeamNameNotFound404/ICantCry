@@ -25,3 +25,13 @@ public:
 	
 	FPlayerMemory();
 };
+
+
+USTRUCT()
+struct FCameraMemory
+{
+	GENERATED_BODY()
+public:
+	FRotator SavedControlRotation;
+	FCameraMemory();
+};

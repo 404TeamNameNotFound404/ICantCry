@@ -259,7 +259,7 @@ public:
 	/**
 	 * Check If AI / Player is buffed and is being target by a debuff the current buff removed and the debuff is not applied
 	 */
-	void MalusFlow();
+	void MalusFlow(const EAfflictedStatus& NewStatus);
 
 	FInternalPerkData& GetPerkData();
 

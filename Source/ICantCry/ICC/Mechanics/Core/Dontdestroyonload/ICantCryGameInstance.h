@@ -105,7 +105,10 @@ private:
 
 	UPROPERTY()
 	FRuntimeStats RuntimeStats;
-
+	
+	UPROPERTY()
+	FCameraMemory CameraMemory;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))
 	FDamage StoredDamage;
 

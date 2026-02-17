@@ -36,7 +36,16 @@ public:
 	static bool CanSelect();
 	static void SetCanSelect(const bool& InCanSelect);
 
+	bool CanBeSelected() const;
+	void SetCanBeSelected(const bool& Value);
+
 	void SetCanSelectBullet(const bool& InCanSelect);
+
+	UButton* GetButton();
+	
+	UFUNCTION()
+	void AddToRevolver();
+
 
 protected:
 	virtual void NativeConstruct() override;
@@ -46,9 +55,7 @@ protected:
 
 	UPROPERTY(meta=(BindWidget))
 	UImage* BulletIcon;
-
-	UFUNCTION()
-	void AddToRevolver();
+	
 
 	UPROPERTY()
 	AICC_Player* Player = nullptr;

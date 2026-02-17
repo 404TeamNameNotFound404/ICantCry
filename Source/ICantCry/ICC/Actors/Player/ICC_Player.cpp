@@ -48,6 +48,8 @@ AICC_Player::AICC_Player()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.0f;
 
 	MinigameHandler = nullptr;
+
+	PadBinder = CreateDefaultSubobject<UICC_GamepadBinder>(TEXT("GamepadBinder"));
 }
 
 // Called when the game starts or when spawned
@@ -101,6 +103,8 @@ void AICC_Player::BeginPlay()
 	BestiaryUI= CreateWidget<UBestiaryUI>(GetWorld(), BestiaryUIClass);
 	BestiaryUI->AddToViewport();
 	BestiaryUI->SetVisibility(ESlateVisibility::Hidden);
+	
+	PadBinder->Init(this);
 }
 
 // Called every frame
@@ -155,14 +159,19 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Run, ETriggerEvent::Triggered, this, &ThisClass::Input_Run);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Interact, ETriggerEvent::Triggered, this, &ThisClass::Input_Interact);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Minigame, ETriggerEvent::Triggered, this, &ThisClass::Input_Minigame);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Minigame, ETriggerEvent::Completed, this, &ThisClass::Input_MinigameReleased);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_BulletScroll, ETriggerEvent::Triggered, this, &ThisClass::Input_Scroll);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Inventory, ETriggerEvent::Triggered, this, &ThisClass::Input_OpenInventory);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Crafting, ETriggerEvent::Started, this, &ThisClass::Input_OpenCrafting);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_CloseCrafting, ETriggerEvent::Triggered, this, &ThisClass::Input_CloseCrafting);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_LMBInteract, ETriggerEvent::Triggered, this, &ThisClass::Input_ChallengeInteraction);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_LMBInteract, ETriggerEvent::Completed, this, &ThisClass::Input_ChallengeReleaseInteraction);
-	//  LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Bestiary, ETriggerEvent::Started, this, &ThisClass::Input_OpenBestiary);
-	// LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_CloseBestiary, ETriggerEvent::Triggered, this, &ThisClass::Input_CloseBestiary);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_GamepadInteraction, ETriggerEvent::Completed, PadBinder, &UICC_GamepadBinder::Input_GamepadEngageInteraction);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_GamepadInteraction, ETriggerEvent::Triggered, PadBinder, &UICC_GamepadBinder::Input_GamepadSelectionInteraction);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_GamepadRemoveBullet, ETriggerEvent::Triggered, PadBinder, &UICC_GamepadBinder::Input_GamepadRemoveBullet);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_GamepadShootBoost, ETriggerEvent::Triggered, PadBinder, &UICC_GamepadBinder::Input_GamepadShootBoost);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_GamepadNavigate, ETriggerEvent::Triggered, PadBinder, &UICC_GamepadBinder::Input_GamepadNavigateUi);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_GamepadSimulateClick, ETriggerEvent::Triggered, PadBinder, &UICC_GamepadBinder::Input_GamepadSimulateClick);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Bestiary, ETriggerEvent::Started, this, &ThisClass::Input_ToggleBestiary);
 }
 
@@ -185,6 +194,11 @@ UCameraComponent* AICC_Player::GetCamera() const
 bool AICC_Player::IsAlive() const
 {
 	return Stats->CurrentHealth > 0;
+}
+
+bool AICC_Player::GetIsMinigameInputEnabled() const
+{
+	return bEnableInputToMinigame;
 }
 
 void AICC_Player::EnableMinigameInput(const bool& Enable)
@@ -323,18 +337,23 @@ void AICC_Player::Input_Run(const FInputActionValue& InputActionValue)
 
 void AICC_Player::Input_Minigame(const FInputActionValue& InputActionValue)
 {
-	if (!bEnableInputToMinigame)
+	if (!bEnableInputToMinigame || !CurrentMinigameDisplayed)
 	{
 		return;
 	}
-
-	if (const bool Pressed = InputActionValue.Get<bool>() && CurrentMinigameDisplayed)
+	
+	const float Value = InputActionValue.Get<float>();
+	CurrentMinigameDisplayed->SetScrollValue(Value);
+	
+	if (Value <= 0.f)
 	{
-		DebugHelper::LogSuccess("Minigame input enabled and i pressed P");
-		CurrentMinigameDisplayed->SetStopSlider(true);
+		return;
+	}
+	
+	if (Value > 0.f && CurrentMinigameDisplayed)
+	{
+		CurrentMinigameDisplayed->Handle(GetBattleHUD()->GetCurrentBulletData(), GetMinigameHandler());
 		CurrentMinigameDisplayed->Flow();
-		
-		MinigameHandler->EndMinigame();
 	}
 	else
 	{
@@ -342,6 +361,10 @@ void AICC_Player::Input_Minigame(const FInputActionValue& InputActionValue)
 	}
 }
 
+void AICC_Player::Input_MinigameReleased(const FInputActionValue& InputActionValue)
+{
+	PadBinder->Input_GamepadMinigameRelease(InputActionValue);
+}
 
 void AICC_Player::Input_Interact(const FInputActionValue& InputActionValue)
 {
@@ -362,14 +385,7 @@ void AICC_Player::Input_Scroll(const FInputActionValue &InputActionValue)
 		DebugHelper::LogError("Can't get scroll is in fight = false");
 		return;
 	}
-
-	// if (!Hud->IsSelectingTarget())
-	// {
-	// 	DebugHelper::LogError("You can't do that yet");
-	// 	return;
-	// }
 	
-	//DebugHelper::LogSuccess("Scrolling something");
 	
 	if(!Hud)
 	{
@@ -379,19 +395,25 @@ void AICC_Player::Input_Scroll(const FInputActionValue &InputActionValue)
 	
 	const float Scroll = InputActionValue.Get<float>();
 
-	if (Hud->GetSelectTarget())
+	if (FMath::IsNearlyZero(Scroll))
+	{
+		return;
+	}
+	
+	if (Hud->IsBulletSelectionOver())
 	{
 		Hud->ScrollTargetSelection(Scroll);
-		// DebugHelper::LogSuccess("Selecting target ");
+		return;
 	}
-	else
+	if (PadBinder->IsNavigating())
 	{
-		if(Scroll && !Hud->IsBulletSelectionOver())
-		{
-			// DebugHelper::LogSuccess("Scrolling over bullets ");
-			Hud->ScrollBulletSelection(Scroll);
-		}
+		Hud->ScrollBulletSelection(Scroll);
+		return;
 	}
+	// else
+	// {
+	// 	Hud->ScrollBulletSelection(Scroll);
+	// }
 }
 
 void AICC_Player::Input_OpenInventory(const FInputActionValue& InputActionValue)
@@ -474,7 +496,7 @@ void AICC_Player::CloseCraftingHUD()
 
 void AICC_Player::Input_OpenCrafting(const FInputActionValue& InputActionValue)
 {
-	if (InGameMenu->IsDisabled())
+	if (InGameMenu->IsDisabled() || bIsInFight)
 	{
 		return;
 	}
@@ -495,6 +517,7 @@ void AICC_Player::Input_OpenCrafting(const FInputActionValue& InputActionValue)
 
 void AICC_Player::Input_CloseCrafting(const FInputActionValue& InputActionValue)
 {
+	if (bIsInFight) return;
 	if (const bool Pressed = InputActionValue.Get<bool>() && CraftingCounter == 1 && InGameMenu->IsOpen())
 	{
 		DebugHelper::LogSuccess("Closing Crafting");
@@ -659,36 +682,15 @@ float AICC_Player::GetCurrentExpPercentage() const
 	return FMath::Clamp(Stats->Experience / ExpRequired, 0.0f, 1.0f);
 }
 
+UICC_GamepadBinder* AICC_Player::GetBinder() const
+{
+	return PadBinder;
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+USpringArmComponent* AICC_Player::GetCameraBoom() const
+{
+	return CameraBoom;
+}
 
 void AICC_Player::Input_ChallengeReleaseInteraction(const FInputActionValue& InputActionValue)
 {

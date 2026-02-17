@@ -154,6 +154,7 @@ void UTurnBasedSystem::Update(UWorld* World, FBattleMemory* Memory)
 				DebugHelper::AddTurnMaterialOverlayToStaticMesh(Player->DebugMesh);
 				CurrentPlayer = Player;
 				BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Your Turn"));
+				Instance->GetCurrentPlayer()->GetBinder()->FocusOn(Instance->GetCurrentPlayer()->GetBattleHUD()->Shoot);
 				DebugHelper::AddMessageToLog("[Turn System]: Turn: " +  FString::FromInt(BattleTurnCounter) + " Your turn");
 			}
 		}
@@ -378,6 +379,7 @@ void UTurnBasedSystem::Reload()
 	bVictory = false;
 	bIsPlayerTurn = false;
 	bIsAiTurn = false;
+	Instance->GetCurrentPlayer()->GetStatusTracker()->Reset();
 	Instance->GetRuntimeStats().ApModifier = 1;
 	Instance->GetPlayerStats()->RuntimeStats = Instance->GetRuntimeStats();
 	Instance->GetCurrentPlayer()->GetBattleHUD()->SetBulletSetupFinished(false);

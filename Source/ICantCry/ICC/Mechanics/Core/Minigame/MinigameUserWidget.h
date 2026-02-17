@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MinigameHandler.h"
 #include "Blueprint/UserWidget.h"
+#include "ICantCry/ICC/Actors/Bullet/BulletData.h"
 #include "MinigameUserWidget.generated.h"
 
 UENUM(BlueprintType)
@@ -30,12 +32,19 @@ public:
 	virtual void Flow();
 	virtual bool OffsideChecker();
 	
+	void Handle(UBulletData* BulletData, AMinigameHandler* MinigameHandler);
+	
+	void SetScrollValue(const float& Value);
+	float& GetScrollValue();
+	
 	UFUNCTION(BlueprintCallable)
 	virtual void MoveSlider(const FVector2D& Position);
+	
 	
 protected:
 	UPROPERTY()
 	bool bStopSlider = false;
-
 	
+	UPROPERTY()
+	float ScrollValue = 0.f;
 };

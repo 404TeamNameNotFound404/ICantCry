@@ -48,6 +48,13 @@ UBulletData *UCircularBulletBuffer::RemoveBullet()
     Buffer[Tail] = nullptr;
     Tail = (Tail + 1) % Capacity;
     bIsFull = false;
+
+    if (Head == Tail)
+    {
+        Head = 0;
+        Tail = 0;
+        CurrentIndex = 0;
+    }
     
     return Bullet;
 }

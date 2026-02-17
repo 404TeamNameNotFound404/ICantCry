@@ -208,3 +208,15 @@ void DebugHelper::SaveLogToFile()
 	FFileHelper::SaveStringToFile(CombinedLog, *FullPath);
 }
 
+bool DebugHelper::IsGamepadPlugged()
+{
+	if (!FSlateApplication::IsInitialized())
+	{
+		return false;
+	}
+
+	const TSharedPtr<GenericApplication> App = FSlateApplication::Get().GetPlatformApplication();
+
+	return App.IsValid() && App->IsGamepadAttached();
+}
+

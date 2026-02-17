@@ -186,7 +186,7 @@ void UUBTTask_DefaultAtk::StartAttackMinigame(AMob* Current, AICC_Player* Target
 
 	Current->GetAIMemory().AttackLocation = Current->GetActorLocation();
 	Target->GetBattleHUD()->DecisionDisplayer->Hide();
-	Target->GetMinigameHandler()->StartMinigame(false);
+	Target->GetMinigameHandler()->StartMinigame(nullptr,false);
 	Target->GetMinigameHandler()->OnMinigameEnded.AddDynamic(this, &UUBTTask_DefaultAtk::OnMinigameEndedCallback);
 	bBusy = true;
 }
