@@ -21,6 +21,8 @@ void UNoteHighwayMinigame::MoveSlider(const FVector2D& Position)
 	
 	Slider->SetRenderTranslation(NewPosition);
 	
+	if (const bool bCollided = CheckCollision(); bCollided){}
+	
 	if (const float Distance = FVector2D::Distance(BarrierPosition, NewPosition); 
 		Distance >= EndThreshold)
 	{
@@ -36,9 +38,33 @@ void UNoteHighwayMinigame::MoveSlider(const FVector2D& Position)
 
 EMinigameThreshold UNoteHighwayMinigame::CheckBar()
 {
-	const bool Collided = CheckCollision();
-	
-	return EMinigameThreshold::Bad;
+	return UMinigameUserWidget::CheckBar();
+}
+
+void UNoteHighwayMinigame::Simulate(const ESpawnableHighwayBtn& Target)
+{
+	for (FHighwayNote& Note : NotesData)
+	{
+		if (Note.bHit)
+		{
+			continue;
+		}
+		
+		if (const float HitDistance = FMath::Abs(Slider->GetRenderTransform().Translation.X - Note.X);
+			HitDistance <= HitTolerance)
+		{
+			Note.bHit = true;
+			
+			Score = Score + 0.2f;
+			
+			// TODO Load 'Hit' Texture
+			DebugHelper::LogSuccess("Note hit!");
+			
+			
+			
+			return;
+		}
+	}
 }
 
 void UNoteHighwayMinigame::NativeConstruct()
@@ -55,32 +81,27 @@ void UNoteHighwayMinigame::NativeConstruct()
 
 void UNoteHighwayMinigame::HandleScore()
 {
+	const UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	
+	Instance->GetPlayerStats()->RuntimeStats.MinigameModifier = Score;
+	Score = 0;
+	
+	Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
+	Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
+	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
+	
+	Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+	Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 	
 }
 
-bool UNoteHighwayMinigame::CheckCollision() const
+void UNoteHighwayMinigame::Flow()
 {
-	const FVector2D SliderPosition = Slider->GetRenderTransform().Translation;
 	
-	for (const UImage* Img : Notes)
-	{
-		if (!Img){continue;}
-		
-		const UCanvasPanelSlot* ImgSlot = Cast<UCanvasPanelSlot>(Img->Slot);
-		
-		if (!ImgSlot) continue;
-		
-		const FVector2D Size = ImgSlot->GetSize();
-		
-		if (const FVector2D Pos = ImgSlot->GetPosition(); 
-			SliderPosition.X >= Pos.X && SliderPosition.X <= Pos.X + Size.X &&
-			SliderPosition.Y >= Pos.Y && SliderPosition.Y <= Pos.Y + Size.Y)
-		{
-			DebugHelper::LogMessage(9, FColor::Blue, "Hit!");
-			return true;
-		}
-	}
-	
+}
+
+bool UNoteHighwayMinigame::CheckCollision()
+{
 	return false;
 }
 
@@ -110,8 +131,15 @@ void UNoteHighwayMinigame::SpawnButtons(const ESpawnableHighwayBtn& Type)
 			ImgToSpawn->SetBrushFromTexture(Spawnable.NoteTexture);
 			ImgToSpawn->SetDesiredSizeOverride(TextureSize);
 			
+			FHighwayNote Note;
+			Note.X = 0;
+			Note.bHit = false;
+			Note.CachedTexture = Spawnable.NoteTexture;
+			
 			Parent->AddChild(ImgToSpawn);
 			Notes.Add(ImgToSpawn);
+			
+			NotesData.Add(Note);
 		}
 	}
 }
