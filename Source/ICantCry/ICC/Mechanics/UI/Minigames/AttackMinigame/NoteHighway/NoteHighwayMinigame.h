@@ -39,7 +39,7 @@ struct FHighwayNote
 	GENERATED_BODY()
 	
 	UPROPERTY() UTexture2D* CachedTexture;
-	UPROPERTY() TEnumAsByte<ESpawnableHighwayBtn> Type;
+	UPROPERTY() TEnumAsByte<ESpawnableHighwayBtn> Row;
 	UPROPERTY() float X;
 	UPROPERTY() float TargetTime;
 	UPROPERTY() bool bHit;
@@ -63,7 +63,6 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual void HandleScore() override;
 	virtual void Flow() override;
-	bool CheckCollision();
 	
 	UPROPERTY(meta=(BindWidget)) UImage* Slider;
 	
@@ -91,6 +90,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Minigames",  meta = (AllowPrivateAccess = "true"))
 	TArray<FHighwaySpawnable> Spawnables;
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Minigames",  meta = (AllowPrivateAccess = "true"))
+	TMap<FName, UTexture2D*> Icons;
+	
 	UPROPERTY()
 	TArray<UImage*> Notes;
 	
@@ -104,10 +106,14 @@ protected:
 	float EndThreshold = 692.0f;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Minigames", meta = (AllowPrivateAccess = "true"))
-	float HitTolerance = 0.25f;
+	float HitTolerance = 5.f;
 	
 	UPROPERTY() float Score = 0.5f;
 	
+	UTexture2D* LoadProperTexture(FHighwaySpawnable& Spawnable);
+	
 	void SpawnButtons(const ESpawnableHighwayBtn& Type);
+	
+	FString GetNoteName(const ESpawnableHighwayBtn& Btn) const;
 	
 };

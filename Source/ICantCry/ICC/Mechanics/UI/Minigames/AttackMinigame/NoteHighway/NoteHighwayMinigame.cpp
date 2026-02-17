@@ -21,8 +21,6 @@ void UNoteHighwayMinigame::MoveSlider(const FVector2D& Position)
 	
 	Slider->SetRenderTranslation(NewPosition);
 	
-	if (const bool bCollided = CheckCollision(); bCollided){}
-	
 	if (const float Distance = FVector2D::Distance(BarrierPosition, NewPosition); 
 		Distance >= EndThreshold)
 	{
@@ -43,9 +41,16 @@ EMinigameThreshold UNoteHighwayMinigame::CheckBar()
 
 void UNoteHighwayMinigame::Simulate(const ESpawnableHighwayBtn& Target)
 {
+	DebugHelper::LogSuccess("Pressing " + GetNoteName(Target));
+	
 	for (FHighwayNote& Note : NotesData)
 	{
 		if (Note.bHit)
+		{
+			continue;
+		}
+		
+		if (Note.Row != Target)
 		{
 			continue;
 		}
@@ -59,9 +64,6 @@ void UNoteHighwayMinigame::Simulate(const ESpawnableHighwayBtn& Target)
 			
 			// TODO Load 'Hit' Texture
 			DebugHelper::LogSuccess("Note hit!");
-			
-			
-			
 			return;
 		}
 	}
@@ -100,15 +102,57 @@ void UNoteHighwayMinigame::Flow()
 	
 }
 
-bool UNoteHighwayMinigame::CheckCollision()
-{
-	return false;
-}
 
+UTexture2D* UNoteHighwayMinigame::LoadProperTexture(FHighwaySpawnable& Spawnable)
+{
+	switch (Spawnable.ButtonType)
+	{
+	case A:
+		{
+			if (DebugHelper::IsGamepadPlugged())
+			{
+				return Spawnable.NoteTexture = Icons["Pad_A"];
+			}
+			
+			return Spawnable.NoteTexture = Icons["Key_D"];
+		}
+	case X:
+		{
+			if (DebugHelper::IsGamepadPlugged())
+			{
+				return Spawnable.NoteTexture = Icons["Pad_X"];
+			}
+			
+			return Spawnable.NoteTexture = Icons["Key_A"];
+		}
+	case B:
+		{
+			if (DebugHelper::IsGamepadPlugged())
+			{
+				return Spawnable.NoteTexture = Icons["Pad_B"];
+			}
+			
+			return Spawnable.NoteTexture = Icons["Key_S"];
+		}
+	case Y:
+		{
+			if (DebugHelper::IsGamepadPlugged())
+			{
+				return Spawnable.NoteTexture = Icons["Pad_Y"];
+			}
+			
+			return Spawnable.NoteTexture = Icons["Key_W"];
+		}
+	default:
+		break;
+	}
+	
+	return nullptr;
+}
 
 void UNoteHighwayMinigame::SpawnButtons(const ESpawnableHighwayBtn& Type)
 {
-	for (const FHighwaySpawnable& Spawnable : Spawnables)
+	for (FHighwaySpawnable& Spawnable : Spawnables)
 	{
 		if (Spawnable.ButtonType == Type)
 		{
@@ -126,20 +170,65 @@ void UNoteHighwayMinigame::SpawnButtons(const ESpawnableHighwayBtn& Type)
 				continue;
 			}
 			
+			Spawnable.NoteTexture = LoadProperTexture(Spawnable);
 			const FVector2D TextureSize = {static_cast<double>(Spawnable.NoteTexture->GetSizeX()), static_cast<double>(Spawnable.NoteTexture->GetSizeY())};
 			
 			ImgToSpawn->SetBrushFromTexture(Spawnable.NoteTexture);
 			ImgToSpawn->SetDesiredSizeOverride(TextureSize);
 			
-			FHighwayNote Note;
-			Note.X = 0;
-			Note.bHit = false;
-			Note.CachedTexture = Spawnable.NoteTexture;
-			
 			Parent->AddChild(ImgToSpawn);
+			FHighwayNote Note;
+			Note.X = Cast<UCanvasPanelSlot>(ImgToSpawn->Slot)->GetPosition().X;
+			Note.bHit = false;
+			Note.Row = Spawnable.ButtonType;
+			Note.CachedTexture = Spawnable.NoteTexture;
 			Notes.Add(ImgToSpawn);
 			
 			NotesData.Add(Note);
 		}
+	}
+}
+
+FString UNoteHighwayMinigame::GetNoteName(const ESpawnableHighwayBtn& Btn) const
+{
+	switch (Btn)
+	{
+	case A:
+		{
+			if (DebugHelper::IsGamepadPlugged())
+			{
+				return "A";
+			}
+			return "D";
+		}
+	case X:
+		{
+			if (DebugHelper::IsGamepadPlugged())
+			{
+				return "X";
+			}
+			
+			return "A";
+		}
+	case B:
+		{
+			if (DebugHelper::IsGamepadPlugged())
+			{
+				return "B";
+			}
+			
+			return "S";
+		}
+	case Y:
+		{
+			if (DebugHelper::IsGamepadPlugged())
+			{
+				return "Y";
+			}
+			
+			return "W";
+		}
+	default:
+		return "";
 	}
 }

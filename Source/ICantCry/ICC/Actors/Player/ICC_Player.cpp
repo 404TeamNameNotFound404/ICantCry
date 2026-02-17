@@ -172,6 +172,10 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_GamepadShootBoost, ETriggerEvent::Triggered, PadBinder, &UICC_GamepadBinder::Input_GamepadShootBoost);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_GamepadNavigate, ETriggerEvent::Triggered, PadBinder, &UICC_GamepadBinder::Input_GamepadNavigateUi);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_GamepadSimulateClick, ETriggerEvent::Triggered, PadBinder, &UICC_GamepadBinder::Input_GamepadSimulateClick);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_MinigameGuitarHero_X, ETriggerEvent::Triggered, PadBinder, &UICC_GamepadBinder::Input_GamepadMinigameGuitarHero_X);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_MinigameGuitarHero_Y, ETriggerEvent::Triggered, PadBinder, &UICC_GamepadBinder::Input_GamepadMinigameGuitarHero_Y);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_MinigameGuitarHero_A, ETriggerEvent::Triggered, PadBinder, &UICC_GamepadBinder::Input_GamepadMinigameGuitarHero_A);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_MinigameGuitarHero_B, ETriggerEvent::Triggered, PadBinder, &UICC_GamepadBinder::Input_GamepadMinigameGuitarHero_B);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Bestiary, ETriggerEvent::Started, this, &ThisClass::Input_ToggleBestiary);
 }
 

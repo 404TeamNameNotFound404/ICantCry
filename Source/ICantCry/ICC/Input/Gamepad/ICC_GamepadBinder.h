@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
 #include "Components/Widget.h"
+#include "ICantCry/ICC/Mechanics/UI/Minigames/AttackMinigame/NoteHighway/NoteHighwayMinigame.h"
 #include "UObject/Object.h"
 #include "ICC_GamepadBinder.generated.h"
 
@@ -29,6 +30,10 @@ public:
 	void Input_GamepadNavigateUi(const FInputActionValue& InputActionValue);
 	void Input_GamepadSimulateClick(const FInputActionValue& InputActionValue);
 	void Input_GamepadMinigameRelease(const FInputActionValue& InputActionValue);
+	void Input_GamepadMinigameGuitarHero_X(const FInputActionValue& InputActionValue);
+	void Input_GamepadMinigameGuitarHero_Y(const FInputActionValue& InputActionValue);
+	void Input_GamepadMinigameGuitarHero_A(const FInputActionValue& InputActionValue);
+	void Input_GamepadMinigameGuitarHero_B(const FInputActionValue& InputActionValue);
 
 	void FocusOn(UWidget* Target);
 	UWidget* GetCurrentFocusedWidget() const;
@@ -59,4 +64,6 @@ private:
 	bool bDecreaseScrollValueMinigame = false;
 	
 	void SimulateClick();
+	
+	void ProcessGuitarHeroInput(const ESpawnableHighwayBtn& RowType);
 };
