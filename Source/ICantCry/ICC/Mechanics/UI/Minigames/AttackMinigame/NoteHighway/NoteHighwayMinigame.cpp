@@ -48,13 +48,16 @@ void UNoteHighwayMinigame::Simulate(const ESpawnableHighwayBtn& Target)
 	
 	for (FHighwayNote& Note : NotesData)
 	{
-		if (Note.bHit || Note.Row != Target) continue;
+		if (Note.bHit) continue;
+		
+		if (Note.Row != Target) continue;
 		
 		const UCanvasPanelSlot* NoteSlot = Cast<UCanvasPanelSlot>(Note.CachedSelf->Slot);
 		const float CurrentNoteX = NoteSlot->GetPosition().X;
 		
 		if (SliderX > CurrentNoteX + HitTolerance) 
 		{
+			DebugHelper::LogWarning("Slider not past button");
 			continue; 
 		}
 		
@@ -64,21 +67,19 @@ void UNoteHighwayMinigame::Simulate(const ESpawnableHighwayBtn& Target)
 			break;
 		}
 		
-		if (const float Distance = FMath::Abs(SliderX - CurrentNoteX); Distance <= HitTolerance)
+		if (const float Distance = /*FMath::Abs(SliderX - CurrentNoteX)*/FVector2D::Distance(SliderSlot->GetPosition(), NoteSlot->GetPosition()) ; Distance <= HitTolerance)
 		{
 			Note.bHit = true;
-			Score = Score + 0.2f;
-			if (Score >= 1.5f)
-			{
-				Score = 1.5f;
-			}
-			Note.CachedSelf->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			//Score = Score + 0.2f;
+
 			const FString IconName = GetNoteName(Target);
 			const FString Prefix = DebugHelper::IsGamepadPlugged() ? TEXT("OPad_") : TEXT("OKey_");
 			const FName FinalMapKey = FName(*(Prefix + IconName));
 			
 			if (UTexture2D** FoundTexture = Icons.Find(FinalMapKey))
 			{
+				Score = FMath::Min(Score + 0.25f, 1.5f);
+				DebugHelper::LogMessage(8, FColor::Blue, "Score now becomes " + FString::SanitizeFloat(Score));
 				Note.CachedSelf->SetBrushFromTexture(*FoundTexture);
 			}
 			else
@@ -87,8 +88,9 @@ void UNoteHighwayMinigame::Simulate(const ESpawnableHighwayBtn& Target)
 			}
 			
 			DebugHelper::LogSuccess("Note hit!");
-			return;
+			break;
 		}
+		
 	}
 }
 
@@ -96,12 +98,17 @@ void UNoteHighwayMinigame::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
+	Notes.Empty();
+	NotesData.Empty();
+	
 	EndBorder->SetVisibility(ESlateVisibility::Hidden);
 	
 	for (FHighwaySpawnable& Spawnable : Spawnables)
 	{
-		SpawnButtons(Spawnable.ButtonType);
+		SpawnButtons(Spawnable);
 	}
+	
+	DebugHelper::LogMessage(8, FColor::White, "Notes " + FString::FromInt( Notes.Num()));
 }
 
 void UNoteHighwayMinigame::HandleScore()
@@ -171,50 +178,82 @@ UTexture2D* UNoteHighwayMinigame::LoadProperTexture(FHighwaySpawnable& Spawnable
 	return nullptr;
 }
 
-void UNoteHighwayMinigame::SpawnButtons(const ESpawnableHighwayBtn& Type)
-{
-	for (FHighwaySpawnable& Spawnable : Spawnables)
-	{
-		if (Spawnable.ButtonType == Type)
-		{
-			UCanvasPanel* Parent = Cast<UCanvasPanel>(GetWidgetFromName(Spawnable.RowName));
-			
-			if (!Parent)
-			{
-				continue;
-			}
-			
-			UImage* ImgToSpawn = NewObject<UImage>(this, UImage::StaticClass());
-			
-			if (!ImgToSpawn)
-			{
-				continue;
-			}
-			
-			Spawnable.NoteTexture = LoadProperTexture(Spawnable);
-			const FVector2D TextureSize = {static_cast<double>(Spawnable.NoteTexture->GetSizeX()), static_cast<double>(Spawnable.NoteTexture->GetSizeY())};
-			
-			ImgToSpawn->SetBrushFromTexture(Spawnable.NoteTexture);
-			ImgToSpawn->SetDesiredSizeOverride(TextureSize);
-			
-			if (UCanvasPanelSlot* ImageSlot = Cast<UCanvasPanelSlot>(Parent->AddChild(ImgToSpawn)); ImageSlot)
-			{
-				const FVector2D InitialPos = FVector2D(0.0f, 0.0f); 
-				ImageSlot->SetAnchors(FAnchors(0.5f, 0.5f));
-				ImageSlot->SetAlignment(FVector2D(0.5f, 0.5f));
-				ImageSlot->SetPosition(InitialPos);
-				ImageSlot->SetSize(TextureSize);
+// void UNoteHighwayMinigame::SpawnButtons(const ESpawnableHighwayBtn& Type)
+// {
+// 	for (FHighwaySpawnable& Spawnable : Spawnables)
+// 	{
+// 		if (Spawnable.ButtonType == Type)
+// 		{
+// 			UCanvasPanel* Parent = Cast<UCanvasPanel>(GetWidgetFromName(Spawnable.RowName));
+// 			
+// 			if (!Parent)
+// 			{
+// 				continue;
+// 			}
+// 			
+// 			UImage* ImgToSpawn = NewObject<UImage>(this, UImage::StaticClass());
+// 			
+// 			if (!ImgToSpawn)
+// 			{
+// 				continue;
+// 			}
+// 			
+// 			Spawnable.NoteTexture = LoadProperTexture(Spawnable);
+// 			const FVector2D TextureSize = {static_cast<double>(Spawnable.NoteTexture->GetSizeX()), static_cast<double>(Spawnable.NoteTexture->GetSizeY())};
+// 			
+// 			ImgToSpawn->SetBrushFromTexture(Spawnable.NoteTexture);
+// 			ImgToSpawn->SetDesiredSizeOverride(TextureSize);
+// 			
+// 			if (UCanvasPanelSlot* ImageSlot = Cast<UCanvasPanelSlot>(Parent->AddChild(ImgToSpawn)); ImageSlot)
+// 			{
+// 				const FVector2D InitialPos = FVector2D(0.0f, 0.0f); 
+// 				ImageSlot->SetAnchors(FAnchors(0.5f, 0.5f));
+// 				ImageSlot->SetAlignment(FVector2D(0.5f, 0.5f));
+// 				ImageSlot->SetPosition(InitialPos);
+// 				ImageSlot->SetSize(TextureSize);
+//
+// 				FHighwayNote Note;
+// 				Note.X = InitialPos.X; 
+// 				Note.Row = Spawnable.ButtonType;
+// 				Note.bHit = false;
+// 				Note.CachedSelf = ImgToSpawn;
+//     
+// 				NotesData.Add(Note);
+// 			}
+// 			Notes.Add(ImgToSpawn);
+// 		}
+// 	}
+// }
 
-				FHighwayNote Note;
-				Note.X = InitialPos.X; 
-				Note.Row = Spawnable.ButtonType;
-				Note.bHit = false;
-				Note.CachedSelf = ImgToSpawn;
-    
-				NotesData.Add(Note);
-			}
-			Notes.Add(ImgToSpawn);
-		}
+void UNoteHighwayMinigame::SpawnButtons(FHighwaySpawnable& Spawnable)
+{
+	UCanvasPanel* Parent = Cast<UCanvasPanel>(GetWidgetFromName(Spawnable.RowName));
+	if (!Parent) return;
+
+	UImage* ImgToSpawn = NewObject<UImage>(this, UImage::StaticClass());
+	if (!ImgToSpawn) return;
+
+	Spawnable.NoteTexture = LoadProperTexture(Spawnable);
+	const FVector2D TextureSize = { (double)Spawnable.NoteTexture->GetSizeX(), (double)Spawnable.NoteTexture->GetSizeY() };
+
+	ImgToSpawn->SetBrushFromTexture(Spawnable.NoteTexture);
+	ImgToSpawn->SetDesiredSizeOverride(TextureSize);
+
+	if (UCanvasPanelSlot* ImageSlot = Cast<UCanvasPanelSlot>(Parent->AddChild(ImgToSpawn)))
+	{
+		ImageSlot->SetAnchors(FAnchors(0.5f, 0.5f));
+		ImageSlot->SetAlignment(FVector2D(0.5f, 0.5f));
+		ImageSlot->SetPosition(FVector2D::ZeroVector);
+		ImageSlot->SetSize(TextureSize);
+
+		FHighwayNote Note;
+		Note.X = 0.0f; 
+		Note.Row = Spawnable.ButtonType;
+		Note.bHit = false;
+		Note.CachedSelf = ImgToSpawn;
+
+		NotesData.Add(Note);
+		Notes.Add(ImgToSpawn);
 	}
 }
 

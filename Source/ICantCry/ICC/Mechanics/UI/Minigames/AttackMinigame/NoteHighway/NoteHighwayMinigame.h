@@ -114,7 +114,8 @@ protected:
 	
 	UTexture2D* LoadProperTexture(FHighwaySpawnable& Spawnable);
 	
-	void SpawnButtons(const ESpawnableHighwayBtn& Type);
+	//void SpawnButtons(const ESpawnableHighwayBtn& Type);
+	void SpawnButtons(FHighwaySpawnable& Spawnable);
 	
 	void Reset();
 	
