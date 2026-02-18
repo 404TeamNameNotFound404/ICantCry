@@ -885,9 +885,6 @@ void UBattleHUD::PrepareToEngage()
 	DebugHelper::LogMessage(3, FColor::White, "Targeting " + SelectedEnemy->GetActorLabel());
 	DebugHelper::AddMessageToLog(
 		"[BattleHUD]: Targeting " + SelectedEnemy->GetActorLabel() + " using " + CurrentBulletData->BulletName);
-	DebugHelper::LogMessage(5, FColor::Emerald,
-	                        "Minigame modifier -> " + FString::SanitizeFloat(
-		                        GameInstance->GetRuntimeStats().Stats.PlayerStats->MinigameModifier));
 	checkf(MinigameHandler, TEXT("Minigame handler is null at UBattleHUD::Engage"));
 	MinigameHandler->StartMinigame(CurrentBulletData,true);
 	EngageBtn->SetVisibility(ESlateVisibility::Hidden);

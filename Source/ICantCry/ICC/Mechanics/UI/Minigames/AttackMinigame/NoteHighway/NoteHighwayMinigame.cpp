@@ -25,11 +25,11 @@ void UNoteHighwayMinigame::MoveSlider(const FVector2D& Position)
 		Distance >= EndThreshold)
 	{
 		const UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+		HandleScore();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
 		Instance->GetCurrentPlayer()->GetBinder()->SetDecreaseMinigameScrollValue(false);
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
-		HandleScore();
 		Instance->GetCurrentPlayer()->GetMinigameHandler()->EndMinigame();
 	}
 }
@@ -41,28 +41,51 @@ EMinigameThreshold UNoteHighwayMinigame::CheckBar()
 
 void UNoteHighwayMinigame::Simulate(const ESpawnableHighwayBtn& Target)
 {
-	DebugHelper::LogSuccess("Pressing " + GetNoteName(Target));
+	const UCanvasPanelSlot* SliderSlot = Cast<UCanvasPanelSlot>(Slider->Slot);
+	if (!SliderSlot) return;
+	
+	const float SliderX = SliderSlot->GetPosition().X;
 	
 	for (FHighwayNote& Note : NotesData)
 	{
-		if (Note.bHit)
+		if (Note.bHit || Note.Row != Target) continue;
+		
+		const UCanvasPanelSlot* NoteSlot = Cast<UCanvasPanelSlot>(Note.CachedSelf->Slot);
+		const float CurrentNoteX = NoteSlot->GetPosition().X;
+		
+		if (SliderX > CurrentNoteX + HitTolerance) 
 		{
-			continue;
+			continue; 
 		}
 		
-		if (Note.Row != Target)
+		if (CurrentNoteX > (SliderX + HitTolerance))
 		{
-			continue;
+			DebugHelper::LogError("Slider past button");
+			break;
 		}
 		
-		if (const float HitDistance = FMath::Abs(Slider->GetRenderTransform().Translation.X - Note.X);
-			HitDistance <= HitTolerance)
+		if (const float Distance = FMath::Abs(SliderX - CurrentNoteX); Distance <= HitTolerance)
 		{
 			Note.bHit = true;
-			
 			Score = Score + 0.2f;
+			if (Score >= 1.5f)
+			{
+				Score = 1.5f;
+			}
+			Note.CachedSelf->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			const FString IconName = GetNoteName(Target);
+			const FString Prefix = DebugHelper::IsGamepadPlugged() ? TEXT("OPad_") : TEXT("OKey_");
+			const FName FinalMapKey = FName(*(Prefix + IconName));
 			
-			// TODO Load 'Hit' Texture
+			if (UTexture2D** FoundTexture = Icons.Find(FinalMapKey))
+			{
+				Note.CachedSelf->SetBrushFromTexture(*FoundTexture);
+			}
+			else
+			{
+				DebugHelper::LogError("Missing Texture for Key: " + FinalMapKey.ToString());
+			}
+			
 			DebugHelper::LogSuccess("Note hit!");
 			return;
 		}
@@ -83,10 +106,9 @@ void UNoteHighwayMinigame::NativeConstruct()
 
 void UNoteHighwayMinigame::HandleScore()
 {
-	const UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
-	
-	Instance->GetPlayerStats()->RuntimeStats.MinigameModifier = Score;
-	Score = 0;
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	DebugHelper::LogMessage(6, FColor::White, "Total Score: " + FString::SanitizeFloat(Score));
+	Instance->GetRuntimeStats().MinigameModifier = Score;
 	
 	Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
 	Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
@@ -94,7 +116,6 @@ void UNoteHighwayMinigame::HandleScore()
 	
 	Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 	Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
-	
 }
 
 void UNoteHighwayMinigame::Flow()
@@ -176,17 +197,74 @@ void UNoteHighwayMinigame::SpawnButtons(const ESpawnableHighwayBtn& Type)
 			ImgToSpawn->SetBrushFromTexture(Spawnable.NoteTexture);
 			ImgToSpawn->SetDesiredSizeOverride(TextureSize);
 			
-			Parent->AddChild(ImgToSpawn);
-			FHighwayNote Note;
-			Note.X = Cast<UCanvasPanelSlot>(ImgToSpawn->Slot)->GetPosition().X;
-			Note.bHit = false;
-			Note.Row = Spawnable.ButtonType;
-			Note.CachedTexture = Spawnable.NoteTexture;
+			if (UCanvasPanelSlot* ImageSlot = Cast<UCanvasPanelSlot>(Parent->AddChild(ImgToSpawn)); ImageSlot)
+			{
+				const FVector2D InitialPos = FVector2D(0.0f, 0.0f); 
+				ImageSlot->SetAnchors(FAnchors(0.5f, 0.5f));
+				ImageSlot->SetAlignment(FVector2D(0.5f, 0.5f));
+				ImageSlot->SetPosition(InitialPos);
+				ImageSlot->SetSize(TextureSize);
+
+				FHighwayNote Note;
+				Note.X = InitialPos.X; 
+				Note.Row = Spawnable.ButtonType;
+				Note.bHit = false;
+				Note.CachedSelf = ImgToSpawn;
+    
+				NotesData.Add(Note);
+			}
 			Notes.Add(ImgToSpawn);
-			
-			NotesData.Add(Note);
 		}
 	}
+}
+
+void UNoteHighwayMinigame::Reset()
+{
+	if (NotesData.IsEmpty()) return;
+	if (Notes.IsEmpty()) return;
+	
+	for (UImage* NoteImg : Notes)
+	{
+		if (NoteImg)
+		{
+			NoteImg->RemoveFromParent();
+		}
+	}
+	
+	Notes.Empty();
+	NotesData.Empty();
+	Score = 0.5f;
+	
+	if (UCanvasPanelSlot* SliderSlot = Cast<UCanvasPanelSlot>(Slider->Slot))
+	{
+		SliderSlot->SetPosition(FVector2D(0, 0));
+	}
+}
+
+FHighwayNote* UNoteHighwayMinigame::FindClosestNote(const ESpawnableHighwayBtn& Type)
+{
+	FHighwayNote* ClosestNote = nullptr;
+	float MinDistance = FLT_MAX;
+
+	const float SliderX = Slider->GetRenderTransform().Translation.X;
+
+	for (FHighwayNote& Note : NotesData)
+	{
+		if (Note.bHit)
+			continue;
+
+		if (Note.Row != Type)
+			continue;
+		
+
+		if (const float Distance = FMath::Abs(SliderX - Note.X); Distance < MinDistance)
+		{
+			MinDistance = Distance;
+			ClosestNote = &Note;
+		}
+	}
+
+	return ClosestNote;
 }
 
 FString UNoteHighwayMinigame::GetNoteName(const ESpawnableHighwayBtn& Btn) const

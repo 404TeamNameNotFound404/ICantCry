@@ -39,10 +39,12 @@ struct FHighwayNote
 	GENERATED_BODY()
 	
 	UPROPERTY() UTexture2D* CachedTexture;
+	UPROPERTY() UImage* CachedSelf;
 	UPROPERTY() TEnumAsByte<ESpawnableHighwayBtn> Row;
 	UPROPERTY() float X;
 	UPROPERTY() float TargetTime;
 	UPROPERTY() bool bHit;
+	UPROPERTY() float HitTolerance = 50.0f;
 };
 
 /**
@@ -106,13 +108,17 @@ protected:
 	float EndThreshold = 692.0f;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Minigames", meta = (AllowPrivateAccess = "true"))
-	float HitTolerance = 5.f;
+	float HitTolerance = 0.02f;
 	
 	UPROPERTY() float Score = 0.5f;
 	
 	UTexture2D* LoadProperTexture(FHighwaySpawnable& Spawnable);
 	
 	void SpawnButtons(const ESpawnableHighwayBtn& Type);
+	
+	void Reset();
+	
+	FHighwayNote* FindClosestNote(const ESpawnableHighwayBtn& Type);
 	
 	FString GetNoteName(const ESpawnableHighwayBtn& Btn) const;
 	
