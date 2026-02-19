@@ -89,7 +89,7 @@ protected:
 	UPROPERTY(meta=(BindWidget)) UImage* EndBorder;
 	
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Minigames",  meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Minigames",  meta = (AllowPrivateAccess = "true"))
 	TArray<FHighwaySpawnable> Spawnables;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Minigames",  meta = (AllowPrivateAccess = "true"))
@@ -101,13 +101,13 @@ protected:
 	UPROPERTY()
 	TArray<FHighwayNote> NotesData;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Minigames", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Minigames", meta = (AllowPrivateAccess = "true"))
 	float SliderSpeed = 180.f;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Minigames", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Minigames", meta = (AllowPrivateAccess = "true"))
 	float EndThreshold = 692.0f;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Minigames", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Minigames", meta = (AllowPrivateAccess = "true"))
 	float HitTolerance = 0.02f;
 	
 	UPROPERTY() float Score = 0.5f;

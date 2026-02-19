@@ -7,6 +7,7 @@
 #include "ICantCry/ICC/Mechanics/UI/Minigames/Defense Minigame//DefenceMinigame.h"
 #include "ICantCry/ICC/Mechanics/UI/Minigames/AttackMinigame/AttackMinigame.h"
 #include "ICantCry/ICC/Mechanics/UI/Minigames/AttackMinigame/AngerMinigame/AngerAtkMinigame.h"
+#include "ICantCry/ICC/Mechanics/UI/Minigames/AttackMinigame/Curling/CurlingMinigame.h"
 #include "ICantCry/ICC/Mechanics/UI/Minigames/AttackMinigame/NoteHighway/NoteHighwayMinigame.h"
 
 
@@ -90,12 +91,8 @@ void AMinigameHandler::StartMinigame(UBulletData* BulletData, const bool& Enable
 	APlayerController* Controller = GetWorld()->GetFirstPlayerController();
 	checkf(Controller, TEXT("Controller is null at AMinigameHandler::StartMinigame"));
 	
-	
 	if (EnableAttack)
 	{
-		// switch according to MinigameTemplate inside BulletData
-		// CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, AttackMinigame);
-		// UAttackMinigame* CastedWidget = Cast<UAttackMinigame>(CurrentMinigameDisplayed);
 		UMinigameUserWidget* CastedWidget = nullptr;
 		
 		switch (BulletData->MinigameTemplate)
@@ -149,7 +146,37 @@ void AMinigameHandler::StartMinigame(UBulletData* BulletData, const bool& Enable
 			}
 		case Curling:
 			{
-				CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["Curling"]);
+				
+				switch (BulletData->Type)
+				{
+				default:
+				case Indifference:
+				case AngerDv:
+				case AngerEv:
+				case FearEV:
+				case JoyEv:
+				case CalmEV:
+				case Shame:
+				case JealousyEv:
+				case DisgustEv:
+				case SadnessEv:
+				case FearDv:
+				case Disgust:
+					break;
+				case Anxiety:
+					break;
+				case SadnessDv:
+					break;
+				case JoyDv:
+					break;
+				case CalmDv:
+					break;
+				case JealousyDv:
+					DebugHelper::LogMessage(10, FColor::White, "Curling spawned");
+					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["Curling"]);
+					CastedWidget = Cast<UCurlingMinigame>(CurrentMinigameDisplayed);
+					break;
+				}
 				break;
 			}
 		}
