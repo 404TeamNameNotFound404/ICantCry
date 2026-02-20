@@ -182,6 +182,27 @@ void UICC_GamepadBinder::Input_GamepadMinigameRelease(const FInputActionValue& I
 	}, 0.25f, false);
 }
 
+void UICC_GamepadBinder::Input_GamepadMinigameGuitarHero_X(const FInputActionValue& InputActionValue)
+{
+	ProcessGuitarHeroInput(ESpawnableHighwayBtn::X);
+}
+
+void UICC_GamepadBinder::Input_GamepadMinigameGuitarHero_Y(const FInputActionValue& InputActionValue)
+{
+	ProcessGuitarHeroInput(ESpawnableHighwayBtn::Y);
+}
+
+void UICC_GamepadBinder::Input_GamepadMinigameGuitarHero_A(const FInputActionValue& InputActionValue)
+{
+	ProcessGuitarHeroInput(ESpawnableHighwayBtn::A);
+}
+
+void UICC_GamepadBinder::Input_GamepadMinigameGuitarHero_B(const FInputActionValue& InputActionValue)
+{
+	ProcessGuitarHeroInput(ESpawnableHighwayBtn::B);
+}
+
+
 void UICC_GamepadBinder::FocusOn(UWidget* Target)
 {
 	if (!DebugHelper::IsGamepadPlugged() || !Target)
@@ -230,6 +251,22 @@ void UICC_GamepadBinder::SimulateClick()
 	{
 		Btn->OnClicked.Broadcast();
 	}
+}
+
+void UICC_GamepadBinder::ProcessGuitarHeroInput(const ESpawnableHighwayBtn& RowType)
+{
+	if (!Player->bIsInFight)
+	{
+		return;
+	}
+	
+	if (Player->GetBattleHUD()->GetCurrentBulletData()->MinigameTemplate != EMinigameType::GuitarHero
+		&& !Player->GetIsMinigameInputEnabled())
+	{
+		return;
+	}
+	
+	Cast<UNoteHighwayMinigame>(Player->GetCurrentMinigameDisplayed())->Simulate(RowType);
 }
 
 bool UICC_GamepadBinder::IsNavigating() const

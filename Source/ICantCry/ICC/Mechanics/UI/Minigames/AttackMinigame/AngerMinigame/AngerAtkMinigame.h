@@ -48,22 +48,22 @@ protected:
 	
 	UPROPERTY() int32 MovementDirection = 1;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Minigame", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Minigame", meta = (AllowPrivateAccess = "true"))
 	float SliderSpeed = 1.8f;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Minigame")
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Minigame")
 	float DecreaseSpeed = 0.8f;
 	
 	UPROPERTY()
 	float TimerLeft = 0.0f;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Minigame", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Minigame", meta = (AllowPrivateAccess = "true"))
 	float TimeToDie = 3.0f;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Minigame", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Minigame", meta = (AllowPrivateAccess = "true"))
 	float TimerSpeed = 1.2f;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Minigame")
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Minigame")
 	FVector2D SliderLocationTarget = {0,0};
 	
 	UPROPERTY()

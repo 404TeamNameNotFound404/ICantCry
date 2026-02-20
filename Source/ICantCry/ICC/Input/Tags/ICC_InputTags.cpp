@@ -19,4 +19,8 @@ namespace Icc_InputTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_GamepadNavigate, "InputTag.Navigate")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_GamepadSimulateClick, "InputTag.SimulateClick")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_MinigameHold, "InputTag.MinigameHold")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_MinigameGuitarHero_X, "InputTag.Minigame.GuitarHero_X")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_MinigameGuitarHero_Y, "InputTag.Minigame.GuitarHero_Y")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_MinigameGuitarHero_A, "InputTag.Minigame.GuitarHero_A")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_MinigameGuitarHero_B, "InputTag.Minigame.GuitarHero_B")
 }

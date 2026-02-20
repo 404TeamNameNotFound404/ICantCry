@@ -41,7 +41,7 @@ int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 			Coefficient = BulletData->Coefficients[EnemyData->Type];
 		}
 		
-		DebugHelper::LogMessage(10, FColor::Purple, "MinigameModifier on damage math -> " + FString::SanitizeFloat(Stats->MinigameModifier));
+		DebugHelper::LogMessage(10, FColor::Purple, "MinigameModifier on damage math -> " + FString::SanitizeFloat(RuntimeStats.MinigameModifier));
 		
 		const float Result = (((BulletData->Power / (2 - RuntimeStats.MinigameModifier)) * (RuntimeStats.AttackPower / EnemyData->DefencePower))) * (RuntimeStats.ApModifier * Coefficient/*BulletData->WeaknessModifier*/);
 		const int RoundedResult = FMath::RoundToInt(Result);

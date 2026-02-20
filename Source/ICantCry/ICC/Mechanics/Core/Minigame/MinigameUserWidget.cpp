@@ -52,9 +52,11 @@ void UMinigameUserWidget::Handle(UBulletData* BulletData, AMinigameHandler* Mini
 		break;
 	case GuitarHero:
 		Instance->GetCurrentPlayer()->GetBinder()->SetDecreaseMinigameScrollValue(false);
+		MinigameHandler->EndMinigame();
 		break;
 	case Curling:
 		Instance->GetCurrentPlayer()->GetBinder()->SetDecreaseMinigameScrollValue(false);
+		MinigameHandler->EndMinigame();
 		break;
 	}
 }

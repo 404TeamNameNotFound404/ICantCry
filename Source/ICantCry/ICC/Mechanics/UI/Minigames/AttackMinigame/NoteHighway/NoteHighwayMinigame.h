@@ -11,10 +11,10 @@
 UENUM(BlueprintType)
 enum ESpawnableHighwayBtn
 {
-	A,
-	X,
-	B,
-	Y
+	A, // S
+	X, // A
+	B, // D
+	Y // W
 };
 
 USTRUCT(BlueprintType)
@@ -32,6 +32,21 @@ struct FHighwaySpawnable
 	UTexture2D* NoteTexture;
 };
 
+
+USTRUCT(BlueprintType)
+struct FHighwayNote
+{
+	GENERATED_BODY()
+	
+	UPROPERTY() UTexture2D* CachedTexture;
+	UPROPERTY() UImage* CachedSelf;
+	UPROPERTY() TEnumAsByte<ESpawnableHighwayBtn> Row;
+	UPROPERTY() float X;
+	UPROPERTY() float TargetTime;
+	UPROPERTY() bool bHit;
+	UPROPERTY() float HitTolerance = 50.0f;
+};
+
 /**
  * 
  */
@@ -44,10 +59,12 @@ public:
 	virtual void MoveSlider(const FVector2D& Position) override;
 	virtual EMinigameThreshold CheckBar() override;
 	
+	void Simulate(const ESpawnableHighwayBtn& Target);
+	
 protected:
 	virtual void NativeConstruct() override;
 	virtual void HandleScore() override;
-	bool CheckCollision() const;
+	virtual void Flow() override;
 	
 	UPROPERTY(meta=(BindWidget)) UImage* Slider;
 	
@@ -72,19 +89,38 @@ protected:
 	UPROPERTY(meta=(BindWidget)) UImage* EndBorder;
 	
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Minigames",  meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Minigames",  meta = (AllowPrivateAccess = "true"))
 	TArray<FHighwaySpawnable> Spawnables;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Minigames",  meta = (AllowPrivateAccess = "true"))
+	TMap<FName, UTexture2D*> Icons;
 	
 	UPROPERTY()
 	TArray<UImage*> Notes;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Minigames", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY()
+	TArray<FHighwayNote> NotesData;
+	
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Minigames", meta = (AllowPrivateAccess = "true"))
 	float SliderSpeed = 180.f;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Minigames", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Minigames", meta = (AllowPrivateAccess = "true"))
 	float EndThreshold = 692.0f;
 	
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Minigames", meta = (AllowPrivateAccess = "true"))
+	float HitTolerance = 0.02f;
 	
-	void SpawnButtons(const ESpawnableHighwayBtn& Type);
+	UPROPERTY() float Score = 0.5f;
+	
+	UTexture2D* LoadProperTexture(FHighwaySpawnable& Spawnable);
+	
+	//void SpawnButtons(const ESpawnableHighwayBtn& Type);
+	void SpawnButtons(FHighwaySpawnable& Spawnable);
+	
+	void Reset();
+	
+	FHighwayNote* FindClosestNote(const ESpawnableHighwayBtn& Type);
+	
+	FString GetNoteName(const ESpawnableHighwayBtn& Btn) const;
 	
 };
