@@ -23,4 +23,5 @@ namespace Icc_InputTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_MinigameGuitarHero_Y, "InputTag.Minigame.GuitarHero_Y")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_MinigameGuitarHero_A, "InputTag.Minigame.GuitarHero_A")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_MinigameGuitarHero_B, "InputTag.Minigame.GuitarHero_B")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_MinigameCurling, "InputTag.Minigame.Curling")
 }

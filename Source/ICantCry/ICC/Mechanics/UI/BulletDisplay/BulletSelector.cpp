@@ -221,7 +221,6 @@ void UBulletSelector::AddToRevolver()
 	
 
 	BulletRefPtr->SetQuantity(BulletRefPtr->GetQuantity() - 1);
-	DebugHelper::LogMessage(8, FColor::Red, "Decreasing quantity of " + BulletRefPtr->GetBulletData()->BulletName + ": " + FString::FromInt(BulletRefPtr->GetQuantity()));
 	
 	const TArray<UImage*>& PistolMagazines = Player->GetBattleHUD()->PistolMagazines;
 	const TArray<UMagazineBullet*>& MagazineBullets = Player->GetBattleHUD()->MagazineBullets;

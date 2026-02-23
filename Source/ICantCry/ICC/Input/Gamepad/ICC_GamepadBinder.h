@@ -34,6 +34,8 @@ public:
 	void Input_GamepadMinigameGuitarHero_Y(const FInputActionValue& InputActionValue);
 	void Input_GamepadMinigameGuitarHero_A(const FInputActionValue& InputActionValue);
 	void Input_GamepadMinigameGuitarHero_B(const FInputActionValue& InputActionValue);
+	void Input_GamepadMinigameCurling(const FInputActionValue& InputActionValue);
+	void Input_GamepadMinigameCurlingRelease(const FInputActionValue& InputActionValue);
 
 	void FocusOn(UWidget* Target);
 	UWidget* GetCurrentFocusedWidget() const;

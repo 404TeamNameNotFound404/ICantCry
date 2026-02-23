@@ -178,53 +178,6 @@ UTexture2D* UNoteHighwayMinigame::LoadProperTexture(FHighwaySpawnable& Spawnable
 	return nullptr;
 }
 
-// void UNoteHighwayMinigame::SpawnButtons(const ESpawnableHighwayBtn& Type)
-// {
-// 	for (FHighwaySpawnable& Spawnable : Spawnables)
-// 	{
-// 		if (Spawnable.ButtonType == Type)
-// 		{
-// 			UCanvasPanel* Parent = Cast<UCanvasPanel>(GetWidgetFromName(Spawnable.RowName));
-// 			
-// 			if (!Parent)
-// 			{
-// 				continue;
-// 			}
-// 			
-// 			UImage* ImgToSpawn = NewObject<UImage>(this, UImage::StaticClass());
-// 			
-// 			if (!ImgToSpawn)
-// 			{
-// 				continue;
-// 			}
-// 			
-// 			Spawnable.NoteTexture = LoadProperTexture(Spawnable);
-// 			const FVector2D TextureSize = {static_cast<double>(Spawnable.NoteTexture->GetSizeX()), static_cast<double>(Spawnable.NoteTexture->GetSizeY())};
-// 			
-// 			ImgToSpawn->SetBrushFromTexture(Spawnable.NoteTexture);
-// 			ImgToSpawn->SetDesiredSizeOverride(TextureSize);
-// 			
-// 			if (UCanvasPanelSlot* ImageSlot = Cast<UCanvasPanelSlot>(Parent->AddChild(ImgToSpawn)); ImageSlot)
-// 			{
-// 				const FVector2D InitialPos = FVector2D(0.0f, 0.0f); 
-// 				ImageSlot->SetAnchors(FAnchors(0.5f, 0.5f));
-// 				ImageSlot->SetAlignment(FVector2D(0.5f, 0.5f));
-// 				ImageSlot->SetPosition(InitialPos);
-// 				ImageSlot->SetSize(TextureSize);
-//
-// 				FHighwayNote Note;
-// 				Note.X = InitialPos.X; 
-// 				Note.Row = Spawnable.ButtonType;
-// 				Note.bHit = false;
-// 				Note.CachedSelf = ImgToSpawn;
-//     
-// 				NotesData.Add(Note);
-// 			}
-// 			Notes.Add(ImgToSpawn);
-// 		}
-// 	}
-// }
-
 void UNoteHighwayMinigame::SpawnButtons(FHighwaySpawnable& Spawnable)
 {
 	UCanvasPanel* Parent = Cast<UCanvasPanel>(GetWidgetFromName(Spawnable.RowName));

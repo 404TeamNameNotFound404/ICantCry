@@ -77,8 +77,6 @@ void UCircularBulletBuffer::RemoveAt(const int32& Index)
     Head = (Head - 1 + Capacity) % Capacity;
     Buffer[Head] = nullptr;
     bIsFull = false;
-
-    DebugHelper::LogMessage(5, FColor::Yellow, FString::Printf(TEXT("Removed bullet at slot %d and compacted buffer"), Index));
 }
 
 UBulletData *UCircularBulletBuffer::PeekCurrentBullet() const
@@ -173,6 +171,4 @@ void UCircularBulletBuffer::Clear()
     Tail = 0;
     CurrentIndex = 0;
     bIsFull = false;
-
-    DebugHelper::LogMessage(5, FColor::Green, TEXT("Circular bullet buffer cleared."));
 }
