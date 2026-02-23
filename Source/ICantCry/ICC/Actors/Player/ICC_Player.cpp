@@ -89,7 +89,6 @@ void AICC_Player::BeginPlay()
 	for (TActorIterator<AMinigameHandler> It(GetWorld()); It; ++It)
 	{
 		MinigameHandler = *It;
-		DebugHelper::LogSuccess("Minigame Handler found!");
 		break;
 	}
 	
@@ -158,7 +157,7 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Run, ETriggerEvent::Triggered, this, &ThisClass::Input_Run);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Interact, ETriggerEvent::Triggered, this, &ThisClass::Input_Interact);
-	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Minigame, ETriggerEvent::Triggered, this, &ThisClass::Input_Minigame);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Minigame, ETriggerEvent::Started, this, &ThisClass::Input_Minigame);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Minigame, ETriggerEvent::Completed, this, &ThisClass::Input_MinigameReleased);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_BulletScroll, ETriggerEvent::Triggered, this, &ThisClass::Input_Scroll);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Inventory, ETriggerEvent::Triggered, this, &ThisClass::Input_OpenInventory);
@@ -176,6 +175,8 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_MinigameGuitarHero_Y, ETriggerEvent::Started, PadBinder, &UICC_GamepadBinder::Input_GamepadMinigameGuitarHero_Y);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_MinigameGuitarHero_A, ETriggerEvent::Started, PadBinder, &UICC_GamepadBinder::Input_GamepadMinigameGuitarHero_A);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_MinigameGuitarHero_B, ETriggerEvent::Started, PadBinder, &UICC_GamepadBinder::Input_GamepadMinigameGuitarHero_B);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_MinigameCurling, ETriggerEvent::Started, PadBinder, &UICC_GamepadBinder::Input_GamepadMinigameCurling);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_MinigameCurling, ETriggerEvent::Completed, PadBinder, &UICC_GamepadBinder::Input_GamepadMinigameCurlingRelease);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Bestiary, ETriggerEvent::Started, this, &ThisClass::Input_ToggleBestiary);
 }
 

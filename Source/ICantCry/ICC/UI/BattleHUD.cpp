@@ -127,8 +127,6 @@ void UBattleHUD::NativeConstruct()
 		}
 
 		RevolverSlot->SetVisibility(ESlateVisibility::Visible);
-
-		DebugHelper::LogError("Called");
 	}
 
 

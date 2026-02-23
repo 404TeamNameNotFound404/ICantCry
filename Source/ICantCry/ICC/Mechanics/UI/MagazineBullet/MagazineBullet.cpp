@@ -11,10 +11,8 @@ void UMagazineBullet::RemoveFromMagazine()
 		return;
 	
 	Buffer->RemoveAt(BulletIndex);
-	DebugHelper::LogSuccess("Removed bullet from slot index " + FString::FromInt(BulletIndex));
 	FBullet* Bullet = Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentSelectedBullet();
 	Bullet->SetQuantity(Bullet->GetQuantity() + 1);
-	DebugHelper::LogMessage(5, FColor::White, "Re adding " + Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentSelectedBullet()->GetBulletData()->BulletName);
 	BulletBtn->SetBackgroundColor(FLinearColor::Transparent);
 	Setup(nullptr, nullptr, -1);
 	
@@ -82,8 +80,6 @@ void UMagazineBullet::Setup(UCircularBulletBuffer* InBuffer,  UBulletData* Bulle
 			BulletBtn->SetBackgroundColor(BulletDataPtr->DisplayColor);
 			BulletBtn->SetColorAndOpacity(FLinearColor::Transparent);
 			SetRenderOpacity(1.0f);
-
-			DebugHelper::LogMessage(8, FColor::White, "Adding bullet with color " + BulletDataPtr->DisplayColor.ToString());
 		}
 		else
 		{
@@ -105,7 +101,5 @@ void UMagazineBullet::Setup(UCircularBulletBuffer* InBuffer,  UBulletData* Bulle
 void UMagazineBullet::NativeConstruct()
 {
 	Super::NativeConstruct();
-	DebugHelper::LogMessage(7,FColor::White,"Native Construct from umagazinebulelt called");
 	BulletBtn->OnClicked.AddDynamic(this, &UMagazineBullet::RemoveFromMagazine);
-	DebugHelper::LogSuccess("Bound OnClicked for bullet index " + FString::FromInt(BulletIndex));
 }

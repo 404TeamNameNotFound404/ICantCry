@@ -162,6 +162,9 @@ void AMinigameHandler::StartMinigame(UBulletData* BulletData, const bool& Enable
 				case SadnessEv:
 				case FearDv:
 				case Disgust:
+					DebugHelper::LogMessage(10, FColor::White, "Curling spawned");
+					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["Curling"]);
+					CastedWidget = Cast<UCurlingMinigame>(CurrentMinigameDisplayed);
 					break;
 				case Anxiety:
 					break;
@@ -172,9 +175,6 @@ void AMinigameHandler::StartMinigame(UBulletData* BulletData, const bool& Enable
 				case CalmDv:
 					break;
 				case JealousyDv:
-					DebugHelper::LogMessage(10, FColor::White, "Curling spawned");
-					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["Curling"]);
-					CastedWidget = Cast<UCurlingMinigame>(CurrentMinigameDisplayed);
 					break;
 				}
 				break;
@@ -205,14 +205,6 @@ void AMinigameHandler::StartMinigame(UBulletData* BulletData, const bool& Enable
 			bPlayerMinigameEnded = false;
 			Player->GetBattleHUD()->CTR->SetVisibility(ESlateVisibility::Hidden);
 		}, 1.f , false);
-		
-		//CurrentMinigameDisplayed->AddToViewport();
-		// Player->GetBattleHUD()->MinigameSlot->AddChild(CurrentMinigameDisplayed);
-		// Player->GetBattleHUD()->HideInfo();
-		// Player->EnableMinigameInput(true);
-		// Player->SetActiveMinigameUserWidget(CastedWidget);
-		// CurrentMinigameDisplayed->SetKeyboardFocus();
-		// bPlayerMinigameEnded = false;
 	}
 
 	

@@ -169,17 +169,26 @@ void UICC_GamepadBinder::Input_GamepadSimulateClick(const FInputActionValue& Inp
 
 void UICC_GamepadBinder::Input_GamepadMinigameRelease(const FInputActionValue& InputActionValue)
 {
+	if (!Player || !Player->GetBattleHUD()) return;
+	if (!Player->bIsInFight) return;
+	if (!Player->GetBattleHUD()->GetBattleHandler()) return;
+	if (!Player->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn()) return;
+	
 	if (!Player->GetCurrentMinigameDisplayed())
 	{
 		return;
 	}
-
-	FTimerHandle Handle;
-	GetWorld()->GetTimerManager().SetTimer(Handle, [&]
+	
+	if (Player->GetBattleHUD()->GetCurrentBulletData()->MinigameTemplate == EMinigameType::Anger)
 	{
-		bDecreaseScrollValueMinigame = true;
-		DebugHelper::LogMessage(15, FColor::White, "Minigame released!");
-	}, 0.25f, false);
+		FTimerHandle Handle;
+		GetWorld()->GetTimerManager().SetTimer(Handle, [&]
+		{
+			bDecreaseScrollValueMinigame = true;
+			DebugHelper::LogMessage(15, FColor::White, "Minigame released!");
+		}, 0.25f, false);
+	}
+	
 }
 
 void UICC_GamepadBinder::Input_GamepadMinigameGuitarHero_X(const FInputActionValue& InputActionValue)
@@ -202,6 +211,41 @@ void UICC_GamepadBinder::Input_GamepadMinigameGuitarHero_B(const FInputActionVal
 	ProcessGuitarHeroInput(ESpawnableHighwayBtn::B);
 }
 
+void UICC_GamepadBinder::Input_GamepadMinigameCurling(const FInputActionValue& InputActionValue)
+{
+	if (!Player || !Player->GetBattleHUD()) return;
+	if (!Player->bIsInFight) return;
+	if (!Player->GetBattleHUD()->GetBattleHandler()) return;
+	if (!Player->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn()) return;
+	
+	if (!Player->GetCurrentMinigameDisplayed())
+	{
+		return;
+	}
+	
+	if (Player->GetBattleHUD()->GetCurrentBulletData()->MinigameTemplate == EMinigameType::Curling)
+	{
+		Player->GetCurrentMinigameDisplayed()->SetScrollValue(InputActionValue.Get<float>());
+	}
+}
+
+void UICC_GamepadBinder::Input_GamepadMinigameCurlingRelease(const FInputActionValue& InputActionValue)
+{
+	if (!Player || !Player->GetBattleHUD()) return;
+	if (!Player->bIsInFight) return;
+	if (!Player->GetBattleHUD()->GetBattleHandler()) return;
+	if (!Player->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn()) return;
+	
+	if (!Player->GetCurrentMinigameDisplayed())
+	{
+		return;
+	}
+	
+	if (Player->GetBattleHUD()->GetCurrentBulletData()->MinigameTemplate == EMinigameType::Curling)
+	{
+		Player->GetCurrentMinigameDisplayed()->SetScrollValue(0.0f);
+	}
+}
 
 void UICC_GamepadBinder::FocusOn(UWidget* Target)
 {
@@ -260,13 +304,21 @@ void UICC_GamepadBinder::ProcessGuitarHeroInput(const ESpawnableHighwayBtn& RowT
 		return;
 	}
 	
-	if (Player->GetBattleHUD()->GetCurrentBulletData()->MinigameTemplate != EMinigameType::GuitarHero
-		&& !Player->GetIsMinigameInputEnabled())
+	if (!Player || !Player->GetBattleHUD()) return;
+	if (!Player->bIsInFight) return;
+	if (!Player->GetBattleHUD()->GetBattleHandler()) return;
+	if (!Player->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn()) return;
+	
+	if (!Player->GetCurrentMinigameDisplayed())
 	{
 		return;
 	}
 	
-	Cast<UNoteHighwayMinigame>(Player->GetCurrentMinigameDisplayed())->Simulate(RowType);
+	if (Player->GetBattleHUD()->GetCurrentBulletData()->MinigameTemplate == EMinigameType::GuitarHero
+		&& Player->GetIsMinigameInputEnabled())
+	{
+		Cast<UNoteHighwayMinigame>(Player->GetCurrentMinigameDisplayed())->Simulate(RowType);
+	}
 }
 
 bool UICC_GamepadBinder::IsNavigating() const

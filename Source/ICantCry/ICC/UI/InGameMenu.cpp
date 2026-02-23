@@ -94,7 +94,6 @@ void UInGameMenu::InstantiateTable(AICC_Player* Player)
 {
 	Table = NewObject<UCraftingTable>(Player);
 	checkf(Table, TEXT("Table not initialized"))
-	DebugHelper::LogSuccess("Table instantiated via ingamemenu");
 }
 
 void UInGameMenu::SetMenuOpen(const bool& Value)

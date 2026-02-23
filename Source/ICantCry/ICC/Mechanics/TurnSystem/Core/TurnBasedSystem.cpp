@@ -23,7 +23,6 @@ void UTurnBasedSystem::Start(UWorld* World)
 	for (TActorIterator<AEnemySpawnManager> It(World); It; ++It)
 	{
 		EnemySpawnManager = *It;
-		DebugHelper::LogSuccess("EnemySpawnManager FOUND");
 		break;
 	}
 
@@ -56,8 +55,6 @@ void UTurnBasedSystem::Start(UWorld* World)
 	
 	
 	CurrentPlayer->GetBattleHUD()->ShowHUD();
-	DebugHelper::LogSuccess("Fight started right after");
-	
 }
 
 void UTurnBasedSystem::Start2(UWorld* World, FBattleMemory* Memory)
@@ -65,7 +62,6 @@ void UTurnBasedSystem::Start2(UWorld* World, FBattleMemory* Memory)
 	for (TActorIterator<AEnemySpawnManager> It(World); It; ++It)
 	{
 		EnemySpawnManager = *It;
-		DebugHelper::LogSuccess("EnemySpawnManager FOUND");
 		break;
 	}
 
@@ -99,13 +95,11 @@ void UTurnBasedSystem::Start2(UWorld* World, FBattleMemory* Memory)
 	FTimerHandle DelayHudHandle;
 	World->GetTimerManager().SetTimer(DelayHudHandle, [this]()
 	{
-		DebugHelper::LogMessage(10, FColor::Black, "Bullet stored " + FString::FromInt(Instance->GetInventory().BulletsStored.Num()));
 		CurrentPlayer->GetBattleHUD()->ShowHUD();
 	}, 5.f, false);
 	
 	// CurrentPlayer->GetBattleHUD()->ShowHUD();
 	DebugHelper::ClearAllLogs();
-	DebugHelper::LogSuccess("Fight started right after");
 	DebugHelper::AddMessageToLog("-----Battle Log-----\n");
 	DebugHelper::AddMessageToLog("[Turn System]: Fight started right after");
 	SetBattlePhase(EBattlePhase::Preparation);

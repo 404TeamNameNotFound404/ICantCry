@@ -28,7 +28,6 @@ void UEncounterManager::Initialize(UWorld* World)
 	World->GetTimerManager().SetTimer(TimerHandle, [this, World, Instance]()
 	{
 		PlayerRef = Instance->GetCurrentPlayer();
-		DebugHelper::LogSuccess("Player ref valid!");
 	}, 0.25f, false);
 }
 

@@ -19,9 +19,6 @@ void UHealthBarWidgetCmp::BeginPlay()
 	HealthBar = Cast<UMobHealthBar>(GetWidget());
 	HealthBar->Info = Owner->GetData();
 	HealthBar->FillData2(Owner);
-
-	DebugHelper::LogWarning("Data health -> " + FString::FromInt(HealthBar->GetTotalHealth()));
-	DebugHelper::LogWarning("Data Current -> " + FString::FromInt(HealthBar->GetCurrentHealth()));
 }
 
 

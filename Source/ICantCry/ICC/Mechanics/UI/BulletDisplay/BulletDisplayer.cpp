@@ -54,8 +54,6 @@ void UBulletDisplayer::Setup()
 		//BulletGrid->AddChild(Item);
 		Bullets.Add(Item);
 		Index++;
-
-		DebugHelper::LogWarning("Found " + B.GetBulletData()->BulletName);
 	}
 
 	ConfirmGamepadBtn->SetVisibility(DebugHelper::IsGamepadPlugged() ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
@@ -97,8 +95,6 @@ void UBulletDisplayer::Refresh()
 		//BulletGrid->AddChild(Item);
 		Bullets.Add(Item);
 		Index++;
-
-		DebugHelper::LogWarning("Found " + B.GetBulletData()->BulletName);
 	}
 	
 	if (GetBullets().IsValidIndex(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedBulletIndex()))
