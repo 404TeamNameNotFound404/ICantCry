@@ -317,7 +317,8 @@ void UICC_GamepadBinder::ProcessGuitarHeroInput(const ESpawnableHighwayBtn& RowT
 	if (Player->GetBattleHUD()->GetCurrentBulletData()->MinigameTemplate == EMinigameType::GuitarHero
 		&& Player->GetIsMinigameInputEnabled())
 	{
-		Cast<UNoteHighwayMinigame>(Player->GetCurrentMinigameDisplayed())->Simulate(RowType);
+		UNoteHighwayMinigame* Minigame = Cast<UNoteHighwayMinigame>(Player->GetCurrentMinigameDisplayed());
+		Minigame->Simulate(RowType);
 	}
 }
 
