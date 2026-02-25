@@ -122,20 +122,26 @@ void AMinigameHandler::StartMinigame(UBulletData* BulletData, const bool& Enable
 				case JoyEv:
 				case CalmEV:
 				case Shame:
+					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["GuitarHero 4"]);
+					CastedWidget = Cast<UNoteHighwayMinigame>(CurrentMinigameDisplayed);
 				case JealousyEv:
 				case DisgustEv:
 				case SadnessEv:
 				case FearDv:
 				case Disgust:
+					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["GuitarHero 2"]);
+					CastedWidget = Cast<UNoteHighwayMinigame>(CurrentMinigameDisplayed);
 					break;
 				case Anxiety:
 					DebugHelper::LogMessage(10, FColor::White, "Guitar hero spawned");
-					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["GuitarHero"]);
+					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["GuitarHero 1"]);
 					CastedWidget = Cast<UNoteHighwayMinigame>(CurrentMinigameDisplayed);
 					break;
 				case SadnessDv:
 					break;
 				case JoyDv:
+					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["GuitarHero 3"]);
+					CastedWidget = Cast<UNoteHighwayMinigame>(CurrentMinigameDisplayed);
 					break;
 				case CalmDv:
 					break;
@@ -162,9 +168,6 @@ void AMinigameHandler::StartMinigame(UBulletData* BulletData, const bool& Enable
 				case SadnessEv:
 				case FearDv:
 				case Disgust:
-					DebugHelper::LogMessage(10, FColor::White, "Curling spawned");
-					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["Curling"]);
-					CastedWidget = Cast<UCurlingMinigame>(CurrentMinigameDisplayed);
 					break;
 				case Anxiety:
 					break;
@@ -173,8 +176,13 @@ void AMinigameHandler::StartMinigame(UBulletData* BulletData, const bool& Enable
 				case JoyDv:
 					break;
 				case CalmDv:
+					DebugHelper::LogMessage(10, FColor::White, "Curling spawned");
+					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["Curling 1"]);
+					CastedWidget = Cast<UCurlingMinigame>(CurrentMinigameDisplayed);
 					break;
 				case JealousyDv:
+					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["Curling 2"]);
+					CastedWidget = Cast<UCurlingMinigame>(CurrentMinigameDisplayed);
 					break;
 				}
 				break;

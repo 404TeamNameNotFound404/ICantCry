@@ -111,7 +111,7 @@ protected:
 	float EndThreshold = 692.0f;
 	
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Minigames", meta = (AllowPrivateAccess = "true"))
-	float HitTolerance = 10.f;
+	float HitTolerance = 42.f;
 	
 	UPROPERTY() float Score = 0.5f;
 	

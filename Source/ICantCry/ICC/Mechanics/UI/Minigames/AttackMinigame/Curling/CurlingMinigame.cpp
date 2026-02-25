@@ -28,8 +28,11 @@ void UCurlingMinigame::MoveSlider(const FVector2D& Position)
 {
 	float Percentage = Slider->GetPercent();
 	
-	if (ScrollValue > 0)
+	if (/*ScrollValue > 0*/const bool InputPressed = Instance->GetCurrentPlayer()->GetBinder()->GetIsCurlingPressed();
+		InputPressed)
 	{
+		bPressed = true;
+		
 		if ( !Instance->GetCurrentPlayer()->GetBinder()->GetDecreaseMinigameScrollValue())
 		{
 			Percentage += ScrollValue * GetWorld()->GetDeltaSeconds() * SliderSpeed;
@@ -37,37 +40,23 @@ void UCurlingMinigame::MoveSlider(const FVector2D& Position)
 			Slider->SetPercent(Percentage);
 			MinigameResult = CheckBar();
 		}
+	}
+	else
+	{
+		if (bPressed)
+		{
+			Process();
+		}
 		
 	}
 	
-	else
-	{
-		Slider->SetPercent(Percentage);
-		const FVector2D InitialBallPosition = Ball->GetCachedGeometry().GetAbsolutePosition();
-			
-		switch (MinigameResult)
-		{
-		default:
-		case Miss:
-		case Bad:
-			{
-				BallTargetEndingPoint= BlueBallPos->GetCachedGeometry().GetAbsolutePosition(); 
-				BallEndingPosition = FMath::Lerp(InitialBallPosition, BallTargetEndingPoint, GetWorld()->GetDeltaSeconds() * BallSpeed);
-				Ball->SetRenderTranslation(BallEndingPosition);
-			}
-			break;
-		case Good:
-			break;
-		case Perfect:
-			break;
-		}
-	}
-	
-	// Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
-	// Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
-	// Instance->GetCurrentPlayer()->GetBinder()->SetDecreaseMinigameScrollValue(false);
-	// HandleScore();
-	// Instance->GetCurrentPlayer()->GetMinigameHandler()->EndMinigame();
+	/**		
+	Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
+	Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
+	Instance->GetCurrentPlayer()->GetBinder()->SetDecreaseMinigameScrollValue(false);
+	HandleScore();
+	Instance->GetCurrentPlayer()->GetMinigameHandler()->EndMinigame();
+	 */
 }
 
 void UCurlingMinigame::HandleScore()
@@ -130,27 +119,19 @@ void UCurlingMinigame::HandleScore()
 
 EMinigameThreshold UCurlingMinigame::CheckBar()
 {
-	const float CurrentPercent = Slider->GetPercent();
-	
-	const float Dist = FMath::Abs(CurrentPercent - 0.5f);
+	const float P = Slider->GetPercent();
+	constexpr float Center = 0.5f;
 
-	if (Dist <= PerfectScoreRange)
-	{
-		DebugHelper::LogSuccess("Perfect Score");
+	const float Distance = FMath::Abs(P - Center);
+
+	if (Distance <= PerfectScoreRange)
 		return EMinigameThreshold::Perfect;
-	}
-	
-	if (Dist <= GoodScoreRange)
-	{
-		DebugHelper::LogWarning("Not bad");
+
+	if (Distance <= GoodScoreRange)
 		return EMinigameThreshold::Good;
-	}
-	
-	if (Dist <= BadScoreRange)
-	{
-		DebugHelper::LogError("Shit game");
+
+	if (Distance <= BadScoreRange)
 		return EMinigameThreshold::Bad;
-	}
 
 	return EMinigameThreshold::Miss;
 }
@@ -158,6 +139,62 @@ EMinigameThreshold UCurlingMinigame::CheckBar()
 void UCurlingMinigame::Flow()
 {
 	
+}
+
+void UCurlingMinigame::Process()
+{
+	UWidget* TargetWidget = nullptr;
+
+	switch (MinigameResult)
+	{
+	case Good:
+		TargetWidget = WhiteBallPos;
+		break;
+
+	case Perfect:
+		TargetWidget = RedBallPos;
+		break;
+
+	case Miss:
+	case Bad:
+	default:
+		TargetWidget = BlueBallPos;
+		break;
+	}
+
+	if (!TargetWidget) return;
+
+	const FGeometry& BallGeometry   = Ball->GetCachedGeometry();
+	const FGeometry& TargetGeometry = TargetWidget->GetCachedGeometry();
+	const FVector2D BallAbsolute   = BallGeometry.GetAbsolutePosition();
+	const FVector2D TargetAbsolute = TargetGeometry.GetAbsolutePosition();
+	
+	const FVector2D DeltaAbsolute = TargetAbsolute - BallAbsolute;
+	
+	const FVector2D CurrentTranslation = Ball->GetRenderTransform().Translation;
+	const FVector2D TargetTranslation  = CurrentTranslation + DeltaAbsolute;
+
+	const FVector2D NewTranslation = FMath::Vector2DInterpTo(
+		CurrentTranslation,
+		TargetTranslation,
+		GetWorld()->GetDeltaSeconds(),
+		BallSpeed
+	);
+	
+	if (FVector2D::Distance(NewTranslation, TargetTranslation) < 1.0f)
+	{
+		Ball->SetRenderTranslation(TargetTranslation);
+		
+		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
+		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
+		Instance->GetCurrentPlayer()->GetBinder()->SetDecreaseMinigameScrollValue(false);
+		HandleScore();
+		Instance->GetCurrentPlayer()->GetMinigameHandler()->EndMinigame();
+	}
+	else
+	{
+		Ball->SetRenderTranslation(NewTranslation);
+	}
 }
 
 float UCurlingMinigame::GetPercentFromImage(UImage* Image)

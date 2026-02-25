@@ -45,6 +45,8 @@ public:
 	
 	bool GetDecreaseMinigameScrollValue() const;
 	void SetDecreaseMinigameScrollValue(const bool& Value);
+	
+	bool GetIsCurlingPressed() const;
 
 private:
 	UPROPERTY()
@@ -64,6 +66,8 @@ private:
 	
 	UPROPERTY()
 	bool bDecreaseScrollValueMinigame = false;
+	
+	UPROPERTY() bool bCurlingPressed = false;
 	
 	void SimulateClick();
 	

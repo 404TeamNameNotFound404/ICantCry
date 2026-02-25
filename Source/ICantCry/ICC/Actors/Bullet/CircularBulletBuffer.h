@@ -32,7 +32,7 @@ public:
 	UBulletData* RemoveBullet();
 	
 	void RemoveAt(const int32& Index);
-
+	
 	UFUNCTION(BlueprintCallable, Category = "Bullet Buffer")
 	UBulletData* PeekCurrentBullet() const;  // get the current bullet without remove it
 
@@ -59,8 +59,15 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Bullet Buffer")
     int32 GetTailIndex() const;
+	
+	UFUNCTION(BlueprintCallable, Category = "Bullet Buffer")
+	int32 GetHeadIndex() const;
+	
+	UFUNCTION(BlueprintCallable, Category = "Bullet Buffer")
+	void SetAt(const int32& Index, UBulletData* Data);
 
 	void Clear();
+
 
 
 private:

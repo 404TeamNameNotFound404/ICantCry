@@ -395,6 +395,7 @@ void UBattleHUD::OnReloadPressed()
 	UpdateAPBar();
 	Bar->DecreaseAP(1);
 
+	ConfirmReloadBullet->SetVisibility(ESlateVisibility::Visible);
 	CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Visible);
 	Displayer->SetVisibility(ESlateVisibility::Visible);
 	CanvasAmmoSelection->SetVisibility(ESlateVisibility::Visible);
@@ -739,7 +740,7 @@ void UBattleHUD::HideBulletMagazineOnReload()
 	BulletName->SetVisibility(ESlateVisibility::Hidden);
 	Quantity->SetVisibility(ESlateVisibility::Hidden);
 	Description->SetVisibility(ESlateVisibility::Hidden);
-	//bBulletSetupFinished = true;
+	bBulletSetupFinished = true;
 	UBulletSelector::SetCanSelect(false);
 }
 

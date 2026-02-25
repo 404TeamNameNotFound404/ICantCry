@@ -44,15 +44,12 @@ protected:
 	
 	UPROPERTY(meta=(BindWidget)) UProgressBar* Slider;
 	
-	UPROPERTY(meta=(BindWidget)) UCanvasPanel* BlueBallPos;
-	UPROPERTY(meta=(BindWidget)) UCanvasPanel* WhiteBallPos;
-	UPROPERTY(meta=(BindWidget)) UCanvasPanel* RedBallPos;
+	UPROPERTY(meta=(BindWidget)) UImage* BlueBallPos;
+	UPROPERTY(meta=(BindWidget)) UImage* WhiteBallPos;
+	UPROPERTY(meta=(BindWidget)) UImage* RedBallPos;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"), Category="Minigame")
 	float SliderSpeed = 1.8f;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"), Category="Minigame")
-	float DecreaseSpeed = 0.8f;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"), Category="Minigame")
 	float BallSpeed = 1.8f;
@@ -75,6 +72,10 @@ private:
 	UPROPERTY() FVector2D BallStartingPosition;
 	UPROPERTY() FVector2D BallEndingPosition;
 	UPROPERTY() FVector2D BallTargetEndingPoint;
+	
+	UPROPERTY() bool bPressed = false;
+	
+	void Process();
 	
 	float GetPercentFromImage(UImage* Image);
 };
