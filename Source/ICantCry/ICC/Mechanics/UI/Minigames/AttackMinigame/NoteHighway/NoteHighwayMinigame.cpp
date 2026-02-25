@@ -29,7 +29,6 @@ void UNoteHighwayMinigame::MoveSlider(const FVector2D& Position)
 		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
 		Instance->GetCurrentPlayer()->GetBinder()->SetDecreaseMinigameScrollValue(false);
-		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 		Instance->GetCurrentPlayer()->GetMinigameHandler()->EndMinigame();
 	}
 }
@@ -43,54 +42,33 @@ void UNoteHighwayMinigame::Simulate(const ESpawnableHighwayBtn& Target)
 {
 	const UCanvasPanelSlot* SliderSlot = Cast<UCanvasPanelSlot>(Slider->Slot);
 	if (!SliderSlot) return;
-	
-	const float SliderX = Slider->GetTickSpaceGeometry().GetAbsolutePosition().X; //SliderSlot->GetPosition().X;
-	
+	const float SliderX = Slider->GetTickSpaceGeometry().GetAbsolutePosition().X;
+
 	for (FHighwayNote& Note : NotesData)
 	{
-		if (Note.bHit) continue;
+		if (Note.bHit || Note.Row != Target)
+			continue;
+
+		const float NoteX = Note.CachedSelf->GetTickSpaceGeometry().GetAbsolutePosition().X;
 		
-		if (Note.Row != Target) continue;
-		
-		const UCanvasPanelSlot* NoteSlot = Cast<UCanvasPanelSlot>(Note.CachedSelf->Slot);
-		const float CurrentNoteX = Note.CachedSelf->GetTickSpaceGeometry().GetAbsolutePosition().X; //NoteSlot->GetPosition().X;
-		
-		if (SliderX > CurrentNoteX + HitTolerance) 
-		{
-			DebugHelper::LogWarning("Slider not past button");
-			continue; 
-		}
-		
-		if (CurrentNoteX > (SliderX + HitTolerance))
-		{
-			DebugHelper::LogError("Slider past button");
-			break;
-		}
-		
-		if (const float Distance = /*FMath::Abs(SliderX - CurrentNoteX)*/FVector2D::Distance(SliderSlot->GetPosition(), NoteSlot->GetPosition()) ; Distance <= HitTolerance)
+		if (const float Distance = FMath::Abs(SliderX - NoteX);
+			Distance <= HitTolerance)
 		{
 			Note.bHit = true;
-			//Score = Score + 0.2f;
 
 			const FString IconName = GetNoteName(Target);
 			const FString Prefix = DebugHelper::IsGamepadPlugged() ? TEXT("OPad_") : TEXT("OKey_");
 			const FName FinalMapKey = FName(*(Prefix + IconName));
-			
+
 			if (UTexture2D** FoundTexture = Icons.Find(FinalMapKey))
 			{
 				Score = FMath::Min(Score + 0.25f, 1.5f);
-				DebugHelper::LogMessage(8, FColor::Blue, "Score now becomes " + FString::SanitizeFloat(Score));
 				Note.CachedSelf->SetBrushFromTexture(*FoundTexture);
 			}
-			else
-			{
-				DebugHelper::LogError("Missing Texture for Key: " + FinalMapKey.ToString());
-			}
-			
+
 			DebugHelper::LogSuccess("Note hit!");
 			break;
 		}
-		
 	}
 }
 
@@ -121,6 +99,7 @@ void UNoteHighwayMinigame::HandleScore()
 	Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
 	Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 	Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 }
 
 void UNoteHighwayMinigame::Flow()
@@ -196,16 +175,16 @@ void UNoteHighwayMinigame::SpawnButtons(FHighwaySpawnable& Spawnable)
 		ImageSlot->SetAlignment(FVector2D(0.5f, 0.5f));
 		ImageSlot->SetPosition(FVector2D::ZeroVector);
 		ImageSlot->SetSize(TextureSize);
-
 		FHighwayNote Note;
-		Note.X = 0.0f; 
+		Note.X = ImgToSpawn->GetTickSpaceGeometry().GetAbsolutePosition().X;
 		Note.Row = Spawnable.ButtonType;
 		Note.bHit = false;
 		Note.CachedSelf = ImgToSpawn;
-
+		
 		NotesData.Add(Note);
 		Notes.Add(ImgToSpawn);
 	}
+	ImgToSpawn->ForceLayoutPrepass();
 }
 
 void UNoteHighwayMinigame::Reset()

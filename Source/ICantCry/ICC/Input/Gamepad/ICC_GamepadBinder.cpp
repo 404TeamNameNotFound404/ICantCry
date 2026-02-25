@@ -226,6 +226,7 @@ void UICC_GamepadBinder::Input_GamepadMinigameCurling(const FInputActionValue& I
 	if (Player->GetBattleHUD()->GetCurrentBulletData()->MinigameTemplate == EMinigameType::Curling)
 	{
 		Player->GetCurrentMinigameDisplayed()->SetScrollValue(InputActionValue.Get<float>());
+		bCurlingPressed = true;
 	}
 }
 
@@ -244,6 +245,7 @@ void UICC_GamepadBinder::Input_GamepadMinigameCurlingRelease(const FInputActionV
 	if (Player->GetBattleHUD()->GetCurrentBulletData()->MinigameTemplate == EMinigameType::Curling)
 	{
 		Player->GetCurrentMinigameDisplayed()->SetScrollValue(0.0f);
+		bCurlingPressed = false;
 	}
 }
 
@@ -340,4 +342,9 @@ bool UICC_GamepadBinder::GetDecreaseMinigameScrollValue() const
 void UICC_GamepadBinder::SetDecreaseMinigameScrollValue(const bool& Value)
 {
 	bDecreaseScrollValueMinigame = Value;
+}
+
+bool UICC_GamepadBinder::GetIsCurlingPressed() const
+{
+	return bCurlingPressed;
 }

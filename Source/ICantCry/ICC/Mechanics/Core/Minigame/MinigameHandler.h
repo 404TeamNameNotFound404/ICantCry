@@ -66,7 +66,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Minigame", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> AttackMinigame;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly , Category = "Minigame", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly , Category = "Minigame", meta = (AllowPrivateAccess = "true"))
 	TMap<FString, TSubclassOf<UUserWidget>> MinigameClasses;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Minigame", meta = (AllowPrivateAccess = "true"))
