@@ -30,6 +30,9 @@ struct FHighwaySpawnable
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UTexture2D* NoteTexture;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float TimeOffset;
 };
 
 
@@ -108,9 +111,12 @@ protected:
 	float EndThreshold = 692.0f;
 	
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Minigames", meta = (AllowPrivateAccess = "true"))
-	float HitTolerance = 0.02f;
+	float HitTolerance = 10.f;
 	
 	UPROPERTY() float Score = 0.5f;
+	
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Minigame", meta = (AllowPrivateAcess = "true"))
+	float StartTime = 0.f;
 	
 	UTexture2D* LoadProperTexture(FHighwaySpawnable& Spawnable);
 	
@@ -118,6 +124,8 @@ protected:
 	void SpawnButtons(FHighwaySpawnable& Spawnable);
 	
 	void Reset();
+	
+	void UpdateNotePosition(const float& Delta);
 	
 	FHighwayNote* FindClosestNote(const ESpawnableHighwayBtn& Type);
 	

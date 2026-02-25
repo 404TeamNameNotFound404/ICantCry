@@ -44,7 +44,7 @@ void UNoteHighwayMinigame::Simulate(const ESpawnableHighwayBtn& Target)
 	const UCanvasPanelSlot* SliderSlot = Cast<UCanvasPanelSlot>(Slider->Slot);
 	if (!SliderSlot) return;
 	
-	const float SliderX = SliderSlot->GetPosition().X;
+	const float SliderX = Slider->GetTickSpaceGeometry().GetAbsolutePosition().X; //SliderSlot->GetPosition().X;
 	
 	for (FHighwayNote& Note : NotesData)
 	{
@@ -53,7 +53,7 @@ void UNoteHighwayMinigame::Simulate(const ESpawnableHighwayBtn& Target)
 		if (Note.Row != Target) continue;
 		
 		const UCanvasPanelSlot* NoteSlot = Cast<UCanvasPanelSlot>(Note.CachedSelf->Slot);
-		const float CurrentNoteX = NoteSlot->GetPosition().X;
+		const float CurrentNoteX = Note.CachedSelf->GetTickSpaceGeometry().GetAbsolutePosition().X; //NoteSlot->GetPosition().X;
 		
 		if (SliderX > CurrentNoteX + HitTolerance) 
 		{
@@ -119,8 +119,6 @@ void UNoteHighwayMinigame::HandleScore()
 	
 	Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
 	Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
-	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
-	
 	Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 	Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 }
