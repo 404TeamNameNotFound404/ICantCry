@@ -156,11 +156,14 @@ void UAngerAtkMinigame::MoveSlider(const FVector2D& Position)
 	
 	if (TimerLeft >= TimeToDie)
 	{
-		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
-		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
+		UBattleHUD* Hud = Instance->GetCurrentPlayer()->GetBattleHUD();
+		Hud->EnableButtonsAfterShooting();
+		Hud->UpdateAp();
 		Instance->GetCurrentPlayer()->GetBinder()->SetDecreaseMinigameScrollValue(false);
 		HandleScore();
 		Instance->GetCurrentPlayer()->GetMinigameHandler()->EndMinigame();
+		
+		Hud->GetBattleHandler()->Fire(Hud->GetSelectedActor()->GetActorLocation(), Hud->GetCurrentBulletData()->DisplayColor);
 	}
 }
 

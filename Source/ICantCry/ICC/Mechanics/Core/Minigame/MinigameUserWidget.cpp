@@ -45,6 +45,8 @@ void UMinigameUserWidget::Handle(UBulletData* BulletData, AMinigameHandler* Mini
 	default:
 	case Default:
 		SetStopSlider(true);
+		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->Fire(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor()->GetActorLocation(), 
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->DisplayColor);
 		MinigameHandler->EndMinigame();
 		break;
 	case Anger:

@@ -330,11 +330,15 @@ void UBattleHUD::OnFocusPressed()
 		IncreaseAP(1);
 		return;
 	}
-
-	DebugHelper::LogWarning("attack and defense increased!");
-	DebugHelper::AddMessageToLog("[BattleHUD]: attack and defense increased!");
+	
+	// GameInstance->GetCurrentPlayer()->GetStatusTracker()->BuffWith(EBuffStatus::DefBuff);
 	IncreaseAP(1);
 	Bar->IncreaseAP(1);
+	
+	/*
+	 * TODO Reorder bullets in magazine allowing player to change slot idx ( show confirm button and bullet magazine hud ) change only the bullets in magazine , NO ADD
+	 */
+	
 	BattleHandler->GetTurnBasedSystem()->EndTurn();
 	GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateStatus();
 	GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateBuffStatus();
@@ -873,7 +877,7 @@ void UBattleHUD::PrepareToEngage()
 	AMob* SelectedEnemy = Cast<AMob>(BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex]);
 	checkf(SelectedEnemy, TEXT("SelectedEnemy is null at UBattleHUD::Engage"));
 	SelectedActorTarget = SelectedEnemy;
-	SelectedActorTarget = SelectedEnemy;
+	
 	FDamage DummyDamage(CurrentBulletData, GameInstance->GetPlayerStats(),
 	                    Cast<AMob>(SelectedActorTarget)->GetTactics(),
 	                    Cast<AMob>(SelectedActorTarget)->GetData(), GameInstance);
@@ -1120,6 +1124,11 @@ void UBattleHUD::ConfirmBulletSelection() // this is for the confirm button
 	GameInstance->GetCurrentPlayer()->GetBinder()->SetIsNavigatingInsideWidget(false);
 	CurrentWidgetIndex = 0;
 	GameInstance->GetCurrentPlayer()->GetBinder()->FocusOn(ActionPhaseButtons[CurrentWidgetIndex]);
+}
+
+UAPBar* UBattleHUD::GetAPBar() const
+{
+	return Bar;
 }
 
 void UBattleHUD::SwitchToBattleUI()

@@ -2,6 +2,8 @@
 #include "BattleHandler.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "EngineUtils.h"
+#include "ICantCry/ICC/Actors/Player/ICC_Player.h"
+#include "Niagara/Public/NiagaraFunctionLibrary.h"
 
 
 // Sets default values
@@ -16,6 +18,8 @@ ABattleHandler::ABattleHandler(): TurnBasedSystem(nullptr)
 void ABattleHandler::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	Instance = Cast<UICantCryGameInstance>(GetGameInstance());
 
 	for (TActorIterator<AEnemySpawnManager> It(GetWorld()); It; ++It)
 	{
@@ -73,5 +77,75 @@ AEnemySpawnManager* ABattleHandler::GetEnemySpawnManager()
 bool ABattleHandler::IsControllerPlugged() const
 {
 	return bControllerPlugged;
+}
+
+void ABattleHandler::Fire(const FVector& DeltaLocation ,const FLinearColor& Color)
+{
+	const FVector SpawnLocation = Instance->GetCurrentPlayer()->GetActorLocation();
+	const FVector Direction = (DeltaLocation - SpawnLocation).GetSafeNormal();
+	const FRotator BulletRotation = Direction.Rotation();
+	StartVfxShootLocation = SpawnLocation + FVector{100, 0,0}; // Todo adapt offset according to the muzzle position
+	
+	Flash = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+		GetWorld(),
+		MuzzleFlash,
+		StartVfxShootLocation,
+		BulletRotation,
+		FVector{50,50,50},
+		false
+	);
+	
+	Flash->SetVariablePosition("User.TargetPosition", StartVfxShootLocation);
+	
+	Flash->Activate(true);
+	Flash->SetVariableLinearColor(FName("User.Color"), Color);
+	BeamPosition = StartVfxShootLocation;
+	
+	// Flash->SetWorldScale3D(FVector(10.0f, 10.0f, 10.0f));
+	
+	DebugHelper::LogMessage(10, FColor::White,"Vfx fire");
+	
+	bMovingMuzzle = true;
+
+	GetWorld()->GetTimerManager().SetTimer(BeamTimer, [this, DeltaLocation]
+	{
+		UpdateMuzzleFlashPosition(DeltaLocation);
+	}, 0.01f, true);
+	
+	// GetWorld()->GetTimerManager().SetTimer(BeamTimer,  [&]
+	// {
+	// 	UpdateMuzzleFlashPosition(DeltaLocation);
+	// }, 0.01f, true);
+}
+
+void ABattleHandler::UpdateMuzzleFlashPosition(const FVector& Location)
+{
+	if (!Flash)
+	{
+		DebugHelper::LogError("Flash null");
+		return;
+	}
+	
+	if (!bMovingMuzzle)
+	{
+		DebugHelper::LogError("Moving muzzle false");
+		return;
+	} 
+	
+	constexpr float MovementSpeed = 3000.f; 
+    
+	const FVector NewPos = FMath::VInterpConstantTo(BeamPosition, Location, GetWorld()->GetDeltaSeconds(), MovementSpeed);
+	BeamPosition = NewPos;
+	
+	Flash->SetVariablePosition(FName("User.TargetPosition"), BeamPosition);
+	
+	Flash->SetWorldLocation(BeamPosition);
+
+	// if (FVector::DistSquared(BeamPosition,Location) < 100.f)
+	if (FVector::DistSquared(BeamPosition, Location) <= FMath::Square(10.f))
+	{
+		bMovingMuzzle = false;
+		Flash->Deactivate();
+	}
 }
 

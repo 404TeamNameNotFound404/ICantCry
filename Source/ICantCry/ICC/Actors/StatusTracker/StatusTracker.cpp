@@ -1038,6 +1038,9 @@ void UStatusTracker::UnfreezeChance()
 
 	DebugHelper::LogWarning("Attempting to auto freeze");
 	DebugHelper::AddMessageToLog("[Status Tracker]: Attempting to auto freeze");
+	
+	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
+	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString("You didn't manage to get rid of Freezed-Up"));
 
 	FreezedUpCounter++;
 
@@ -1052,6 +1055,7 @@ void UStatusTracker::UnfreezeChance()
 				CurrentActiveStatus = None;
 				StatusCounter = 0;
 				DebugHelper::AddMessageToLog("[Status Tracker]: Free from FreezedUp at 25%");
+				Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString("You successfully got rid of Freezed-Up. You are able to shoot again"));
 			}
 
 			break;
@@ -1066,6 +1070,7 @@ void UStatusTracker::UnfreezeChance()
 				CurrentActiveStatus = None;
 				StatusCounter = 0;
 				DebugHelper::AddMessageToLog("[Status Tracker]: Free from FreezedUp at 50%");
+				Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString("You successfully got rid of Freezed-Up. You are able to shoot again"));
 			}
 			
 			break;
@@ -1079,6 +1084,7 @@ void UStatusTracker::UnfreezeChance()
 				CurrentActiveStatus = None;
 				StatusCounter = 0;
 				DebugHelper::AddMessageToLog("[Status Tracker]: Free from FreezedUp at 75%");
+				Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString("You successfully got rid of Freezed-Up. You are able to shoot again"));
 			}
 			
 			break;
@@ -1090,6 +1096,7 @@ void UStatusTracker::UnfreezeChance()
 			bIsOwnerAfflicted = false;
 			CurrentActiveStatus = None;
 			DebugHelper::AddMessageToLog("[Status Tracker]: Free from FreezedUp at 100% (malus ends)");
+			Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString("You successfully got rid of Freezed-Up. You are able to shoot again"));
 			StatusCounter = 0;
 			FreezedUpCounter = 0;
 			
@@ -1101,6 +1108,12 @@ void UStatusTracker::UnfreezeChance()
 		break;
 		
 	}
+	
+	FTimerHandle Delay;
+	GetWorld()->GetTimerManager().SetTimer(Delay, [&]
+	{
+		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
+	}, 1.0f, false);
 }
 
 FString UStatusTracker::GetStatusName(const EAfflictedStatus& Status) const

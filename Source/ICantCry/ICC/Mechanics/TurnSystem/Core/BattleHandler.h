@@ -29,6 +29,8 @@ public:
 	AEnemySpawnManager* GetEnemySpawnManager();
 
 	bool IsControllerPlugged() const;
+	
+	void Fire(const FVector& DeltaLocation ,const FLinearColor& Color);
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -36,6 +38,18 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category= "Battle Info" ,meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UBattleInfo> BattleInfoWidget ;
+
+	/**
+	 * Shoot VFX
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle VFX", meta=(AllowPrivateAccess="true"))
+	UNiagaraSystem* MuzzleFlash;
+	
+	UPROPERTY()
+	UNiagaraComponent* Flash;
+	
+	UPROPERTY()
+	FVector BeamPosition;
 
 	UPROPERTY()
 	bool bControllerPlugged = false;
@@ -48,4 +62,17 @@ private:
 
 	UPROPERTY()
 	AICC_PlayerController* PC;
+	
+	UPROPERTY()
+	bool bMovingMuzzle;
+	
+	UPROPERTY()
+	UICantCryGameInstance* Instance;
+	
+	UPROPERTY()
+	FVector StartVfxShootLocation;
+	
+	UPROPERTY() FTimerHandle BeamTimer;
+	
+	void UpdateMuzzleFlashPosition(const FVector& Location);
 };

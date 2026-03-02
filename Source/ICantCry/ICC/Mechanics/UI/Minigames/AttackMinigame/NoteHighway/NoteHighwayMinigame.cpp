@@ -29,6 +29,8 @@ void UNoteHighwayMinigame::MoveSlider(const FVector2D& Position)
 		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
 		Instance->GetCurrentPlayer()->GetBinder()->SetDecreaseMinigameScrollValue(false);
+		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->Fire(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor()->GetActorLocation(), 
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->DisplayColor);
 		Instance->GetCurrentPlayer()->GetMinigameHandler()->EndMinigame();
 	}
 }
