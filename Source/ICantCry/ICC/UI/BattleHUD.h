@@ -231,6 +231,8 @@ public:
 	void MoveFocusOn(const float& Value);
 
 	UFUNCTION() void ConfirmBulletSelection();
+	
+	UAPBar* GetAPBar() const;
 
 private:
 

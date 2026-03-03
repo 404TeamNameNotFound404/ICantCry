@@ -296,6 +296,7 @@ void UTurnBasedSystem::Flow()
 		{
 			Mob->UnlockContentOnDeath();
 			Turn.Queue.RemoveAt(i);
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetAPBar()->IncreaseAP(1);
 			DebugHelper::LogWarning("Mob removed from queue due to death.");
 			DebugHelper::AddMessageToLog("[Turn System]: " + Mob->GetActorLabel() + " died RIP.");
 		}
