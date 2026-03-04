@@ -31,6 +31,7 @@ public:
 	void UpdateHighlights(const int32& Value);
 	void ResetHighlightOf(const int32& Value); 
 	void SetPreviewAP(const int32& Value);
+	int32 GetCurrentAP() const;
 	void SetCurrentAP(const int32& Value);
 	void UpdateAp(const int32& Value, const int32& ApCurrent);
 	void ClearAt(const int32& Value);

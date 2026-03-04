@@ -220,6 +220,13 @@ void UBattleHUD::DecreaseAP(const int& Amount)
 	UpdateAPBar();
 }
 
+FText UBattleHUD::UpdateBulletName()
+{
+	if (!GetCurrentBulletData()) return FText::FromString("");
+	
+	return FText::FromString(GetCurrentBulletData()->BulletName);
+}
+
 void UBattleHUD::UpdateAPBar()
 {
 	const float Progress = static_cast<float>(CurrentAP) / 4.0f;
@@ -239,8 +246,14 @@ void UBattleHUD::OnShootPressed()
 		return;
 	}
 
-	if (!GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn() || CurrentAP <= 0)
+	if (!GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn() /* || CurrentAP <= 0*/)
 	{
+		return;
+	}
+	
+	if (CurrentAP <= 0)
+	{
+		DebugHelper::LogMessage(8, FColor::Red, "Ap 0");
 		return;
 	}
 
@@ -315,6 +328,7 @@ void UBattleHUD::OnShootPressed()
 	}
 	bTargetSelection = true;
 
+	bIsEvFirst = false;
 	//FSlateApplication::Get().ClearAllUserFocus();
 }
 
@@ -359,6 +373,7 @@ void UBattleHUD::OnFocusPressed()
 	OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
 	BulletName->SetVisibility(ESlateVisibility::Hidden);
 	Quantity->SetVisibility(ESlateVisibility::Hidden);
+	bIsEvFirst = false;
 	FSlateApplication::Get().ClearAllUserFocus();
 }
 
@@ -417,6 +432,7 @@ void UBattleHUD::OnReloadPressed()
 	Description->SetVisibility(ESlateVisibility::Visible);
 	GameInstance->GetCurrentPlayer()->GetBinder()->SetIsNavigatingInsideWidget(true);
 	GameInstance->GetCurrentPlayer()->GetBinder()->FocusOn(Displayer->GetBulletGrid());
+	bIsEvFirst = false;
 	//FSlateApplication::Get().ClearAllUserFocus();
 }
 
@@ -456,6 +472,7 @@ void UBattleHUD::OnPassPressed()
 	BulletName->SetVisibility(ESlateVisibility::Hidden);
 	Quantity->SetVisibility(ESlateVisibility::Hidden);
 	FSlateApplication::Get().ClearAllUserFocus();
+	bIsEvFirst = false;
 }
 
 void UBattleHUD::ScrollTargetSelection(float ScrollValue)
@@ -498,10 +515,12 @@ void UBattleHUD::ScrollTargetSelection(float ScrollValue)
 
 	TargetNameText->SetText(FText::FromString(SelectedActor->GetActorLabel()));
 	TargetText->SetText(FText::FromString(FString(TEXT("Target: ")) + SelectedActor->GetActorLabel()));
+	
 	if (!bBulletSetupFinished)
 	{
 		TargetNameText_2->SetText(FText::FromString(CurrentBulletData->BulletName));
 	}
+	
 	TargetNameText_1->SetText(FText::FromString("None")); // STATUS
 	TargetNameText_1->SetAutoWrapText(true);
 	TargetNameText_3->SetText(FText::FromString(CurrentBulletData->Effect)); // atk or def
@@ -874,6 +893,7 @@ void UBattleHUD::DecreaseShootPower()
 
 void UBattleHUD::PrepareToEngage()
 {
+	bIsEvFirst = false;
 	AMob* SelectedEnemy = Cast<AMob>(BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex]);
 	checkf(SelectedEnemy, TEXT("SelectedEnemy is null at UBattleHUD::Engage"));
 	SelectedActorTarget = SelectedEnemy;
@@ -907,6 +927,7 @@ AMob* UBattleHUD::RetrieveSelectedTarget()
 
 void UBattleHUD::PrepareToEngageEv(const EBuffStatus& BuffToReceive)
 {
+	bIsEvFirst = true;
 	EngageBtn->SetVisibility(ESlateVisibility::Hidden);
 	CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
 	ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
@@ -921,12 +942,15 @@ void UBattleHUD::PrepareToEngageEv(const EBuffStatus& BuffToReceive)
 
 	GameInstance->GetCurrentPlayer()->GetStatusTracker()->BuffWith(BuffToReceive);
 	GetBulletDisplayer()->RemoveBullet();
+	Displayer->Refresh();
+	RefreshPistolMagazine();
 	UpdateAp();
 	EnableButtonsAfterShooting();
 }
 
 void UBattleHUD::PrepareToEngageEv(const EAfflictedStatus& StatusToInflict)
 {
+	bIsEvFirst = true;
 	EngageBtn->SetVisibility(ESlateVisibility::Hidden);
 	CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
 	ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
@@ -951,12 +975,15 @@ void UBattleHUD::PrepareToEngageEv(const EAfflictedStatus& StatusToInflict)
 
 	GameInstance->GetCurrentPlayer()->GetStatusTracker()->InflictStatus(StatusToInflict, SelectedActorTarget);
 	GetBulletDisplayer()->RemoveBullet();
+	Displayer->Refresh();
+	RefreshPistolMagazine();
 	UpdateAp();
 	EnableButtonsAfterShooting();
 }
 
 void UBattleHUD::PrepareToEngageEv(const EDebuffStatus& StatusToDebuff)
 {
+	bIsEvFirst = true;
 	EngageBtn->SetVisibility(ESlateVisibility::Hidden);
 	CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
 	ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
@@ -971,6 +998,8 @@ void UBattleHUD::PrepareToEngageEv(const EDebuffStatus& StatusToDebuff)
 
 	GameInstance->GetCurrentPlayer()->GetStatusTracker()->InflictDebuffStatus(StatusToDebuff, SelectedActorTarget);
 	GetBulletDisplayer()->RemoveBullet();
+	Displayer->Refresh();
+	RefreshPistolMagazine();
 	UpdateAp();
 	EnableButtonsAfterShooting();
 }
@@ -1244,10 +1273,13 @@ void UBattleHUD::Engage()
 		}
 	case AngerEv:
 		{
+			bIsEvFirst = true;
 			PersistentInstance->GetCurrentPlayer()->GetStatusTracker()->BuffWith(EBuffStatus::AtkBuff);
 			EngageBtn->SetVisibility(ESlateVisibility::Hidden);
 			CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
 			GetBulletDisplayer()->RemoveBullet();
+			RefreshPistolMagazine();
+			Displayer->Refresh();
 			UpdateAp();
 			EnableButtonsAfterShooting();
 			break;
@@ -1310,10 +1342,6 @@ void UBattleHUD::Engage()
 
 	case JealousyEv:
 		{
-			// Envy Burned
-			// EnableButtonsAfterShooting();
-			// DecreaseAP(1);
-			// UpdateAp();
 			PrepareToEngageEv(EAfflictedStatus::Burn);
 			break;
 		}

@@ -111,11 +111,57 @@ void ABattleHandler::Fire(const FVector& DeltaLocation ,const FLinearColor& Colo
 	{
 		UpdateMuzzleFlashPosition(DeltaLocation);
 	}, 0.01f, true);
+}
+
+void ABattleHandler::SimulateHurt(const FLinearColor& Color)
+{
+	const AICC_Actor* Target = Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor();
+	if (!Target) return;
 	
-	// GetWorld()->GetTimerManager().SetTimer(BeamTimer,  [&]
-	// {
-	// 	UpdateMuzzleFlashPosition(DeltaLocation);
-	// }, 0.01f, true);
+	const FVector SpawnLocation = Target->GetActorLocation() + FVector{-50,0, 50};
+	const FRotator TargetRotation = Target->GetActorRotation();
+	
+	UNiagaraComponent* Hurt = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), HurtPrefab, SpawnLocation, TargetRotation, 
+		FVector{50,50,50}, true);
+	
+	Hurt->Activate(true);
+	Hurt->SetVariableLinearColor(FName("User.Color"), Color);
+}
+
+void ABattleHandler::SimulateAura(AICC_Actor* Target ,const float& SpawnRate ,const FLinearColor& Color)
+{
+	if (!Target) return;
+	
+	const FVector& SpawnLocation = Target->GetActorLocation() + FVector{0,0,-50};
+	const FRotator& SpawnRotation = Target->GetActorRotation();
+	
+	Aura = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), AuraPrefab, SpawnLocation, SpawnRotation, FVector{1.5f,1.5f,1.5f}, false);
+	
+	Aura->Activate(true);
+	Aura->SetVariableLinearColor(FName("User.Color"), Color);
+	Aura->SetVariableFloat(FName("User.SpawnRate"), SpawnRate);
+}
+
+void ABattleHandler::IncreaseAura(const float& Value)
+{
+	if (!Aura) return;
+	const float Delta = Value + AuraDecreaseValue;
+	const float Result = FMath::Max(0, Delta);
+	Aura->SetVariableFloat(FName("User.SpawnRate"), Result);
+}
+
+void ABattleHandler::DecreaseAura(const float& Value)
+{
+	if (!Aura) return;
+	const float Delta = Value - AuraDecreaseValue;
+	const float Result = FMath::RandRange(100.f, Delta);
+	Aura->SetVariableFloat(FName("User.SpawnRate"), Result);
+}
+
+void ABattleHandler::DeactivateAura()
+{
+	if (!Aura) return;
+	Aura->Deactivate();
 }
 
 void ABattleHandler::UpdateMuzzleFlashPosition(const FVector& Location)
@@ -146,6 +192,7 @@ void ABattleHandler::UpdateMuzzleFlashPosition(const FVector& Location)
 	{
 		bMovingMuzzle = false;
 		Flash->Deactivate();
+		GetWorld()->GetTimerManager().ClearTimer(BeamTimer);
 	}
 }
 

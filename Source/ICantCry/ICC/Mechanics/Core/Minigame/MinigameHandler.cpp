@@ -269,6 +269,11 @@ void AMinigameHandler::EndMinigame()
 		Cast<AMob>(Player->GetBattleHUD()->GetSelectedActor())->SetMinigameHasStarted(false);
 		Cast<AMob>(Player->GetBattleHUD()->GetSelectedActor())->SetMinigameEnd(true);
 		bPlayerMinigameEnded = true;
+		
+		UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+		
+		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->Fire(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor()->GetActorLocation(), 
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->DisplayColor);
 	}
 	
 	if (Player->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->GetIsAITurn())

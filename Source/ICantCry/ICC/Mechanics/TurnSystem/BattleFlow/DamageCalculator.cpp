@@ -29,6 +29,12 @@ int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 		return 0;
 	}
 	
+	if (Instance->GetCurrentPlayer()->GetBattleHUD()->bIsEvFirst)
+	{
+		DebugHelper::LogMessage(8, FColor::White, "EV bullet detected return");
+		return 0;
+	}
+	
 	FRuntimeStats& RuntimeStats = Instance->GetRuntimeStats();
 	UPlayerStats* Stats = Instance->GetPlayerStats();
 	
@@ -43,15 +49,15 @@ int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 		
 		DebugHelper::LogMessage(10, FColor::Purple, "MinigameModifier on damage math -> " + FString::SanitizeFloat(RuntimeStats.MinigameModifier));
 		
-		const float Result = (((BulletData->Power / (2 - RuntimeStats.MinigameModifier)) * (RuntimeStats.AttackPower / EnemyData->DefencePower))) * (RuntimeStats.ApModifier * Coefficient/*BulletData->WeaknessModifier*/);
+		const float Result = (((BulletData->Power / (2 - RuntimeStats.MinigameModifier)) * (RuntimeStats.AttackPower / EnemyData->RuntimeStats.DefPower))) * (RuntimeStats.ApModifier * Coefficient/*BulletData->WeaknessModifier*/);
 		const int RoundedResult = FMath::RoundToInt(Result);
 
 		DebugHelper::AddMessageToLog("[DamageMath]: Data gathered for dmg math:\nBullet Pwr : " + FString::SanitizeFloat(BulletData->Power) +"\nMinigame Modifier " + FString::SanitizeFloat(RuntimeStats.MinigameModifier)
-			+ "\nPlayer Atk: " + FString::SanitizeFloat(RuntimeStats.AttackPower) + "\nTarget Def : " + FString::SanitizeFloat(EnemyData->DefencePower) +
+			+ "\nPlayer Atk: " + FString::SanitizeFloat(RuntimeStats.AttackPower) + "\nTarget Def : " + FString::SanitizeFloat(EnemyData->RuntimeStats.DefPower) +
 			"\nPlayer Ap Modifier " + FString::SanitizeFloat(RuntimeStats.ApModifier) + "\nWeaknessModifier " + FString::SanitizeFloat(Coefficient));
 		
 		DebugHelper::AddMessageToLog("[DamageMath]: Formula is -> ( " +FString::SanitizeFloat(BulletData->Power)  + ") / (2 - " + FString::SanitizeFloat(RuntimeStats.MinigameModifier) +
-			") x (" + FString::SanitizeFloat(RuntimeStats.AttackPower) + " / " + FString::SanitizeFloat(EnemyData->DefencePower) + ") x (" + FString::SanitizeFloat(RuntimeStats.ApModifier) + " x " + FString::SanitizeFloat(Coefficient) + ")");
+			") x (" + FString::SanitizeFloat(RuntimeStats.AttackPower) + " / " + FString::SanitizeFloat(EnemyData->RuntimeStats.DefPower) + ") x (" + FString::SanitizeFloat(RuntimeStats.ApModifier) + " x " + FString::SanitizeFloat(Coefficient) + ")");
 
 		DebugHelper::AddMessageToLog("[DamageMath]: Risultato approssimato per eccesso (Ceil Result) -> " + FString::SanitizeFloat(RoundedResult));
 		
@@ -69,13 +75,13 @@ int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 			return 0;
 		}
 		
-		const float AIDamageResult = ((((AIMoves->MovePower / (2 - AIMoves->MinigamePower)) * (EnemyData->AttackPower / RuntimeStats.DefencePower))) * AIMoves->ActionPointsModifier * AIMoves->WeaknessModifier) * PlayerStats->MinigameModifier;
+		const float AIDamageResult = ((((AIMoves->MovePower / (2 - AIMoves->MinigamePower)) * (EnemyData->RuntimeStats.AtkPower / RuntimeStats.DefencePower))) * AIMoves->ActionPointsModifier * AIMoves->WeaknessModifier) * PlayerStats->MinigameModifier;
 		const int RoundedResult = FMath::RoundToInt(AIDamageResult);
 		
 		DebugHelper::LogMessage(3, FColor::FromHex("433878"), "Damage dealt -> " + FString::SanitizeFloat(RoundedResult));
 
 		DebugHelper::AddMessageToLog("[DamageMath]: AI To Player Formula is -> ( " +FString::SanitizeFloat(AIMoves->MovePower)  + ") / (2 - " + FString::SanitizeFloat(AIMoves->MinigamePower) +
-			") x (" + FString::SanitizeFloat(EnemyData->AttackPower) + " / " + FString::SanitizeFloat(RuntimeStats.DefencePower) + ") x (" + FString::SanitizeFloat(AIMoves->ActionPointsModifier) + " x " +
+			") x (" + FString::SanitizeFloat(EnemyData->RuntimeStats.AtkPower) + " / " + FString::SanitizeFloat(RuntimeStats.DefencePower) + ") x (" + FString::SanitizeFloat(AIMoves->ActionPointsModifier) + " x " +
 			" * " + FString::SanitizeFloat(RuntimeStats.MinigameModifier) + ")");
 
 		DebugHelper::AddMessageToLog("[DamageMath]: Damage dealt -> " + FString::SanitizeFloat(AIDamageResult));

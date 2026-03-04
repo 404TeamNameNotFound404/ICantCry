@@ -691,6 +691,7 @@ void UStatusTracker::BuffWith(const EBuffStatus& BuffStatus)
 		if (!bBuffedTwice)
 		{
 			BuffAttack();
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->SimulateAura(Cast<AICC_Actor>(GetOwner()), 500.f, FColor::Red);
 		}
 		
 		break;
@@ -920,6 +921,8 @@ void UStatusTracker::UpdateBuffStatus()
 	BuffStatusCounter += 1;
 	int32& Counter = BuffCounters.FindOrAdd(CurrentBuffedStatus);
 	Counter++;
+	
+	//Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DecreaseAura(1.f);
 
 	const AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
 
@@ -957,13 +960,14 @@ void UStatusTracker::UpdateBuffStatus()
 			
 			bIsOwnerAlreadyBuffed = false;
 			bCanDebuff = true;
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura();
 		}
 		if (Target->IsA(AMob::StaticClass()))
 		{
 			const AMob* Emotion = Cast<AMob>(GetOwner());
-			DebugHelper::AddMessageToLog("[Status Tracker]:" + Target->GetActorLabel() + " before returning back to normal " + FString::SanitizeFloat(Emotion->GetData()->AttackPower));
-			Emotion->GetData()->AttackPower = Emotion->GetAIMemory().InitialAttackPower;
-			DebugHelper::AddMessageToLog("[Status Tracker]: " +  Target->GetActorLabel() +  " Buff ended, atk returns to " + FString::SanitizeFloat(Emotion->GetData()->AttackPower));
+			DebugHelper::AddMessageToLog("[Status Tracker]:" + Target->GetActorLabel() + " before returning back to normal " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.AtkPower));
+			Emotion->GetData()->RuntimeStats.AtkPower = Emotion->GetAIMemory().InitialAttackPower;
+			DebugHelper::AddMessageToLog("[Status Tracker]: " +  Target->GetActorLabel() +  " Buff ended, atk returns to " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.AtkPower));
 			Counter = 0;
 			PerkData.bBuffAtk = false;
 			bIsOwnerAlreadyBuffed = false;
@@ -984,9 +988,9 @@ void UStatusTracker::UpdateBuffStatus()
 		if (Target->IsA(AMob::StaticClass()))
 		{
 			const AMob* Emotion = Cast<AMob>(GetOwner());
-			DebugHelper::AddMessageToLog("[Status Tracker]:" + Target->GetActorLabel() + " before returning back to normal " + FString::SanitizeFloat(Emotion->GetData()->DefencePower));
-			Emotion->GetData()->DefencePower = Emotion->GetAIMemory().InitialDefencePower;
-			DebugHelper::AddMessageToLog("[Status Tracker]: " +  Target->GetActorLabel() +  " Buff ended, def returns to " + FString::SanitizeFloat(Emotion->GetData()->DefencePower));
+			DebugHelper::AddMessageToLog("[Status Tracker]:" + Target->GetActorLabel() + " before returning back to normal " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.DefPower));
+			Emotion->GetData()->RuntimeStats.DefPower = Emotion->GetAIMemory().InitialDefencePower;
+			DebugHelper::AddMessageToLog("[Status Tracker]: " +  Target->GetActorLabel() +  " Buff ended, def returns to " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.DefPower));
 			Counter = 0;
 			bIsOwnerAlreadyBuffed = false;
 			PerkData.bBuffDef = false;
@@ -1054,6 +1058,7 @@ void UStatusTracker::UnfreezeChance()
 				bIsOwnerAfflicted = false;
 				CurrentActiveStatus = None;
 				StatusCounter = 0;
+				FreezedUpCounter = 0;
 				DebugHelper::AddMessageToLog("[Status Tracker]: Free from FreezedUp at 25%");
 				Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString("You successfully got rid of Freezed-Up. You are able to shoot again"));
 			}
@@ -1069,6 +1074,7 @@ void UStatusTracker::UnfreezeChance()
 				bIsOwnerAfflicted = false;
 				CurrentActiveStatus = None;
 				StatusCounter = 0;
+				FreezedUpCounter = 0;
 				DebugHelper::AddMessageToLog("[Status Tracker]: Free from FreezedUp at 50%");
 				Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString("You successfully got rid of Freezed-Up. You are able to shoot again"));
 			}
@@ -1083,6 +1089,7 @@ void UStatusTracker::UnfreezeChance()
 				bIsOwnerAfflicted = false;
 				CurrentActiveStatus = None;
 				StatusCounter = 0;
+				FreezedUpCounter = 0;
 				DebugHelper::AddMessageToLog("[Status Tracker]: Free from FreezedUp at 75%");
 				Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString("You successfully got rid of Freezed-Up. You are able to shoot again"));
 			}
@@ -1200,12 +1207,12 @@ void UStatusTracker::BuffFlow(const EBuffStatus& NewBuffStatus)
 	switch (CurrentBuffedStatus)
 	{
 	case EBuffStatus::AtkBuff:
-		Emotion->GetData()->AttackPower = Emotion->GetAIMemory().InitialAttackPower;
-		DebugHelper::AddMessageToLog("[Status Tracker - buff flow]: " + Emotion->GetActorLabel() + " reverted it's atk power into " + FString::FromInt(Emotion->GetData()->AttackPower));
+		Emotion->GetData()->RuntimeStats.AtkPower = Emotion->GetAIMemory().InitialAttackPower;
+		DebugHelper::AddMessageToLog("[Status Tracker - buff flow]: " + Emotion->GetActorLabel() + " reverted it's atk power into " + FString::FromInt(Emotion->GetData()->RuntimeStats.AtkPower));
 		break;
 	case EBuffStatus::DefBuff:
-		Emotion->GetData()->DefencePower = Emotion->GetAIMemory().InitialDefencePower;
-		DebugHelper::AddMessageToLog("[Status Tracker - buff flow]: " + Emotion->GetActorLabel() + " reverted it's def power into " + FString::FromInt(Emotion->GetData()->DefencePower));
+		Emotion->GetData()->RuntimeStats.DefPower = Emotion->GetAIMemory().InitialDefencePower;
+		DebugHelper::AddMessageToLog("[Status Tracker - buff flow]: " + Emotion->GetActorLabel() + " reverted it's def power into " + FString::FromInt(Emotion->GetData()->RuntimeStats.DefPower));
 		break;
 	case EBuffStatus::LowHealth:
 	case EBuffStatus::NoBuff:
@@ -1267,8 +1274,8 @@ void UStatusTracker::DebuffFlow(const EDebuffStatus& NewDebuffStatus, AICC_Actor
 		{
 			DebugHelper::AddMessageToLog("[Status Tracker - Debuff flow]: " + Target->GetActorLabel() + " collided with " + GetDebuffName(NewDebuffStatus) + " but it has " + GetBuffName(CurrentBuffedStatus) + " so counter and stats are reverted");
 			const AMob* E = Cast<AMob>(Target);
-			E->GetData()->AttackPower = E->GetAIMemory().InitialAttackPower;
-			DebugHelper::AddMessageToLog("[Status Tracker - Debuff flow]: Counter now is " + FString::FromInt(DebuffCounter) + " and the attack power now restored as " + FString::FromInt(E->GetData()->AttackPower));
+			E->GetData()->RuntimeStats.AtkPower = E->GetAIMemory().InitialAttackPower;
+			DebugHelper::AddMessageToLog("[Status Tracker - Debuff flow]: Counter now is " + FString::FromInt(DebuffCounter) + " and the attack power now restored as " + FString::FromInt(E->GetData()->RuntimeStats.AtkPower));
 			return;
 		}
 	}
@@ -1290,8 +1297,8 @@ void UStatusTracker::DebuffFlow(const EDebuffStatus& NewDebuffStatus, AICC_Actor
 		{
 			DebugHelper::AddMessageToLog("[Status Tracker - Debuff flow]: " + Target->GetActorLabel() + " collided with " + GetDebuffName(NewDebuffStatus) + " but it has " + GetBuffName(CurrentBuffedStatus) + " so counter and stats are reverted");
 			const AMob* E = Cast<AMob>(Target);
-			E->GetData()->DefencePower = E->GetAIMemory().InitialDefencePower;
-			DebugHelper::AddMessageToLog("[Status Tracker - Debuff flow]: Counter now is " + FString::FromInt(DebuffCounter) + " and the attack power now restored as " + FString::FromInt(E->GetData()->DefencePower));
+			E->GetData()->RuntimeStats.DefPower = E->GetAIMemory().InitialDefencePower;
+			DebugHelper::AddMessageToLog("[Status Tracker - Debuff flow]: Counter now is " + FString::FromInt(DebuffCounter) + " and the attack power now restored as " + FString::FromInt(E->GetData()->RuntimeStats.DefPower));
 			return;
 		}
 	}
@@ -1379,8 +1386,8 @@ void UStatusTracker::BuffAttack()
 	if (Target->IsA(AMob::StaticClass()))
 	{
 		const AMob* Mob = Cast<AMob>(GetOwner());
-		const int32 BuffedAtk = FMath::FloorToInt( Mob->GetData()->AttackPower * Mob->GetBattleData()->EmotionAtkBuffIncrement);
-		Mob->GetData()->AttackPower += BuffedAtk;
+		const int32 BuffedAtk = FMath::FloorToInt( Mob->GetData()->RuntimeStats.AtkPower * Mob->GetBattleData()->EmotionAtkBuffIncrement);
+		Mob->GetData()->RuntimeStats.AtkPower += BuffedAtk;
 
 		switch (Mob->GetMobType())
 		{
@@ -1441,8 +1448,8 @@ void UStatusTracker::BuffDefence()
 	if (Target->IsA(AMob::StaticClass()))
 	{
 		const AMob* Mob = Cast<AMob>(GetOwner());
-		Mob->GetData()->DefencePower += FMath::FloorToInt(Mob->GetData()->DefencePower * Mob->GetBattleData()->EmotionDefBuffIncrement);
-		DebugHelper::AddMessageToLog("[Status Tracker]: " + Mob->GetActorLabel() + " buffed it's def " + FString::FromInt(Mob->GetData()->DefencePower));
+		Mob->GetData()->RuntimeStats.DefPower += FMath::FloorToInt(Mob->GetData()->RuntimeStats.DefPower * Mob->GetBattleData()->EmotionDefBuffIncrement);
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + Mob->GetActorLabel() + " buffed it's def " + FString::FromInt(Mob->GetData()->RuntimeStats.DefPower));
 
 		switch (Mob->GetMobType())
 		{
@@ -1577,9 +1584,9 @@ void UStatusTracker::DebuffAtkF()
 	if (Target->IsA(AMob::StaticClass()))
 	{
 		const AMob* Mob = Cast<AMob>(GetOwner());
-		Mob->GetData()->AttackPower -= Mob->GetData()->AttackPower * Mob->GetBattleData()->EmotionAtkDebuffMalus;
-		DebugHelper::LogSuccess("[Status Tracker]: " +Mob->GetActorLabel() + "got it's atk de-buffed now has " + FString::SanitizeFloat(Mob->GetData()->AttackPower));
-		DebugHelper::AddMessageToLog("[Status Tracker]: AI atk value (debuff) " + FString::SanitizeFloat(Mob->GetData()->AttackPower));
+		Mob->GetData()->RuntimeStats.AtkPower -= Mob->GetData()->RuntimeStats.AtkPower * Mob->GetBattleData()->EmotionAtkDebuffMalus;
+		DebugHelper::LogSuccess("[Status Tracker]: " +Mob->GetActorLabel() + "got it's atk de-buffed now has " + FString::SanitizeFloat(Mob->GetData()->RuntimeStats.AtkPower));
+		DebugHelper::AddMessageToLog("[Status Tracker]: AI atk value (debuff) " + FString::SanitizeFloat(Mob->GetData()->RuntimeStats.AtkPower));
 
 		switch (Mob->GetMobType())
 		{
@@ -1625,9 +1632,9 @@ void UStatusTracker::DebuffAtkF(AICC_Actor* Target)
 	if (Target->IsA(AMob::StaticClass()))
 	{
 		const AMob* Mob = Cast<AMob>(Target);
-		Mob->GetData()->AttackPower -= Mob->GetData()->AttackPower * Mob->GetBattleData()->EmotionAtkDebuffMalus;
-		DebugHelper::LogSuccess("[Status Tracker]: " +Mob->GetActorLabel() + "got it's atk de-buffed now has " + FString::SanitizeFloat(Mob->GetData()->AttackPower));
-		DebugHelper::AddMessageToLog("[Status Tracker]: AI atk value (debuff) " + FString::SanitizeFloat(Mob->GetData()->AttackPower));
+		Mob->GetData()->RuntimeStats.AtkPower -= Mob->GetData()->RuntimeStats.AtkPower * Mob->GetBattleData()->EmotionAtkDebuffMalus;
+		DebugHelper::LogSuccess("[Status Tracker]: " +Mob->GetActorLabel() + "got it's atk de-buffed now has " + FString::SanitizeFloat(Mob->GetData()->RuntimeStats.AtkPower));
+		DebugHelper::AddMessageToLog("[Status Tracker]: AI atk value (debuff) " + FString::SanitizeFloat(Mob->GetData()->RuntimeStats.AtkPower));
 
 		switch (Mob->GetMobType())
 		{
@@ -1675,7 +1682,7 @@ void UStatusTracker::DebuffDefF()
 	if (Target->IsA(AMob::StaticClass()))
 	{
 		const AMob* Mob = Cast<AMob>(GetOwner());
-		Mob->GetData()->DefencePower -= Mob->GetData()->DefencePower * Mob->GetBattleData()->EmotionDefDebuffMalus;
+		Mob->GetData()->RuntimeStats.DefPower -= Mob->GetData()->RuntimeStats.DefPower * Mob->GetBattleData()->EmotionDefDebuffMalus;
 		
 		switch (Mob->GetMobType())
 		{
@@ -1722,7 +1729,7 @@ void UStatusTracker::DebuffDefF(AICC_Actor* Target)
 	if (Target->IsA(AMob::StaticClass()))
 	{
 		const AMob* Mob = Cast<AMob>(GetOwner());
-		Mob->GetData()->DefencePower -= Mob->GetData()->DefencePower * Mob->GetBattleData()->EmotionDefDebuffMalus;
+		Mob->GetData()->RuntimeStats.DefPower -= Mob->GetData()->RuntimeStats.DefPower * Mob->GetBattleData()->EmotionDefDebuffMalus;
 		
 		switch (Mob->GetMobType())
 		{
@@ -1831,7 +1838,7 @@ void UStatusTracker::RevertBuff()
 		{
 			AMob* Emotion = Cast<AMob>(Target);
 			checkf(Emotion, TEXT("Emotion invalid at revert inflicted malus atkbuff"))
-			Emotion->GetData()->AttackPower = Emotion->GetAIMemory().InitialAttackPower;
+			Emotion->GetData()->RuntimeStats.AtkPower = Emotion->GetAIMemory().InitialAttackPower;
 		}
 		break;
 	case DefBuff:
@@ -1846,7 +1853,7 @@ void UStatusTracker::RevertBuff()
 		{
 			AMob* Emotion = Cast<AMob>(Target);
 			checkf(Emotion, TEXT("Emotion invalid at revert inflicted malus defbuff"))
-			Emotion->GetData()->DefencePower = Emotion->GetAIMemory().InitialDefencePower;
+			Emotion->GetData()->RuntimeStats.DefPower = Emotion->GetAIMemory().InitialDefencePower;
 		}
 		break;
 	case LowHealth:

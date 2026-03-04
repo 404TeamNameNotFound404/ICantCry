@@ -31,6 +31,13 @@ public:
 	bool IsControllerPlugged() const;
 	
 	void Fire(const FVector& DeltaLocation ,const FLinearColor& Color);
+	
+	void SimulateHurt(const FLinearColor& Color);
+	
+	void SimulateAura(AICC_Actor* Target ,const float& SpawnRate ,const FLinearColor& Color);
+	void IncreaseAura(const float& Value);
+	void DecreaseAura(const float& Value);
+	void DeactivateAura();
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -45,15 +52,30 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle VFX", meta=(AllowPrivateAccess="true"))
 	UNiagaraSystem* MuzzleFlash;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle VFX", meta=(AllowPrivateAccess="true"))
+	UNiagaraSystem* HurtPrefab;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle VFX", meta=(AllowPrivateAccess="true"))
+	UNiagaraSystem* AuraPrefab;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle VFX", meta=(AllowPrivateAccess="true"))
+	float AuraDecreaseValue = 30.f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle VFX", meta=(AllowPrivateAccess="true"))
+	float AuraIncreaseValue = 500.f;
+	
 	UPROPERTY()
 	UNiagaraComponent* Flash;
+	
+	UPROPERTY()
+	UNiagaraComponent* Aura;
 	
 	UPROPERTY()
 	FVector BeamPosition;
 
 	UPROPERTY()
 	bool bControllerPlugged = false;
-
+	
 	UPROPERTY()
 	UBattleInfo* BattleInfo;
 
