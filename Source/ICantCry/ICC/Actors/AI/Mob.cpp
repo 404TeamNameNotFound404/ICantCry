@@ -69,8 +69,8 @@ void AMob::BeginPlay()
 	Handler = MinigameHandler;
 	Memory.DefaultBattleLocation = GetActorLocation();
 	Memory.DefaultBattleOrientation = GetActorRotation();
-	Memory.InitialAttackPower = GetData()->AttackPower;
-	Memory.InitialDefencePower = GetData()->DefencePower;
+	Memory.InitialAttackPower = GetData()->RuntimeStats.AtkPower;
+	Memory.InitialDefencePower = GetData()->RuntimeStats.DefPower;
 
 	DebugHelper::AddMessageToLog("[AMob]: Memory registered InitialAttackPower as: " + FString::SanitizeFloat(Memory.InitialAttackPower));
 	DebugHelper::AddMessageToLog("[AMob]: Memory registered InitialDefPower as: " + FString::SanitizeFloat(Memory.InitialDefencePower));

@@ -39,9 +39,9 @@ void UAttackMinigame::MoveSlider(const FVector2D& Position)
 
 EMinigameThreshold UAttackMinigame::CheckBar()
 {
-	const FVector2D CurrentPosition = Slider->GetCachedGeometry().GetAbsolutePosition();
-
-	const float X = CurrentPosition.X;
+	//const FVector2D CurrentPosition = Slider->GetTickSpaceGeometry().GetAbsolutePosition();
+	//const float X = CurrentPosition.X;
+	const float X = Slider->GetRenderTransform().Translation.X;
 
 	const float LeftDangerX = DangerBorderLeft->GetCachedGeometry().GetAbsolutePosition().X;
 	const float LeftSafeX = SafeAreaLeft->GetCachedGeometry().GetAbsolutePosition().X;
@@ -49,8 +49,9 @@ EMinigameThreshold UAttackMinigame::CheckBar()
 	const float PerfectRightX = PerfectAreaRight->GetCachedGeometry().GetAbsolutePosition().X;
 	const float RightSafeX = SafeAreaRight->GetCachedGeometry().GetAbsolutePosition().X;
 	const float RightDangerX = DangerBorderRight->GetCachedGeometry().GetAbsolutePosition().X;
-
-
+	
+	DebugHelper::LogMessage(9, FColor::White, "Slider X: " + FString::SanitizeFloat(X)  + "Perfect X " + FString::SanitizeFloat(PerfectLeftX) + " Rigth Perfect " + FString::SanitizeFloat(PerfectRightX));
+	
 	if (X >= PerfectLeftX && X <= PerfectRightX)
 	{
 		return EMinigameThreshold::Perfect;
@@ -105,6 +106,7 @@ void UAttackMinigame::HandleScore()
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+		
 		if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->Type == EBulletType::Shame)
 		{
 			// Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion()->GetStatusTracker()->InflictStatus(
@@ -112,6 +114,7 @@ void UAttackMinigame::HandleScore()
 			Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
 				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
 		}
+		
 		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
 		break;
@@ -123,6 +126,7 @@ void UAttackMinigame::HandleScore()
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+		
 		if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->Type == EBulletType::Shame)
 		{
 			// Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion()->GetStatusTracker()->InflictStatus(
@@ -130,6 +134,7 @@ void UAttackMinigame::HandleScore()
 			Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
 				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
 		}
+		
 		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
 		break;
@@ -139,13 +144,13 @@ void UAttackMinigame::HandleScore()
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+		
 		if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->Type == EBulletType::Shame)
 		{
-			// Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion()->GetStatusTracker()->InflictStatus(
-			// 	EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion());
 			Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
 				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
 		}
+		
 		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
 		break;

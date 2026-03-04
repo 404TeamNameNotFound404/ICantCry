@@ -29,6 +29,7 @@ void UBulletDisplayer::Setup()
 	}
 
 	int32 Index = 0;
+	const int32 MaxCols = 4;
 
 	for (auto& Bullet : Instance->GetInventory().BulletsStored)
 	{
@@ -37,19 +38,24 @@ void UBulletDisplayer::Setup()
 
 		UBulletSelector* Item = CreateWidget<UBulletSelector>(GetWorld(), BulletButtonItemClass);
 		Item->Setup(B, B.GetQuantity());
-		Item->SetPadding(FMargin(2, 2));
+		
+		const int32 Row = Index / MaxCols;
+		const int32 Column = Index % MaxCols;
+		
+		//Item->SetPadding(FMargin(2, 2));
 
-		UGridSlot* BulletSlot = Cast<UGridSlot>(BulletGrid->AddChild(Item)); // Commento
+		UGridSlot* BulletSlot = Cast<UGridSlot>(BulletGrid->AddChildToGrid(Item, Row, Column));
+		
 		if (!BulletSlot)
 		{
 			continue;
 		}
-
-		const int32 Row = Index / BulletSlotPadding;
-		const int32 Column = Index % BulletSlotPadding;
-
+		
 		BulletSlot->SetRow(Row);
 		BulletSlot->SetColumn(Column);
+		BulletSlot->SetPadding(FMargin(5.f));
+		BulletSlot->SetHorizontalAlignment(HAlign_Fill);
+		BulletSlot->SetVerticalAlignment(VAlign_Fill);
 
 		//BulletGrid->AddChild(Item);
 		Bullets.Add(Item);

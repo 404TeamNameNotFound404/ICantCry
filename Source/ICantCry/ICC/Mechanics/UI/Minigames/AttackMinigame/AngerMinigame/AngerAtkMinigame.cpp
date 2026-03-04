@@ -164,6 +164,7 @@ void UAngerAtkMinigame::MoveSlider(const FVector2D& Position)
 		Instance->GetCurrentPlayer()->GetMinigameHandler()->EndMinigame();
 		
 		Hud->GetBattleHandler()->Fire(Hud->GetSelectedActor()->GetActorLocation(), Hud->GetCurrentBulletData()->DisplayColor);
+		Hud->GetBattleHandler()->SimulateHurt(Hud->GetCurrentBulletData()->DisplayColor);
 	}
 }
 

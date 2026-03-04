@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "ICantCry/ICC/Actors/AI/MobType.h"
+#include "ICantCry/ICC/Actors/AI/Emotions/EmotionStats/FEmotionStat.h"
 #include "EnemyDatas.generated.h"
 
 /**
@@ -18,6 +19,9 @@ class ICANTCRY_API UEnemyDatas : public UDataAsset
 
 public:
  
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Runtime Stats")
+	FEmotionStat RuntimeStats;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FName EnemyName;
 

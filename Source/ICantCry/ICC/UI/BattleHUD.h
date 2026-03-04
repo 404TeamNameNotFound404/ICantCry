@@ -73,12 +73,6 @@ public:
     // Ammo Display
     UPROPERTY(meta = (BindWidget)) UImage* Magazine;
 	UPROPERTY(meta=(BindWidget)) UTextBlock* OutOfBulletTxt;
-    // UPROPERTY(meta = (BindWidget)) UImage* Ammo_1;
-    // UPROPERTY(meta = (BindWidget)) UImage* Ammo_2;
-    // UPROPERTY(meta = (BindWidget)) UImage* Ammo_3;
-    // UPROPERTY(meta = (BindWidget)) UImage* Ammo_4;
-    // UPROPERTY(meta = (BindWidget)) UImage* Ammo_5;
-    // UPROPERTY(meta = (BindWidget)) UImage* Ammo_6;
 
     // Targetting
     UPROPERTY(meta = (BindWidget)) UImage* Crosshair;
@@ -233,7 +227,19 @@ public:
 	UFUNCTION() void ConfirmBulletSelection();
 	
 	UAPBar* GetAPBar() const;
+	
+	void IncreaseAP(const int& Amount);
+	void DecreaseAP(const int& Amount);
 
+	/**
+	 * Check if the current bullet to shot is a EV one
+	 */
+	UPROPERTY() bool bIsEvFirst = false;
+	
+	
+protected:
+	UFUNCTION(BlueprintPure) FText UpdateBulletName();
+	
 private:
 
     UPROPERTY() ABattleHandler*  BattleHandler = nullptr;
@@ -271,7 +277,7 @@ private:
 	// UImage* Bullet_3;
 
 	UPROPERTY(meta = (BindWidget))
-	UHorizontalBox* BulletPanel;
+	UCanvasPanel* BulletPanel;
 
 	UPROPERTY(meta=(BindWidget))
 	USizeBox* VisualizerSlot;
@@ -284,8 +290,7 @@ private:
 	bool bSelectTarget = false;
 
     // UI Functions
-	void IncreaseAP(const int& Amount);
-	void DecreaseAP(const int& Amount);
+	
     void UpdateAPBar();
     
     // Button Handlers
