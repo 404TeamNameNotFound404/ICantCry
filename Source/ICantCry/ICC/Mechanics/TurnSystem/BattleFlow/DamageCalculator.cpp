@@ -29,17 +29,18 @@ int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 		return 0;
 	}
 	
-	if (Instance->GetCurrentPlayer()->GetBattleHUD()->bIsEvFirst)
-	{
-		DebugHelper::LogMessage(8, FColor::White, "EV bullet detected return");
-		return 0;
-	}
 	
 	FRuntimeStats& RuntimeStats = Instance->GetRuntimeStats();
 	UPlayerStats* Stats = Instance->GetPlayerStats();
 	
 	if (IsPlayerAttacking)
 	{
+		if (Instance->GetCurrentPlayer()->GetBattleHUD()->bIsEvFirst)
+		{
+			DebugHelper::LogMessage(8, FColor::White, "EV bullet detected return");
+			return 0;
+		}
+		
 		float Coefficient = 0.5f; // fallback in case of invalid parameters
 
 		if (BulletData->Coefficients.Contains(EnemyData->Type))
@@ -75,7 +76,7 @@ int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 			return 0;
 		}
 		
-		const float AIDamageResult = ((((AIMoves->MovePower / (2 - AIMoves->MinigamePower)) * (EnemyData->RuntimeStats.AtkPower / RuntimeStats.DefencePower))) * AIMoves->ActionPointsModifier * AIMoves->WeaknessModifier) * PlayerStats->MinigameModifier;
+		const float AIDamageResult = ((((AIMoves->MovePower / (2 - AIMoves->MinigamePower)) * (EnemyData->RuntimeStats.AtkPower / RuntimeStats.DefencePower))) * AIMoves->ActionPointsModifier * AIMoves->WeaknessModifier) * RuntimeStats.MinigameModifier;
 		const int RoundedResult = FMath::RoundToInt(AIDamageResult);
 		
 		DebugHelper::LogMessage(3, FColor::FromHex("433878"), "Damage dealt -> " + FString::SanitizeFloat(RoundedResult));

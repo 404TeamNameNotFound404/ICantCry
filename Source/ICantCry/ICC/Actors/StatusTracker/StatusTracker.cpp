@@ -1253,8 +1253,29 @@ void UStatusTracker::DebuffFlow(const EDebuffStatus& NewDebuffStatus, AICC_Actor
 
 	if (CurrentDebuffStatus == NewDebuffStatus)
 	{
-		DebugHelper::AddMessageToLog("[Status Tracker - Debuff flow]: " + GetOwner()->GetActorLabel() + " does not need to check collision with actual debuff status");
+		DebugHelper::AddMessageToLog("[Status Tracker - Debuff flow]: " + GetOwner()->GetActorLabel() + " got the same debuff " + GetDebuffName(NewDebuffStatus) + " So..");
 		DebuffCounter = 0;
+		bIsOwnerDebuffed = true;
+		
+		switch (NewDebuffStatus)
+		{
+		case EDebuffStatus::DebuffAtk:
+			Instance->GetRuntimeStats().AttackPower = Instance->GetCurrentPlayer()->GetStats()->RuntimeStats.AttackPower;
+			DebugHelper::AddMessageToLog("[Status Tracker - Debuff Flow]: " + GetOwner()->GetActorLabel() + " restored its stats" + FString::FromInt(Instance->GetRuntimeStats().AttackPower) 
+				+ ", reset it's counter: " + FString::FromInt(DebuffCounter) + " and it got debuffed again");
+			break;
+			
+		case EDebuffStatus::DebuffDef:
+			Instance->GetRuntimeStats().DefencePower = Instance->GetCurrentPlayer()->GetStats()->RuntimeStats.DefencePower;
+			DebugHelper::AddMessageToLog("[Status Tracker - Debuff Flow]: " + GetOwner()->GetActorLabel() + " restored its stats" + FString::FromInt(Instance->GetRuntimeStats().DefencePower) 
+				+ ", reset it's counter: " + FString::FromInt(DebuffCounter) + " and it got debuffed again");
+			break;
+			
+		case EDebuffStatus::NoDebuff:
+		default:
+			return;
+		}
+		
 		return;
 	}
 
@@ -1368,6 +1389,12 @@ void UStatusTracker::Reset()
 	Instance->GetRuntimeStats().AttackPower = Instance->GetPersistentData()->InitialAttackPower;
 	Instance->GetRuntimeStats().DefencePower = Instance->GetPersistentData()->InitialDefencePower;
 	Instance->GetRuntimeStats().ApModifier = 1;
+	StatusCounter = 0;
+	BuffStatusCounter = 0;
+	DebuffCounter = 0;
+	CurrentBuffedStatus = EBuffStatus::NoBuff;
+	CurrentActiveStatus = EAfflictedStatus::None;
+	CurrentDebuffStatus = EDebuffStatus::NoDebuff;
 	DebugHelper::LogMessage(8, FColor::Blue, "Stats successfully restored");
 }
 
