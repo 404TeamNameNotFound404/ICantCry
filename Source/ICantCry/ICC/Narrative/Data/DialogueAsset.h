@@ -43,6 +43,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Appearance")
 	FLinearColor DialogueColor = FLinearColor::White; // Default bianco
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Appearance")
+	bool bUseTypewriterEffect = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Appearance", meta = (EditCondition = "bUseTypewriterEffect"))
+	float TypewriterSpeed = 0.05f;
+
 	// Eventi da scatenare alla fine del dialogo (es: Inizia Quest o Drop Item)
 	UPROPERTY(EditAnywhere, Instanced, Category = "Events")
 	TArray<TObjectPtr<UGameplayEvent>> OnDialogueEnded;

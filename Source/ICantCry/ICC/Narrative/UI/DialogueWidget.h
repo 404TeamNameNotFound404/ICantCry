@@ -62,5 +62,13 @@ private:
 	UPROPERTY() TObjectPtr<UDialogueAsset> CurrentDialogue;
     int32 CurrentLineIndex = 0;
     bool bIsOptionalQuest = false;
+
+	FTimerHandle TypewriterTimerHandle;
+    FString FullTextCurrentLine;
+    int32 CurrentCharacterIndex;
+
+	// Typewriter Effect
+    void OnTypewriterTick();
+    void FinishLineInstantly(); // Per saltare l'animazione se il player clicca "Next"
 	
 };
