@@ -15,6 +15,10 @@
 #include "ICantCry/ICC/UI/InventoryHUD.h"
 #include "Kismet/GameplayStatics.h"
 #include "ICantCry/ICC/Mechanics/ChallengeMinigames/ChallengeMinigame.h"
+#include "ICantCry/ICC/Narrative/Components/InteractionComponent.h"
+#include "ICantCry/ICC/Narrative/Core/QuestManagerSystem.h"
+#include "ICantCry/ICC/Mechanics/Pickups/BasePickup.h"
+#include "CollisionQueryParams.h"
 
 // Sets default values
 AICC_Player::AICC_Player()
@@ -345,12 +349,82 @@ void AICC_Player::Input_Minigame(const FInputActionValue& InputActionValue)
 
 void AICC_Player::Input_Interact(const FInputActionValue& InputActionValue)
 {
-	if (bIsInFight)
-	{
-		return;
-	}
+	// if (bIsInFight)
+	// {
+	// 	return;
+	// }
+
+	// if (!InputActionValue.Get<bool>()) return;
+
+	// // Definiamo il raggio di interazione
+	// FHitResult Hit; 
+	// FVector Start = GetActorLocation(); // Oppure usa la posizione della camera
+	// FVector End = Start + (GetActorForwardVector() * 200.0f); // 2 metri avanti
 	
-	DebugHelper::LogSuccess("Interacting with something");
+	// FCollisionQueryParams Params;
+	// Params.AddIgnoredActor(this);
+
+	// // Eseguiamo il colpo (Raycast)
+	// if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
+	// {
+	// 	if (AActor* HitActor = Hit.GetActor())
+	// 	{
+	// 		// Cerchiamo il componente di interazione che abbiamo creato
+	// 		UInteractionComponent* InteractComp = HitActor->FindComponentByClass<UInteractionComponent>();
+	// 		if (InteractComp)
+	// 		{
+	// 			InteractComp->TriggerInteraction(this);
+	// 		}
+	// 	}
+	// }
+	
+	// DebugHelper::LogSuccess("Interacting with something");
+
+
+
+	if (bIsInFight) return;
+	if (!InputActionValue.Get<bool>()) return;
+
+	// 1. Definiamo il raggio (usiamo la camera per precisione)
+	FHitResult Hit; 
+	FVector Start = GetActorLocation(); // Oppure usa la posizione della camera
+	FVector End = Start + (GetActorForwardVector() * 200.0f); // Aumentato a 5 metri per test
+	
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	// Disegna una linea rossa nell'editor per vedere dove stai puntando (SOLO DEBUG)
+	DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.0f, 0, 2.0f);
+
+	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
+	{
+		AActor* HitActor = Hit.GetActor();
+		if (!HitActor) return;
+
+		DebugHelper::LogSuccess("Colpito: " + HitActor->GetName());
+
+		// A. PROVA PICKUP (Sasso)
+		ABasePickup* Pickup = Cast<ABasePickup>(HitActor);
+		if (Pickup)
+		{
+			DebugHelper::LogSuccess("Eseguo Collect su Pickup");
+			Pickup->Collect(this); //
+			return; 
+		}
+
+		// B. PROVA COMPONENTE INTERACTION (NPC)
+		UInteractionComponent* InteractComp = HitActor->FindComponentByClass<UInteractionComponent>();
+		if (InteractComp)
+		{
+			DebugHelper::LogSuccess("Eseguo Trigger su InteractionComponent");
+			InteractComp->TriggerInteraction(this); //
+			return;
+		}
+	}
+	else
+	{
+		DebugHelper::LogError("Il LineTrace non ha colpito nulla!");
+	}
 }
 
 
