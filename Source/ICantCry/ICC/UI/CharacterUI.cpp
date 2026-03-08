@@ -25,9 +25,12 @@ void UCharacterUI::NativeConstruct()
     {
         if (UQuestManagerSystem* QM = GI->GetSubsystem<UQuestManagerSystem>())
         {
-            // 2. BIND: Ci iscriviamo al delegato OnSystemUpdate
-            // Questo sostituisce il nodo "Bind Event to OnSystemUpdate"
+            // 1. Ti iscrivi per i futuri aggiornamenti
             QM->OnSystemUpdate.AddDynamic(this, &UCharacterUI::OnQuestSystemUpdated);
+
+            // 2. FIX: Forza un aggiornamento immediato all'apertura del widget
+            // Questo caricherà le missioni che il sistema ha mantenuto durante il cambio livello
+            UpdateQuests(); 
         }
     }
 

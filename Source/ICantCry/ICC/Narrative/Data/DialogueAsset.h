@@ -22,6 +22,17 @@ struct FDialogueLine
 	FGameplayTag EmotionTag; // Per cambiare l'immagine dell'NPC nel Widget
 };
 
+USTRUCT(BlueprintType)
+struct FDialogueBranch
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    FText ReplyText; // Quello che il giocatore legge sul bottone
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    class UDialogueAsset* NextDialogue; // Il dialogo che parte se scegli questa risposta
+};
 
 
 UCLASS(BlueprintType)
@@ -52,6 +63,15 @@ public:
 	// Eventi da scatenare alla fine del dialogo (es: Inizia Quest o Drop Item)
 	UPROPERTY(EditAnywhere, Instanced, Category = "Events")
 	TArray<TObjectPtr<UGameplayEvent>> OnDialogueEnded;
+
+	UPROPERTY(EditAnywhere, Category = "Config")
+    bool bNeverShowQuestButtons = false;
+
+	UPROPERTY(EditAnywhere, Category = "Branches")
+    bool bUseBranches = false;
+
+    UPROPERTY(EditAnywhere, Category = "Branches", meta = (EditCondition = "bUseBranches"))
+    TArray<FDialogueBranch> Branches;
 
 
 	

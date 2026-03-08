@@ -11,32 +11,11 @@
 #include "ICantCry/ICC/Narrative/Data/DialogueAsset.h"
 #include "ICantCry/ICC/Narrative/Data/NPCProfile.h"
 #include "ICantCry/ICC/Narrative/GameplayEvent.h"
+#include "ICantCry/ICC/Narrative/UI/DialogueChoiceButton.h"
 
 void UDialogueWidget::NativeConstruct() 
 {
     Super::NativeConstruct();
-
-    
-
-    // APlayerController* PC = GetOwningPlayer();
-    // if (PC)
-    // {
-    //     // 1. Permette al mouse di interagire con il Widget
-    //     FInputModeUIOnly InputMode;
-    //     InputMode.SetWidgetToFocus(TakeWidget());
-    //     InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-        
-    //     PC->SetInputMode(InputMode);
-
-    //     // 2. Rende il cursore visibile
-    //     PC->bShowMouseCursor = true;
-    // }
-
-    // if (BtnNext) 
-    // {
-    //     BtnNext->OnClicked.AddDynamic(this, &UDialogueWidget::DisplayNextLine);
-    // }
-
 
     if (BtnNext)   BtnNext->OnClicked.AddDynamic(this, &UDialogueWidget::DisplayNextLine);
     if (BtnAccept) BtnAccept->OnClicked.AddDynamic(this, &UDialogueWidget::OnAcceptClicked);
@@ -68,149 +47,111 @@ void UDialogueWidget::StartDialogue(UDialogueAsset* NewDialogue)
 
 void UDialogueWidget::DisplayNextLine() 
 {
-
-//    // Controllo di sicurezza iniziale
-//     if (!CurrentDialogue || !CurrentDialogue->NPCProfile) 
-//     {
-//         EndDialogue();
-//         return;
-//     }
-
-//     // 1. Controlliamo se ci sono ancora righe di testo da visualizzare
-//     if (CurrentDialogue && CurrentDialogue->Lines.IsValidIndex(CurrentLineIndex)) 
-//     {
-//         const FDialogueLine& CurrentLine = CurrentDialogue->Lines[CurrentLineIndex];
-
-//         // Aggiorna il Testo principale del Widget
-//         if (TextDialogueContent)
-//         {
-//             TextDialogueContent->SetText(CurrentLine.Text);
-//         }
-
-//         // LOGICA PORTRAIT: Cambia l'immagine dell'NPC in base all'emozione della riga
-//         if (NPCFaceImage && CurrentDialogue->NPCProfile)
-//         {
-//             FGameplayTag Emotion = CurrentLine.EmotionTag;
-            
-//             // Cerchiamo se nel profilo dell'NPC esiste una texture per questa emozione
-//             if (CurrentDialogue->NPCProfile->Portraits.Contains(Emotion))
-//             {
-//                 // Carichiamo la texture (essendo un SoftObjectPtr usiamo LoadSynchronous)
-//                 UTexture2D* LoadedTex = CurrentDialogue->NPCProfile->Portraits[Emotion].LoadSynchronous();
-//                 if (LoadedTex)
-//                 {
-//                     NPCFaceImage->SetBrushFromTexture(LoadedTex);
-//                 }
-//             }
-//         }
-
-//         // Incrementiamo l'indice per la prossima riga
-//         CurrentLineIndex++;
-//     } 
-//     else 
-//     {
-//         // 2. FINE DEL DIALOGO: Gestione della scelta o della chiusura automatica
-//         if (bIsOptionalQuest) 
-//         {
-//             // Se la missione è opzionale, nascondiamo il tasto "Avanti"
-//             if (BtnNext) 
-//             {
-//                 BtnNext->SetVisibility(ESlateVisibility::Collapsed);
-//             }
-
-//             // Mostriamo i tasti Accetta e Rifiuta
-//             if (BtnAccept) 
-//             {
-//                 BtnAccept->SetVisibility(ESlateVisibility::Visible);
-//                 BtnAccept->SetFocus(); // Imposta il focus per navigazione con gamepad/tastiera
-//             }
-
-//             if (BtnDecline) 
-//             {
-//                 BtnDecline->SetVisibility(ESlateVisibility::Visible);
-//             }
-//         }
-//         else 
-//         {
-//             // Se la missione è obbligatoria (o è un dialogo normale), chiudiamo ed eseguiamo gli eventi
-//             EndDialogue();
-//         }
-//     }
-
-
-
-    // 1. Se il timer è attivo, significa che il testo sta ancora scrivendo.
-    // In questo caso, completiamo la riga istantaneamente e usciamo.
+   // 1. GESTIONE INPUT DURANTE LA SCRITTURA
+    // Se il testo sta ancora scorrendo, lo mostriamo tutto subito e interrompiamo il timer
     if (GetWorld()->GetTimerManager().IsTimerActive(TypewriterTimerHandle))
     {
         FinishLineInstantly();
         return;
     }
 
-    // Controllo di sicurezza iniziale
+    // Validità del dialogo e del profilo NPC
     if (!CurrentDialogue || !CurrentDialogue->NPCProfile) 
     {
         EndDialogue();
         return;
     }
 
-    // 2. Controlliamo se ci sono ancora righe di testo da visualizzare
+    // 2. LOGICA VISUALIZZAZIONE RIGA
     if (CurrentDialogue->Lines.IsValidIndex(CurrentLineIndex)) 
     {
         const FDialogueLine& CurrentLine = CurrentDialogue->Lines[CurrentLineIndex];
-
-        // Salviamo il testo completo per il timer o per il completamento rapido
         FullTextCurrentLine = CurrentLine.Text.ToString();
         CurrentCharacterIndex = 0;
 
-        // LOGICA PORTRAIT (rimane invariata)
-        if (NPCFaceImage && CurrentDialogue->NPCProfile)
+        // FIX: Assicuriamoci che il tasto Next sia visibile per scorrere le righe
+        if (BtnNext) 
         {
-            FGameplayTag Emotion = CurrentLine.EmotionTag;
-            if (CurrentDialogue->NPCProfile->Portraits.Contains(Emotion))
+            BtnNext->SetVisibility(ESlateVisibility::Visible);
+        }
+
+        // AGGIORNAMENTO UI: Nome e Ritratto NPC
+        if (CurrentDialogue->NPCProfile)
+        {
+            // Imposta il Nome
+            if (TextNPCName)
             {
-                UTexture2D* LoadedTex = CurrentDialogue->NPCProfile->Portraits[Emotion].LoadSynchronous();
-                if (LoadedTex)
+                TextNPCName->SetText(CurrentDialogue->NPCProfile->NPCName);
+            }
+
+            // Imposta il Ritratto (Portrait) in base all'emozione
+            if (NPCFaceImage)
+            {
+                FGameplayTag TargetTag = CurrentLine.EmotionTag;
+                
+                // Cerchiamo l'emozione nella mappa Portraits del profilo
+                if (CurrentDialogue->NPCProfile->Portraits.Contains(TargetTag))
                 {
-                    NPCFaceImage->SetBrushFromTexture(LoadedTex);
+                    UTexture2D* LoadedTexture = CurrentDialogue->NPCProfile->Portraits[TargetTag].LoadSynchronous();
+                    NPCFaceImage->SetBrushFromTexture(LoadedTexture);
+                }
+                else if (CurrentDialogue->NPCProfile->Portraits.Num() > 0)
+                {
+                    // Fallback: se il tag non esiste, prendi il primo ritratto disponibile
+                    TArray<FGameplayTag> OutKeys;
+                    CurrentDialogue->NPCProfile->Portraits.GetKeys(OutKeys);
+                    UTexture2D* DefaultTexture = CurrentDialogue->NPCProfile->Portraits[OutKeys[0]].LoadSynchronous();
+                    NPCFaceImage->SetBrushFromTexture(DefaultTexture);
                 }
             }
         }
 
-        // --- NUOVA LOGICA MACCHINA DA SCRIVERE ---
+        // GESTIONE TESTO (Macchina da scrivere vs Istantaneo)
         if (CurrentDialogue->bUseTypewriterEffect && TextDialogueContent)
         {
-            // Puliamo il testo e avviamo il timer
             TextDialogueContent->SetText(FText::GetEmpty());
-            
             float Speed = FMath::Max(0.01f, CurrentDialogue->TypewriterSpeed);
             GetWorld()->GetTimerManager().SetTimer(TypewriterTimerHandle, this, &UDialogueWidget::OnTypewriterTick, Speed, true);
         }
-        else
+        else if (TextDialogueContent)
         {
-            // Se l'effetto è disattivato, mostriamo tutto subito
-            if (TextDialogueContent)
-            {
-                TextDialogueContent->SetText(CurrentLine.Text);
-            }
+            TextDialogueContent->SetText(CurrentLine.Text);
         }
 
-        // Incrementiamo l'indice per la prossima riga
         CurrentLineIndex++;
     } 
     else 
     {
-        // 3. FINE DEL DIALOGO (rimane invariata)
-        if (bIsOptionalQuest) 
+        // 3. LOGICA DI FINE DIALOGO / USCITA
+        
+        // Se l'asset corrente vieta i tasti missione (es. dialogo di rifiuto), chiudi tutto
+        if (CurrentDialogue->bNeverShowQuestButtons)
+        {
+            EndDialogue();
+            return;
+        }
+        
+        // PRIORITÀ 1: BRANCHES (Se ci sono bivi, mostriamo le scelte)
+        if (CurrentDialogue->bUseBranches && CurrentDialogue->Branches.Num() > 0)
+        {
+            if (BtnNext) BtnNext->SetVisibility(ESlateVisibility::Collapsed);
+            ShowBranches();
+        }
+        // PRIORITÀ 2: QUEST OPZIONALE (Mostra Accept/Decline se non ci sono bivi)
+        else if (bIsOptionalQuest) 
         {
             if (BtnNext) BtnNext->SetVisibility(ESlateVisibility::Collapsed);
             if (BtnAccept) 
-            {
-                BtnAccept->SetVisibility(ESlateVisibility::Visible);
-                BtnAccept->SetFocus(); 
+            { 
+                BtnAccept->SetVisibility(ESlateVisibility::Visible); 
+                BtnAccept->SetFocus(); // Focus per supporto Gamepad/Tastiera
             }
-            if (BtnDecline) BtnDecline->SetVisibility(ESlateVisibility::Visible);
+            if (BtnDecline) 
+            {
+                BtnDecline->SetVisibility(ESlateVisibility::Visible);
+            }
         }
+        // PRIORITÀ 3: FINE DIALOGO STANDARD
         else 
         {
             EndDialogue();
@@ -294,4 +235,54 @@ void UDialogueWidget::FinishLineInstantly()
         TextDialogueContent->SetText(FText::FromString(FullTextCurrentLine));
     }
     // Non incrementiamo CurrentLineIndex qui, lo farà il prossimo click su DisplayNextLine
+}
+
+
+void UDialogueWidget::ShowBranches()
+{
+    // 1. Controlli di sicurezza
+    if (!ChoiceContainer || !CurrentDialogue || !ChoiceButtonClass) return;
+
+    // 2. Prepariamo la UI
+    ChoiceContainer->SetVisibility(ESlateVisibility::Visible);
+    ChoiceContainer->ClearChildren();
+    
+    // Disabilitiamo il tasto "Next" perché il giocatore deve scegliere tra i bivi
+    if (BtnNext) BtnNext->SetVisibility(ESlateVisibility::Collapsed);
+
+    // 3. Creiamo un bottone per ogni ramo (Branch) definito nel Data Asset
+    for (const FDialogueBranch& Branch : CurrentDialogue->Branches)
+    {
+        // Spawnamo il widget del bottone usando la classe configurata nel .h
+        UDialogueChoiceButton* NewButton = CreateWidget<UDialogueChoiceButton>(this, ChoiceButtonClass);
+        if (NewButton)
+        {
+            // Inizializziamo il bottone con il testo della risposta e il dialogo di destinazione
+            NewButton->Setup(Branch.ReplyText, Branch.NextDialogue, this);
+            
+            // Lo aggiungiamo alla VerticalBox
+            ChoiceContainer->AddChildToVerticalBox(NewButton);
+        }
+    }
+}
+
+void UDialogueWidget::OnBranchSelected(UDialogueAsset* NextDialogue)
+{
+   // Puliamo la UI delle scelte
+    if (ChoiceContainer)
+    {
+        ChoiceContainer->ClearChildren();
+        ChoiceContainer->SetVisibility(ESlateVisibility::Collapsed);
+    }
+
+    // Se la scelta porta a un nuovo dialogo, lo facciamo partire
+    if (NextDialogue)
+    {
+        StartDialogue(NextDialogue);
+    }
+    else
+    {
+        // Se la scelta non ha un dialogo successivo, chiudiamo la conversazione
+        EndDialogue();
+    }
 }

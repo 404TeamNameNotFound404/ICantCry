@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "ICantCry/ICC/Narrative/Data/DialogueAsset.h"
 #include "ICantCry/ICC/Narrative/Data/NPCProfile.h"
 #include "ICantCry/ICC/Narrative/GameplayEvent.h"
 #include "Components/TextBlock.h"
@@ -15,6 +14,7 @@
 
 
 class UDialogueAsset;
+class UDialogueChoiceButton;
 
 /**
  * CLASSE: UDialogueWidget
@@ -36,6 +36,9 @@ public:
 
 	void ApplyDialogueStyle();
 
+	// Funzione chiamata quando si preme un bottone di scelta
+	UFUNCTION() void OnBranchSelected(UDialogueAsset* NextDialogue);
+
 protected:
 	virtual void NativeConstruct() override;
 
@@ -49,6 +52,7 @@ protected:
     //bottoni per la scelta
     UPROPERTY(meta = (BindWidget)) UButton *BtnAccept;
     UPROPERTY(meta = (BindWidget)) UButton* BtnDecline;
+	UPROPERTY(meta = (BindWidget))UVerticalBox* ChoiceContainer;
 
 	// --- Logica Interna ---
 	UFUNCTION(BlueprintCallable, Category = "Narrative|Dialogue") void DisplayNextLine();
@@ -56,10 +60,13 @@ protected:
     UFUNCTION(BlueprintCallable, Category = "Narrative|Dialogue") void OnDeclineClicked();
 	UFUNCTION(BlueprintCallable, Category = "Narrative|Dialogue") void EndDialogue();
 	
-
 private:
 
 	UPROPERTY() TObjectPtr<UDialogueAsset> CurrentDialogue;
+	
+	// Classe del widget bottone da spawnare
+	UPROPERTY(EditAnywhere, Category = "Narrative") TSubclassOf<UDialogueChoiceButton> ChoiceButtonClass;
+    
     int32 CurrentLineIndex = 0;
     bool bIsOptionalQuest = false;
 
@@ -70,5 +77,5 @@ private:
 	// Typewriter Effect
     void OnTypewriterTick();
     void FinishLineInstantly(); // Per saltare l'animazione se il player clicca "Next"
-	
+	void ShowBranches();
 };
