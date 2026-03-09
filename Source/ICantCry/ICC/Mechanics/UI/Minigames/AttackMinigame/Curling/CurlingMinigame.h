@@ -31,8 +31,7 @@ protected:
 	UPROPERTY(meta=(BindWidget)) UImage* NotBadFrontierUp; // Blue border up
 	UPROPERTY(meta=(BindWidget)) UImage* GoodFrontierUp; // White border up
 	UPROPERTY(meta=(BindWidget)) UImage* GoodFrontierBottom; // White border bottom
-	UPROPERTY(meta=(BindWidget)) UImage* PerfectFrontierUp; // Red border up
-	UPROPERTY(meta=(BindWidget)) UImage* PerfectFrontierBottom; // Red border bottom
+	UPROPERTY(meta=(BindWidget)) UImage* PerfectFrontier; // Red border bottom
 	
 	// Curling Field Setup
 	UPROPERTY(meta=(BindWidget)) UImage* BlueFieldSide;
@@ -58,6 +57,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"), Category="Minigame") float BadScoreRange = 500.0f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"), Category="Minigame") float GoodScoreRange = 200.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"), Category="Minigame") float PerfectScoreRange = 40.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"), Category="Minigame") float BadScoreRangeMax = 500.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"), Category="Minigame") float GoodScoreRangeMax = 500.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"), Category="Minigame") float PerfectScoreRangeMax = 500.0f;
 	
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
@@ -78,4 +81,6 @@ private:
 	void Process();
 	
 	float GetPercentFromImage(UImage* Image);
+	
+	FString GetThresholdName(const EMinigameThreshold& Threshold) const;
 };
