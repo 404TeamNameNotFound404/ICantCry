@@ -28,7 +28,7 @@ void UCurlingMinigame::MoveSlider(const FVector2D& Position)
 {
 	float Percentage = Slider->GetPercent();
 	
-	if (/*ScrollValue > 0*/const bool InputPressed = Instance->GetCurrentPlayer()->GetBinder()->GetIsCurlingPressed();
+	if (const bool InputPressed = Instance->GetCurrentPlayer()->GetBinder()->GetIsCurlingPressed();
 		InputPressed)
 	{
 		bPressed = true;
@@ -47,16 +47,7 @@ void UCurlingMinigame::MoveSlider(const FVector2D& Position)
 		{
 			Process();
 		}
-		
 	}
-	
-	/**		
-	Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
-	Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
-	Instance->GetCurrentPlayer()->GetBinder()->SetDecreaseMinigameScrollValue(false);
-	HandleScore();
-	Instance->GetCurrentPlayer()->GetMinigameHandler()->EndMinigame();
-	 */
 }
 
 void UCurlingMinigame::HandleScore()
@@ -65,9 +56,16 @@ void UCurlingMinigame::HandleScore()
 	{
 	default:
 	case Miss:
-	case Bad:
 		{
 			Instance->GetRuntimeStats().MinigameModifier = 0.5f;
+			Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+			Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
+			DebugHelper::LogMessage(9, FColor::Black, "Miss curling minigame score");
+		}
+		break;
+	case Bad:
+		{
 			Instance->GetRuntimeStats().MinigameModifier = 0.5f;
 			Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 			Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
@@ -78,7 +76,7 @@ void UCurlingMinigame::HandleScore()
 					EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
 			}
 			
-			DebugHelper::LogMessage(9, FColor::Black, "Bad anger minigame score");
+			DebugHelper::LogMessage(9, FColor::Black, "Not Bad curling minigame score");
 			break;
 		}
 	case Good:
@@ -94,7 +92,7 @@ void UCurlingMinigame::HandleScore()
 					EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
 			}
 			
-			DebugHelper::LogMessage(9, FColor::Black, "Good anger minigame score");
+			DebugHelper::LogMessage(9, FColor::Black, "Good curling minigame score");
 			break;
 		}
 		
@@ -111,7 +109,7 @@ void UCurlingMinigame::HandleScore()
 					EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
 			}
 		
-			DebugHelper::LogMessage(9, FColor::Black, "Perfect anger minigame score");
+			DebugHelper::LogMessage(9, FColor::Black, "Perfect curling minigame score");
 			break;
 		}
 	}
@@ -120,20 +118,26 @@ void UCurlingMinigame::HandleScore()
 EMinigameThreshold UCurlingMinigame::CheckBar()
 {
 	const float P = Slider->GetPercent();
-	constexpr float Center = 0.5f;
-
-	const float Distance = FMath::Abs(P - Center);
-
-	if (Distance <= PerfectScoreRange)
+	
+	if (P >= PerfectScoreRange && P <= PerfectScoreRangeMax) 
+	{
 		return EMinigameThreshold::Perfect;
-
-	if (Distance <= GoodScoreRange)
+	}
+	
+	else if (P >= GoodScoreRange && P <= GoodScoreRangeMax)
+	{
 		return EMinigameThreshold::Good;
-
-	if (Distance <= BadScoreRange)
+	}
+	
+	else if (P >= BadScoreRange && P <= BadScoreRangeMax)
+	{
 		return EMinigameThreshold::Bad;
+	}
+	
+	DebugHelper::LogMessage(6, FColor::White, "Bar y pos " + FString::SanitizeFloat(Slider->GetPercent()));
 
 	return EMinigameThreshold::Miss;
+	
 }
 
 void UCurlingMinigame::Flow()
@@ -206,4 +210,20 @@ float UCurlingMinigame::GetPercentFromImage(UImage* Image)
 	const float NormalizedPercent = RelativePos.X / SliderGeo.GetLocalSize().X;
 
 	return FMath::Clamp(NormalizedPercent, 0.0f, 1.0f);
+}
+
+FString UCurlingMinigame::GetThresholdName(const EMinigameThreshold& Threshold) const
+{
+	switch (Threshold)
+	{
+	case Bad:
+		return "Bad";
+	case Good:
+		return "Good";
+	case Perfect:
+		return "Perfect";
+	default:
+	case Miss:
+		return "MISS";
+	}
 }

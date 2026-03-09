@@ -117,16 +117,11 @@ void AMinigameHandler::StartMinigame(UBulletData* BulletData, const bool& Enable
 				default:
 				case Indifference:
 				case AngerDv:
-				case AngerEv:
-				case FearEV:
-				case JoyEv:
-				case CalmEV:
 				case Shame:
 					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["GuitarHero 4"]);
 					CastedWidget = Cast<UNoteHighwayMinigame>(CurrentMinigameDisplayed);
-				case JealousyEv:
-				case DisgustEv:
-				case SadnessEv:
+
+				
 				case FearDv:
 				case Disgust:
 					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["GuitarHero 2"]);
@@ -143,6 +138,14 @@ void AMinigameHandler::StartMinigame(UBulletData* BulletData, const bool& Enable
 					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["GuitarHero 3"]);
 					CastedWidget = Cast<UNoteHighwayMinigame>(CurrentMinigameDisplayed);
 					break;
+					
+				case JoyEv:
+				case CalmEV:
+				case AngerEv:
+				case FearEV:
+				case SadnessEv:
+				case JealousyEv:
+				case DisgustEv:
 				case CalmDv:
 					break;
 				case JealousyDv:
