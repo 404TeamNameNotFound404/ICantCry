@@ -60,22 +60,18 @@ void UEvent_ChangeLevel::ExecuteEvent_Implementation(AICC_Player* Player, UObjec
     else
     {
         // --- MODIFICA QUI: MODALITÀ BATTAGLIA/NPC ---
+        // TODO RIVEDERE QUESTA PARTE
         
         if (GI)
         {
-            // 2. SALVATAGGIO: Diciamo al GameInstance di ricordarsi DOVE siamo ora (davanti all'NPC)
-            // Usiamo le stesse funzioni che usa il tuo EncounterManager
-            GI->SavePlayerTransformBegin(Player->GetActorTransform());
+            // CORREZIONE: Passiamo il puntatore al Player e 'true' per confermare il salvataggio
+            GI->SavePlayerTransformBegin(Player, true); 
+
+            // Questa riga invece era già corretta perché accetta Player, Location e Rotation separati
             GI->StoreLastPlayerTransform(Player, Player->GetActorLocation(), Player->GetActorRotation());
-            
-            DebugHelper::LogSuccess(FString::Printf(TEXT("Posizione salvata prima della battaglia: %s"), *Player->GetActorLocation().ToString()));
         }
 
-        // 3. CAMBIO LIVELLO: Andiamo alla mappa battaglia.
-        // NOTA: Qui passiamo FALSE! 
-        // Vogliamo che nella mappa battaglia il player usi il PlayerStart dell'arena,
-        // non che venga ricreato sulle coordinate del mondo esterno (finirebbe nel vuoto).
-        DebugHelper::LogSuccess("Event_ChangeLevel: Caricamento Arena (Posizione memorizzata per il ritorno)");
+        DebugHelper::LogSuccess("Event_ChangeLevel: Uso posizione di default (RecreatePlayer)");
         USceneLoader::LoadSceneByName(Player, FName(*MapName), false);
     }
 }
