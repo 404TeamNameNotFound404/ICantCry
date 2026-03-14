@@ -17,6 +17,11 @@
 #include "../Mechanics/Core/Data/PlayerStats.h"
 
 #include "../UI/StatsButtonWidget.h"
+#include "../UI/QuestEntryWidget.h"
+
+#include "../Narrative/Core/QuestManagerSystem.h"
+#include "../Narrative/Data/QuestDefinition.h"
+#include "../Narrative/UI/QuestLog_Row.h"
 
 #include "CharacterUI.generated.h"
 
@@ -35,6 +40,8 @@ public:
 
 	virtual void NativeConstruct() override;
 
+	virtual void NativeDestruct() override;
+
 public: 
 
 	/**
@@ -42,16 +49,21 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Character UI") void RefreshUI();
 
+	UFUNCTION(BlueprintCallable, Category = "Quest System") void ClearQuestDetails();
+
+
+	UFUNCTION(BlueprintCallable, Category = "Quest System") void DisplayQuestDetails(const FQuestProgress& Details);
+    
 protected:
 
 
 	// LEFT
-	// UPROPERTY(meta = (BindWidget))	UButton* MainQuest;
-	// UPROPERTY(meta = (BindWidget))	UButton* SideQuest;
-	UPROPERTY(meta = (BindWidget))	UScrollBox* ScrollBoxQuest;
-	UPROPERTY(meta = (BindWidget))	UTextBlock* QuestsDesctiption;
-
-
+	UPROPERTY(meta = (BindWidget))	UScrollBox* MainQuestScrollBox;
+	UPROPERTY(meta = (BindWidget))	UScrollBox* SideQuestScrollBox;
+	UPROPERTY(meta = (BindWidget))	UTextBlock* TextQuestTitle;
+	UPROPERTY(meta = (BindWidget))	UTextBlock* TextQuestDescription;
+	UPROPERTY(meta = (BindWidget))	UVerticalBox* VerticalBoxObjectives;
+    
 	// CENTER
 	UPROPERTY(meta = (BindWidget))	UImage* CharacterImage;
 	//UPROPERTY(meta = (BindWidget))	UTextBlock* StatsDescription;
@@ -78,6 +90,25 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
     TSubclassOf<class UStatsButtonWidget> StatsButton;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Narrative", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class UQuestEntryWidget> QuestEntryClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Quest", meta = (AllowPrivateAccess = "true"))
+    TSubclassOf<UUserWidget> ObjectiveRowClass;
+
+
+	UFUNCTION() void OnQuestSystemUpdated();
+    
+
+	UPROPERTY(EditAnywhere, Category = "Quest System")
+    FGameplayTag MainTag; // Imposta a Quest.Type.Main
+
+    UPROPERTY(EditAnywhere, Category = "Quest System")
+    FGameplayTag SideTag; // Imposta a Quest.Type.Side
+
+	UPROPERTY(EditAnywhere, Category = "Quest System")
+	FGameplayTag CurrentSelectedQuestTag;
+
 
 private:
 
@@ -94,12 +125,15 @@ private:
 	/**
 	 * refresh the quest part, of some quest has done or not
 	 */
-	UFUNCTION() void UpdateQuests();
+	
+	UFUNCTION(BlueprintCallable, Category = "Quest") void UpdateQuests();
 
 	/**
 	 * refresh the ui with the new level of the XpBar
 	 */
 	UFUNCTION() void UpdateExpBar();
+
+	
 
 
 

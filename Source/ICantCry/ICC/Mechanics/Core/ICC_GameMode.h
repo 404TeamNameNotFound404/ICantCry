@@ -5,6 +5,10 @@
 #include "CoreMinimal.h"
 #include "Dontdestroyonload/ICantCryGameInstance.h"
 #include "GameFramework/GameMode.h"
+#include "GameFramework/PlayerStart.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameplayTagAssetInterface.h"
+#include "EngineUtils.h"
 #include "ICC_GameMode.generated.h"
 
  /**
@@ -17,8 +21,11 @@ class ICANTCRY_API AICC_GameMode : public AGameMode
 
 protected:
 	virtual void BeginPlay() override;
+
+	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 	
 private:
 	UPROPERTY()
 	UICantCryGameInstance* GameInstance;
+
 };
