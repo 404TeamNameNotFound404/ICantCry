@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "ICantCry/ICC/Actors/Bullet/BulletData.h"
 #include "MinigameHandler.generated.h"
 
 /**
@@ -38,6 +39,8 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable)
 	void StartMinigame(const bool& EnableAttack = true);
+	
+	void StartMinigame(UBulletData* BulletData , const bool& EnableAttack = true);
 
 	/**
 	 * Close the minigame once it's finished. Must be called at the end of each minigame
@@ -62,9 +65,15 @@ public:
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Minigame", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> AttackMinigame;
+	
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly , Category = "Minigame", meta = (AllowPrivateAccess = "true"))
+	TMap<FString, TSubclassOf<UUserWidget>> MinigameClasses;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Minigame", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> DefenseMinigame;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Minigame", meta = (AllowPrivateAccess = "true"))
+	USoundBase* CtvFx;
 
 	/**
 	 * Display the current minigame displayed

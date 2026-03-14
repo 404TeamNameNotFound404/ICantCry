@@ -24,11 +24,10 @@ EBTNodeResult::Type UBTTask_Heal::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	checkf(Current, TEXT("Current Mob is invalid heal execute task"));
 	
 	
-	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " uses Heal"));
 	DebugHelper::AddMessageToLog("[Behavior Tree - Heal]: " + Current->GetActorLabel() + " uses Heal");
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
-	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
 	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetActorLabel() + " uses heal"));
+	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
 	FDecisionMaker DecisionMaker;
 	DecisionMaker.DecisionMap.Add(EDecision::HealItSelf, 0.70f); // from 0.0 to 0.7 heal itself 70%
 	DecisionMaker.DecisionMap.Add(EDecision::HealOther, 0.30f); // from 0.7 to 1.0 heal other  7%

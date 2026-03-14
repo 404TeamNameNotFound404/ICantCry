@@ -73,12 +73,6 @@ public:
     // Ammo Display
     UPROPERTY(meta = (BindWidget)) UImage* Magazine;
 	UPROPERTY(meta=(BindWidget)) UTextBlock* OutOfBulletTxt;
-    // UPROPERTY(meta = (BindWidget)) UImage* Ammo_1;
-    // UPROPERTY(meta = (BindWidget)) UImage* Ammo_2;
-    // UPROPERTY(meta = (BindWidget)) UImage* Ammo_3;
-    // UPROPERTY(meta = (BindWidget)) UImage* Ammo_4;
-    // UPROPERTY(meta = (BindWidget)) UImage* Ammo_5;
-    // UPROPERTY(meta = (BindWidget)) UImage* Ammo_6;
 
     // Targetting
     UPROPERTY(meta = (BindWidget)) UImage* Crosshair;
@@ -126,6 +120,8 @@ public:
 	UPROPERTY(meta = (BindWidget)) UMagazineBullet* MagazineBullet5;
 	
 	UPROPERTY(meta = (BindWidget)) UCanvasPanel* CanvasBulletStats;
+	
+	UPROPERTY(meta = (BindWidget)) UImage* CTR;
 
 	UPROPERTY() TArray<UImage*> PistolMagazines;
 
@@ -146,6 +142,10 @@ public:
 	AMob* GetCurrentPlayingEmotion() const;
 	AMob* GetSelectedEmotion() const;
 	AICC_Actor* GetSelectedActor() const;
+
+	UBulletSelector* GetBulletSelector() const;
+	UBulletSelector* GetHoveredSelectedBullet() const;
+	void SetHoveredSelectedBullet(UBulletSelector* Hovered);
 	
 	/**
 	 * Proceed to the battle phase
@@ -203,15 +203,43 @@ public:
 	void EnableButtonsAfterShooting();
 
 	void RefreshBulletMagazine();
-	void ResetBulletMagazine();
+	void RefreshPistolMagazine();
+	void ResetPistolMagazine();
 	void ResetAp();
 	void RequestBulletPreparation();
+
+	int32 GetSelectedBulletIndex() const;
+	void SetSelectedBulletIndex(const int32& Value);
 
 	/**
 	 * Reset the hud and all it's call at game over's retry
 	 */
 	void Reset(const TMap<TEnumAsByte<EBulletType>, FBullet>& Bullets);
 
+	UFUNCTION()
+	void IncreaseShootPower();
+
+	UFUNCTION()
+	void DecreaseShootPower();
+
+	void MoveFocusOn(const float& Value);
+
+	UFUNCTION() void ConfirmBulletSelection();
+	
+	UAPBar* GetAPBar() const;
+	
+	void IncreaseAP(const int& Amount);
+	void DecreaseAP(const int& Amount);
+
+	/**
+	 * Check if the current bullet to shot is a EV one
+	 */
+	UPROPERTY() bool bIsEvFirst = false;
+	
+	
+protected:
+	UFUNCTION(BlueprintPure) FText UpdateBulletName();
+	
 private:
 
     UPROPERTY() ABattleHandler*  BattleHandler = nullptr;
@@ -225,6 +253,10 @@ private:
     int32 CurrentEnemyIndex = 0;
     int32 SelectedBulletIndex = 0;
     int32 CurrentRevolverSlot = 0;
+
+	UPROPERTY()
+	int32 CachedBulletQuantity = 0;
+	
     UPROPERTY(EditDefaultsOnly, Category = "Bullets") int32 MaxRevolverSlots = 6;
 	
     UPROPERTY() UBulletData* CurrentBulletData;
@@ -245,7 +277,7 @@ private:
 	// UImage* Bullet_3;
 
 	UPROPERTY(meta = (BindWidget))
-	UHorizontalBox* BulletPanel;
+	UCanvasPanel* BulletPanel;
 
 	UPROPERTY(meta=(BindWidget))
 	USizeBox* VisualizerSlot;
@@ -258,13 +290,11 @@ private:
 	bool bSelectTarget = false;
 
     // UI Functions
-	void IncreaseAP(const int& Amount);
-	void DecreaseAP(const int& Amount);
+	
     void UpdateAPBar();
     
     // Button Handlers
     UFUNCTION() void OnShootPressed();
-    UFUNCTION() void OnShootBoostPressed();
     UFUNCTION() void OnFocusPressed();
     UFUNCTION() void OnReloadPressed();
     UFUNCTION() void OnPassPressed();
@@ -273,7 +303,9 @@ private:
 	void ReflectBullets();
 	
 	UFUNCTION() void UpdateBulletIcons(const TArray<FInventoryItem>& InventoryItems);
-	
+
+	void ApplyBulletDisplayerFocus();
+	void RevertBulletDisplayerFocus();
     
     // Targetting
     
@@ -281,7 +313,6 @@ private:
     UFUNCTION() void UpdateBulletSelection();
 	UFUNCTION() void UpdateBulletInfo(UBulletData* BulletData);
     UFUNCTION() void UpdateTargetInfo(const FString& EnemyName, UBulletData* BulletData = nullptr); 
-    UFUNCTION() void ConfirmBulletSelection();
     UFUNCTION() void SwitchToBattleUI();
 	UFUNCTION()	void SetSelectedBullet(int32 Index);
 	UFUNCTION() void UpdateRevolverUI();
@@ -300,6 +331,9 @@ private:
 
 	UPROPERTY()
 	UBulletSelector* CurrentSelectedBullet;
+
+	UPROPERTY()
+	UBulletSelector* HoveredSelectedBullet;
 
 	// this variable will handle the target selection and will proceed to start the minigame
 	UPROPERTY()
@@ -326,14 +360,6 @@ private:
 	 */
 	UPROPERTY()
 	int32 ApPowerBoost = 0;
-	
-	UFUNCTION()
-	void IncreaseShootPower();
-
-	UFUNCTION()
-	void DecreaseShootPower();
-
-	
 
 	/*
 	 *-------------------------------------------------------
@@ -356,6 +382,7 @@ private:
 	AMob* RetrieveSelectedTarget();
 	void PrepareToEngageEv(const EBuffStatus& BuffToReceive);
 	void PrepareToEngageEv(const EAfflictedStatus& StatusToInflict);
+	void PrepareToEngageEv(const EDebuffStatus& StatusToDebuff);
 
 	/**
 	 *-----------------------------
@@ -371,11 +398,20 @@ private:
 
 	UPROPERTY()
 	UGameOverVisualizer* GameOverVisualizer = nullptr;
+
+	UPROPERTY()
+	UWidget* CurrentFocusedWidget = nullptr;
 	
 	/**
 	 * -----------------------------------
 	 *         END BATTLE
 	 * ----------------------------------
 	 */
+
+	// Gamepad shit
+	UPROPERTY() TArray<UWidget*> ActionPhaseButtons;
+	UPROPERTY() TArray<UWidget*> BulletPhaseButtons;
+	UPROPERTY() int32 CurrentWidgetIndex = 0;
+	UPROPERTY() bool bNavigatingBullets = true;
 	
 };

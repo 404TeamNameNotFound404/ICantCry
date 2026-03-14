@@ -30,6 +30,11 @@ void UBulletSelector::DisplayBulletInfo() // NB no need to display quantity here
 	{
 		return;
 	}
+
+	if (!DebugHelper::IsGamepadPlugged())
+	{
+		Player->GetBattleHUD()->SetHoveredSelectedBullet(this);
+	}
 	
 	Player->GetBattleHUD()->BulletName->SetText(FText::FromString(BulletRefPtr->GetBulletData()->BulletName));
 	Player->GetBattleHUD()->Description->SetText(FText::FromString(BulletRefPtr->GetBulletData()->Description));
@@ -115,6 +120,16 @@ void UBulletSelector::SetCanSelect(const bool& InCanSelect)
 	gCanSelect = InCanSelect;
 }
 
+bool UBulletSelector::CanBeSelected() const
+{
+	return bCanSelect;
+}
+
+void UBulletSelector::SetCanBeSelected(const bool& Value)
+{
+	bCanSelect = Value;
+}
+
 void UBulletSelector::SetCanSelectBullet(const bool& InCanSelect)
 {
 	bCanSelect = InCanSelect;
@@ -123,6 +138,11 @@ void UBulletSelector::SetCanSelectBullet(const bool& InCanSelect)
 	{
 		Button->SetIsEnabled(bCanSelect);
 	}
+}
+
+UButton* UBulletSelector::GetButton()
+{
+	return Bullet;
 }
 
 void UBulletSelector::NativeConstruct()
@@ -142,95 +162,83 @@ void UBulletSelector::NativeConstruct()
 
 void UBulletSelector::AddToRevolver()
 {
-	// if (!gCanSelect)
-	// {
-	// 	return;
-	// }
-	
-	DebugHelper::LogSuccess("Bullet " +  BulletRefPtr->GetBulletData()->BulletName + " inserted");
-
-	if (BulletRefPtr->GetQuantity() <= 0)
+	if (DebugHelper::IsGamepadPlugged())
 	{
-		DebugHelper::LogWarning(BulletRef.GetBulletData()->BulletName + " is empty");
-		return;
+		if (!bCanSelect)
+		{
+			DebugHelper::LogError("b is not selected");
+			return;
+		}
+	
+		if (const UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletSelector() != this)
+		{
+			DebugHelper::LogError("b is not this");
+			return;
+		}
+		
+		if (AICC_PlayerController* PC = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController()); PC)
+		{
+			const FInputModeGameAndUI InputMode;
+			PC->SetInputMode(InputMode);
+
+			PC->bEnableClickEvents = true;
+			PC->bEnableMouseOverEvents = true;
+			PC->bShowMouseCursor = false;
+			PC->GetLocalPlayer()->ViewportClient->SetMouseCaptureMode(EMouseCaptureMode::NoCapture);
+		}
+		
 	}
 
+	UCircularBulletBuffer* Buffer = Player->GetBattleHUD()->GetCircularBulletBuffer();
+
+	if (Buffer->IsEmpty())
+	{
+		Buffer->Clear();
+	}
+	
+	if (const bool bIsEmpty = BulletRefPtr->GetQuantity() <= 0; bIsEmpty)
+	{
+		DebugHelper::LogWarning(BulletRefPtr->GetBulletData()->BulletName + " is empty");
+	}
+	
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	
+	if ((DebugHelper::IsGamepadPlugged() && Player->GetBattleHUD()->GetCircularBulletBuffer()->IsFull()) ||
+		(DebugHelper::IsGamepadPlugged() && Instance->GetInventory().BulletsStored.IsEmpty()))
+	{
+		Player->GetBinder()->SetIsNavigatingInsideWidget(false); 
+		Player->GetBinder()->FocusOn(Player->GetBattleHUD()->GetBulletDisplayer()->GetBulletConfirmGamepad());
+	}
+	
 	if (Player->GetBattleHUD()->GetCircularBulletBuffer()->IsFull())
 	{
 		DebugHelper::LogWarning("Revolver is already full");
 		return;
 	}
 	
-	Player->GetBattleHUD()->GetCircularBulletBuffer()->AddBullet(BulletRefPtr->GetBulletData());
-	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	Buffer->AddBullet(BulletRefPtr->GetBulletData());
+	
 
 	BulletRefPtr->SetQuantity(BulletRefPtr->GetQuantity() - 1);
-	DebugHelper::LogMessage(8, FColor::Red, "Decreasing quantity of " + BulletRefPtr->GetBulletData()->BulletName + ": " + FString::FromInt(BulletRefPtr->GetQuantity()));
 	
-	const TArray<URevolverSlot*>& Slots = Player->GetBattleHUD()->RevolverSlots;
 	const TArray<UImage*>& PistolMagazines = Player->GetBattleHUD()->PistolMagazines;
 	const TArray<UMagazineBullet*>& MagazineBullets = Player->GetBattleHUD()->MagazineBullets;
 	
-	UCircularBulletBuffer* Buffer = Player->GetBattleHUD()->GetCircularBulletBuffer();
 	const int32 NumSlots = MagazineBullets.Num();
-	const int32 NumBullets = Buffer->GetCount();
-	const int32 Count = Buffer->GetCount();
-	int32 FilledSlots = 0;
 
-	for (int32 i = 0; i < Buffer->GetCount(); ++i)
+	for (int32 i = 0; i < NumSlots; ++i)
 	{
+		UMagazineBullet* MagazineSlot = MagazineBullets[i];
+
 		const int32 BufferIndex = (Buffer->GetTailIndex() + i) % Buffer->GetCapacity();
 		UBulletData* BulletData = Buffer->PeekAt(BufferIndex);
 
-		if (!BulletData)
-		{
-			continue;
-		}
-
-		if (FilledSlots >= NumSlots)
-			break;
-
-		UMagazineBullet* MagazineSlot = MagazineBullets[FilledSlots];
+		MagazineSlot->SetEnableRemoval(BulletData != nullptr);
 		MagazineSlot->Setup(Buffer, BulletData, BufferIndex);
-		MagazineSlot->SetRenderOpacity(1.0f);
-		MagazineSlot->GetMagazineBulletButton()->SetBackgroundColor(BulletData->DisplayColor);
-		MagazineSlot->GetMagazineBulletButton()->SetIsEnabled(true);
-
-		FilledSlots++;
 	}
 
-	for (int32 i = FilledSlots; i < NumSlots; ++i)
-	{
-		if (UMagazineBullet* MagazineSlot = MagazineBullets[i]; MagazineSlot->GetMagazineBulletButton()->GetIsEnabled())
-		{
-			MagazineSlot->Setup(Buffer, nullptr, -1);
-			MagazineSlot->SetRenderOpacity(0.25f);
-			MagazineSlot->GetMagazineBulletButton()->SetBackgroundColor(FLinearColor::Transparent);
-			MagazineSlot->GetMagazineBulletButton()->SetIsEnabled(false);
-		}
-	}
-
-	for (int32 i = 0; i < PistolMagazines.Num(); ++i)
-	{
-		const int32 BufferIndex = (Player->GetBattleHUD()->GetCircularBulletBuffer()->GetTailIndex() + i) % Player->GetBattleHUD()->GetCircularBulletBuffer()->GetCapacity();
-		const UBulletData* BulletData = Player->GetBattleHUD()->GetCircularBulletBuffer()->PeekAt(BufferIndex);
-
-		if (const UImage* BulletImage = PistolMagazines[i]; BulletImage)
-		{
-			if (BulletData)
-			{
-				PistolMagazines[i]->SetBrushTintColor(FSlateColor{FColor::White});
-				PistolMagazines[i]->SetColorAndOpacity(FLinearColor::White);
-				PistolMagazines[i]->SetBrushFromTexture(BulletData->Icon, true);
-			}
-			else
-			{
-				PistolMagazines[i]->SetBrushFromTexture(nullptr);
-			}
-		}
-	}
-	
-	Player->GetBattleHUD()->RefreshBulletMagazine();
+	Player->GetBattleHUD()->RefreshPistolMagazine();
 }
 
 

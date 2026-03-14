@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "TurnBasedSystem.h"
+#include "ICantCry/ICC/Input/ICC_PlayerController.h"
 #include "ICantCry/ICC/Mechanics/UI/BattleNotifiers/BattleInfo.h"
 #include "ICantCry/ICC/Managers/EnemySpawnManager.h"
 #include "BattleHandler.generated.h"
@@ -27,6 +28,17 @@ public:
 
 	AEnemySpawnManager* GetEnemySpawnManager();
 
+	bool IsControllerPlugged() const;
+	
+	void Fire(const FVector& DeltaLocation ,const FLinearColor& Color);
+	
+	void SimulateHurt(const FLinearColor& Color);
+	
+	void SimulateAura(AICC_Actor* Target ,const float& SpawnRate ,const FLinearColor& Color);
+	void IncreaseAura(const float& Value);
+	void DecreaseAura(const float& Value);
+	void DeactivateAura();
+
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UTurnBasedSystem* TurnBasedSystem;
@@ -34,10 +46,55 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category= "Battle Info" ,meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UBattleInfo> BattleInfoWidget ;
 
+	/**
+	 * Shoot VFX
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle VFX", meta=(AllowPrivateAccess="true"))
+	UNiagaraSystem* MuzzleFlash;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle VFX", meta=(AllowPrivateAccess="true"))
+	UNiagaraSystem* HurtPrefab;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle VFX", meta=(AllowPrivateAccess="true"))
+	UNiagaraSystem* AuraPrefab;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle VFX", meta=(AllowPrivateAccess="true"))
+	float AuraDecreaseValue = 30.f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle VFX", meta=(AllowPrivateAccess="true"))
+	float AuraIncreaseValue = 500.f;
+	
+	UPROPERTY()
+	UNiagaraComponent* Flash;
+	
+	UPROPERTY()
+	UNiagaraComponent* Aura;
+	
+	UPROPERTY()
+	FVector BeamPosition;
 
+	UPROPERTY()
+	bool bControllerPlugged = false;
+	
 	UPROPERTY()
 	UBattleInfo* BattleInfo;
 
 	UPROPERTY()
 	AEnemySpawnManager* SpawnManager;
+
+	UPROPERTY()
+	AICC_PlayerController* PC;
+	
+	UPROPERTY()
+	bool bMovingMuzzle;
+	
+	UPROPERTY()
+	UICantCryGameInstance* Instance;
+	
+	UPROPERTY()
+	FVector StartVfxShootLocation;
+	
+	UPROPERTY() FTimerHandle BeamTimer;
+	
+	void UpdateMuzzleFlashPosition(const FVector& Location);
 };

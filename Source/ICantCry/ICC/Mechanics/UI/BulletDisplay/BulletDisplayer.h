@@ -22,6 +22,9 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	UGridPanel* BulletGrid;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* ConfirmGamepadBtn;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
 	TSubclassOf<UBulletSelector> BulletButtonItemClass;
@@ -40,8 +43,12 @@ public:
 	TArray<UBulletSelector*> GetBullets() const;
 
 	void RefreshBullets();
-
+	
 	void RemoveBullet();
+
+	UGridPanel* GetBulletGrid() const;
+
+	UButton* GetBulletConfirmGamepad() const;
 	
 	/**
 	 * DEBUG ONLY!

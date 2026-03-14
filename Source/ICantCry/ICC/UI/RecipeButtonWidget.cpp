@@ -39,10 +39,6 @@ void URecipeButtonWidget::Setup(const FRecipe& Recipe, UCraftingHUD* InOwnerHUD)
 
     Index = Recipe.Index;
     Name = Recipe.GetName(Recipe.RequiredBlueprintType);
-
-    DebugHelper::LogMessage(5, FColor::FromHex("504B38"),  "Name and Index in widget " + Recipe.GetName(Recipe.RequiredBlueprintType) +  FString::FromInt(Index));
-
-   
 }
 
 

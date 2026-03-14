@@ -23,7 +23,6 @@ void UTurnBasedSystem::Start(UWorld* World)
 	for (TActorIterator<AEnemySpawnManager> It(World); It; ++It)
 	{
 		EnemySpawnManager = *It;
-		DebugHelper::LogSuccess("EnemySpawnManager FOUND");
 		break;
 	}
 
@@ -56,8 +55,6 @@ void UTurnBasedSystem::Start(UWorld* World)
 	
 	
 	CurrentPlayer->GetBattleHUD()->ShowHUD();
-	DebugHelper::LogSuccess("Fight started right after");
-	
 }
 
 void UTurnBasedSystem::Start2(UWorld* World, FBattleMemory* Memory)
@@ -65,7 +62,6 @@ void UTurnBasedSystem::Start2(UWorld* World, FBattleMemory* Memory)
 	for (TActorIterator<AEnemySpawnManager> It(World); It; ++It)
 	{
 		EnemySpawnManager = *It;
-		DebugHelper::LogSuccess("EnemySpawnManager FOUND");
 		break;
 	}
 
@@ -99,13 +95,11 @@ void UTurnBasedSystem::Start2(UWorld* World, FBattleMemory* Memory)
 	FTimerHandle DelayHudHandle;
 	World->GetTimerManager().SetTimer(DelayHudHandle, [this]()
 	{
-		DebugHelper::LogMessage(10, FColor::Black, "Bullet stored " + FString::FromInt(Instance->GetInventory().BulletsStored.Num()));
 		CurrentPlayer->GetBattleHUD()->ShowHUD();
 	}, 5.f, false);
 	
 	// CurrentPlayer->GetBattleHUD()->ShowHUD();
 	DebugHelper::ClearAllLogs();
-	DebugHelper::LogSuccess("Fight started right after");
 	DebugHelper::AddMessageToLog("-----Battle Log-----\n");
 	DebugHelper::AddMessageToLog("[Turn System]: Fight started right after");
 	SetBattlePhase(EBattlePhase::Preparation);
@@ -154,6 +148,7 @@ void UTurnBasedSystem::Update(UWorld* World, FBattleMemory* Memory)
 				DebugHelper::AddTurnMaterialOverlayToStaticMesh(Player->DebugMesh);
 				CurrentPlayer = Player;
 				BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Your Turn"));
+				Instance->GetCurrentPlayer()->GetBinder()->FocusOn(Instance->GetCurrentPlayer()->GetBattleHUD()->Shoot);
 				DebugHelper::AddMessageToLog("[Turn System]: Turn: " +  FString::FromInt(BattleTurnCounter) + " Your turn");
 			}
 		}
@@ -301,6 +296,8 @@ void UTurnBasedSystem::Flow()
 		{
 			Mob->UnlockContentOnDeath();
 			Turn.Queue.RemoveAt(i);
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetAPBar()->IncreaseAP(1);
+			Instance->GetCurrentPlayer()->GetBattleHUD()->IncreaseAP(1);
 			DebugHelper::LogWarning("Mob removed from queue due to death.");
 			DebugHelper::AddMessageToLog("[Turn System]: " + Mob->GetActorLabel() + " died RIP.");
 		}
@@ -378,7 +375,8 @@ void UTurnBasedSystem::Reload()
 	bVictory = false;
 	bIsPlayerTurn = false;
 	bIsAiTurn = false;
-	Instance->GetRuntimeStats().ApModifier = 0;
+	Instance->GetCurrentPlayer()->GetStatusTracker()->Reset();
+	Instance->GetRuntimeStats().ApModifier = 1;
 	Instance->GetPlayerStats()->RuntimeStats = Instance->GetRuntimeStats();
 	Instance->GetCurrentPlayer()->GetBattleHUD()->SetBulletSetupFinished(false);
 	Turn.CurrentTurn = 0;

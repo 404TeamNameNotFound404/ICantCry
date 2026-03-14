@@ -114,6 +114,11 @@ void UAPBar::SetPreviewAP(const int32& Value)
 	DebugHelper::LogWarning("Ap wasted " + FString::FromInt(CurrentAp));
 }
 
+int32 UAPBar::GetCurrentAP() const
+{
+	return CurrentAp;
+}
+
 void UAPBar::NativeConstruct()
 {
 	Super::NativeConstruct();

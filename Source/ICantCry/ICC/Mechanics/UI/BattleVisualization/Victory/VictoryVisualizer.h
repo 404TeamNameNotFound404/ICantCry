@@ -69,6 +69,8 @@ public:
 	UTextBlock* GetEssenceDrop2() const;
 	UTextBlock* GetEssenceDrop3() const;
 
+	UButton* GetButton() const;
+
 private:
 	int32 CalculateExp(const TArray<AICC_Actor*>& Queue);
 

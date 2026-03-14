@@ -25,7 +25,6 @@ void AEnemySpawnManager::BeginPlay()
 	for (TActorIterator<AESpawner> It(GetWorld()); It; ++It)
 	{
 		SpawnPoints.Add(*It);
-		DebugHelper::LogSuccess( "Added " + It->GetActorLabel());
 	}
 	
 }
@@ -132,19 +131,11 @@ void AEnemySpawnManager::ResetBattle(AMob* Emotion)
     Instance->GetCurrentPlayer()->GetBattleHUD()->ResetHealth();
     Instance->GetCurrentPlayer()->GetBattleHUD()->ResetAp();
     // Instance->GetCurrentPlayer()->GetBattleHUD()->Reset(Memory.InBattleBullets);
-
-    DebugHelper::LogMessage(
-        10,
-        FColor::Purple,
-        Emotion->GetActorLabel() + " fully reset"
-    );
 }
 
 void AEnemySpawnManager::Spawn()
 {
 	const int32 Aleatory = RandomSpawn(GetRandomSpawnType());
-
-	DebugHelper::LogMessage(5, FColor::Cyan, "Will spawn " + FString::FromInt(Aleatory) + " enemies");
 
 	TArray<AESpawner*> ValidSpawnPoints;
 	for (AESpawner* Point : SpawnPoints)
@@ -162,7 +153,6 @@ void AEnemySpawnManager::Spawn()
 	}
 
 	Algo::RandomShuffle(ValidSpawnPoints);
-	DebugHelper::LogError("Shuffled valid spawn points count: " + FString::FromInt(ValidSpawnPoints.Num()));
 
 	for (int32 i = 0; i < Aleatory; ++i)
 	{
@@ -183,8 +173,6 @@ void AEnemySpawnManager::Spawn()
 
 		if (Enemy)
 		{
-			DebugHelper::LogWarning("Now spawning " + Enemy->GetData()->EnemyName.ToString());
-
 			//AAIController* AIController = Cast<AAIController>(Enemy->GetController());
 			AICC_AIController* AIController = Cast<AICC_AIController>(Enemy->GetController());
 

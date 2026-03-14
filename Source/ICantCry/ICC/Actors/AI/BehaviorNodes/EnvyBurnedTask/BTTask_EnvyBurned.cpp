@@ -34,6 +34,7 @@ EBTNodeResult::Type UBTTask_EnvyBurned::ExecuteTask(UBehaviorTreeComponent& Owne
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Target->GetActorLabel() + " in EnvyBurned state!"));
 	DebugHelper::AddMessageToLog("[Behavior Tree - EnvyBurned]: " + Target->GetActorLabel() + " in EnvyBurned state!");
 	
+	Target->GetStatusTracker()->MalusFlow(EAfflictedStatus::Burn);
 	Target->GetStatusTracker()->InflictStatus(EAfflictedStatus::Burn, Target);
 
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());

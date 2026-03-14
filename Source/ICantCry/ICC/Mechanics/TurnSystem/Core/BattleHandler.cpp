@@ -2,6 +2,8 @@
 #include "BattleHandler.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "EngineUtils.h"
+#include "ICantCry/ICC/Actors/Player/ICC_Player.h"
+#include "Niagara/Public/NiagaraFunctionLibrary.h"
 
 
 // Sets default values
@@ -16,6 +18,8 @@ ABattleHandler::ABattleHandler(): TurnBasedSystem(nullptr)
 void ABattleHandler::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	Instance = Cast<UICantCryGameInstance>(GetGameInstance());
 
 	for (TActorIterator<AEnemySpawnManager> It(GetWorld()); It; ++It)
 	{
@@ -31,6 +35,8 @@ void ABattleHandler::BeginPlay()
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	checkf(PlayerController, TEXT("PlayerController is null at ABattleHandler::BeginPlay"));
 
+	PC = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
+
 }
 
 // Called every frame
@@ -39,6 +45,17 @@ void ABattleHandler::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	TurnBasedSystem->Update(GetWorld(), &SpawnManager->GetMemory());
+
+	if (DebugHelper::IsGamepadPlugged())
+	{
+		PC->bShowMouseCursor = false;
+		bControllerPlugged = true;
+	}
+	else
+	{
+		PC->bShowMouseCursor = true;
+		bControllerPlugged = false;
+	}
 }
 
 UTurnBasedSystem *ABattleHandler::GetTurnBasedSystem() const
@@ -55,5 +72,127 @@ UBattleInfo* ABattleHandler::GetBattleInfo() const
 AEnemySpawnManager* ABattleHandler::GetEnemySpawnManager()
 {
 	return SpawnManager;
+}
+
+bool ABattleHandler::IsControllerPlugged() const
+{
+	return bControllerPlugged;
+}
+
+void ABattleHandler::Fire(const FVector& DeltaLocation ,const FLinearColor& Color)
+{
+	const FVector SpawnLocation = Instance->GetCurrentPlayer()->GetActorLocation();
+	const FVector Direction = (DeltaLocation - SpawnLocation).GetSafeNormal();
+	const FRotator BulletRotation = Direction.Rotation();
+	StartVfxShootLocation = SpawnLocation + FVector{100, 0,0}; // Todo adapt offset according to the muzzle position
+	
+	Flash = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+		GetWorld(),
+		MuzzleFlash,
+		StartVfxShootLocation,
+		BulletRotation,
+		FVector{50,50,50},
+		false
+	);
+	
+	Flash->SetVariablePosition("User.TargetPosition", StartVfxShootLocation);
+	
+	Flash->Activate(true);
+	Flash->SetVariableLinearColor(FName("User.Color"), Color);
+	BeamPosition = StartVfxShootLocation;
+	
+	// Flash->SetWorldScale3D(FVector(10.0f, 10.0f, 10.0f));
+	
+	DebugHelper::LogMessage(10, FColor::White,"Vfx fire");
+	
+	bMovingMuzzle = true;
+
+	GetWorld()->GetTimerManager().SetTimer(BeamTimer, [this, DeltaLocation]
+	{
+		UpdateMuzzleFlashPosition(DeltaLocation);
+	}, 0.01f, true);
+}
+
+void ABattleHandler::SimulateHurt(const FLinearColor& Color)
+{
+	const AICC_Actor* Target = Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor();
+	if (!Target) return;
+	
+	const FVector SpawnLocation = Target->GetActorLocation() + FVector{-50,0, 50};
+	const FRotator TargetRotation = Target->GetActorRotation();
+	
+	UNiagaraComponent* Hurt = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), HurtPrefab, SpawnLocation, TargetRotation, 
+		FVector{50,50,50}, true);
+	
+	Hurt->Activate(true);
+	Hurt->SetVariableLinearColor(FName("User.Color"), Color);
+}
+
+void ABattleHandler::SimulateAura(AICC_Actor* Target ,const float& SpawnRate ,const FLinearColor& Color)
+{
+	if (!Target) return;
+	
+	const FVector& SpawnLocation = Target->GetActorLocation() + FVector{0,0,-50};
+	const FRotator& SpawnRotation = Target->GetActorRotation();
+	
+	Aura = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), AuraPrefab, SpawnLocation, SpawnRotation, FVector{1.5f,1.5f,1.5f}, false);
+	
+	Aura->Activate(true);
+	Aura->SetVariableLinearColor(FName("User.Color"), Color);
+	Aura->SetVariableFloat(FName("User.SpawnRate"), SpawnRate);
+}
+
+void ABattleHandler::IncreaseAura(const float& Value)
+{
+	if (!Aura) return;
+	const float Delta = Value + AuraDecreaseValue;
+	const float Result = FMath::Max(0, Delta);
+	Aura->SetVariableFloat(FName("User.SpawnRate"), Result);
+}
+
+void ABattleHandler::DecreaseAura(const float& Value)
+{
+	if (!Aura) return;
+	const float Delta = Value - AuraDecreaseValue;
+	const float Result = FMath::RandRange(100.f, Delta);
+	Aura->SetVariableFloat(FName("User.SpawnRate"), Result);
+}
+
+void ABattleHandler::DeactivateAura()
+{
+	if (!Aura) return;
+	Aura->Deactivate();
+}
+
+void ABattleHandler::UpdateMuzzleFlashPosition(const FVector& Location)
+{
+	if (!Flash)
+	{
+		DebugHelper::LogError("Flash null");
+		return;
+	}
+	
+	if (!bMovingMuzzle)
+	{
+		DebugHelper::LogError("Moving muzzle false");
+		return;
+	} 
+	
+	constexpr float MovementSpeed = 3000.f; 
+    
+	const FVector NewPos = FMath::VInterpConstantTo(BeamPosition, Location, GetWorld()->GetDeltaSeconds(), MovementSpeed);
+	BeamPosition = NewPos;
+	
+	Flash->SetVariablePosition(FName("User.TargetPosition"), BeamPosition);
+	
+	Flash->SetWorldLocation(BeamPosition);
+
+	// if (FVector::DistSquared(BeamPosition,Location) < 100.f)
+	if (FVector::DistSquared(BeamPosition, Location) <= FMath::Square(10.f))
+	{
+		bMovingMuzzle = false;
+		Flash->Deactivate();
+		GetWorld()->GetTimerManager().ClearTimer(BeamTimer);
+	}
 }
 

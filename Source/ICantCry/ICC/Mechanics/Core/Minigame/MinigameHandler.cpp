@@ -4,8 +4,11 @@
 #include "EngineUtils.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "Blueprint/UserWidget.h"
-#include "ICantCry/ICC/Mechanics/UI/Defense Minigame/DefenceMinigame.h"
-#include "ICantCry/ICC/Mechanics/UI/AttackMinigame/AttackMinigame.h"
+#include "ICantCry/ICC/Mechanics/UI/Minigames/Defense Minigame//DefenceMinigame.h"
+#include "ICantCry/ICC/Mechanics/UI/Minigames/AttackMinigame/AttackMinigame.h"
+#include "ICantCry/ICC/Mechanics/UI/Minigames/AttackMinigame/AngerMinigame/AngerAtkMinigame.h"
+#include "ICantCry/ICC/Mechanics/UI/Minigames/AttackMinigame/Curling/CurlingMinigame.h"
+#include "ICantCry/ICC/Mechanics/UI/Minigames/AttackMinigame/NoteHighway/NoteHighwayMinigame.h"
 
 
 // Sets default values
@@ -83,6 +86,166 @@ void AMinigameHandler::StartMinigame(const bool& EnableAttack)
 	}
 }
 
+void AMinigameHandler::StartMinigame(UBulletData* BulletData, const bool& EnableAttack)
+{
+	APlayerController* Controller = GetWorld()->GetFirstPlayerController();
+	checkf(Controller, TEXT("Controller is null at AMinigameHandler::StartMinigame"));
+	
+	if (EnableAttack)
+	{
+		UMinigameUserWidget* CastedWidget = nullptr;
+		
+		switch (BulletData->MinigameTemplate)
+		{
+		default:
+		case Default:
+			{
+				CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, AttackMinigame);
+				CastedWidget = Cast<UAttackMinigame>(CurrentMinigameDisplayed);
+				break;
+			}
+		case Anger:
+			{
+				CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["Anger"]);
+				CastedWidget = Cast<UAngerAtkMinigame>(CurrentMinigameDisplayed);
+				break;
+			}
+		case GuitarHero:
+			{
+				switch (BulletData->Type)
+				{
+				default:
+				case Indifference:
+				case AngerDv:
+				case Shame:
+					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["GuitarHero 4"]);
+					CastedWidget = Cast<UNoteHighwayMinigame>(CurrentMinigameDisplayed);
+
+				
+				case FearDv:
+				case Disgust:
+					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["GuitarHero 2"]);
+					CastedWidget = Cast<UNoteHighwayMinigame>(CurrentMinigameDisplayed);
+					break;
+				case Anxiety:
+					DebugHelper::LogMessage(10, FColor::White, "Guitar hero spawned");
+					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["GuitarHero 1"]);
+					CastedWidget = Cast<UNoteHighwayMinigame>(CurrentMinigameDisplayed);
+					break;
+				case SadnessDv:
+					break;
+				case JoyDv:
+					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["GuitarHero 3"]);
+					CastedWidget = Cast<UNoteHighwayMinigame>(CurrentMinigameDisplayed);
+					break;
+					
+				case JoyEv:
+				case CalmEV:
+				case AngerEv:
+				case FearEV:
+				case SadnessEv:
+				case JealousyEv:
+				case DisgustEv:
+				case CalmDv:
+					break;
+				case JealousyDv:
+					break;
+				}
+				break;
+			}
+		case Curling:
+			{
+				
+				switch (BulletData->Type)
+				{
+				default:
+				case Indifference:
+				case AngerDv:
+				case AngerEv:
+				case FearEV:
+				case JoyEv:
+				case CalmEV:
+				case Shame:
+				case JealousyEv:
+				case DisgustEv:
+				case SadnessEv:
+				case FearDv:
+				case Disgust:
+					break;
+				case Anxiety:
+					break;
+				case SadnessDv:
+					break;
+				case JoyDv:
+					break;
+				case CalmDv:
+					DebugHelper::LogMessage(10, FColor::White, "Curling spawned");
+					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["Curling 1"]);
+					CastedWidget = Cast<UCurlingMinigame>(CurrentMinigameDisplayed);
+					break;
+				case JealousyDv:
+					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["Curling 2"]);
+					CastedWidget = Cast<UCurlingMinigame>(CurrentMinigameDisplayed);
+					break;
+				}
+				break;
+			}
+		}
+
+		
+		if (!CurrentMinigameDisplayed)
+		{
+			DebugHelper::LogError("Couldn't create minigame, something is null");
+			return;
+		}
+		
+		UGameplayStatics::PlaySound2D(this, CtvFx);
+		
+		FTimerHandle Delay;
+		
+		Player->GetBattleHUD()->CTR->SetVisibility(ESlateVisibility::Visible);
+	
+		GetWorld()->GetTimerManager().SetTimer(Delay, [this, CastedWidget]()
+		{
+			CurrentMinigameDisplayed->AddToViewport();
+			Player->GetBattleHUD()->MinigameSlot->AddChild(CurrentMinigameDisplayed);
+			Player->GetBattleHUD()->HideInfo();
+			Player->EnableMinigameInput(true);
+			Player->SetActiveMinigameUserWidget(CastedWidget);
+			CurrentMinigameDisplayed->SetKeyboardFocus();
+			bPlayerMinigameEnded = false;
+			Player->GetBattleHUD()->CTR->SetVisibility(ESlateVisibility::Hidden);
+		}, 1.f , false);
+	}
+
+	
+	//otherwise call defence minigame 
+	if (!EnableAttack)
+	{
+		CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, DefenseMinigame);
+		UDefenceMinigame* CastedWidget = Cast<UDefenceMinigame>(CurrentMinigameDisplayed);
+		
+		if (!CurrentMinigameDisplayed)
+		{
+			DebugHelper::LogError("Couldn't create minigame, something is null");
+			return;
+		}
+		
+		//CurrentMinigameDisplayed->AddToViewport();
+		Player->GetBattleHUD()->MinigameSlot->AddChild(CurrentMinigameDisplayed);
+		Player->GetBattleHUD()->HideInfo();
+		Player->EnableMinigameInput(true);
+		Player->SetActiveMinigameUserWidget(CastedWidget);
+		CurrentMinigameDisplayed->SetKeyboardFocus();
+		Player->GetBattleHUD()->GetCurrentPlayingEmotion()->SetMinigameHasStarted(true);
+		
+		AMob::SetMinigameStarted(true);
+		AMob::MinigameEnded = false;
+		Player->GetBattleHUD()->GetCurrentPlayingEmotion()->SetMinigameEnd(false);
+		Player->GetBattleHUD()->GetCurrentPlayingEmotion()->SetIsBusy(true);
+	}
+}
+
 void AMinigameHandler::EndMinigame()
 {
 	APlayerController* Controller = GetWorld()->GetFirstPlayerController();
@@ -109,6 +272,11 @@ void AMinigameHandler::EndMinigame()
 		Cast<AMob>(Player->GetBattleHUD()->GetSelectedActor())->SetMinigameHasStarted(false);
 		Cast<AMob>(Player->GetBattleHUD()->GetSelectedActor())->SetMinigameEnd(true);
 		bPlayerMinigameEnded = true;
+		
+		UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+		
+		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->Fire(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor()->GetActorLocation(), 
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->DisplayColor);
 	}
 	
 	if (Player->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->GetIsAITurn())

@@ -18,7 +18,7 @@ void UEncounterManager::Initialize(UWorld* World)
 	EncounterThreshold = FMath::RandRange(50, 200);
 	CurrentThreshold = EncounterThreshold;
 	SprintMultiplier = 1.5f;
-	LocationMultiplier = 1.0f; // Default: no multiplier activeted
+	LocationMultiplier = 1.0f;
 
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(World->GetGameInstance());
 	checkf(Instance, TEXT("Instance invalid"))
@@ -28,7 +28,6 @@ void UEncounterManager::Initialize(UWorld* World)
 	World->GetTimerManager().SetTimer(TimerHandle, [this, World, Instance]()
 	{
 		PlayerRef = Instance->GetCurrentPlayer();
-		DebugHelper::LogSuccess("Player ref valid!");
 	}, 0.25f, false);
 }
 
@@ -69,7 +68,7 @@ void UEncounterManager::UpdateThreshold(UWorld* World)
 			StartBattle(World);
 			Reset();
 		}
-	}, 0.45f, true); // ← Must be looping!
+	}, 0.45f, true);
 }
 
 void UEncounterManager::SetPlayerLocationMultiplier(EPlayerLocation NewLocation)
@@ -102,6 +101,6 @@ void UEncounterManager::StartBattle(UWorld* World)
 void UEncounterManager::Reset()
 {
 	EncounterThreshold = FMath::RandRange(50, 200);
-	CurrentThreshold = EncounterThreshold; // ← Add this line
-	LastStepCounter = PlayerRef.Get() ? PlayerRef.Get()->GetStepCounter() : 0; // ← Optional: reset step tracking
+	CurrentThreshold = EncounterThreshold;
+	LastStepCounter = PlayerRef.Get() ? PlayerRef.Get()->GetStepCounter() : 0; 
 }

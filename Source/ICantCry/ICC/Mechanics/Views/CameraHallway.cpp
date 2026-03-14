@@ -26,7 +26,6 @@ void ACameraHallway::BeginPlay()
 	for (TActorIterator<ACameraTraveler> It(GetWorld()); It; ++It)
 	{
 		Travelers.Add(*It);
-		DebugHelper::LogMessage(3, FColor::White, "Added: " + It->GetName());
 	}
 }
 
@@ -56,7 +55,6 @@ void ACameraHallway::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AA
 	
 		if (Player->GetWorldCamera() && Player && Counter == 0)
 		{
-			DebugHelper::LogMessage(3, FColor::White, "Counter -> " + FString::FromInt(Counter));
 			Player->GetWorldCamera()->SetbDefaultCamera(false);
 			APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 			checkf(PlayerController, TEXT("PlayerController is NULL"));
@@ -68,8 +66,6 @@ void ACameraHallway::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AA
 	
 		else if (Player->GetWorldCamera() && Player  && Counter == 1)
 		{
-			DebugHelper::LogMessage(3, FColor::White, "Counter -> " + FString::FromInt(Counter));
-			DebugHelper::LogSuccess("Set Target to Static Camera");
 			Player->GetWorldCamera()->SetbDefaultCamera(true);
 			APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 			checkf(PlayerController, TEXT("PlayerController is NULL"));

@@ -3,3 +3,7 @@
 FPlayerMemory::FPlayerMemory()
 {
 }
+
+FCameraMemory::FCameraMemory()
+{
+}

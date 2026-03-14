@@ -24,10 +24,17 @@ public:
 	
 	UButton* GetMagazineBulletButton() const;
 	void SetBufferIndex(const int32& NewIndex);
+	int32 GetBulletIndex() const;
+
+	bool IsAllowedToRemoveBullet() const;
+	void SetEnableRemoval(const bool& NewEnableRemoval);
+
+	void Clear();
 	
 protected:
 	virtual void NativeConstruct() override;
 	UPROPERTY(meta=(BindWidget)) UButton* BulletBtn;
+	
 	UPROPERTY() int32 BulletIndex;
 
 private:
@@ -36,4 +43,7 @@ private:
 	UPROPERTY() UICantCryGameInstance* Instance = nullptr;
 
 	UPROPERTY() UBulletData* BulletDataPtr = nullptr;
+
+	UPROPERTY() bool bEnableRemoval = true;
+	
 };

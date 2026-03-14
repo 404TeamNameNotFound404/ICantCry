@@ -13,6 +13,12 @@ struct FEmotionStat
 
 	UPROPERTY(VisibleInstanceOnly, Category="Stats")
 	bool bAlive;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Stats")
+	float AtkPower = 1.f;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly ,Category="Stats")
+	float DefPower = 1.f;
 
 	FEmotionStat();
 };

@@ -5,12 +5,12 @@
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
 #include "ICantCry/ICC/Actors/Bullet/BulletData.h"
-#include "ICantCry/ICC/Mechanics/Core/Data/PlayerStats.h"
 #include "ICantCry/ICC/Mechanics/Core/Data/EnemyTactics.h"
 #include "ICantCry/ICC/Mechanics/Core/Data/EnemyDatas.h"
 #include "DamageCalculator.generated.h"
 
 class UICantCryGameInstance;
+class UPlayerStats;
 
 USTRUCT(BlueprintType)
 struct FDamage

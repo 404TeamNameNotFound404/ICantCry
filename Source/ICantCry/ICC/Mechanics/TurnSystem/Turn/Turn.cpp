@@ -26,8 +26,6 @@ void FTurn::PopulateQueue(UWorld* World)
 		}
 		
 		Queue.Add(*It);
-		
-		DebugHelper::LogMessage(10, FColor::Black, It->GetActorLabel() + " joined the fun");
 		DebugHelper::AddMessageToLog("[Turn]: " + It->GetActorLabel() + " joined the fun");
 	}
 
@@ -46,7 +44,6 @@ void FTurn::RejoinQueue(const TArray<AMob*>& Emotions)
 		}
 	
 		Queue.Emplace(AsActor);
-		DebugHelper::LogMessage(10, FColor::Orange, Mob->GetActorLabel() + " rejoined the fun");
 		DebugHelper::AddMessageToLog("[Turn]: " + Mob->GetActorLabel() + " rejoined the fun");
 	}
 	
@@ -66,12 +63,6 @@ void FTurn::RejoinQueue(const TArray<AMob*>& Emotions, AICC_Player* Player)
 		if (!AsActor) continue;
 
 		Queue.Add(AsActor);
-
-		DebugHelper::LogMessage(
-			10,
-			FColor::Orange,
-			Mob->GetActorLabel() + " rejoined the fun"
-		);
 
 		DebugHelper::AddMessageToLog(
 			"[Turn]: " + Mob->GetActorLabel() + " rejoined the fun"
@@ -93,7 +84,6 @@ void FTurn::AssignFirstTurn()
 
 	DebugHelper::LogSuccess(Queue[CurrentTurn]->GetName() + " will start");
 	DebugHelper::AddMessageToLog("[Turn]: " + Queue[CurrentTurn]->GetName() + " will start");
-	DebugHelper::LogMessage(3, FColor::Blue, Queue[NextTurn]->GetName() + " will play next");
 	DebugHelper::AddMessageToLog("[Turn]: " + Queue[NextTurn]->GetName() + " will play next");
 }
 
@@ -117,10 +107,8 @@ void FTurn::AssignFirstTurnByPriority()
 
 	CurrentTurn = 0;
 	NextTurn = (CurrentTurn + 1) % Queue.Num();
-
-	DebugHelper::LogSuccess(Queue[CurrentTurn]->GetName() + " will start");
+	
 	DebugHelper::AddMessageToLog("[Turn]: " + Queue[CurrentTurn]->GetName() + " will start");
-	DebugHelper::LogMessage(3, FColor::Blue, Queue[NextTurn]->GetName() + " will play next");
 	DebugHelper::AddMessageToLog("[Turn]: " + Queue[NextTurn]->GetName() + " will play next");
 }
 

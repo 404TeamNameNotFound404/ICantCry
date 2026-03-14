@@ -34,9 +34,11 @@ EBTNodeResult::Type UBTTask_DebuffDef::ExecuteTask(UBehaviorTreeComponent& Owner
 
 	checkf(Target, TEXT("Player invalid at UBTTask_DebuffDef::ExecuteTask"))
 
-	Target->GetStatusTracker()->MalusFlow();
-	Target->GetStatusTracker()->InflictStatus(EAfflictedStatus::DebuffDef, Target);
-
+	//Target->GetStatusTracker()->MalusFlow();
+	Target->GetStatusTracker()->DebuffFlow(EDebuffStatus::DebuffDef, Target);
+	//Target->GetStatusTracker()->InflictStatus(EAfflictedStatus::DebuffDef, Target);
+	Target->GetStatusTracker()->InflictDebuffStatus(EDebuffStatus::DebuffDef, Target);
+	
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " de-buffed " + Target->GetActorLabel() + " def"));

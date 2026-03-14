@@ -27,7 +27,6 @@ void FBattleMemory::Load(const TArray<AICC_Actor*>& Queue, const TMap<TEnumAsByt
 	for (auto Pair : Bullets)
 	{
 		InBattleBullets.Add(Pair.Key, Pair.Value.Clone());
-		DebugHelper::LogMessage(8, FColor::Magenta, Pair.Value.GetBulletData()->BulletName + " added n " + FString::FromInt(Pair.Value.GetQuantity()));
 	}
 	
 }
