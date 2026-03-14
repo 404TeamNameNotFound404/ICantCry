@@ -8,17 +8,32 @@ void AICC_GameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GameInstance = Cast<UICantCryGameInstance>(GetGameInstance());
-	checkf(GameInstance, TEXT("GameInstance is null"));
+	// GameInstance = Cast<UICantCryGameInstance>(GetGameInstance());
+	// checkf(GameInstance, TEXT("GameInstance is null"));
 
-	if (GameInstance->CanRecreatePlayer())
-	{
-		GameInstance->RecreatePlayer();
-		DebugHelper::LogWarning("Recreating player");
-		GameInstance->SetCanRecreatePlayer(false);
-	}
+	// if (GameInstance->CanRecreatePlayer())
+	// {
+	// 	GameInstance->RecreatePlayer();
+	// 	DebugHelper::LogWarning("Recreating player");
+	// 	GameInstance->SetCanRecreatePlayer(false);
+	// }
 
-	DebugHelper::LogSuccess("no need to recreate player");
+	// DebugHelper::LogSuccess("no need to recreate player");
+
+    GameInstance = Cast<UICantCryGameInstance>(GetGameInstance());
+    checkf(GameInstance, TEXT("GameInstance is null"));
+
+    if (GameInstance->CanRecreatePlayer())
+    {
+        GameInstance->RecreatePlayer();
+        DebugHelper::LogWarning("Player RI-POSIZIONATO con successo (Memoria attiva)");
+        GameInstance->SetCanRecreatePlayer(false);
+    }
+    else 
+    {
+        DebugHelper::LogSuccess("Spawn STANDARD (Nessuna memoria trovata/necessaria)");
+    }
+
 }
 
 
@@ -32,7 +47,6 @@ AActor* AICC_GameMode::ChoosePlayerStart_Implementation(AController* Player)
         {
             APlayerStart* PStart = *It;
             // Verifichiamo se il PlayerStart ha il tag corrispondente
-            // Nota: In Unreal, il PlayerStartTag è una FString standard, quindi il confronto rimane semplice
             if (PStart && PStart->PlayerStartTag.ToString() == StartNodeName)
             {
                 return PStart;
