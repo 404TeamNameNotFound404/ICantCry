@@ -19,11 +19,12 @@ class ICANTCRY_API AICC_GameMode : public AGameMode
 {
 	GENERATED_BODY()
 
+
 protected:
 	virtual void BeginPlay() override;
 
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
-	
+
 private:
 	UPROPERTY()
 	UICantCryGameInstance* GameInstance;

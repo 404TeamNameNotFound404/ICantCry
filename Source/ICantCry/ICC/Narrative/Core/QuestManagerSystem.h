@@ -78,6 +78,10 @@ public:
     // Getter per la UI
     const TArray<FQuestProgress>& GetActiveQuests() const { return ActiveQuests; }
 
+    //Per permettere alla UI di sapere quanti oggetti sono già stati consegnati.
+   UFUNCTION(BlueprintPure, Category = "Quest")
+    int32 GetObjectiveProgress(FGameplayTag QuestTag, FGameplayTag ObjectiveTag) const;
+
 protected:
     UPROPERTY()
     TArray<FQuestProgress> ActiveQuests;

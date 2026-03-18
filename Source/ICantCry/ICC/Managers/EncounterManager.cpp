@@ -92,10 +92,29 @@ void UEncounterManager::StartBattle(UWorld* World)
 {
 	DebugHelper::LogSuccess("StartBattle");
 	PlayerRef.Get()->ResetStepCounter();
+	// UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(World->GetGameInstance());
+	// Instance->StoreLastPlayerTransform(PlayerRef.Get(), PlayerRef.Get()->GetActorLocation(), PlayerRef.Get()->GetActorRotation());
+	// Instance->SavePlayerTransformBegin(Instance->GetCurrentPlayer(), true);
+	// UtilityFunctions::LoadSceneByName(World, "RandomSpawner");
+
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(World->GetGameInstance());
-	Instance->StoreLastPlayerTransform(PlayerRef.Get(), PlayerRef.Get()->GetActorLocation(), PlayerRef.Get()->GetActorRotation());
-	Instance->SavePlayerTransformBegin(Instance->GetCurrentPlayer(), true);
-	UtilityFunctions::LoadSceneByName(World, "RandomSpawner");
+    if (Instance)
+    {
+
+		//RECUPERO E PULIZIA DEL NOME MAPPA
+        FString CleanMapName = World->GetMapName();
+
+		// Rimuove i prefissi del Play-In-Editor (es. UEDPIE_0_)
+        CleanMapName.RemoveFromStart(World->StreamingLevelsPrefix);
+
+        // Usa la funzione Setter
+        Instance->SetLastMainMapName(FName(*CleanMapName));
+        
+        Instance->SavePlayerTransformBegin(Instance->GetCurrentPlayer(), true);
+        Instance->StoreLastPlayerTransform(Instance->GetCurrentPlayer(), Instance->GetCurrentPlayer()->GetActorLocation(), Instance->GetCurrentPlayer()->GetActorRotation());
+    }
+
+    UtilityFunctions::LoadSceneByName(World, "RandomSpawner");
 }
 
 void UEncounterManager::Reset()

@@ -7,6 +7,9 @@
 #include "GameplayTagContainer.h"
 #include "BasePickup.generated.h"
 
+
+class UICantCryGameInstance;
+
 UCLASS()
 class ICANTCRY_API ABasePickup : public AActor
 {
@@ -28,6 +31,13 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Quest", meta = (AllowPrivateAccess = "true"))
     FGameplayTag TargetObjectiveTag;
 
+    // Se TRUE, l'oggetto finisce nell'inventario fisico (GameInstance)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Quest")
+    bool bShouldBeStored = true;
+
+    // Il tag unico dell'oggetto (es: Oggetti.Sasso)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Quest", meta = (EditCondition = "bShouldBeStored"))
+    FGameplayTag ItemTag;
 
     // Quanti punti dare (es. 1 sasso)
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Quest")

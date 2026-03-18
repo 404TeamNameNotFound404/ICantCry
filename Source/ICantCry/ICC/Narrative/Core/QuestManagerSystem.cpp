@@ -203,3 +203,14 @@ bool UQuestManagerSystem::TryCompleteQuest(FGameplayTag QuestTag)
     UE_LOG(LogTemp, Warning, TEXT("Tentativo di completare %s fallito: Obiettivi non pronti o quest non attiva."), *QuestTag.ToString());
     return false;
 }
+
+int32 UQuestManagerSystem::GetObjectiveProgress(FGameplayTag QuestTag, FGameplayTag ObjectiveTag) const
+{
+    int32 Index = FindActiveQuestIndex(QuestTag);
+    if (Index != INDEX_NONE)
+    {
+        const int32* Progress = ActiveQuests[Index].ObjectiveProgress.Find(ObjectiveTag);
+        return Progress ? *Progress : 0;
+    }
+    return 0;
+}

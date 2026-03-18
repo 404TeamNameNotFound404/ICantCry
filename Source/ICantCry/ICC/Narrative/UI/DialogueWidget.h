@@ -15,6 +15,8 @@
 
 class UDialogueAsset;
 class UDialogueChoiceButton;
+class UICantCryGameInstance;
+class UQuestManagerSystem;
 
 /**
  * CLASSE: UDialogueWidget
@@ -39,6 +41,15 @@ public:
 	// Funzione chiamata quando si preme un bottone di scelta
 	UFUNCTION() void OnBranchSelected(UDialogueAsset* NextDialogue);
 
+
+	// Dati temporanei della consegna impostati dall'evento
+	// per consegnare gli oggetti quest
+    FGameplayTag CurrentRequiredItemTag;
+    int32 CurrentAmountRequired;
+    FGameplayTag CurrentQuestTag;
+    FGameplayTag CurrentObjectiveTag;
+	void UpdateDeliveryUI();
+
 protected:
 	virtual void NativeConstruct() override;
 
@@ -48,6 +59,9 @@ protected:
     UPROPERTY(meta = (BindWidget)) UTextBlock* TextDialogueContent;
     UPROPERTY(meta = (BindWidget)) UImage* NPCFaceImage;
     UPROPERTY(meta = (BindWidget)) UButton* BtnNext;
+	UPROPERTY(meta = (BindWidget)) UButton* BtnDeliver; // Bottone per dare l'oggetto
+	UPROPERTY(meta = (BindWidget)) UTextBlock* TextDeliveryProgress; // txt per il progresso degli oggetti dati
+
 
     //bottoni per la scelta
     UPROPERTY(meta = (BindWidget)) UButton *BtnAccept;
@@ -59,6 +73,8 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Narrative|Dialogue") void OnAcceptClicked();
     UFUNCTION(BlueprintCallable, Category = "Narrative|Dialogue") void OnDeclineClicked();
 	UFUNCTION(BlueprintCallable, Category = "Narrative|Dialogue") void EndDialogue();
+	UFUNCTION(BlueprintCallable, Category = "Narrative|Dialogue") void OnDeliverClicked();   
+	
 	
 private:
 
@@ -78,4 +94,7 @@ private:
     void OnTypewriterTick();
     void FinishLineInstantly(); // Per saltare l'animazione se il player clicca "Next"
 	void ShowBranches();
+
+
+	
 };

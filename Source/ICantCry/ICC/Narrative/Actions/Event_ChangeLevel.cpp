@@ -30,7 +30,7 @@ void UEvent_ChangeLevel::ExecuteEvent_Implementation(AICC_Player* Player, UObjec
 {
     if (!Player || !LevelTag.IsValid()) 
     {
-        DebugHelper::LogError("Event_ChangeLevel: Player null o LevelTag non valido!");
+        DebugHelper::LogError("Event_ChangeLevel: Player null or LevelTag invalid!");
         return;
     }
 
@@ -45,7 +45,7 @@ void UEvent_ChangeLevel::ExecuteEvent_Implementation(AICC_Player* Player, UObjec
     {
         if (!PlayerStartTag.IsValid())
         {
-            DebugHelper::LogWarning("ATTENZIONE: bUsePlayerStart è attivo ma non hai inserito un PlayerStartTag! Il player spawnerà in un punto casuale.");
+            DebugHelper::LogWarning("WARNING: bUsePlayerStart is enabled, but you haven't entered a PlayerStartTag! The player will spawn at a random location.");
             USceneLoader::LoadSceneWithTag(Player, FName(*MapName), "", false);
         }
         else
@@ -60,18 +60,29 @@ void UEvent_ChangeLevel::ExecuteEvent_Implementation(AICC_Player* Player, UObjec
     else
     {
         // --- MODIFICA QUI: MODALITÀ BATTAGLIA/NPC ---
-        // TODO RIVEDERE QUESTA PARTE
         
-        if (GI)
+       if (GI)
         {
-            // CORREZIONE: Passiamo il puntatore al Player e 'true' per confermare il salvataggio
+
+            // RECUPERO E PULIZIA DEL NOME MAPPA
+            FString CleanMapName = GetWorld()->GetMapName();
+            CleanMapName.RemoveFromStart(GetWorld()->StreamingLevelsPrefix);
+
+            // Salviamo il nome pulito nel GameInstance
+            GI->SetLastMainMapName(FName(*CleanMapName));
+
+
+            // 2. Prepara il sistema per ricreare il player al ritorno
             GI->SavePlayerTransformBegin(Player, true); 
 
-            // Questa riga invece era già corretta perché accetta Player, Location e Rotation separati
+            // 3. Salva la posizione e rotazione esatta davanti all'NPC
             GI->StoreLastPlayerTransform(Player, Player->GetActorLocation(), Player->GetActorRotation());
+            
+            DebugHelper::LogSuccess(FString::Printf(TEXT("Map '%s' and location saved. Battle begins!"), *GetWorld()->GetMapName()));
         }
 
-        DebugHelper::LogSuccess("Event_ChangeLevel: Uso posizione di default (RecreatePlayer)");
+        // 4. Carica l'arena di battaglia definita nel Tag del livello
+        DebugHelper::LogSuccess("Event_ChangeLevel: Loading Arena...");
         USceneLoader::LoadSceneByName(Player, FName(*MapName), false);
     }
 }

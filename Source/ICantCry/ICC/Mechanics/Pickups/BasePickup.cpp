@@ -2,16 +2,27 @@
 
 
 #include "BasePickup.h"
+#include "Kismet/GameplayStatics.h"
+#include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "ICantCry/ICC/Narrative/Core/QuestManagerSystem.h"
+#include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 
 void ABasePickup::Collect(AICC_Player* Player)
 {
 	if (!Player) return;
 
     // 1. Recuperiamo il Manager tramite il GameInstance Subsystem
-    UGameInstance* GI = Cast<UGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+   UICantCryGameInstance* GI = Cast<UICantCryGameInstance>(Player->GetGameInstance());
     if (GI)
     {
+
+        // --- NUOVA LOGICA DI STIVAGGIO ---
+        if (bShouldBeStored && ItemTag.IsValid())
+        {
+            GI->AddToInventory(ItemTag, AmountToAdd);
+        }
+
+
         UQuestManagerSystem* QuestManager = GI->GetSubsystem<UQuestManagerSystem>();
         if (QuestManager)
         {

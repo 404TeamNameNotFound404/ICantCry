@@ -18,6 +18,9 @@ struct FDialogueLine
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FText Text;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Events")
+    TArray<TObjectPtr<class UGameplayEvent>> Events;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FGameplayTag EmotionTag; // Per cambiare l'immagine dell'NPC nel Widget
 };
@@ -61,9 +64,12 @@ public:
 	float TypewriterSpeed = 0.05f;
 
 	// Eventi da scatenare alla fine del dialogo (es: Inizia Quest o Drop Item)
-	UPROPERTY(EditAnywhere, Instanced, Category = "Events")
+	UPROPERTY(EditAnywhere, Instanced, Category = "Events Dialogue Ended")
 	TArray<TObjectPtr<UGameplayEvent>> OnDialogueEnded;
 
+	/** * Se attivato, questo dialogo non mostrerà mai i pulsanti delle missioni (Accetta/Rifiuta/Consegna), 
+     * anche se l'NPC ha missioni attive. Utile per dialoghi puramente narrativi.
+     */
 	UPROPERTY(EditAnywhere, Category = "Config")
     bool bNeverShowQuestButtons = false;
 
