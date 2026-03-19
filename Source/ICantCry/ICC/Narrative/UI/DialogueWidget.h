@@ -19,8 +19,9 @@ class UICantCryGameInstance;
 class UQuestManagerSystem;
 
 /**
- * CLASSE: UDialogueWidget
- * DESCRIZIONE: Il Widget che appare a schermo durante una conversazione.
+ * CLASS: UDialogueWidget
+ * DESCRIPTION: main widget that appears on screen during conversations
+ * handles displaying lines, portraits, typewriter effect, and player choices
  */
 UCLASS()
 class ICANTCRY_API UDialogueWidget : public UUserWidget
@@ -29,72 +30,99 @@ class ICANTCRY_API UDialogueWidget : public UUserWidget
 
 
 public:
-	// Avvia la sequenza di dialogo
+
+	/** starts a new dialogue sequence with the given asset */
 	UFUNCTION(BlueprintCallable, Category = "Narrative")
 	void StartDialogue(UDialogueAsset* NewDialogue);
 
-	// Funzione per impostare se la missione corrente permette il rifiuto
+	/** sets whether the current quest can be accepted or declined, affects button visibility at end */
     void SetIsOptional(bool bOptional) { bIsOptionalQuest = bOptional; }	
 
+	/** applies font and color settings from the current dialogue asset to the text widget */
 	void ApplyDialogueStyle();
 
-	// Funzione chiamata quando si preme un bottone di scelta
+	/** called when a choice button is selected, handles transitioning to next dialogue or closing */
 	UFUNCTION() void OnBranchSelected(UDialogueAsset* NextDialogue);
 
-
-	// Dati temporanei della consegna impostati dall'evento
-	// per consegnare gli oggetti quest
+	// temporary delivery data set by gameplay events
+	// used for item turn-in quests
     FGameplayTag CurrentRequiredItemTag;
     int32 CurrentAmountRequired;
     FGameplayTag CurrentQuestTag;
     FGameplayTag CurrentObjectiveTag;
+    
+    /** updates the delivery ui with current progress from quest manager and player inventory */
 	void UpdateDeliveryUI();
 
 protected:
+
 	virtual void NativeConstruct() override;
 
-	// --- Widget Binding ---
+	// --- Widget Bindings ---
 
+	/** displays the npc's name */
 	UPROPERTY(meta = (BindWidget)) UTextBlock* TextNPCName;
+    
+    /** displays the current dialogue line */
     UPROPERTY(meta = (BindWidget)) UTextBlock* TextDialogueContent;
+    
+    /** shows the npc's portrait based on emotion tag */
     UPROPERTY(meta = (BindWidget)) UImage* NPCFaceImage;
+    
+    /** button to advance to the next line */
     UPROPERTY(meta = (BindWidget)) UButton* BtnNext;
-	UPROPERTY(meta = (BindWidget)) UButton* BtnDeliver; // Bottone per dare l'oggetto
-	UPROPERTY(meta = (BindWidget)) UTextBlock* TextDeliveryProgress; // txt per il progresso degli oggetti dati
+	
+	/** button to deliver items for turn-in quests */
+	UPROPERTY(meta = (BindWidget)) UButton* BtnDeliver;
+	
+	/** text showing delivery progress (items given / items needed) */
+	UPROPERTY(meta = (BindWidget)) UTextBlock* TextDeliveryProgress;
 
-
-    //bottoni per la scelta
+    /** accept button for optional quests */
     UPROPERTY(meta = (BindWidget)) UButton *BtnAccept;
+    
+    /** decline button for optional quests */
     UPROPERTY(meta = (BindWidget)) UButton* BtnDecline;
-	UPROPERTY(meta = (BindWidget))UVerticalBox* ChoiceContainer;
+	
+	/** container for branching choice buttons */
+	UPROPERTY(meta = (BindWidget)) UVerticalBox* ChoiceContainer;
 
-	// --- Logica Interna ---
+	// --- Internal Logic ---
 	UFUNCTION(BlueprintCallable, Category = "Narrative|Dialogue") void DisplayNextLine();
 	UFUNCTION(BlueprintCallable, Category = "Narrative|Dialogue") void OnAcceptClicked();
     UFUNCTION(BlueprintCallable, Category = "Narrative|Dialogue") void OnDeclineClicked();
 	UFUNCTION(BlueprintCallable, Category = "Narrative|Dialogue") void EndDialogue();
 	UFUNCTION(BlueprintCallable, Category = "Narrative|Dialogue") void OnDeliverClicked();   
 	
-	
 private:
-
+	/** the dialogue asset currently being played */
 	UPROPERTY() TObjectPtr<UDialogueAsset> CurrentDialogue;
 	
-	// Classe del widget bottone da spawnare
+	/** widget class to spawn for each choice button in branches */
 	UPROPERTY(EditAnywhere, Category = "Narrative") TSubclassOf<UDialogueChoiceButton> ChoiceButtonClass;
     
+    /** index of the current line being displayed */
     int32 CurrentLineIndex = 0;
+    
+    /** whether the current quest can be declined, affects end-of-dialogue behavior */
     bool bIsOptionalQuest = false;
 
+	/** timer handle for typewriter effect */
 	FTimerHandle TypewriterTimerHandle;
+    
+    /** full text of current line, used for typewriter reconstruction */
     FString FullTextCurrentLine;
+    
+    /** current character index for typewriter effect */
     int32 CurrentCharacterIndex;
 
-	// Typewriter Effect
+	/** typewriter effect: adds one character per tick */
     void OnTypewriterTick();
-    void FinishLineInstantly(); // Per saltare l'animazione se il player clicca "Next"
+    
+    /** skips typewriter animation and shows full line immediately */
+    void FinishLineInstantly();
+    
+    /** creates and displays choice buttons for branching dialogues */
 	void ShowBranches();
-
-
 	
 };

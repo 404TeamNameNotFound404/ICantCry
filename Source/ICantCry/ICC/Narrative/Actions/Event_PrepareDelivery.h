@@ -10,7 +10,8 @@
 class UDialogueWidget;
 
 /**
- * 
+ * CLASS: UEvent_PrepareDelivery
+ * DESCRIPTION: Injects item delivery requirements into the dialogue UI context.
  */
 UCLASS(Blueprintable)
 class ICANTCRY_API UEvent_PrepareDelivery : public UGameplayEvent

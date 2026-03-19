@@ -16,66 +16,12 @@ UInteractionComponent::UInteractionComponent()
 
 void UInteractionComponent::TriggerInteraction(AICC_Player* Player)
 {
-	// if (!Player || !DialogueWidgetClass) return;
 
-    // UQuestManagerSystem* QM = Player->GetGameInstance()->GetSubsystem<UQuestManagerSystem>();
-    // UDialogueAsset* DialogueToPlay = FinalDefaultDialogue;
-    // bool bOptional = false;
-
-    // if (QM)
-    // {
-    //     for (const FQuestDialogueChain& Step : QuestChain)
-    //     {
-    //         if (!Step.Quest) continue;
-    //         FGameplayTag QID = Step.Quest->QuestID;
-
-    //         // 1. Se la missione è DEFINITIVAMENTE completata (premio già riscosso)
-    //         if (QM->IsQuestCompleted(QID))
-    //         {
-    //             DialogueToPlay = Step.CompletedDialogue; 
-    //             continue; // Cerchiamo se c'è una missione successiva
-    //         }
-
-    //         // 2. Se la missione è attiva, controlliamo se è PRONTA per essere consegnata
-    //        if (QM->IsQuestActive(QID))
-    //         {
-    //             // CAMBIO QUI: Usiamo la nuova funzione ByTag
-    //             if (QM->AreObjectivesCompleteByTag(QID)) 
-    //             {
-    //                 DialogueToPlay = Step.CompletedDialogue;
-    //             }
-    //             else 
-    //             {
-    //                 DialogueToPlay = Step.InProgressDialogue;
-    //             }
-                
-    //             bOptional = false; 
-    //             break;
-    //         }
-
-    //         // 3. Prima missione non iniziata
-    //         DialogueToPlay = Step.StartDialogue;
-    //         bOptional = Step.bIsOptional;
-    //         break;
-    //     }
-    // }
-
-    // if (DialogueToPlay)
-    // {
-    //     UDialogueWidget* DialogueWidget = CreateWidget<UDialogueWidget>(GetWorld(), DialogueWidgetClass);
-    //     if (DialogueWidget)
-    //     {
-    //         DialogueWidget->AddToViewport();
-    //         DialogueWidget->SetIsOptional(bOptional); // Nuova funzione nel widget
-    //         DialogueWidget->StartDialogue(DialogueToPlay);
-    //     }
-    // }
-
-
+   // grab the quest manager from game instance, it's a subsystem so this is safe
     UQuestManagerSystem* QM = Player->GetGameInstance()->GetSubsystem<UQuestManagerSystem>();
     
-    // Iniziamo con NULL invece che con il default.
-    // Se alla fine del ciclo DialogueToPlay è ancora NULL, l'NPC non farà nulla.
+	// start with null instead of default dialogue
+    // if dialogue to play is still null after the loop, the npc does nothing
     UDialogueAsset* DialogueToPlay = nullptr; 
     bool bOptional = false;
 
@@ -83,23 +29,25 @@ void UInteractionComponent::TriggerInteraction(AICC_Player* Player)
     {
         bool bAllQuestsFinished = true;
 
+        // iterate through the chain in order, stopping at the first quest that isn't permanently completed
         for (const FQuestDialogueChain& Step : QuestChain)
         {
             if (!Step.Quest) continue;
             FGameplayTag QID = Step.Quest->QuestID;
 
-            // Se la missione è già stata completata e consegnata, 
-            // la saltiamo e passiamo alla prossima della catena.
+            // if the quest is already completed and turned in, skip to the next chain link
+			// this lets us have multiple quests from the same npc in sequence
             if (QM->IsQuestCompleted(QID))
             {
                 continue; 
             }
 
-            // Se arriviamo qui, abbiamo trovato la missione "corrente" (Attiva o Nuova)
+            // we found the current quest (the one the player is stuck on or can start)
             bAllQuestsFinished = false;
 
             if (QM->IsQuestActive(QID))
             {
+                // quest is active, check if objectives are done to determine if it's turn-in time
                 if (QM->AreObjectivesCompleteByTag(QID)) 
                 {
                     DialogueToPlay = Step.CompletedDialogue;
@@ -111,25 +59,26 @@ void UInteractionComponent::TriggerInteraction(AICC_Player* Player)
             }
             else
             {
-                // È una missione nuova (Start)
+                // quest hasn't been started yet, use the start dialogue
                 DialogueToPlay = Step.StartDialogue;
                 bOptional = Step.bIsOptional;
             }
 
-            // Trovata la missione corrente, interrompiamo il ciclo.
+            // found our current quest, stop iterating so we don't accidentally pick a later one
             break; 
         }
 
-        // Se il ciclo è finito e tutte le missioni sono completate...
+        // if we went through the whole chain and all quests are completed...
         if (bAllQuestsFinished)
         {
-            // ...usiamo il dialogo finale (quello "stupido" dei designer)
+            // ...use the final "dumb" dialogue the designers set up
             DialogueToPlay = FinalDefaultDialogue;
         }
     }
 
-    // Se DialogueToPlay è valido, mostriamo il widget. 
-    // Se è NULL (perché FinalDefaultDialogue è vuoto), il player preme il tasto ma non succede nulla.
+    // only show the widget if we actually have dialogue to play
+    // if null (because final default dialogue is empty), the player presses the button but nothing happens
+	// this is intentional so designers can have npcs that become silent after all quests are done
     if (DialogueToPlay)
     {
         UDialogueWidget* DialogueWidget = CreateWidget<UDialogueWidget>(GetWorld(), DialogueWidgetClass);
@@ -142,7 +91,8 @@ void UInteractionComponent::TriggerInteraction(AICC_Player* Player)
     }
     else 
     {
-        // Opzionale: stampa un log o fai un piccolo feedback sonoro se vuoi
-        UE_LOG(LogTemp, Log, TEXT("NPC non ha più nulla da dire."));
+        // optional: log or play a small sound feedback if you want
+		// this helps with debugging so you know the npc was interacted with but had nothing to say
+        UE_LOG(LogTemp, Log, TEXT("npc has nothing left to say"));
     }
 }

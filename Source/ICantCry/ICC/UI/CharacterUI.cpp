@@ -8,49 +8,37 @@ void UCharacterUI::NativeConstruct()
 {
     Super::NativeConstruct();
 
-    // setup button name
+   // set up stat button display names
     if(HealthStats) HealthStats->SetStatName("Health");
     if(AttackStats) AttackStats->SetStatName("Attack");
     if(DefenceStats) DefenceStats->SetStatName("Defence");
     if(SpeedStats) SpeedStats->SetStatName("Speed");
 
-    // onclick
+    // bind stat button click events
     if (HealthStats) HealthStats->OnStatsButtonClicked.AddDynamic(this, &UCharacterUI::OnHealthStatsClicked);
     if (AttackStats) AttackStats->OnStatsButtonClicked.AddDynamic(this, &UCharacterUI::OnAttackStatsClicked);
     if (DefenceStats) DefenceStats->OnStatsButtonClicked.AddDynamic(this, &UCharacterUI::OnDefenceStatsClicked);
     if (SpeedStats) SpeedStats->OnStatsButtonClicked.AddDynamic(this, &UCharacterUI::OnSpeedStatsClicked);
 
-
+    // subscribe to quest system updates and force an initial refresh
     if (UGameInstance* GI = GetGameInstance())
     {
         if (UQuestManagerSystem* QM = GI->GetSubsystem<UQuestManagerSystem>())
         {
-            // 1. Ti iscrivi per i futuri aggiornamenti
             QM->OnSystemUpdate.AddDynamic(this, &UCharacterUI::OnQuestSystemUpdated);
-
-            // 2. FIX: Forza un aggiornamento immediato all'apertura del widget
-            // Questo caricherà le missioni che il sistema ha mantenuto durante il cambio livello
-            UpdateQuests(); 
+            UpdateQuests(); // force immediate update to show any quests that survived level transitions
         }
     }
 
-
     ClearQuestDetails();
-
     CurrentSelectedQuestTag = FGameplayTag::EmptyTag;
-
-    //upd ui
     RefreshUI();
-
-    
 }
-
-
-
 
 void UCharacterUI::NativeDestruct()
 {
-    // UNBIND: Molto importante! Quando la UI sparisce, diciamo al Manager di non cercarci più.
+    // unsubscribe from quest system updates when the widget is destroyed
+    // this prevents crashes if the manager tries to call a destroyed widget
     if (UGameInstance* GI = GetGameInstance())
     {
         if (UQuestManagerSystem* QM = GI->GetSubsystem<UQuestManagerSystem>())
@@ -62,14 +50,12 @@ void UCharacterUI::NativeDestruct()
     Super::NativeDestruct();
 }
 
-
 void UCharacterUI::RefreshUI()
 {
     UpdateStats();
     UpdateCharacterLevel();
     UpdateExpBar();
     UpdateQuests();
-
 }
 
 void UCharacterUI::UpdateStats()
@@ -87,9 +73,7 @@ void UCharacterUI::UpdateCharacterLevel()
     if(!Stats || !CharacterLVTop) return;
 
     FString LevelText =  FString::Printf(TEXT("LVL:  %d"), Stats->Level);
-
     CharacterLVTop->SetText(FText::FromString(LevelText));
-    
 }
 
 void UCharacterUI::UpdateExpBar()
@@ -97,68 +81,50 @@ void UCharacterUI::UpdateExpBar()
     if(!Stats || !ExpBar) return;
 
     AICC_Player* Player = Cast<AICC_Player>(GetOwningPlayerPawn());
-
     if (!Player) return;
 
     float CurrentExp = Stats->Experience;
     float RequiredExp = Player->GetExpRequiredForNextLevel();
     float Percentage = Player->GetCurrentExpPercentage();
     
-    // bar % 
     ExpBar->SetPercent(Percentage);
     
-    // update txt ExpCurrentTextBar
-
     if(ExpCurrentTextBar)
     {
         FString CurrentText = FString::Printf(TEXT("%.0f / %.0f"), CurrentExp, RequiredExp);
-
         ExpCurrentTextBar->SetText(FText::FromString(CurrentText));
     }
-
-
 }
-
 
 void UCharacterUI::OnQuestSystemUpdated()
 {
-    // // Chiamiamo la tua logica esistente di aggiornamento testi/liste
-    // UpdateQuests();
-
-    // // Se la missione che stavo guardando è stata appena rimossa, 
-    // // svuota i testi a destra per non lasciare scritte "fantasma".
-    // if (TextQuestTitle) TextQuestTitle->SetText(FText::GetEmpty());
-    // if (TextQuestDescription) TextQuestDescription->SetText(FText::GetEmpty());
-    // if (VerticalBoxObjectives) VerticalBoxObjectives->ClearChildren();
-
     UpdateQuests(); 
 
-    // 2. AGGIORNAMENTO REAL-TIME DEI DETTAGLI (Il pezzo mancante!)
+    // real-time update of the currently selected quest details
+    // this ensures objective counts update while the player is looking at them
     UQuestManagerSystem* QM = GetGameInstance()->GetSubsystem<UQuestManagerSystem>();
     if (QM && CurrentSelectedQuestTag.IsValid())
     {
-        // Chiediamo al Manager i dati aggiornati per la missione che stiamo guardando
         int32 QuestIndex = QM->FindActiveQuestIndex(CurrentSelectedQuestTag);
         
         if (QuestIndex != INDEX_NONE)
         {
-            // Se la missione è ancora attiva, passiamo i nuovi dati a DisplayQuestDetails
-            // Questo eseguirà di nuovo il tuo ciclo FOR con i numeri aggiornati (1/3, 2/3...)
+            // quest is still active, refresh its details with updated progress numbers
             DisplayQuestDetails(QM->GetActiveQuests()[QuestIndex]);
         }
         else
         {
-            // Se la missione non è più attiva (magari è stata completata), puliamo la vista
+            // quest was completed or removed, clear the details panel
             if (TextQuestTitle) TextQuestTitle->SetText(FText::GetEmpty());
             if (VerticalBoxObjectives) VerticalBoxObjectives->ClearChildren();
         }
     }
 }
 
-
 void UCharacterUI::ClearQuestDetails()
 {
-   // RESET VISIBILITÀ: Questo è fondamentale
+    // completely hide and clear all quest detail panels
+    // this is called when opening the ui or when no quest is selected
     if (TextQuestTitle) 
     {
         TextQuestTitle->SetVisibility(ESlateVisibility::Collapsed);
@@ -180,94 +146,85 @@ void UCharacterUI::ClearQuestDetails()
     CurrentSelectedQuestTag = FGameplayTag::EmptyTag;
 }
 
-
-
-
 void UCharacterUI::UpdateQuests()
 {   
-    UE_LOG(LogTemp, Warning, TEXT("=== DEBUG: Inizio UpdateQuests ==="));
+    UE_LOG(LogTemp, Warning, TEXT("=== DEBUG: Inizio UpdateQuotes ==="));
 
-    // 1. Controllo dei riferimenti del Widget
+    // check that all required widget references and classes are valid
     if (!MainQuestScrollBox || !SideQuestScrollBox || !QuestEntryClass) 
     {
-        if (!MainQuestScrollBox) UE_LOG(LogTemp, Error, TEXT("DEBUG: MainQuestScrollBox è NULL!"));
-        if (!SideQuestScrollBox) UE_LOG(LogTemp, Error, TEXT("DEBUG: SideQuestScrollBox è NULL!"));
-        if (!QuestEntryClass)    UE_LOG(LogTemp, Error, TEXT("DEBUG: QuestEntryClass non è assegnata nel Blueprint!"));
+        if (!MainQuestScrollBox) UE_LOG(LogTemp, Error, TEXT("DEBUG: MainQuestScrollBox is NULL!"));
+        if (!SideQuestScrollBox) UE_LOG(LogTemp, Error, TEXT("DEBUG: SideQuestScrollBox is NULL!"));
+        if (!QuestEntryClass)    UE_LOG(LogTemp, Error, TEXT("DEBUG: QuestEntryClass not assigned in blueprint!"));
         return;
     }
 
-    // 2. Pulizia liste
+    // clear existing quest entries
     MainQuestScrollBox->ClearChildren();
     SideQuestScrollBox->ClearChildren();
 
-    // --- MODIFICA: Puliamo il pannello dei dettagli ---
-    // Questo assicura che all'apertura o al refresh, i testi Title/Description/Objectives 
-    // siano vuoti finché l'utente non clicca fisicamente su una riga.
+    // clear details panel so it's empty until the player clicks a specific quest
     ClearQuestDetails();
-   UE_LOG(LogTemp, Log, TEXT("DEBUG: Eseguito ClearQuestDetails() - Visibilità impostata a Collapsed"));
+    UE_LOG(LogTemp, Log, TEXT("DEBUG: ClearQuestDetails() executed - visibility set to collapsed"));
 
-    // 3. Controllo del Quest Manager
+    // get the quest manager
     UQuestManagerSystem* QM = GetGameInstance()->GetSubsystem<UQuestManagerSystem>();
     if (!QM) 
     {
-        UE_LOG(LogTemp, Error, TEXT("DEBUG: QuestManagerSystem non trovato nel GameInstance!"));
+        UE_LOG(LogTemp, Error, TEXT("DEBUG: QuestManagerSystem not found in GameInstance!"));
         return;
     }
 
-    // 4. Verifica quante quest sono attive nel Manager
+    // check how many quests are active
     const TArray<FQuestProgress>& ActiveList = QM->GetActiveQuests();
-    UE_LOG(LogTemp, Warning, TEXT("DEBUG: Il Manager riporta %d missioni attive."), ActiveList.Num());
+    UE_LOG(LogTemp, Warning, TEXT("DEBUG: Manager reports %d active quests."), ActiveList.Num());
 
-    // 5. Ciclo di creazione dei widget
+    // create widget entries for each active quest
     for (int32 i = 0; i < ActiveList.Num(); i++)
     {
         const FQuestProgress& ProgressData = ActiveList[i];
 
         if (!ProgressData.QuestDef)
         {
-            UE_LOG(LogTemp, Error, TEXT("DEBUG: Quest all'indice %d ha un QuestDef NULL!"), i);
+            UE_LOG(LogTemp, Error, TEXT("DEBUG: Quest at index %d has NULL QuestDef!"), i);
             continue;
         }
 
-        UE_LOG(LogTemp, Log, TEXT("DEBUG: Elaborazione missione: %s (Tag Tipo: %s)"), 
+        UE_LOG(LogTemp, Log, TEXT("DEBUG: Processing quest: %s (Type Tag: %s)"), 
             *ProgressData.QuestDef->Title.ToString(), 
             *ProgressData.QuestDef->QuestTypeTag.ToString());
 
-        // Creiamo il widget
         UQuestEntryWidget* NewEntry = CreateWidget<UQuestEntryWidget>(this, QuestEntryClass);
         if (NewEntry)
         {
-            // Nota: SetupQuestEntry ora inizializza solo i dati interni e il Titolo della riga,
-            // non chiama più DisplayQuestDetails automaticamente.
+            // setupquestentry only initializes internal data and the row title
+            // it no longer calls displayquestdetails automatically
             NewEntry->SetupQuestEntry(ProgressData, this);
 
-            // 6. DEBUG LOGICA TAGS
-            UE_LOG(LogTemp, Log, TEXT("DEBUG: Comparazione Tag - Missione: %s | MainTag della UI: %s"), 
+            UE_LOG(LogTemp, Log, TEXT("DEBUG: Tag comparison - Quest: %s | UI MainTag: %s"), 
                 *ProgressData.QuestDef->QuestTypeTag.ToString(), 
                 *MainTag.ToString());
 
+            // sort quests into main or side based on their type tag
             if (ProgressData.QuestDef->QuestTypeTag.MatchesTag(MainTag))
             {
-                UE_LOG(LogTemp, Warning, TEXT("DEBUG: Aggiunta a MainQuestScrollBox"));
+                UE_LOG(LogTemp, Warning, TEXT("DEBUG: Adding to MainQuestScrollBox"));
                 MainQuestScrollBox->AddChild(NewEntry);
             }
             else
             {
-                UE_LOG(LogTemp, Warning, TEXT("DEBUG: Aggiunta a SideQuestScrollBox"));
+                UE_LOG(LogTemp, Warning, TEXT("DEBUG: Adding to SideQuestScrollBox"));
                 SideQuestScrollBox->AddChild(NewEntry);
             }
         }
         else
         {
-            UE_LOG(LogTemp, Error, TEXT("DEBUG: Fallita la creazione del widget QuestEntry per %s!"), *ProgressData.QuestDef->Title.ToString());
+            UE_LOG(LogTemp, Error, TEXT("DEBUG: Failed to create QuestEntry widget for %s!"), *ProgressData.QuestDef->Title.ToString());
         }
     }
     
-    UE_LOG(LogTemp, Warning, TEXT("=== DEBUG: Fine UpdateQuests ==="));
-    
+    UE_LOG(LogTemp, Warning, TEXT("=== DEBUG: End UpdateQuests ==="));
 }
-
-
 
 void UCharacterUI::HideAllStatDescriptions()
 {
@@ -281,6 +238,7 @@ void UCharacterUI::HandleStatButtonClick(UStatsButtonWidget *ButtonToSelect, UTe
 {
     UStatsButtonWidget* AllButtons[] = {HealthStats, AttackStats, DefenceStats, SpeedStats};
     
+    // deselect all stat buttons first
     for (UStatsButtonWidget* Button : AllButtons)
     {
         if (Button)
@@ -289,28 +247,23 @@ void UCharacterUI::HandleStatButtonClick(UStatsButtonWidget *ButtonToSelect, UTe
         }
     }
     
-    
+    // select the clicked button
     if (ButtonToSelect)  ButtonToSelect->SetSelected(true);
     
-    // show description
+    // show the corresponding description and hide others
     HideAllStatDescriptions();
-
     if (DescriptionToShow) DescriptionToShow->SetVisibility(ESlateVisibility::Visible);
-
 }
 
 void UCharacterUI::ShowStatDescription(UTextBlock *DescriptionToShow)
 {
     HideAllStatDescriptions();
-      
     if (DescriptionToShow) DescriptionToShow->SetVisibility(ESlateVisibility::Visible);
-   
 }
-
 
 void UCharacterUI::DisplayQuestDetails(const FQuestProgress& Details)
 {
-    // 1. Controllo sicurezza iniziale
+    // safety checks
     if (!Details.QuestDef || !VerticalBoxObjectives || !ObjectiveRowClass) return;
 
     CurrentSelectedQuestTag = Details.QuestDef->QuestID;
@@ -318,23 +271,23 @@ void UCharacterUI::DisplayQuestDetails(const FQuestProgress& Details)
     UQuestManagerSystem* QM = GetGameInstance()->GetSubsystem<UQuestManagerSystem>();
     bool bReadyToTurnIn = QM ? QM->AreObjectivesComplete(Details) : false;
 
-    // 2. Aggiorna il Titolo e rendilo VISIBILE
+    // update title and make it visible
     if (TextQuestTitle) 
     {
         TextQuestTitle->SetText(Details.QuestDef->Title);
-        TextQuestTitle->SetVisibility(ESlateVisibility::Visible); // Lo rendiamo visibile qui
+        TextQuestTitle->SetVisibility(ESlateVisibility::Visible);
     }
 
-    // 3. Aggiorna la Descrizione + Messaggio NPC e rendila VISIBILE
+    // update description with optional turn-in message
     if (TextQuestDescription)
     {
-        TextQuestDescription->SetVisibility(ESlateVisibility::Visible); // Lo rendiamo visibile qui
+        TextQuestDescription->SetVisibility(ESlateVisibility::Visible);
 
         FText MainDesc = Details.QuestDef->QuestDescription;
         
         if (bReadyToTurnIn && Details.QuestDef->bRequiresNPCTurnIn)
         {
-            FString TurnInString = FString::Printf(TEXT("%s\n\n*** OBIETTIVI COMPLETATI! Torna da %s per la ricompensa. ***"), 
+            FString TurnInString = FString::Printf(TEXT("%s\n\n*** OBJECTIVES COMPLETE! Return to %s for reward. ***"), 
                 *MainDesc.ToString(), 
                 *Details.QuestDef->TargetNPCName.ToString());
             
@@ -346,9 +299,9 @@ void UCharacterUI::DisplayQuestDetails(const FQuestProgress& Details)
         }
     }
 
-    // 4. LOGICA OBIETTIVI: Svuota, rendi VISIBILE e ricrea le righe
+    // clear and rebuild objective list with current progress
     VerticalBoxObjectives->ClearChildren();
-    VerticalBoxObjectives->SetVisibility(ESlateVisibility::Visible); // Lo rendiamo visibile qui
+    VerticalBoxObjectives->SetVisibility(ESlateVisibility::Visible);
 
     for (const FQuestObjective& Obj : Details.QuestDef->Objectives)
     {
@@ -371,6 +324,7 @@ void UCharacterUI::DisplayQuestDetails(const FQuestProgress& Details)
 
                 ObjText->SetText(FText::FromString(GoalStr));
 
+                // turn text green when objective is complete
                 if (CurrentCount >= Obj.RequiredCount)
                 {
                     ObjText->SetColorAndOpacity(FLinearColor::Green);
@@ -381,14 +335,10 @@ void UCharacterUI::DisplayQuestDetails(const FQuestProgress& Details)
     }
 }
 
-
-
-
 void UCharacterUI::OnQuestSelected()
 {
-
+    // placeholder for future implementation
 }
-
 
 void UCharacterUI::OnHealthStatsClicked()
 {

@@ -10,6 +10,13 @@
 
 class UICantCryGameInstance;
 
+
+/**
+ * CLASS: ABasePickup
+ * DESCRIPTION: Base class for all world items that can be collected. 
+ * Handles inventory storage and quest progress updates.
+ */
+
 UCLASS()
 class ICANTCRY_API ABasePickup : public AActor
 {
@@ -17,30 +24,34 @@ class ICANTCRY_API ABasePickup : public AActor
 	
 public:
 	
-	// Funzione chiamata quando il player "tocca" o "interagisce" con l'oggetto
+	/** * Main interaction function called when the player collects or interacts with the item.
+	 * Processes inventory logic and quest updates.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Pickup")
 	void Collect(AICC_Player* Player);
 
 protected:
 
-	// --- TAG PER IL SISTEMA MISSIONI ---
+	// --- TAGS FOR THE MISSION SYSTEM ---
     
+    /** The GameplayTag of the quest this item is linked to. */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Quest", meta = (AllowPrivateAccess = "true"))
     FGameplayTag TargetQuestTag;
 
+	/** The specific objective tag that should progress when this item is picked up (e.g., Quest.Obj.Gathers). */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Quest", meta = (AllowPrivateAccess = "true"))
     FGameplayTag TargetObjectiveTag;
 
-    // Se TRUE, l'oggetto finisce nell'inventario fisico (GameInstance)
+    /** If enabled, the item will be physically added to the persistent inventory in the GameInstance. */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Quest")
     bool bShouldBeStored = true;
 
-    // Il tag unico dell'oggetto (es: Oggetti.Sasso)
+    /** The unique identifier for this item type (e.g., Item.Stone). Required if bShouldBeStored is true. */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Quest", meta = (EditCondition = "bShouldBeStored"))
     FGameplayTag ItemTag;
 
-    // Quanti punti dare (es. 1 sasso)
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Quest")
-    int32 AmountToAdd = 1;
+	/** How many units of this item to add to the inventory or quest progress. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Quest")
+	int32 AmountToAdd = 1;
 
 };

@@ -11,28 +11,28 @@ void ABasePickup::Collect(AICC_Player* Player)
 {
 	if (!Player) return;
 
-    // 1. Recuperiamo il Manager tramite il GameInstance Subsystem
-   UICantCryGameInstance* GI = Cast<UICantCryGameInstance>(Player->GetGameInstance());
+    // access the GameInstance to reach both inventory and quest systems
+    UICantCryGameInstance* GI = Cast<UICantCryGameInstance>(Player->GetGameInstance());
     if (GI)
     {
-
-        // --- NUOVA LOGICA DI STIVAGGIO ---
+        // Handle inventory storage if the item is persistent
         if (bShouldBeStored && ItemTag.IsValid())
         {
             GI->AddToInventory(ItemTag, AmountToAdd);
         }
 
-
+       
         UQuestManagerSystem* QuestManager = GI->GetSubsystem<UQuestManagerSystem>();
         if (QuestManager)
         {
-            // 2. Chiamiamo la funzione del Manager con i TAG corretti
+            // upd the specific quest objective using the assigned tags
             QuestManager->UpdateObjectiveProgress(TargetQuestTag, TargetObjectiveTag, AmountToAdd);
             
-            DebugHelper::LogSuccess(FString::Printf(TEXT("Sasso Raccolto! Obiettivo: %s"), *TargetObjectiveTag.ToString()));
+            // Log 
+            DebugHelper::LogSuccess(FString::Printf(TEXT("Item Collected! Objective: %s"), *TargetObjectiveTag.ToString()));
         }
     }
 
-    // 3. Il sasso scompare dal mondo
+    
     Destroy();
 }

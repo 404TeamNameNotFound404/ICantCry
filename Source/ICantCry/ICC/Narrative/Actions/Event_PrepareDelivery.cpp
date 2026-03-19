@@ -6,6 +6,7 @@
 
 void UEvent_PrepareDelivery::ExecuteEvent_Implementation(AICC_Player* Player, UObject* Context)
 {
+    // context is the active widget; sync delivery reqs to it
     if (UDialogueWidget* Widget = Cast<UDialogueWidget>(Context))
     {
         Widget->CurrentRequiredItemTag = ItemTag;

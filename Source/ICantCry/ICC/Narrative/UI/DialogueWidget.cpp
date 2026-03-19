@@ -20,462 +20,73 @@ void UDialogueWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
-    // Continue
+    // bind the continue button to advance to the next line
     if (BtnNext)   BtnNext->OnClicked.AddDynamic(this, &UDialogueWidget::DisplayNextLine);
     
-
-    // ACCept or Decline
+    // bind accept and decline buttons but keep them hidden until needed for optional quests
     if (BtnAccept) BtnAccept->OnClicked.AddDynamic(this, &UDialogueWidget::OnAcceptClicked);
     if (BtnDecline) BtnDecline->OnClicked.AddDynamic(this, &UDialogueWidget::OnDeclineClicked);
     if (BtnAccept) BtnAccept->SetVisibility(ESlateVisibility::Collapsed);
     if (BtnDecline) BtnDecline->SetVisibility(ESlateVisibility::Collapsed);
 
-    // Delivery 
+    // bind the delivery button but keep it hidden until a turn-in quest is active
     if (BtnDeliver) BtnDeliver->OnClicked.AddDynamic(this, &UDialogueWidget::OnDeliverClicked);
     if (BtnDeliver) BtnDeliver->SetVisibility(ESlateVisibility::Collapsed);
     if (TextDeliveryProgress) TextDeliveryProgress->SetVisibility(ESlateVisibility::Collapsed);
         
-
-    // Setup Input
+    // switch to UI input mode so the player can interact with buttons using mouse or gamepad
     APlayerController* PC = GetOwningPlayer();
-    if (PC) { PC->bShowMouseCursor = true; FInputModeUIOnly Mode; Mode.SetWidgetToFocus(TakeWidget()); PC->SetInputMode(Mode); }
+    if (PC) 
+    { 
+        PC->bShowMouseCursor = true; 
+        FInputModeUIOnly Mode; 
+        Mode.SetWidgetToFocus(TakeWidget()); 
+        PC->SetInputMode(Mode); 
+    }
 }
 
 void UDialogueWidget::StartDialogue(UDialogueAsset* NewDialogue) 
 {
-    //     if (!NewDialogue) return;
-
-    //    CurrentDialogue = NewDialogue;
-    //     CurrentLineIndex = 0;
-
-    //     ApplyDialogueStyle();
-    
-    //     if (TextNPCName && CurrentDialogue->NPCProfile) 
-    //         TextNPCName->SetText(CurrentDialogue->NPCProfile->NPCName);
-    
-    //     DisplayNextLine();
-
-
-    //---------- QUESTO é GIUSTO
-
-    // CurrentDialogue = NewDialogue;
-    // CurrentLineIndex = 0;
-
-    // if (CurrentDialogue && CurrentDialogue->Lines.Num() > 0)
-    // {
-    //     ApplyDialogueStyle(); // Mostra testo/immagine riga 0
-
-    //     // Esegui subito gli eventi della riga 0 (es. PrepareDelivery)
-    //     for (UGameplayEvent* Event : CurrentDialogue->Lines[CurrentLineIndex].Events)
-    //     {
-    //         if (Event) Event->ExecuteEvent(nullptr, this);
-    //     }
-    // }
-
-    //---------- 
-
-
     if (!NewDialogue) return;
 
     CurrentDialogue = NewDialogue;
-    CurrentLineIndex = 0; // Partiamo dall'inizio
-
-    // Reset della UI di consegna se era rimasta sporca da dialoghi precedenti
+    CurrentLineIndex = 0; // always start from the beginning of the dialogue
+    
+    // clear any leftover delivery ui from previous conversations
     if (BtnDeliver) BtnDeliver->SetVisibility(ESlateVisibility::Collapsed);
     if (TextDeliveryProgress) TextDeliveryProgress->SetVisibility(ESlateVisibility::Collapsed);
 
-    // Applichiamo lo stile globale del dialogo (Font/Colore)
+    // apply the font and color settings defined in the dialogue asset
     ApplyDialogueStyle(); 
     
-    // Mostriamo la prima riga (Index 0). 
-    // DisplayNextLine si occuperà di eseguire gli eventi della riga 0.
+    // show the first line, displaynextline will also handle executing any events attached to line 0
     DisplayNextLine();
 }
 
 void UDialogueWidget::DisplayNextLine() 
 {
-//    // 1. GESTIONE INPUT DURANTE LA SCRITTURA
-//     // Se il testo sta ancora scorrendo, lo mostriamo tutto subito e interrompiamo il timer
-//     if (GetWorld()->GetTimerManager().IsTimerActive(TypewriterTimerHandle))
-//     {
-//         FinishLineInstantly();
-//         return;
-//     }
-
-//     // Validità del dialogo e del profilo NPC
-//     if (!CurrentDialogue || !CurrentDialogue->NPCProfile) 
-//     {
-//         EndDialogue();
-//         return;
-//     }
-
-//     // 2. LOGICA VISUALIZZAZIONE RIGA
-//     if (CurrentDialogue->Lines.IsValidIndex(CurrentLineIndex)) 
-//     {
-//         const FDialogueLine& CurrentLine = CurrentDialogue->Lines[CurrentLineIndex];
-//         FullTextCurrentLine = CurrentLine.Text.ToString();
-//         CurrentCharacterIndex = 0;
-
-//         // FIX: Assicuriamoci che il tasto Next sia visibile per scorrere le righe
-//         if (BtnNext) 
-//         {
-//             BtnNext->SetVisibility(ESlateVisibility::Visible);
-//         }
-
-//         // AGGIORNAMENTO UI: Nome e Ritratto NPC
-//         if (CurrentDialogue->NPCProfile)
-//         {
-//             // Imposta il Nome
-//             if (TextNPCName)
-//             {
-//                 TextNPCName->SetText(CurrentDialogue->NPCProfile->NPCName);
-//             }
-
-//             // Imposta il Ritratto (Portrait) in base all'emozione
-//             if (NPCFaceImage)
-//             {
-//                 FGameplayTag TargetTag = CurrentLine.EmotionTag;
-                
-//                 // Cerchiamo l'emozione nella mappa Portraits del profilo
-//                 if (CurrentDialogue->NPCProfile->Portraits.Contains(TargetTag))
-//                 {
-//                     UTexture2D* LoadedTexture = CurrentDialogue->NPCProfile->Portraits[TargetTag].LoadSynchronous();
-//                     NPCFaceImage->SetBrushFromTexture(LoadedTexture);
-//                 }
-//                 else if (CurrentDialogue->NPCProfile->Portraits.Num() > 0)
-//                 {
-//                     // Fallback: se il tag non esiste, prendi il primo ritratto disponibile
-//                     TArray<FGameplayTag> OutKeys;
-//                     CurrentDialogue->NPCProfile->Portraits.GetKeys(OutKeys);
-//                     UTexture2D* DefaultTexture = CurrentDialogue->NPCProfile->Portraits[OutKeys[0]].LoadSynchronous();
-//                     NPCFaceImage->SetBrushFromTexture(DefaultTexture);
-//                 }
-//             }
-//         }
-
-//         // GESTIONE TESTO (Macchina da scrivere vs Istantaneo)
-//         if (CurrentDialogue->bUseTypewriterEffect && TextDialogueContent)
-//         {
-//             TextDialogueContent->SetText(FText::GetEmpty());
-//             float Speed = FMath::Max(0.01f, CurrentDialogue->TypewriterSpeed);
-//             GetWorld()->GetTimerManager().SetTimer(TypewriterTimerHandle, this, &UDialogueWidget::OnTypewriterTick, Speed, true);
-//         }
-//         else if (TextDialogueContent)
-//         {
-//             TextDialogueContent->SetText(CurrentLine.Text);
-//         }
-
-//         CurrentLineIndex++;
-//     } 
-//     else 
-//     {
-//         // 3. LOGICA DI FINE DIALOGO / USCITA
-        
-//         // Se l'asset corrente vieta i tasti missione (es. dialogo di rifiuto), chiudi tutto
-//         if (CurrentDialogue->bNeverShowQuestButtons)
-//         {
-//             EndDialogue();
-//             return;
-//         }
-        
-//         // PRIORITÀ 1: BRANCHES (Se ci sono bivi, mostriamo le scelte)
-//         if (CurrentDialogue->bUseBranches && CurrentDialogue->Branches.Num() > 0)
-//         {
-//             if (BtnNext) BtnNext->SetVisibility(ESlateVisibility::Collapsed);
-//             ShowBranches();
-//         }
-//         // PRIORITÀ 2: QUEST OPZIONALE (Mostra Accept/Decline se non ci sono bivi)
-//         else if (bIsOptionalQuest) 
-//         {
-//             if (BtnNext) BtnNext->SetVisibility(ESlateVisibility::Collapsed);
-//             if (BtnAccept) 
-//             { 
-//                 BtnAccept->SetVisibility(ESlateVisibility::Visible); 
-//                 BtnAccept->SetFocus(); // Focus per supporto Gamepad/Tastiera
-//             }
-//             if (BtnDecline) 
-//             {
-//                 BtnDecline->SetVisibility(ESlateVisibility::Visible);
-//             }
-//         }
-//         // PRIORITÀ 3: FINE DIALOGO STANDARD
-//         else 
-//         {
-//             EndDialogue();
-//         }
-//     }
-
-
-    //__________GIUSTO
-
-    // // 1. GESTIONE INPUT DURANTE LA SCRITTURA
-    // if (GetWorld()->GetTimerManager().IsTimerActive(TypewriterTimerHandle))
-    // {
-    //     FinishLineInstantly();
-    //     return;
-    // }
-
-    // // Validità del dialogo
-    // if (!CurrentDialogue) 
-    // {
-    //     EndDialogue();
-    //     return;
-    // }
-
-    // // 2. LOGICA VISUALIZZAZIONE RIGA
-    // if (CurrentDialogue->Lines.IsValidIndex(CurrentLineIndex)) 
-    // {
-    //     const FDialogueLine& CurrentLine = CurrentDialogue->Lines[CurrentLineIndex];
-    //     FullTextCurrentLine = CurrentLine.Text.ToString();
-    //     CurrentCharacterIndex = 0;
-
-    //     // --- NOVITÀ: ESECUZIONE EVENTI DELLA RIGA CORRENTE ---
-    //     // Prima di mostrare il testo, eseguiamo gli eventi (es. PrepareDelivery)
-    //     for (UGameplayEvent* Event : CurrentLine.Events)
-    //     {
-    //         if (Event)
-    //         {
-    //             // Passiamo 'this' come context affinché l'evento possa modificare questo widget
-    //             Event->ExecuteEvent(nullptr, this);
-    //         }
-    //     }
-
-    //     ApplyDialogueStyle();
-
-    //     // RESET UI: Se la riga precedente aveva nascosto il Next (per una consegna), 
-    //     // lo ripristiniamo a meno che un evento della riga attuale non lo nasconda di nuovo.
-    //     if (BtnNext) 
-    //     {
-    //         BtnNext->SetVisibility(ESlateVisibility::Visible);
-    //     }
-
-    //     // AGGIORNAMENTO UI: Nome e Ritratto NPC
-    //     if (CurrentDialogue->NPCProfile)
-    //     {
-    //         if (TextNPCName)
-    //         {
-    //             TextNPCName->SetText(CurrentDialogue->NPCProfile->NPCName);
-    //         }
-
-    //         if (NPCFaceImage)
-    //         {
-    //             FGameplayTag TargetTag = CurrentLine.EmotionTag;
-                
-    //             if (CurrentDialogue->NPCProfile->Portraits.Contains(TargetTag))
-    //             {
-    //                 UTexture2D* LoadedTexture = CurrentDialogue->NPCProfile->Portraits[TargetTag].LoadSynchronous();
-    //                 NPCFaceImage->SetBrushFromTexture(LoadedTexture);
-    //             }
-    //             else if (CurrentDialogue->NPCProfile->Portraits.Num() > 0)
-    //             {
-    //                 TArray<FGameplayTag> OutKeys;
-    //                 CurrentDialogue->NPCProfile->Portraits.GetKeys(OutKeys);
-    //                 UTexture2D* DefaultTexture = CurrentDialogue->NPCProfile->Portraits[OutKeys[0]].LoadSynchronous();
-    //                 NPCFaceImage->SetBrushFromTexture(DefaultTexture);
-    //             }
-    //         }
-    //     }
-
-    //     // GESTIONE TESTO
-    //     if (CurrentDialogue->bUseTypewriterEffect && TextDialogueContent)
-    //     {
-    //         TextDialogueContent->SetText(FText::GetEmpty());
-    //         float Speed = FMath::Max(0.01f, CurrentDialogue->TypewriterSpeed);
-    //         GetWorld()->GetTimerManager().SetTimer(TypewriterTimerHandle, this, &UDialogueWidget::OnTypewriterTick, Speed, true);
-    //     }
-    //     else if (TextDialogueContent)
-    //     {
-    //         TextDialogueContent->SetText(CurrentLine.Text);
-    //     }
-
-    //     CurrentLineIndex++;
-    // } 
-    // else 
-    // {
-    //     // 3. LOGICA DI FINE DIALOGO / USCITA
-    //     if (CurrentDialogue->bNeverShowQuestButtons)
-    //     {
-    //         EndDialogue();
-    //         return;
-    //     }
-        
-    //     if (CurrentDialogue->bUseBranches && CurrentDialogue->Branches.Num() > 0)
-    //     {
-    //         if (BtnNext) BtnNext->SetVisibility(ESlateVisibility::Collapsed);
-    //         ShowBranches();
-    //     }
-    //     else if (bIsOptionalQuest) 
-    //     {
-    //         if (BtnNext) BtnNext->SetVisibility(ESlateVisibility::Collapsed);
-    //         if (BtnAccept) 
-    //         { 
-    //             BtnAccept->SetVisibility(ESlateVisibility::Visible); 
-    //             BtnAccept->SetFocus();
-    //         }
-    //         if (BtnDecline) 
-    //         {
-    //             BtnDecline->SetVisibility(ESlateVisibility::Visible);
-    //         }
-    //     }
-    //     else 
-    //     {
-    //         EndDialogue();
-    //     }
-    // }
-
-
-    //------------------------
-
-    // // 1. GESTIONE INPUT DURANTE LA SCRITTURA
-    // // Se il testo sta ancora scorrendo, lo mostriamo subito e fermiamo il timer
-    // if (GetWorld()->GetTimerManager().IsTimerActive(TypewriterTimerHandle))
-    // {
-    //     FinishLineInstantly();
-    //     return;
-    // }
-
-    // // Validità del dialogo
-    // if (!CurrentDialogue) 
-    // {
-    //     EndDialogue();
-    //     return;
-    // }
-
-    // // 2. LOGICA VISUALIZZAZIONE RIGA
-    // if (CurrentDialogue->Lines.IsValidIndex(CurrentLineIndex)) 
-    // {
-    //     const FDialogueLine& CurrentLine = CurrentDialogue->Lines[CurrentLineIndex];
-
-    //     // --- ESECUZIONE EVENTI DELLA RIGA CORRENTE ---
-    //     // Eseguiamo gli eventi (es. PrepareDelivery) prima di mostrare il testo
-    //     for (UGameplayEvent* Event : CurrentLine.Events)
-    //     {
-    //         if (Event)
-    //         {
-    //             // Passiamo 'this' come context per permettere all'evento di modificare il widget
-    //             Event->ExecuteEvent(nullptr, this);
-    //         }
-    //     }
-
-    //     // Applichiamo font e colore definiti nell'asset
-    //     ApplyDialogueStyle();
-
-    //     // RESET UI: Ripristiniamo il tasto Next. 
-    //     // Se un evento appena eseguito (come PrepareDelivery) deve nasconderlo, 
-    //     // lo farà subito dopo chiamando UpdateDeliveryUI.
-    //     if (BtnNext) 
-    //     {
-    //         BtnNext->SetVisibility(ESlateVisibility::Visible);
-    //     }
-
-    //     // Preparazione dati per il testo
-    //     FullTextCurrentLine = CurrentLine.Text.ToString();
-    //     CurrentCharacterIndex = 0;
-
-    //     // AGGIORNAMENTO UI: Nome e Ritratto NPC
-    //     if (CurrentDialogue->NPCProfile)
-    //     {
-    //         if (TextNPCName)
-    //         {
-    //             TextNPCName->SetText(CurrentDialogue->NPCProfile->NPCName);
-    //         }
-
-    //         if (NPCFaceImage)
-    //         {
-    //             FGameplayTag TargetTag = CurrentLine.EmotionTag;
-                
-    //             if (CurrentDialogue->NPCProfile->Portraits.Contains(TargetTag))
-    //             {
-    //                 UTexture2D* LoadedTexture = CurrentDialogue->NPCProfile->Portraits[TargetTag].LoadSynchronous();
-    //                 NPCFaceImage->SetBrushFromTexture(LoadedTexture);
-    //             }
-    //             else if (CurrentDialogue->NPCProfile->Portraits.Num() > 0)
-    //             {
-    //                 // Fallback al primo ritratto disponibile
-    //                 TArray<FGameplayTag> OutKeys;
-    //                 CurrentDialogue->NPCProfile->Portraits.GetKeys(OutKeys);
-    //                 UTexture2D* DefaultTexture = CurrentDialogue->NPCProfile->Portraits[OutKeys[0]].LoadSynchronous();
-    //                 NPCFaceImage->SetBrushFromTexture(DefaultTexture);
-    //             }
-    //         }
-    //     }
-
-    //     // GESTIONE TESTO (Macchina da scrivere o istantaneo)
-    //     if (CurrentDialogue->bUseTypewriterEffect && TextDialogueContent)
-    //     {
-    //         TextDialogueContent->SetText(FText::GetEmpty());
-    //         float Speed = FMath::Max(0.01f, CurrentDialogue->TypewriterSpeed);
-    //         GetWorld()->GetTimerManager().SetTimer(TypewriterTimerHandle, this, &UDialogueWidget::OnTypewriterTick, Speed, true);
-    //     }
-    //     else if (TextDialogueContent)
-    //     {
-    //         TextDialogueContent->SetText(CurrentLine.Text);
-    //     }
-
-    //     // Incrementiamo l'indice per la prossima chiamata
-    //     CurrentLineIndex++;
-    // } 
-    // else 
-    // {
-    //     // 3. LOGICA DI FINE DIALOGO / USCITA
-    //     if (CurrentDialogue->bNeverShowQuestButtons)
-    //     {
-    //         EndDialogue();
-    //         return;
-    //     }
-        
-    //     // Priorità 1: Branches (Bivi decisionali)
-    //     if (CurrentDialogue->bUseBranches && CurrentDialogue->Branches.Num() > 0)
-    //     {
-    //         if (BtnNext) BtnNext->SetVisibility(ESlateVisibility::Collapsed);
-    //         ShowBranches();
-    //     }
-    //     // Priorità 2: Quest opzionale (Accetta/Rifiuta)
-    //     else if (bIsOptionalQuest) 
-    //     {
-    //         if (BtnNext) BtnNext->SetVisibility(ESlateVisibility::Collapsed);
-    //         if (BtnAccept) 
-    //         { 
-    //             BtnAccept->SetVisibility(ESlateVisibility::Visible); 
-    //             BtnAccept->SetFocus();
-    //         }
-    //         if (BtnDecline) 
-    //         {
-    //             BtnDecline->SetVisibility(ESlateVisibility::Visible);
-    //         }
-    //     }
-    //     // Priorità 3: Fine standard
-    //     else 
-    //     {
-    //         EndDialogue();
-    //     }
-    // }
-
-
-
-
-    //&&&&&&&&&&&&&&&&&&&
-
-    // 1. GESTIONE INPUT DURANTE LA SCRITTURA
+    // if the typewriter effect is still running, instantly show the full line and stop the timer
+    // this gives the player a way to skip the animation if they click again
     if (GetWorld()->GetTimerManager().IsTimerActive(TypewriterTimerHandle))
     {
         FinishLineInstantly();
         return;
     }
 
+    // if the dialogue was somehow invalid, close the widget
     if (!CurrentDialogue) 
     {
         EndDialogue();
         return;
     }
 
-    // 2. LOGICA VISUALIZZAZIONE RIGA
+    // check if we still have lines to display
     if (CurrentDialogue->Lines.IsValidIndex(CurrentLineIndex)) 
     {
         const FDialogueLine& CurrentLine = CurrentDialogue->Lines[CurrentLineIndex];
 
-        // --- 1. ESECUZIONE EVENTI ---
-        // Eseguiamo gli eventi (es. PrepareDelivery) per aggiornare i tag di missione nel widget
+        // execute any gameplay events attached to this line before showing the text
+        // events like preparedelivery will set up the delivery ui state by updating the quest tags in this widget
         for (UGameplayEvent* Event : CurrentLine.Events)
         {
             if (Event)
@@ -484,8 +95,8 @@ void UDialogueWidget::DisplayNextLine()
             }
         }
 
-        // --- 2. CONTROLLO STATO CONSEGNA PER VISIBILITÀ BTNNEXT ---
-        // Verifichiamo se questa riga ha attivato una consegna non ancora completata
+        // check if this line activated a delivery that isn't complete yet
+        // if a delivery is in progress, the next button should stay hidden
         UICantCryGameInstance* GI = Cast<UICantCryGameInstance>(GetGameInstance());
         UQuestManagerSystem* QM = GI ? GI->GetSubsystem<UQuestManagerSystem>() : nullptr;
         
@@ -499,19 +110,20 @@ void UDialogueWidget::DisplayNextLine()
             }
         }
 
+        // update next button visibility based on delivery state
         if (BtnNext) 
         {
-            // Se c'è una consegna in corso, il tasto Next deve restare nascosto (Collapsed)
-            // altrimenti lo rendiamo visibile per procedere.
             BtnNext->SetVisibility(bIsDeliveryActive ? ESlateVisibility::Collapsed : ESlateVisibility::Visible);
         }
 
-        // --- 3. AGGIORNAMENTO UI E TESTO ---
+        // apply the dialogue style again in case it changed
         ApplyDialogueStyle();
 
+        // store the full text for typewriter effect and reset character index
         FullTextCurrentLine = CurrentLine.Text.ToString();
         CurrentCharacterIndex = 0;
 
+        // update npc name and portrait based on the current line's emotion tag
         if (CurrentDialogue->NPCProfile)
         {
             if (TextNPCName) TextNPCName->SetText(CurrentDialogue->NPCProfile->NPCName);
@@ -526,6 +138,7 @@ void UDialogueWidget::DisplayNextLine()
                 }
                 else if (CurrentDialogue->NPCProfile->Portraits.Num() > 0)
                 {
+                    // if the specific emotion tag isn't found, fall back to the first available portrait
                     TArray<FGameplayTag> OutKeys;
                     CurrentDialogue->NPCProfile->Portraits.GetKeys(OutKeys);
                     UTexture2D* DefaultTexture = CurrentDialogue->NPCProfile->Portraits[OutKeys[0]].LoadSynchronous();
@@ -534,6 +147,7 @@ void UDialogueWidget::DisplayNextLine()
             }
         }
 
+        // display the text either with typewriter effect or instantly
         if (CurrentDialogue->bUseTypewriterEffect && TextDialogueContent)
         {
             TextDialogueContent->SetText(FText::GetEmpty());
@@ -545,22 +159,27 @@ void UDialogueWidget::DisplayNextLine()
             TextDialogueContent->SetText(CurrentLine.Text);
         }
 
+        // move to the next line for the next call
         CurrentLineIndex++;
     } 
     else 
     {
-        // 3. LOGICA DI FINE DIALOGO
+        // no more lines, handle end of dialogue based on quest state and dialogue settings
+        
+        // if this dialogue is marked to never show quest buttons, just close it
         if (CurrentDialogue->bNeverShowQuestButtons)
         {
             EndDialogue();
             return;
         }
         
+        // if the dialogue has branches, show the choice buttons
         if (CurrentDialogue->bUseBranches && CurrentDialogue->Branches.Num() > 0)
         {
             if (BtnNext) BtnNext->SetVisibility(ESlateVisibility::Collapsed);
             ShowBranches();
         }
+        // otherwise if this is an optional quest, show accept and decline buttons
         else if (bIsOptionalQuest) 
         {
             if (BtnNext) BtnNext->SetVisibility(ESlateVisibility::Collapsed);
@@ -571,13 +190,12 @@ void UDialogueWidget::DisplayNextLine()
             }
             if (BtnDecline) BtnDecline->SetVisibility(ESlateVisibility::Visible);
         }
+        // if none of the above, just end the dialogue normally
         else 
         {
             EndDialogue();
         }
     }
-    
-
 }
 
 void UDialogueWidget::OnAcceptClicked() 
@@ -587,16 +205,22 @@ void UDialogueWidget::OnAcceptClicked()
 
 void UDialogueWidget::OnDeclineClicked() 
 {
-    // Chiude senza attivare gli eventi (la quest non parte)
+    // close the widget without triggering any ondialogueended events
+    // this means the quest won't start or progress
     APlayerController* PC = GetOwningPlayer();
-    if (PC) { PC->bShowMouseCursor = false; FInputModeGameOnly Mode; PC->SetInputMode(Mode); }
+    if (PC) 
+    { 
+        PC->bShowMouseCursor = false; 
+        FInputModeGameOnly Mode; 
+        PC->SetInputMode(Mode); 
+    }
     RemoveFromParent();
 }
 
 void UDialogueWidget::EndDialogue() 
 {
-
-    // Esegue gli eventi (come StartQuest) solo se il dialogo finisce correttamente
+    // trigger any events that should happen when the dialogue finishes normally
+    // this is where quests are started or other narrative events happen
     if (CurrentDialogue)
     {
         if (AICC_Player* Player = Cast<AICC_Player>(GetOwningPlayerPawn()))
@@ -608,21 +232,26 @@ void UDialogueWidget::EndDialogue()
         }
     }
     
-    // Ripristino input e chiusura
+    // restore game input mode and close the widget
     APlayerController* PC = GetOwningPlayer();
-    if (PC) { PC->bShowMouseCursor = false; FInputModeGameOnly Mode; PC->SetInputMode(Mode); }
+    if (PC) 
+    { 
+        PC->bShowMouseCursor = false; 
+        FInputModeGameOnly Mode; 
+        PC->SetInputMode(Mode); 
+    }
     RemoveFromParent();
 }
 
 
 void UDialogueWidget::ApplyDialogueStyle()
 {
-  if (!CurrentDialogue || !TextDialogueContent) return;
+    if (!CurrentDialogue || !TextDialogueContent) return;
 
-    // 1. Applica il Colore (da FLinearColor a FSlateColor)
+    // convert the linear color to slate color and apply it to the dialogue text
     TextDialogueContent->SetColorAndOpacity(FSlateColor(CurrentDialogue->DialogueColor));
 
-    // 2. Applica il Font (se impostato nel Data Asset)
+    // if the dialogue asset specifies a font, apply it
     if (CurrentDialogue->DialogueFont.HasValidFont())
     {
         TextDialogueContent->SetFont(CurrentDialogue->DialogueFont);
@@ -632,6 +261,7 @@ void UDialogueWidget::ApplyDialogueStyle()
 
 void UDialogueWidget::OnTypewriterTick()
 {
+    // add one character to the displayed text each tick until we reach the full line
     if (CurrentCharacterIndex < FullTextCurrentLine.Len())
     {
         CurrentCharacterIndex++;
@@ -643,44 +273,42 @@ void UDialogueWidget::OnTypewriterTick()
     }
     else
     {
+        // once the full line is shown, stop the timer
         GetWorld()->GetTimerManager().ClearTimer(TypewriterTimerHandle);
     }
 }
 
 void UDialogueWidget::FinishLineInstantly()
 {
+    // stop the typewriter timer and show the full line immediately
     GetWorld()->GetTimerManager().ClearTimer(TypewriterTimerHandle);
     if (TextDialogueContent)
     {
         TextDialogueContent->SetText(FText::FromString(FullTextCurrentLine));
     }
-    // Non incrementiamo CurrentLineIndex qui, lo farà il prossimo click su DisplayNextLine
+    // don't increment currentlineindex here, the next click on displaynextline will advance
 }
 
 
 void UDialogueWidget::ShowBranches()
 {
-    // 1. Controlli di sicurezza
+    // validate that we have everything needed to show choices
     if (!ChoiceContainer || !CurrentDialogue || !ChoiceButtonClass) return;
 
-    // 2. Prepariamo la UI
+    // clear any old choice buttons and make the container visible
     ChoiceContainer->SetVisibility(ESlateVisibility::Visible);
     ChoiceContainer->ClearChildren();
     
-    // Disabilitiamo il tasto "Next" perché il giocatore deve scegliere tra i bivi
+    // hide the next button because the player must make a choice now
     if (BtnNext) BtnNext->SetVisibility(ESlateVisibility::Collapsed);
 
-    // 3. Creiamo un bottone per ogni ramo (Branch) definito nel Data Asset
+    // create a button for each branch defined in the dialogue asset
     for (const FDialogueBranch& Branch : CurrentDialogue->Branches)
     {
-        // Spawnamo il widget del bottone usando la classe configurata nel .h
         UDialogueChoiceButton* NewButton = CreateWidget<UDialogueChoiceButton>(this, ChoiceButtonClass);
         if (NewButton)
         {
-            // Inizializziamo il bottone con il testo della risposta e il dialogo di destinazione
             NewButton->Setup(Branch.ReplyText, Branch.NextDialogue, this);
-            
-            // Lo aggiungiamo alla VerticalBox
             ChoiceContainer->AddChildToVerticalBox(NewButton);
         }
     }
@@ -688,21 +316,21 @@ void UDialogueWidget::ShowBranches()
 
 void UDialogueWidget::OnBranchSelected(UDialogueAsset* NextDialogue)
 {
-   // Puliamo la UI delle scelte
+    // clean up the choice buttons
     if (ChoiceContainer)
     {
         ChoiceContainer->ClearChildren();
         ChoiceContainer->SetVisibility(ESlateVisibility::Collapsed);
     }
 
-    // Se la scelta porta a un nuovo dialogo, lo facciamo partire
+    // if the branch leads to another dialogue, start it
     if (NextDialogue)
     {
         StartDialogue(NextDialogue);
     }
     else
     {
-        // Se la scelta non ha un dialogo successivo, chiudiamo la conversazione
+        // if no next dialogue, end the conversation
         EndDialogue();
     }
 }
@@ -710,35 +338,6 @@ void UDialogueWidget::OnBranchSelected(UDialogueAsset* NextDialogue)
 
 void UDialogueWidget::UpdateDeliveryUI()
 {
-//    UICantCryGameInstance* GI = Cast<UICantCryGameInstance>(GetGameInstance());
-//     UQuestManagerSystem* QM = GI ? GI->GetSubsystem<UQuestManagerSystem>() : nullptr;
-    
-//     if (GI && QM && TextDeliveryProgress)
-//     {
-//         int32 AlreadyDelivered = QM->GetObjectiveProgress(CurrentQuestTag, CurrentObjectiveTag);
-//         int32 InInventory = GI->GetItemCount(CurrentRequiredItemTag);
-
-//         FString ItemName = CurrentRequiredItemTag.GetTagName().ToString(); 
-        
-//         TextDeliveryProgress->SetText(FText::FromString(FString::Printf(TEXT("%s dati: %d/%d"), 
-//             *ItemName, AlreadyDelivered, CurrentAmountRequired)));
-
-//         // Abilitiamo il tasto consegna solo se abbiamo oggetti
-//         BtnDeliver->SetIsEnabled(InInventory > 0);
-        
-//         // Mostriamo i widget della consegna
-//         BtnDeliver->SetVisibility(ESlateVisibility::Visible);
-//         TextDeliveryProgress->SetVisibility(ESlateVisibility::Visible);
-
-//         // --- AGGIUNTA CORRETTA ---
-//         // Nascondiamo il tasto "Next" standard per impedire di saltare il dialogo
-//         // finché la consegna non è completata.
-//         if (BtnNext) 
-//         {
-//             BtnNext->SetVisibility(ESlateVisibility::Collapsed);
-//         }
-//     }
-
     UICantCryGameInstance* GI = Cast<UICantCryGameInstance>(GetGameInstance());
     UQuestManagerSystem* QM = GI ? GI->GetSubsystem<UQuestManagerSystem>() : nullptr;
     
@@ -748,23 +347,24 @@ void UDialogueWidget::UpdateDeliveryUI()
         int32 InInventory = GI->GetItemCount(CurrentRequiredItemTag);
         bool bFinished = AlreadyDelivered >= CurrentAmountRequired;
 
-        TextDeliveryProgress->SetText(FText::FromString(FString::Printf(TEXT("%s dati: %d/%d"), 
+        // update the progress text with current numbers
+        TextDeliveryProgress->SetText(FText::FromString(FString::Printf(TEXT("%s given: %d/%d"), 
             *CurrentRequiredItemTag.GetTagName().ToString(), AlreadyDelivered, CurrentAmountRequired)));
         TextDeliveryProgress->SetVisibility(ESlateVisibility::Visible);
 
-        // Colore Verde se finito
+        // turn the text green when the delivery is complete
         TextDeliveryProgress->SetColorAndOpacity(bFinished ? FLinearColor::Green : FLinearColor::White);
 
+        // manage delivery button visibility and enabled state
         if (BtnDeliver)
         {
             BtnDeliver->SetVisibility(bFinished ? ESlateVisibility::Collapsed : ESlateVisibility::Visible);
-            // Forza l'abilitazione se hai oggetti e non hai finito
             BtnDeliver->SetIsEnabled(InInventory > 0 && !bFinished);
         }
 
+        // show the next button only when delivery is complete so the player can continue
         if (BtnNext)
         {
-            // Il tasto Next riappare solo quando hai finito la consegna
             BtnNext->SetVisibility(bFinished ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
         }
     }
@@ -773,37 +373,19 @@ void UDialogueWidget::UpdateDeliveryUI()
 
 void UDialogueWidget::OnDeliverClicked()
 {
-    // UICantCryGameInstance* GI = Cast<UICantCryGameInstance>(GetGameInstance());
-    // UQuestManagerSystem* QM = GI ? GI->GetSubsystem<UQuestManagerSystem>() : nullptr;
-
-    // if (GI && QM && GI->RemoveFromInventory(CurrentRequiredItemTag, 1))
-    // {
-    //     QM->UpdateObjectiveProgress(CurrentQuestTag, CurrentObjectiveTag, 1);
-    //     UpdateDeliveryUI();
-
-    //     if (QM->GetObjectiveProgress(CurrentQuestTag, CurrentObjectiveTag) >= CurrentAmountRequired)
-    //     {
-    //         BtnDeliver->SetVisibility(ESlateVisibility::Collapsed);
-    //         TextDeliveryProgress->SetText(FText::FromString("Consegna completata!"));
-            
-    //         // Proseguiamo il dialogo dopo 1.5 secondi
-    //         FTimerHandle TimerHandle;
-    //         GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UDialogueWidget::DisplayNextLine, 1.5f, false);
-    //     }
-    // }
-
     UICantCryGameInstance* GI = Cast<UICantCryGameInstance>(GetGameInstance());
     UQuestManagerSystem* QM = GI ? GI->GetSubsystem<UQuestManagerSystem>() : nullptr;
 
+    // try to remove one item from inventory and update progress if successful
     if (GI && QM && GI->RemoveFromInventory(CurrentRequiredItemTag, 1))
     {
         QM->UpdateObjectiveProgress(CurrentQuestTag, CurrentObjectiveTag, 1);
         UpdateDeliveryUI();
 
-        // Se abbiamo finito (es. 3/3)
+        // if we've reached the required amount, wait briefly then advance to the next line
+        // the short delay lets the player see the progress turn green before the dialogue continues
         if (QM->GetObjectiveProgress(CurrentQuestTag, CurrentObjectiveTag) >= CurrentAmountRequired)
         {
-            // Aspettiamo 1 secondo (per far vedere il colore verde) e passiamo alla riga successiva
             FTimerHandle NextLineTimer;
             GetWorld()->GetTimerManager().SetTimer(NextLineTimer, this, &UDialogueWidget::DisplayNextLine, 1.0f, false);
         }

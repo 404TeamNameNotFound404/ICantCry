@@ -10,16 +10,16 @@ void UEvent_CompleteQuest::ExecuteEvent_Implementation(AICC_Player* Player, UObj
 {
     if (!Player) return;
 
-    // Poiché ora è un GameInstanceSubsystem, lo cerchiamo tramite il GameInstance
+    
     UQuestManagerSystem* QM = Player->GetGameInstance()->GetSubsystem<UQuestManagerSystem>();
     
     if (QM)
     {
-        UE_LOG(LogTemp, Warning, TEXT("Quest Manager trovato! Completamento quest: %s"), *QuestToComplete.ToString());
+        UE_LOG(LogTemp, Warning, TEXT("Quest Manager found! Quest completion: %s"), *QuestToComplete.ToString());
         QM->TryCompleteQuest(QuestToComplete);
     }
     else
     {
-        UE_LOG(LogTemp, Error, TEXT("ERRORE: Impossibile trovare UQuestManagerSystem nel GameInstance!"));
+        UE_LOG(LogTemp, Error, TEXT("ERROR: Could not find UQuestManagerSystem in GameInstance!"));
     }
 }

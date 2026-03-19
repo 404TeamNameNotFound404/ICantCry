@@ -7,8 +7,8 @@
 #include "Event_CollectItem.generated.h"
 
 /**
- * CLASSE: UEvent_CollectItem
- * DESCRIZIONE: Triggera la raccolta di un oggetto fisico nel mondo.
+ * CLASS: UEvent_CollectItem
+ * DESCRIPTION: Forces the collection of a physical world item through interaction logic.
  */
 UCLASS(DisplayName = "Event: Collect Item")
 class ICANTCRY_API UEvent_CollectItem : public UGameplayEvent
@@ -17,6 +17,8 @@ class ICANTCRY_API UEvent_CollectItem : public UGameplayEvent
 
 
 public:
+
+	/** triggers the collect logic on the actor provided by the context. */
 	virtual void ExecuteEvent_Implementation(AICC_Player* Player, UObject* Context) override;
 	
 };
