@@ -70,11 +70,6 @@ void UCurlingMinigame::HandleScore()
 			Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 			Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
-			if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->Type == EBulletType::Shame)
-			{
-				Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
-					EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
-			}
 			
 			DebugHelper::LogMessage(9, FColor::Black, "Not Bad curling minigame score");
 			break;
@@ -85,12 +80,6 @@ void UCurlingMinigame::HandleScore()
 			Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 			Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
-		
-			if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->Type == EBulletType::Shame)
-			{
-				Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
-					EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
-			}
 			
 			DebugHelper::LogMessage(9, FColor::Black, "Good curling minigame score");
 			break;
@@ -102,13 +91,6 @@ void UCurlingMinigame::HandleScore()
 			Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 			Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
-		
-			if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->Type == EBulletType::Shame)
-			{
-				Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
-					EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
-			}
-		
 			DebugHelper::LogMessage(9, FColor::Black, "Perfect curling minigame score");
 			break;
 		}

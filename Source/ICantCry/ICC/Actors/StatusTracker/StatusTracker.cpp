@@ -790,6 +790,12 @@ void UStatusTracker::UpdateStatus()
 		StatusCounter = 0;
 		Target->Ashamed(false);
 		
+		if (Target->IsA(AICC_Player::StaticClass()))
+		{
+			Cast<AICC_Player>(Target)->GetBattleHUD()->Shoot->SetIsEnabled(true);
+			Cast<AICC_Player>(Target)->Ashamed(false);
+		}
+		
 		if (Cast<AMob>(GetOwner()))
 		{
 			PerkData.bAshamed = false;
@@ -1978,7 +1984,6 @@ void UStatusTracker::InflictAShamed(AICC_Actor* Target)
 	// AI can't target for attack and player can't attack
 	
 	bIsOwnerAfflicted = true;
-	Target->Ashamed(true);
 	DebugHelper::LogMessage(5, FColor::FromHex("FE7743"), Target->GetActorLabel() + " can't perform attack");
 	DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + " can't perform attack");
 
@@ -1990,7 +1995,10 @@ void UStatusTracker::InflictAShamed(AICC_Actor* Target)
 
 	if (Target->IsA(AMob::StaticClass()))
 	{
-		switch (const AMob* Mob = Cast<AMob>(Target); Mob->GetMobType())
+		AMob* Mob = Cast<AMob>(Target);
+		Mob->Ashamed(true);
+		
+		switch ( Mob->GetMobType())
 		{
 		case MobAnger:
 			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now ashamed");

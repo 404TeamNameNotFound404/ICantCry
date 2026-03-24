@@ -35,6 +35,13 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 	CurrentMob = Target->GetBattleHUD()->GetCurrentPlayingEmotion();
 	checkf(CurrentMob, TEXT("CurrentMob is invalid at ExecuteTask"));
 
+	if (CurrentMob->IsAshamed() && CurrentMob->GetMobType() != EMobType::MobShame) // for the moment I just ignore shame because it's the only mob that attack only to prevent crash
+	{
+		BlackBoard->SetValueAsBool("Rethinker", true);
+		DebugHelper::AddMessageToLog("[BT Task - Default]: " + CurrentMob->GetActorLabel() + " is ashamed, rethinking it's action");
+		return EBTNodeResult::Succeeded;
+	}
+	
 	CurrentMob->SetTreeId(0);
 	CurrentMob->SetIsAttacked(false);
 	BlackBoard->SetValueAsInt("Id", CurrentMob->GetTreeId());

@@ -87,13 +87,6 @@ void UAttackMinigame::HandleScore()
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
-
-		if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->Type == EBulletType::Shame)
-		{
-			Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
-				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
-		}
-
 		
 		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
@@ -107,14 +100,6 @@ void UAttackMinigame::HandleScore()
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		
-		if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->Type == EBulletType::Shame)
-		{
-			// Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion()->GetStatusTracker()->InflictStatus(
-			// 	EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion());
-			Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
-				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
-		}
-		
 		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
 		break;
@@ -127,14 +112,6 @@ void UAttackMinigame::HandleScore()
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		
-		if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->Type == EBulletType::Shame)
-		{
-			// Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion()->GetStatusTracker()->InflictStatus(
-			// 	EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedEmotion());
-			Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
-				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
-		}
-		
 		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
 		break;
@@ -144,12 +121,6 @@ void UAttackMinigame::HandleScore()
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
-		
-		if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->Type == EBulletType::Shame)
-		{
-			Cast<AMob>(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor())->GetStatusTracker()->InflictStatus(
-				EAfflictedStatus::EAShame, Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor());
-		}
 		
 		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();

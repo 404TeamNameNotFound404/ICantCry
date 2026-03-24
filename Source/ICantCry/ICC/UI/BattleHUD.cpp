@@ -243,8 +243,12 @@ void UBattleHUD::OnShootPressed()
 		DebugHelper::AddMessageToLog(
 			"[BattleHUD]: " + GameInstance->GetCurrentPlayer()->GetActorLabel() +
 			" can't attack because it's under ashamed state!");
+		
+		Shoot->SetIsEnabled(false);
 		return;
 	}
+	
+	Shoot->SetIsEnabled(true);
 
 	if (!GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn() /* || CurrentAP <= 0*/)
 	{

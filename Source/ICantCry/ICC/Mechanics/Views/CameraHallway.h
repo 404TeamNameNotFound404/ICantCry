@@ -81,7 +81,18 @@ private:
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))
 	bool bEnableWorldCamera = false;
+	
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))
+	float CameraBlendSpeed = 0.5f;
+	
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))
+	FName RoomTag;
 
 	void Snap();
+	
+	UPROPERTY() TArray<FName> Rooms;
+	
+	void ToggleRoom(const FName& Room, const bool& bRenderRoom);
+	void RenderSeen(const FName& TargetToHide);
 	
 };
