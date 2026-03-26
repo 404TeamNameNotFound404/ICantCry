@@ -35,18 +35,19 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 	CurrentMob = Target->GetBattleHUD()->GetCurrentPlayingEmotion();
 	checkf(CurrentMob, TEXT("CurrentMob is invalid at ExecuteTask"));
 
-	if (CurrentMob->IsAshamed() && CurrentMob->GetMobType() != EMobType::MobShame) // for the moment I just ignore shame because it's the only mob that attack only to prevent crash
-	{
-		BlackBoard->SetValueAsBool("Rethinker", true);
-		DebugHelper::AddMessageToLog("[BT Task - Default]: " + CurrentMob->GetActorLabel() + " is ashamed, rethinking it's action");
-		return EBTNodeResult::Succeeded;
-	}
 	
 	CurrentMob->SetTreeId(0);
 	CurrentMob->SetIsAttacked(false);
 	BlackBoard->SetValueAsInt("Id", CurrentMob->GetTreeId());
 	BlackBoard->SetValueAsBool("Attacked?", CurrentMob->GetIsIsAttacked());
 
+	// if (CurrentMob->IsAshamed() && CurrentMob->GetMobType() != EMobType::MobShame) // for the moment I just ignore shame because it's the only mob that attack only to prevent crash
+	// {
+	// 	DebugHelper::AddMessageToLog("[BT Task - Default]: " + CurrentMob->GetActorLabel() + " is ashamed, rethinking it's action");
+	// 	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+	// 	return EBTNodeResult::Succeeded;
+	// }
+	
 	bWaitingForThinkCompletion = true;
 	bBusy = true;
 
@@ -140,29 +141,16 @@ void UUBTTask_DefaultAtk::OnThinkComplete(UBehaviorTreeComponent* OwnerComp, AIC
 		return;
 	}
 	
-	if (CurrentMob->IsAshamed() || CurrentMob != Target->GetBattleHUD()->GetCurrentPlayingEmotion())
+	if (Decision != EDecision::None)
 	{
-		if (CurrentMob->IsAshamed())
-		{
-			CurrentMob->GetBattleHandler()->GetBattleInfo()->SetInfo(
-				FText::FromString(CurrentMob->GetData()->EnemyName.ToString() + " skipped the turn (Ashamed)"));
-			DebugHelper::AddMessageToLog("[Behavior Tree]: " + CurrentMob->GetData()->EnemyName.ToString() + " skipped the turn (Ashamed)");
-
-			CurrentMob->SetTreeId(-1);
-			CurrentMob->SetIsBuffedAtk(false);
-			BlackBoard->SetValueAsInt("Id", CurrentMob->GetTreeId());
-			BlackBoard->SetValueAsBool("IsBuffed?", CurrentMob->GetIsIsBuffedAtk());
-			BlackBoard->SetValueAsBool("IsDefenceDebuffed?", CurrentMob->GetIsTargetDefenceDebuffed());
-			CurrentMob->GetBattleHandler()->GetBattleInfo()->ClearInfo();
-		}
-
+		ProcessDecision(Decision, CurrentMob, BlackBoard, OwnerComp, Target);
 		FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
 		return;
 	}
 	
-	if (Decision != EDecision::None)
+	if (CurrentMob->IsAshamed() && Decision == EDecision::None)
 	{
-		ProcessDecision(Decision, CurrentMob, BlackBoard, OwnerComp, Target);
+		DebugHelper::AddMessageToLog("[Behavior Tree]: " + CurrentMob->GetActorLabel() + " under ashamed state, can't attack so skip its turn");
 		FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
 		return;
 	}
@@ -205,23 +193,6 @@ void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackbo
 	AICC_AIController* Controller = Cast<AICC_AIController>(Current->GetController());
 	if (!Controller || !Current || !BlackBoard || !OwnerComp || !Target)
 		return;
-
-
-	if (Current->IsAshamed())
-	{
-		Current->GetBattleHandler()->GetBattleInfo()->SetInfo(
-			FText::FromString(Current->GetActorLabel() + " skipped the turn (Ashamed)"));
-		DebugHelper::AddMessageToLog("[Behavior Tree]: " + Current->GetActorLabel() + " skipped the turn (Ashamed)");
-		Current->SetTreeId(-1);
-		Current->SetIsBuffedAtk(false);
-		BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
-		BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
-		BlackBoard->SetValueAsBool("IsDefenceDebuffed?", Current->GetIsTargetDefenceDebuffed());
-		bBusy = false;
-		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
-		FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
-		return;
-	}
 
 	if (Current != Target->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{

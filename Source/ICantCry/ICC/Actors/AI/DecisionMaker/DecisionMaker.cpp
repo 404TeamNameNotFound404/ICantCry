@@ -36,6 +36,7 @@ void FDecisionMaker::Setup(AMob* Current)
     	Current->GetStatusTracker()->GetPerkData().bDebuffAtk = false;
     	Current->GetStatusTracker()->GetPerkData().bBuffDef = false;
     	Current->GetStatusTracker()->GetPerkData().bDebuffDef = false;
+    	Current->GetStatusTracker()->GetPerkData().bAshamed = false;
 	    CurrentWeights = Current->GetDecisionTable()->LowHealth;
     	DebugHelper::AddMessageToLog("[Decision Maker]: Decision table used: Low health");
     }

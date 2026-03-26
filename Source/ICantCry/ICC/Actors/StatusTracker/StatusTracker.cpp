@@ -740,8 +740,8 @@ void UStatusTracker::UpdateStatus()
 
 	StatusCounter += 1;
 
-	DebugHelper::LogWarning("Status Counter for " + GetStatusName(CurrentActiveStatus) + FString::FromInt(StatusCounter));
-	DebugHelper::AddMessageToLog("[Status Tracker]: Status Counter for " + GetStatusName(CurrentActiveStatus) + FString::FromInt(StatusCounter));
+	DebugHelper::LogWarning("Status Counter for " + GetStatusName(CurrentActiveStatus) + " " + FString::FromInt(StatusCounter));
+	DebugHelper::AddMessageToLog("[Status Tracker]: Status Counter for " + GetStatusName(CurrentActiveStatus) +  " " + FString::FromInt(StatusCounter));
 	
 
 	if (StatusCounter < 3)
@@ -1981,8 +1981,6 @@ void UStatusTracker::InflictShieldDebuff(AICC_Actor* Target)
 
 void UStatusTracker::InflictAShamed(AICC_Actor* Target)
 {
-	// AI can't target for attack and player can't attack
-	
 	bIsOwnerAfflicted = true;
 	DebugHelper::LogMessage(5, FColor::FromHex("FE7743"), Target->GetActorLabel() + " can't perform attack");
 	DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + " can't perform attack");
@@ -1998,38 +1996,24 @@ void UStatusTracker::InflictAShamed(AICC_Actor* Target)
 		AMob* Mob = Cast<AMob>(Target);
 		Mob->Ashamed(true);
 		
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + Mob->GetActorLabel() + " ashamed");
+		DebugHelper::LogMessage(8, FColor::White, "[Status Tracker]: " + Mob->GetActorLabel() + " ashamed");
+		
 		switch ( Mob->GetMobType())
 		{
 		case MobAnger:
-			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now ashamed");
+		case MobJoy:
+		case MobDisgust:
+		case MobFear:
+		case MobJealousy:
+		case MobSadness:
+			PerkData.Clear();
 			PerkData.bAshamed = true;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now ashamed");
 			break;
 		case MobShame:
-			break;
-		case MobJoy:
-			PerkData.bAshamed = true;
-			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now ashamed");
-			break;
-		case MobDisgust:
-			PerkData.bAshamed = true;
-			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now ashamed");
-			break;
-		case MobFear:
-			PerkData.bAshamed = true;
-			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now ashamed");
-			break;
-		case MobJealousy:
-			PerkData.bAshamed = true;
-			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now ashamed");
-			break;
-		case MobSadness:
-			PerkData.bAshamed = true;
-			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now ashamed");
-			break;
 		case MobAnxiety:
-			break;
 		case MobCalm:
-			break;
 		default:
 			break;
 		}
