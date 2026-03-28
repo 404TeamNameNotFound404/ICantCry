@@ -276,6 +276,8 @@ public:
 	FString GetStatusName(const EAfflictedStatus& Status) const;
 	FString GetDebuffName(const EDebuffStatus& Status) const;
 	FString GetBuffName(const EBuffStatus& Buff) const;
+	
+	bool IsShieldActive() const;
 
 private:
 

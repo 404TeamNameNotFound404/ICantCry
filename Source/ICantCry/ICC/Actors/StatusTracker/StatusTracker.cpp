@@ -513,23 +513,6 @@ void UStatusTracker::InflictStatus(const EAfflictedStatus& Status, AICC_Actor* T
 		return;
 	}
 
-	if (bShieldBuffed)
-	{
-		PlayerShieldAccumulator--;
-		DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetActorLabel() + " attempted to inflict " + GetStatusName(Status) + " but fortunately a shield was used to protect from the debuff "
-			+ FString::FromInt(PlayerShieldAccumulator) + " left");
-
-		if (PlayerShieldAccumulator <= 0)
-		{
-			bShieldBuffed = false;
-			PlayerShieldAccumulator = 0;
-			DebugHelper::AddMessageToLog("[Status Tracker]: Shield debuff protection for " + GetOwner()->GetActorLabel() + " ended");
-		}
-		else
-		{
-			return;
-		}
-	}
 
 	//Priority.SetNextPriorityFromDebuff(Status);
 
@@ -598,28 +581,32 @@ void UStatusTracker::InflictStatus(const EAfflictedStatus& Status, AICC_Actor* T
 
 void UStatusTracker::InflictDebuffStatus(const EDebuffStatus& Status, AICC_Actor* Target)
 {
-	if (Target->GetStatusTracker()->IsAfflicted() || !Target->GetStatusTracker()->CanDebuff())
-	{
-		DebugHelper::AddMessageToLog("[Status Tracker - DeBuffS]: Emotion attempted to cast " + GetDebuffName(CurrentDebuffStatus) + " To " + Target->GetActorLabel() + " but " + GetStatusName(CurrentActiveStatus) + " has already been inflicted");
-		return;
-	}
-
-	if (bShieldBuffed)
+	if (Target->GetStatusTracker()->IsShieldActive())
 	{
 		PlayerShieldAccumulator--;
-		DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetActorLabel() + " attempted to inflict " + GetDebuffName(CurrentDebuffStatus) + " but fortunately a shield was used to protect from the debuff "
+		
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetActorLabel() + " attempted to inflict " + GetDebuffName(Status) + " but fortunately a shield was used to protect from the debuff "
 			+ FString::FromInt(PlayerShieldAccumulator) + " left");
 
 		if (PlayerShieldAccumulator <= 0)
 		{
-			bShieldBuffed = false;
 			PlayerShieldAccumulator = 0;
+			bIsOwnerAfflicted = false;
+			bShieldBuffed = false;
+			StatusCounter = 0;
+			Target->ShieldDebuff(false);
+			bCanDebuff = true;
 			DebugHelper::AddMessageToLog("[Status Tracker]: Shield debuff protection for " + GetOwner()->GetActorLabel() + " ended");
-		}
-		else
-		{
 			return;
 		}
+		
+		return;
+	}
+	
+	if (Target->GetStatusTracker()->IsAfflicted() || !Target->GetStatusTracker()->CanDebuff())
+	{
+		DebugHelper::AddMessageToLog("[Status Tracker - DeBuffS]: Emotion attempted to cast " + GetDebuffName(CurrentDebuffStatus) + " To " + Target->GetActorLabel() + " but " + GetStatusName(CurrentActiveStatus) + " has already been inflicted");
+		return;
 	}
 
 	Priority.SetNextPriorityFromDebuff(Status);
@@ -687,22 +674,22 @@ void UStatusTracker::BuffWith(const EBuffStatus& BuffStatus)
 	{
 	case AtkBuff:
 		Priority.SetPriotity(1);
-		
-		if (!bBuffedTwice)
-		{
-			BuffAttack();
-			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->SimulateAura(Cast<AICC_Actor>(GetOwner()), 500.f, FColor::Red);
-		}
+		BuffAttack();
+		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->SimulateAura(Cast<AICC_Actor>(GetOwner()), 500.f, FColor::Red);
+		// if (!bBuffedTwice)
+		// {
+		// 	
+		// }
 		
 		break;
 	case DefBuff:
 		Priority.SetPriotity(2);
-
-		if (!bBuffedTwice)
-		{
-			BuffDefence();
-		}
-		
+		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->SimulateAura(Cast<AICC_Actor>(GetOwner()), 500.f, FColor::Blue);
+		BuffDefence();
+		// if (!bBuffedTwice)
+		// {
+		// 	
+		// }
 		//BuffDefence();
 		break;
 	case LowHealth:
@@ -925,8 +912,9 @@ void UStatusTracker::UpdateBuffStatus()
 	}
 
 	BuffStatusCounter += 1;
-	int32& Counter = BuffCounters.FindOrAdd(CurrentBuffedStatus);
-	Counter++;
+	int32& AtkCounter = BuffCounters.FindOrAdd(CurrentBuffedStatus);
+	AtkCounter++;
+	
 	
 	//Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DecreaseAura(1.f);
 
@@ -948,7 +936,7 @@ void UStatusTracker::UpdateBuffStatus()
 	}
 
 	
-	if (Counter < 3)
+	if (AtkCounter < 3)
 	{
 		return; // I don't need to check further if counter is not 3 (3 turns elapsed)
 	}
@@ -962,7 +950,7 @@ void UStatusTracker::UpdateBuffStatus()
 			DebugHelper::AddMessageToLog("[Status Tracker]: Player buff before returning back to normal " + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower));
 			Instance->GetRuntimeStats().AttackPower = Instance->GetPersistentData()->InitialAttackPower;
 			DebugHelper::AddMessageToLog("[Status Tracker]: Player Buff ended atk returns to " + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower));
-			Counter = 0;
+			AtkCounter = 0;
 			
 			bIsOwnerAlreadyBuffed = false;
 			bCanDebuff = true;
@@ -974,7 +962,7 @@ void UStatusTracker::UpdateBuffStatus()
 			DebugHelper::AddMessageToLog("[Status Tracker]:" + Target->GetActorLabel() + " before returning back to normal " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.AtkPower));
 			Emotion->GetData()->RuntimeStats.AtkPower = Emotion->GetAIMemory().InitialAttackPower;
 			DebugHelper::AddMessageToLog("[Status Tracker]: " +  Target->GetActorLabel() +  " Buff ended, atk returns to " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.AtkPower));
-			Counter = 0;
+			AtkCounter = 0;
 			PerkData.bBuffAtk = false;
 			bIsOwnerAlreadyBuffed = false;
 			bCanBuff = true;
@@ -987,9 +975,9 @@ void UStatusTracker::UpdateBuffStatus()
 			AICC_Player* Player = Instance->GetCurrentPlayer();
 			Instance->GetRuntimeStats().DefencePower = Instance->GetPersistentData()->InitialDefencePower;
 			DebugHelper::AddMessageToLog("[Status Tracker]: Buff ended def returns to " + FString::SanitizeFloat(Instance->GetRuntimeStats().DefencePower));
-			Counter = 0;
 			bIsOwnerAlreadyBuffed = false;
 			bCanDebuff = true;
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura();
 		}
 		if (Target->IsA(AMob::StaticClass()))
 		{
@@ -997,7 +985,6 @@ void UStatusTracker::UpdateBuffStatus()
 			DebugHelper::AddMessageToLog("[Status Tracker]:" + Target->GetActorLabel() + " before returning back to normal " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.DefPower));
 			Emotion->GetData()->RuntimeStats.DefPower = Emotion->GetAIMemory().InitialDefencePower;
 			DebugHelper::AddMessageToLog("[Status Tracker]: " +  Target->GetActorLabel() +  " Buff ended, def returns to " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.DefPower));
-			Counter = 0;
 			bIsOwnerAlreadyBuffed = false;
 			PerkData.bBuffDef = false;
 			bCanBuff = true;
@@ -1005,7 +992,7 @@ void UStatusTracker::UpdateBuffStatus()
 		}
 		break;
 	case LowHealth:
-		Counter = 0;
+		AtkCounter = 0;
 		bIsOwnerAlreadyBuffed = false;
 		PerkData.bLowHealth = false;
 		bCanBuff = true;
@@ -1030,7 +1017,7 @@ void UStatusTracker::UpdateBuffStatus()
 	// 	break;
 	
 	case NoBuff:
-		Counter = 0;
+		AtkCounter = 0;
 		bIsOwnerAlreadyBuffed = false;
 		bBuffedTwice = false;
 		break;
@@ -1177,6 +1164,10 @@ FString UStatusTracker::GetBuffName(const EBuffStatus& Buff) const
 	}
 }
 
+bool UStatusTracker::IsShieldActive() const
+{
+	return bShieldBuffed;
+}
 
 /*
 * Buff Atk riceve buff atk -> counter a 0 ma buff comunque attivo
@@ -1256,6 +1247,8 @@ void UStatusTracker::DebuffFlow(const EDebuffStatus& NewDebuffStatus, AICC_Actor
 		DebugHelper::AddMessageToLog("[Status Tracker - Debuff Flow]: " + GetOwner()->GetActorLabel() + " atm is not debuff affected");
 		return;
 	}
+	
+	
 
 	if (CurrentDebuffStatus == NewDebuffStatus)
 	{
@@ -1538,19 +1531,19 @@ void UStatusTracker::BuffShield()
 	 */
 	
 	const AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+	bShieldBuffed = true;
+	bCanDebuff = false;
+	PlayerShieldAccumulator = 3;
 	
 	if (Target->IsA(AICC_Player::StaticClass()))
 	{
-		bCanDebuff = false;
-		bShieldBuffed = true;
-		PlayerShieldAccumulator = 3;
-		DebugHelper::LogWarning("[Status Tracker]: " + Target->GetActorLabel() + " uses shield debuff. Shield left " + FString::FromInt(PlayerShieldAccumulator));
+		DebugHelper::LogWarning("[Status Tracker]: " + Target->GetActorLabel() + " uses shield debuff. Shield left " + FString::FromInt(PlayerShieldAccumulator) + 
+			"\nStatus Tracker]: shield debuff and candebuff for "  + Target->GetActorLabel() + " is " + FString(bShieldBuffed ? "True" : "False") + " " + FString(bCanDebuff ? "True" : "False"));
 		DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + " uses shield debuff. Shield left " + FString::FromInt(PlayerShieldAccumulator));
 	}
 
 	if (Target->IsA(AMob::StaticClass()))
 	{
-		bCanDebuff  = false;
 		// PerkData.bShieldDebuff = true;
 		DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + " has shield");
 		
