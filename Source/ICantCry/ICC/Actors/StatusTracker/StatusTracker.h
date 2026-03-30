@@ -324,6 +324,7 @@ private:
 	void BuffAttack();
 	void BuffDefence();
 	void BuffShield();
+	void ExpireBuff(const EBuffStatus& ExpiredTarget);
 	
 	/**
 	 * Used for joy ev / ai 

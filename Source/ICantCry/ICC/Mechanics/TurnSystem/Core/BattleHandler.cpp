@@ -142,6 +142,35 @@ void ABattleHandler::SimulateAura(AICC_Actor* Target ,const float& SpawnRate ,co
 	Aura->SetVariableFloat(FName("User.SpawnRate"), SpawnRate);
 }
 
+void ABattleHandler::SimulateAura(AICC_Actor* Target, const float& SpawnRate, const FLinearColor& Color,
+	const EBuffStatus& Status)
+{
+	if (!Target) return;
+	
+	if (ActiveAuras.Contains(Status) && ActiveAuras[Status])
+	{
+		ActiveAuras[Status]->DestroyComponent();
+	}
+	
+	const FVector& SpawnLocation = Target->GetActorLocation() + FVector{0,0,-50};
+	const FRotator& SpawnRotation = Target->GetActorRotation();
+	
+	UNiagaraComponent* NewAura = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), 
+		AuraPrefab, SpawnLocation, SpawnRotation, FVector{1.5f}, false);
+	
+	if (!NewAura)
+	{
+		DebugHelper::LogError("Aura can't be spawned is null");
+		return;
+	}
+	
+	NewAura->Activate(true);
+	NewAura->SetVariableLinearColor(FName("User.Color"), Color);
+	NewAura->SetVariableFloat(FName("User.SpawnRate"), SpawnRate);
+	
+	ActiveAuras.Add(Status, NewAura);
+}
+
 void ABattleHandler::IncreaseAura(const float& Value)
 {
 	if (!Aura) return;
@@ -156,6 +185,18 @@ void ABattleHandler::DecreaseAura(const float& Value)
 	const float Delta = Value - AuraDecreaseValue;
 	const float Result = FMath::RandRange(100.f, Delta);
 	Aura->SetVariableFloat(FName("User.SpawnRate"), Result);
+}
+
+void ABattleHandler::DeactivateAura(const EBuffStatus& Status)
+{
+	if (!ActiveAuras.Contains(Status)) return;
+	
+	if (ActiveAuras[Status])
+	{
+		ActiveAuras[Status]->Deactivate();
+	}
+	
+	ActiveAuras.Remove(Status);
 }
 
 void ABattleHandler::DeactivateAura()

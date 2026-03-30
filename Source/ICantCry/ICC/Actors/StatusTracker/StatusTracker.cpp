@@ -648,26 +648,21 @@ void UStatusTracker::InflictDebuffStatus(const EDebuffStatus& Status, AICC_Actor
 
 void UStatusTracker::BuffWith(const EBuffStatus& BuffStatus)
 {
-	if (bIsOwnerAlreadyBuffed || !bCanBuff)
+	if (/*bIsOwnerAlreadyBuffed ||*/ !bCanBuff)
 	{
 		return;
 	}
-
-	if (static_cast<int32>(CurrentBuffedStatus) == static_cast<int32>(BuffStatus))
+	
+	if (CurrentBuffedStatus == BuffStatus)
 	{
 		bBuffedTwice = true;
-		DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetActorLabel() + " got buffed twice with " + GetBuffName(BuffStatus));
-		DebugHelper::AddMessageToLog("[Status Tracker]: Current status of " + GetOwner()->GetActorLabel() + " is still " + GetBuffName(CurrentBuffedStatus));
-		BuffStatusCounter = 0;
+		BuffCounters.FindOrAdd(BuffStatus) = 0;
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetActorLabel() +
+			" already is buffed with " + GetBuffName(BuffStatus) + " so its counter is refreshed");
 		return;
 	}
 
-	CurrentBuffedStatus = BuffStatus;
-	BuffStatusCounter = 0;
-
-	CurrentBuffedStatus = BuffStatus;
-	BuffCounters.FindOrAdd(BuffStatus) = 0;
-
+	BuffCounters.Add(BuffStatus, 0);;
 	bIsOwnerAlreadyBuffed = true;
 
 	switch (BuffStatus)
@@ -675,30 +670,16 @@ void UStatusTracker::BuffWith(const EBuffStatus& BuffStatus)
 	case AtkBuff:
 		Priority.SetPriotity(1);
 		BuffAttack();
-		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->SimulateAura(Cast<AICC_Actor>(GetOwner()), 500.f, FColor::Red);
-		// if (!bBuffedTwice)
-		// {
-		// 	
-		// }
-		
+		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->SimulateAura(Cast<AICC_Actor>(GetOwner()), 500.f, FColor::Red, EBuffStatus::AtkBuff);
 		break;
 	case DefBuff:
 		Priority.SetPriotity(2);
-		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->SimulateAura(Cast<AICC_Actor>(GetOwner()), 500.f, FColor::Blue);
+		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->SimulateAura(Cast<AICC_Actor>(GetOwner()), 500.f, FColor::Blue, EBuffStatus::DefBuff);
 		BuffDefence();
-		// if (!bBuffedTwice)
-		// {
-		// 	
-		// }
-		//BuffDefence();
 		break;
 	case LowHealth:
 		Heal();
 		break;
-	// case Shield:
-	// 	Priority.SetPriotity(4);
-	// 	BuffShield();
-	// 	break;
 	default:
 	case NoBuff:
 		break;
@@ -911,118 +892,38 @@ void UStatusTracker::UpdateBuffStatus()
 		return;
 	}
 
-	BuffStatusCounter += 1;
-	int32& AtkCounter = BuffCounters.FindOrAdd(CurrentBuffedStatus);
-	AtkCounter++;
-	
-	
-	//Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DecreaseAura(1.f);
-
 	const AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
-
-	for (const auto& Pair : BuffCounters)
+	TArray<EBuffStatus> BuffToRemove;
+	
+	for (auto& B : BuffCounters)
 	{
-		if (Pair.Key == EBuffStatus::NoBuff)
+		EBuffStatus S = B.Key;
+		int32& C = B.Value;
+		
+		if (S == EBuffStatus::NoBuff) continue;
+		
+		C++;
+		
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + 
+			" " + GetBuffName(S) + " is at turn " + FString::FromInt(C));
+		
+		if (C >= 3)
 		{
-			continue;
-		}
-
-		if (Pair.Value > 0)
-		{
-			DebugHelper::AddMessageToLog( "[Status Tracker]: " + Target->GetActorLabel() +
-				" Buff Status counter of " + GetBuffName(Pair.Key) + " " + FString::FromInt(Pair.Value)
-			);
+			ExpireBuff(S);
+			BuffToRemove.Add(S);
 		}
 	}
-
 	
-	if (AtkCounter < 3)
+	for (const EBuffStatus& S : BuffToRemove)
 	{
-		return; // I don't need to check further if counter is not 3 (3 turns elapsed)
+		BuffCounters.Remove(S);
 	}
-
-	switch (CurrentBuffedStatus)
-	{
-	case AtkBuff:
-		if (Target->IsA(AICC_Player::StaticClass()))
-		{
-			AICC_Player* Player = Instance->GetCurrentPlayer();
-			DebugHelper::AddMessageToLog("[Status Tracker]: Player buff before returning back to normal " + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower));
-			Instance->GetRuntimeStats().AttackPower = Instance->GetPersistentData()->InitialAttackPower;
-			DebugHelper::AddMessageToLog("[Status Tracker]: Player Buff ended atk returns to " + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower));
-			AtkCounter = 0;
-			
-			bIsOwnerAlreadyBuffed = false;
-			bCanDebuff = true;
-			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura();
-		}
-		if (Target->IsA(AMob::StaticClass()))
-		{
-			const AMob* Emotion = Cast<AMob>(GetOwner());
-			DebugHelper::AddMessageToLog("[Status Tracker]:" + Target->GetActorLabel() + " before returning back to normal " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.AtkPower));
-			Emotion->GetData()->RuntimeStats.AtkPower = Emotion->GetAIMemory().InitialAttackPower;
-			DebugHelper::AddMessageToLog("[Status Tracker]: " +  Target->GetActorLabel() +  " Buff ended, atk returns to " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.AtkPower));
-			AtkCounter = 0;
-			PerkData.bBuffAtk = false;
-			bIsOwnerAlreadyBuffed = false;
-			bCanBuff = true;
-			bBuffedTwice = false;
-		}
-		break;
-	case DefBuff:
-		if (Target->IsA(AICC_Player::StaticClass()))
-		{
-			AICC_Player* Player = Instance->GetCurrentPlayer();
-			Instance->GetRuntimeStats().DefencePower = Instance->GetPersistentData()->InitialDefencePower;
-			DebugHelper::AddMessageToLog("[Status Tracker]: Buff ended def returns to " + FString::SanitizeFloat(Instance->GetRuntimeStats().DefencePower));
-			bIsOwnerAlreadyBuffed = false;
-			bCanDebuff = true;
-			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura();
-		}
-		if (Target->IsA(AMob::StaticClass()))
-		{
-			const AMob* Emotion = Cast<AMob>(GetOwner());
-			DebugHelper::AddMessageToLog("[Status Tracker]:" + Target->GetActorLabel() + " before returning back to normal " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.DefPower));
-			Emotion->GetData()->RuntimeStats.DefPower = Emotion->GetAIMemory().InitialDefencePower;
-			DebugHelper::AddMessageToLog("[Status Tracker]: " +  Target->GetActorLabel() +  " Buff ended, def returns to " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.DefPower));
-			bIsOwnerAlreadyBuffed = false;
-			PerkData.bBuffDef = false;
-			bCanBuff = true;
-			bBuffedTwice = false;
-		}
-		break;
-	case LowHealth:
-		AtkCounter = 0;
-		bIsOwnerAlreadyBuffed = false;
-		PerkData.bLowHealth = false;
-		bCanBuff = true;
-		bBuffedTwice = false;
-		break;
-
-	// case Shield:
-	// 	
-	// 	if (Target->IsA(AICC_Player::StaticClass()))
-	// 	{
-	// 		Counter = 0;
-	// 		bIsOwnerAlreadyBuffed = false;
-	// 	}
-	// 	if (Target->IsA(AMob::StaticClass()))
-	// 	{
-	// 		Counter = 0;
-	// 		bIsOwnerAlreadyBuffed = false;
-	// 		bCanDebuff = true;
-	// 		PerkData.bShieldDebuff = false;
-	// 		bBuffedTwice = false;
-	// 	}
-	// 	break;
 	
-	case NoBuff:
-		AtkCounter = 0;
-		bIsOwnerAlreadyBuffed = false;
+	bIsOwnerAlreadyBuffed = (BuffCounters.Num() > 0);
+	
+	if (!bIsOwnerAlreadyBuffed)
+	{
 		bBuffedTwice = false;
-		break;
-	default:
-		break;
 	}
 }
 
@@ -1571,6 +1472,75 @@ void UStatusTracker::BuffShield()
 			PerkData.bShieldDebuff = true;
 			break;
 		}
+	}
+}
+
+void UStatusTracker::ExpireBuff(const EBuffStatus& ExpiredTarget)
+{
+	const AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+	
+	switch (ExpiredTarget)
+	{
+	case AtkBuff:
+		if (Target->IsA(AICC_Player::StaticClass()))
+		{
+			AICC_Player* Player = Instance->GetCurrentPlayer();
+			DebugHelper::AddMessageToLog("[Status Tracker]: Player buff before returning back to normal " + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower));
+			Instance->GetRuntimeStats().AttackPower = Instance->GetPersistentData()->InitialAttackPower;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Player Buff ended atk returns to " + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower));
+			
+			bIsOwnerAlreadyBuffed = false;
+			bCanDebuff = true;
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura(ExpiredTarget);
+		}
+		if (Target->IsA(AMob::StaticClass()))
+		{
+			const AMob* Emotion = Cast<AMob>(GetOwner());
+			DebugHelper::AddMessageToLog("[Status Tracker]:" + Target->GetActorLabel() + " before returning back to normal " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.AtkPower));
+			Emotion->GetData()->RuntimeStats.AtkPower = Emotion->GetAIMemory().InitialAttackPower;
+			DebugHelper::AddMessageToLog("[Status Tracker]: " +  Target->GetActorLabel() +  " Buff ended, atk returns to " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.AtkPower));
+			PerkData.bBuffAtk = false;
+			bIsOwnerAlreadyBuffed = false;
+			bCanBuff = true;
+			bBuffedTwice = false;
+			Emotion->GetBattleHandler()->DeactivateAura(ExpiredTarget);
+		}
+		break;
+	case DefBuff:
+		if (Target->IsA(AICC_Player::StaticClass()))
+		{
+			AICC_Player* Player = Instance->GetCurrentPlayer();
+			Instance->GetRuntimeStats().DefencePower = Instance->GetPersistentData()->InitialDefencePower;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Buff ended def returns to " + FString::SanitizeFloat(Instance->GetRuntimeStats().DefencePower));
+			bIsOwnerAlreadyBuffed = false;
+			bCanDebuff = true;
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura(ExpiredTarget);
+		}
+		if (Target->IsA(AMob::StaticClass()))
+		{
+			const AMob* Emotion = Cast<AMob>(GetOwner());
+			DebugHelper::AddMessageToLog("[Status Tracker]:" + Target->GetActorLabel() + " before returning back to normal " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.DefPower));
+			Emotion->GetData()->RuntimeStats.DefPower = Emotion->GetAIMemory().InitialDefencePower;
+			DebugHelper::AddMessageToLog("[Status Tracker]: " +  Target->GetActorLabel() +  " Buff ended, def returns to " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.DefPower));
+			bIsOwnerAlreadyBuffed = false;
+			PerkData.bBuffDef = false;
+			bCanBuff = true;
+			bBuffedTwice = false;
+			Emotion->GetBattleHandler()->DeactivateAura(ExpiredTarget);
+		}
+		break;
+	case LowHealth:
+		bIsOwnerAlreadyBuffed = false;
+		PerkData.bLowHealth = false;
+		bCanBuff = true;
+		bBuffedTwice = false;
+		break;
+	case NoBuff:
+		bIsOwnerAlreadyBuffed = false;
+		bBuffedTwice = false;
+		break;
+	default:
+		break;
 	}
 }
 

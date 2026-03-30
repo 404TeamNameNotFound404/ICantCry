@@ -35,8 +35,10 @@ public:
 	void SimulateHurt(const FLinearColor& Color);
 	
 	void SimulateAura(AICC_Actor* Target ,const float& SpawnRate ,const FLinearColor& Color);
+	void SimulateAura(AICC_Actor* Target, const float& SpawnRate , const FLinearColor& Color, const EBuffStatus& Status);
 	void IncreaseAura(const float& Value);
 	void DecreaseAura(const float& Value);
+	void DeactivateAura(const EBuffStatus& Status);
 	void DeactivateAura();
 
 private:
@@ -57,6 +59,8 @@ private:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle VFX", meta=(AllowPrivateAccess="true"))
 	UNiagaraSystem* AuraPrefab;
+	
+	UPROPERTY() TMap<TEnumAsByte<EBuffStatus>, UNiagaraComponent*> ActiveAuras;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle VFX", meta=(AllowPrivateAccess="true"))
 	float AuraDecreaseValue = 30.f;
