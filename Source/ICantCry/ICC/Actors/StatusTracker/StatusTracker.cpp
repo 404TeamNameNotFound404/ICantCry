@@ -897,15 +897,27 @@ void UStatusTracker::UpdateBuffStatus()
 	
 	for (auto& B : BuffCounters)
 	{
-		EBuffStatus S = B.Key;
-		int32& C = B.Value;
+		EBuffStatus S = B.Key; // Found status
+		int32& C = B.Value; // Counter
 		
 		if (S == EBuffStatus::NoBuff) continue;
 		
 		C++;
 		
-		DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + 
-			" " + GetBuffName(S) + " is at turn " + FString::FromInt(C));
+		//	DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + 
+		//" " + GetBuffName(S) + " is at turn " + FString::FromInt(C));
+		
+		if (S == EBuffStatus::AtkBuff )
+		{
+			DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + 
+				" Atk buff"  + " is at turn " + FString::FromInt(C));
+		}
+		else 
+		{
+			DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + 
+				" Def buff" + " is at turn " + FString::FromInt(C));
+		}
+	
 		
 		if (C >= 3)
 		{
@@ -1712,7 +1724,6 @@ void UStatusTracker::DebuffDefF()
 
 void UStatusTracker::DebuffDefF(AICC_Actor* Target)
 {
-
 	if (Target->IsA(AICC_Player::StaticClass()))
 	{
 		AICC_Player* Player = Cast<AICC_Player>(GetOwner());
@@ -1721,37 +1732,39 @@ void UStatusTracker::DebuffDefF(AICC_Actor* Target)
 		DebugHelper::AddMessageToLog("[Status Tracker]: Player debuff math : Debuff def post malus -> " + FString::SanitizeFloat(Instance->GetRuntimeStats().DefencePower) +
 			"\n[Status Tracker]: Def malus dealed -> " + FString::SanitizeFloat(Player->GetBattleData()->DebuffDefMalus));
 	}
-
+	
 	if (Target->IsA(AMob::StaticClass()))
 	{
-		const AMob* Mob = Cast<AMob>(GetOwner());
+		const AMob* Mob = Cast<AMob>(Target);
 		Mob->GetData()->RuntimeStats.DefPower -= Mob->GetData()->RuntimeStats.DefPower * Mob->GetBattleData()->EmotionDefDebuffMalus;
-		
+		DebugHelper::LogSuccess("[Status Tracker]: " +Mob->GetActorLabel() + "got it's def de-buffed now has " + FString::SanitizeFloat(Mob->GetData()->RuntimeStats.DefPower));
+		DebugHelper::AddMessageToLog("[Status Tracker]: AI def value (debuff) " + FString::SanitizeFloat(Mob->GetData()->RuntimeStats.DefPower));
+
 		switch (Mob->GetMobType())
 		{
 		case MobAnger:
+			PerkData.bDebuffDef = true;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff def");
 			break;
 		case MobShame:
 			break;
 		case MobJoy:
 			break;
 		case MobDisgust:
+			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff def");
+			PerkData.bDebuffDef = true;
 			break;
 		case MobFear:
-			PerkData.bDebuffDef = true;
-			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff def");
 			break;
 		case MobJealousy:
+			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff def");
+			PerkData.bDebuffDef = true;
 			break;
 		case MobSadness:
 			break;
 		case MobAnxiety:
 			break;
 		case MobCalm:
-			PerkData.bDebuffDef = true;
-			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff def");
-			break;
-		default:
 			break;
 		}
 	}
