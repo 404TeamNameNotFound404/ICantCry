@@ -1314,6 +1314,9 @@ void UBattleHUD::Engage()
 			PrepareToEngage();
 			break;
 		}
+	case SadnessEv:
+		PrepareToEngageEv(EDebuffStatus::DebuffDef);
+		break;
 	case JoyDv:
 		{
 			PrepareToEngage();
