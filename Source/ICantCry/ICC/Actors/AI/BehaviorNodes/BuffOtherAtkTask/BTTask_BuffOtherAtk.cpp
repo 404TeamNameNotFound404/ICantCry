@@ -51,8 +51,7 @@ EBTNodeResult::Type UBTTask_BuffOtherAtk::ExecuteTask(UBehaviorTreeComponent& Ow
 
 
 	// check first if 'TargetToBuff' has active buff , if so it removes it to apply the new one
-	TargetToBuff->GetStatusTracker()->BuffFlow(EBuffStatus::AtkBuff, TargetToBuff);
-	
+	//TargetToBuff->GetStatusTracker()->BuffFlow(EBuffStatus::AtkBuff, TargetToBuff);
 	TargetToBuff->GetStatusTracker()->BuffWith(EBuffStatus::AtkBuff);
 	
 

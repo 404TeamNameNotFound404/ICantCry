@@ -253,8 +253,8 @@ public:
 */
 	void BuffFlow(const EBuffStatus& NewBuffStatus);
 	void DebuffFlow(const EDebuffStatus& NewDebuffStatus, AICC_Actor* Target = nullptr);
-	void BuffFlow(const EBuffStatus& NewBuffStatus, AMob* Target);
-
+	void BuffFlow(const EBuffStatus& NewBuffStatus, AICC_Actor* Target = nullptr);
+	
 
 	/**
 	 * Check If AI / Player is buffed and is being target by a debuff the current buff removed and the debuff is not applied
@@ -283,6 +283,9 @@ private:
 
 	UPROPERTY()
 	TMap<TEnumAsByte<EBuffStatus>, int32> BuffCounters;
+	
+	UPROPERTY()
+	TMap<TEnumAsByte<EDebuffStatus>, int32> DebuffCounters;
 
 	UPROPERTY()
 	int32 StatusCounter = 0;
@@ -316,6 +319,21 @@ private:
 
 	UPROPERTY()
 	bool bBuffedTwice = false;
+	
+	UPROPERTY()
+	bool bDebuffedTwice = false;
+	
+	UPROPERTY()
+	bool bAtkBuffRevert = false;
+	
+	UPROPERTY()
+	bool bDefBuffRevert = false;
+	
+	UPROPERTY()
+	bool bAtkDebuffRevert = false;
+	
+	UPROPERTY()
+	bool bDefDebuffRevert = false;
 	
 	void InflictFreeze(AICC_Actor* Target);
 	void InflictBurn(AICC_Actor* Target);

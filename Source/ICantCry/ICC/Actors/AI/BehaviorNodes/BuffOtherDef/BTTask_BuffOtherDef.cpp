@@ -46,7 +46,7 @@ EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& Ow
 		return EBTNodeResult::Succeeded;
 	}
 	
-	TargetToBuff->GetStatusTracker()->BuffFlow(EBuffStatus::DefBuff, TargetToBuff);
+
 	TargetToBuff->GetStatusTracker()->BuffWith(EBuffStatus::DefBuff);
 
 	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(
