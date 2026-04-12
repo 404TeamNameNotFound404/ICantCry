@@ -252,8 +252,8 @@ public:
 *  check if Another buff is applied and the AI is buffed the current buff is replaced with the new one
 */
 	void BuffFlow(const EBuffStatus& NewBuffStatus);
-	void DebuffFlow(const EDebuffStatus& NewDebuffStatus, AICC_Actor* Target = nullptr);
-	void BuffFlow(const EBuffStatus& NewBuffStatus, AICC_Actor* Target = nullptr);
+	bool DebuffFlow(const EDebuffStatus& NewDebuffStatus, AICC_Actor* Target = nullptr);
+	bool BuffFlow(const EBuffStatus& NewBuffStatus, AICC_Actor* Target = nullptr);
 	
 
 	/**
@@ -343,6 +343,7 @@ private:
 	void BuffDefence();
 	void BuffShield();
 	void ExpireBuff(const EBuffStatus& ExpiredTarget);
+	void ExpireBuff(const EBuffStatus& ExpiredBuff, AICC_Actor* Target);
 	
 	/**
 	 * Used for joy ev / ai 
