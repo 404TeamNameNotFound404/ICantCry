@@ -65,6 +65,16 @@ void UVictoryVisualizer::AfterBattle(const TArray<AICC_Actor*>& Queue)
 	DropSystem->Drop(GetWorld(), this, Queue);
 	const int32 ExpGained = CalculateExp(Queue);
 	ExpInt->SetText(FText::FromString(FString::FromInt(ExpGained)));
+	
+	// UCircularBulletBuffer* Buffer = Instance->GetCurrentPlayer()->GetBattleHUD()->GetCircularBulletBuffer();
+	//
+	// for (const auto BulletsLeft = Buffer->GetBulletsLeft(); const auto Bullet : BulletsLeft)
+	// {
+	// 	FBullet B;
+	// 	B.SetBulletData(Bullet);
+	// 	B.SetQuantity(Buffer->GetCount());
+	// 	Instance->GetInventory().BulletsStored.Add(Bullet->Type, B);
+	// }
 }
 
 UTextBlock* UVictoryVisualizer::GetEssenceDrop0() const
@@ -125,6 +135,7 @@ void UVictoryVisualizer::ReturnToWorld()
 {
 	// TODO LOAD THE SCENE AND Call 'RecreatePlayer' via UICantCryGameInstance
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	
 	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->ExitBattle();
 	Instance->SetCanRecreatePlayer(true);
 	USceneLoader::LoadSceneByName(GetWorld(), "EncounterTest", true);

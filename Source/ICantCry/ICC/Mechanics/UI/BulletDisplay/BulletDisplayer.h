@@ -34,6 +34,9 @@ protected:
 
 	UPROPERTY()
 	TArray<UBulletSelector*> Bullets;
+	
+	UPROPERTY()
+	TArray<UBulletData*> WastedBullets;
 
 public:
 	void Setup();
@@ -49,6 +52,8 @@ public:
 	UGridPanel* GetBulletGrid() const;
 
 	UButton* GetBulletConfirmGamepad() const;
+	
+	TArray<UBulletData*> GetWastedBullets() const;
 	
 	/**
 	 * DEBUG ONLY!

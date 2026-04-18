@@ -58,6 +58,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<UTextBlock*> ExpEmotionsSlayed;
+	
+	UPROPERTY() // Bullets loaded but not shot
+	TArray<UBulletData*> BulletsInMagazine;
 
 public:
 	void Setup(const TArray<AICC_Actor*>& Queue);

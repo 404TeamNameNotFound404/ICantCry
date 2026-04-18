@@ -98,7 +98,6 @@ void UTurnBasedSystem::Start2(UWorld* World, FBattleMemory* Memory)
 		CurrentPlayer->GetBattleHUD()->ShowHUD();
 	}, 5.f, false);
 	
-	// CurrentPlayer->GetBattleHUD()->ShowHUD();
 	DebugHelper::ClearAllLogs();
 	DebugHelper::AddMessageToLog("-----Battle Log-----\n");
 	DebugHelper::AddMessageToLog("[Turn System]: Fight started right after");
@@ -305,7 +304,6 @@ void UTurnBasedSystem::Flow()
 
 	if (Turn.Queue.Num() == 1 && Turn.Queue[0] == CurrentPlayer)
 	{
-
 		bFightStarted = false;
 		bIsPlayerTurn = false;
 		bIsAiTurn = false;
@@ -318,6 +316,7 @@ void UTurnBasedSystem::Flow()
 			TryGetCurrentPlayer()->GetBattleHUD()->DisplayVictoryVisualizer();
 			TryGetCurrentPlayer()->GetBattleHUD()->GetVictoryVisualizer()->AfterBattle(EnemySpawnManager->GetMemory().LastStoredQueue);
 			bVictory = true;
+			
 			SetBattlePhase(EBattlePhase::Finished);
 		}
 		
@@ -365,6 +364,18 @@ void UTurnBasedSystem::ExitBattle()
 	EnemySpawnManager->GetMemory().Clear();
 	BattleTurnCounter = 0;
 	Instance->GetCurrentPlayer()->GetStatusTracker()->Reset();
+	
+	TArray<UBulletData*> WastedBullets = Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->GetWastedBullets();
+	
+	for (auto B : WastedBullets)
+	{
+		B->Type = EBulletType::Indifference;
+		FBullet Bullet;
+		Bullet.SetBulletData(B);
+		Bullet.SetQuantity(WastedBullets.Num());
+		Instance->GetInventory().BulletsStored.Add(B->Type, Bullet);
+		DebugHelper::LogMessage(20, FColor::White, B->BulletName + " turned into Indifference");
+	}
 }
 
 void UTurnBasedSystem::Reload()

@@ -149,6 +149,7 @@ void UICantCryGameInstance::SetDamageData(const FDamage* Damage)
 
 void UICantCryGameInstance::SetInventory(const FInventory& Inv)
 {
+	
 }
 
 FInventory& UICantCryGameInstance::GetInventory()

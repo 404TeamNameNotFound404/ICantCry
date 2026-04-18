@@ -15,6 +15,8 @@ class ICANTCRY_API AEncounterHandler : public AActor
 public:
 	// Sets default values for this actor's properties
 	AEncounterHandler();
+	
+	void SetSafeZone(const bool& bInSafeZone);
 
 protected:
 	// Called when the game starts or when spawned
@@ -27,5 +29,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Encounter", meta = (AllowPrivateAccess = "true"))
 	EPlayerLocation MultiplierLocation;
+	
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Encounter")
+	bool bIsSafeZone = false;
 	
 };

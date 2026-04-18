@@ -138,7 +138,8 @@ void UBulletDisplayer::RemoveBullet()
 
 	UCircularBulletBuffer* Buffer = Player->GetBattleHUD()->GetCircularBulletBuffer();
 	
-	const UBulletData* RemovedBullet = Buffer->RemoveBullet();
+	UBulletData* RemovedBullet = Buffer->RemoveBullet();
+	WastedBullets.Add(RemovedBullet);
 
 	if (!RemovedBullet)
 	{
@@ -195,6 +196,11 @@ UGridPanel* UBulletDisplayer::GetBulletGrid() const
 UButton* UBulletDisplayer::GetBulletConfirmGamepad() const
 {
 	return ConfirmGamepadBtn;
+}
+
+TArray<UBulletData*> UBulletDisplayer::GetWastedBullets() const
+{
+	return WastedBullets;
 }
 
 void UBulletDisplayer::InstantiateBullet(TArray<FBullet> InstantiateBullets)

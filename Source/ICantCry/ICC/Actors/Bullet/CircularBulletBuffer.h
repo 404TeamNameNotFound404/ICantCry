@@ -66,6 +66,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Bullet Buffer")
 	void SetAt(const int32& Index, UBulletData* Data);
 
+	UFUNCTION()
+	TArray<UBulletData*> GetBulletsLeft();
+	
 	void Clear();
 
 

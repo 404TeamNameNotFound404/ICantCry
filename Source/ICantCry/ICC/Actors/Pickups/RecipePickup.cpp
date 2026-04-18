@@ -78,7 +78,7 @@ void ARecipePickup::OnPickedUp(AActor* OtherActor)
         // }
 
         Player->GetInventoryManager()->RecipeUnlocked.Broadcast(Self.RequiredBlueprintType);
-
+        
         Player->SetIsPickedUp(false);
     }
 }

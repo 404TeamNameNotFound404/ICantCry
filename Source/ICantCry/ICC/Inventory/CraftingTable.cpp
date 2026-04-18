@@ -239,8 +239,8 @@ void UCraftingTable::Craft()
             return;
         }
         
-        int32 Before = StoredEssence->Quantity;
-        int32 After = Before - RequiredEssence.Quantity;
+        const int32 Before = StoredEssence->Quantity;
+        const int32 After = Before - RequiredEssence.Quantity;
         
         UE_LOG(LogTemp, Warning, TEXT("  %s: %d -> %d"), 
             *EssenceName, Before, After);

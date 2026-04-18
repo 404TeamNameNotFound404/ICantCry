@@ -74,6 +74,13 @@ void UStandardBulletDisplayer::Init(UInventoryHUD* Hud)
         {
             GameInstance->GetCurrentPlayer()->GetInventoryManager()->RecipeUnlocked.AddUObject(this, &UStandardBulletDisplayer::Unlock);
             bBound = true;
+            
+            for (TArray<FRecipe>& RecipesAlreadyOwned = GameInstance->GetInventory().Recipes; 
+                const FRecipe& Recipe : RecipesAlreadyOwned)
+            {
+                this->Unlock(Recipe.RequiredBlueprintType); 
+            }
+            
         }, 0.65f, false);
     }
     
@@ -112,6 +119,7 @@ void UStandardBulletDisplayer::Unlock(ERecipeType Type)
         {
             DebugHelper::LogSuccess("Unlocked " + Btn->GetBlueprint().GetName(Type));
             Btn->SetUnlocked(true);
+            GameInstance->GetInventory().Recipes.Add(Btn->GetBlueprint());
         }
     }
 
