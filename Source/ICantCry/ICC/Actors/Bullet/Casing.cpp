@@ -28,3 +28,8 @@ ECasingType& FCasing::GetType()
 {
 	return RequiredCasingType;
 }
+
+bool FCasing::IsValid() const
+{
+	return Icon != nullptr;
+}

@@ -31,7 +31,7 @@ enum class EEssenceType : uint8
 
 
 USTRUCT(BlueprintType)
-struct ICANTCRY_API FEssence
+struct ICANTCRY_API FEssence : public FTableRowBase
 {
 	GENERATED_BODY()
 

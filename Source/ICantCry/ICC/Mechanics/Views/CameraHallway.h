@@ -83,6 +83,9 @@ private:
 	bool bEnableWorldCamera = false;
 	
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))
+	bool bEnableWorldCameraOnExit;
+	
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))
 	float CameraBlendSpeed = 0.5f;
 	
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))

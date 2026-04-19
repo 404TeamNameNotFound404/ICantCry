@@ -27,8 +27,16 @@ void AEssencePickup::BeginPlay()
 {
 	Super::BeginPlay();
 	
-    Self.EssenceType = EssenceType;
-	Self.Quantity = Quantity;
+ //    Self.EssenceType = EssenceType;
+	// Self.Quantity = Quantity;
+	
+	const FName TargetEssenceName = FName(Self.GetName(EssenceType));
+	if (const FEssence* E = EssenceTable->FindRow<FEssence>(TargetEssenceName, TEXT("Looking for"));
+		E)
+	{
+		Self = *E;
+		DebugHelper::LogSuccess("Essence " + Self.GetName(Self.EssenceType) + " working");
+	}
 }
 
 void AEssencePickup::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,

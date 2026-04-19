@@ -46,6 +46,19 @@ void UICantCryGameInstance::RecreatePlayer() const
 	PlayerController->Possess(Player);
 	PlayerController->SetControlRotation(CameraMemory.SavedControlRotation);
 	
+	if (PlayerRuntimeData.bIsWorldCameraEnabled)
+	{
+		Player->GetWorldCamera()->SetbDefaultCamera(true);
+		Player->GetWorldCamera()->SetActorLocation(PlayerRuntimeData.LastWorldCameraPosition);
+		Player->GetWorldCamera()->SetActorRotation(PlayerRuntimeData.LastWorldCameraRotation);
+		PlayerController->SetViewTargetWithBlend(Player->GetWorldCamera(), 0.0f);
+	}
+	else
+	{
+		Player->GetWorldCamera()->SetbDefaultCamera(false);
+		PlayerController->SetViewTargetWithBlend(Player, 0.0f);
+	}
+	
 	DebugHelper::LogSuccess("Player recreated successfully at " + PersistentData->PlayerPosition.ToString());
 }
 
@@ -89,6 +102,7 @@ void UICantCryGameInstance::SavePlayerTransformBegin(AICC_Player* Player, const 
 		// PersistentData->PlayerOrientation = Player->PlayerMemory().LastOrientationBeforeBattle;
 		PlayerRuntimeData.CurrentLocation = PlayerRuntimeData.LastPositionBeforeBattle;
 		PlayerRuntimeData.CurrentOrientation = PlayerRuntimeData.LastOrientationBeforeBattle;
+		PlayerRuntimeData.bIsWorldCameraEnabled = GetCurrentPlayer()->GetWorldCamera()->IsDefaultCamera();
 		
 		DebugHelper::LogMessage(10, FColor::Blue, "Position before joining the fun " + PlayerRuntimeData.LastPositionBeforeBattle.ToString());
 	}
@@ -96,6 +110,7 @@ void UICantCryGameInstance::SavePlayerTransformBegin(AICC_Player* Player, const 
 	{
 		PlayerRuntimeData.CurrentLocation = PlayerRuntimeData.InitialPosition;
 		PlayerRuntimeData.CurrentOrientation = PlayerRuntimeData.InitialOrientation;
+		PlayerRuntimeData.bIsWorldCameraEnabled = GetCurrentPlayer()->GetWorldCamera()->IsDefaultCamera();
 		DebugHelper::LogMessage(10, FColor::Cyan, "Position stored normally " + PlayerRuntimeData.InitialOrientation.ToString());
 	}
 }

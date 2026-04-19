@@ -138,7 +138,7 @@ void UVictoryVisualizer::ReturnToWorld()
 	
 	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->ExitBattle();
 	Instance->SetCanRecreatePlayer(true);
-	USceneLoader::LoadSceneByName(GetWorld(), "EncounterTest", true);
+	USceneLoader::LoadSceneByName(GetWorld(), "EncounterTestCraft", true);
 	DebugHelper::LogSuccess("ReturnToWorld");
 	DebugHelper::SaveLogToFile();
 	DebugHelper::ClearAllLogs();

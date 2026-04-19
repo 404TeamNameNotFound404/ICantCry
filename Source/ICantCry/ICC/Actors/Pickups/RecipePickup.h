@@ -40,6 +40,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Pickup")
 	FRecipe Self;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Pickup")
+	UDataTable* Recipes;
 
 	static FRecipe CurrentRecipe;
 	

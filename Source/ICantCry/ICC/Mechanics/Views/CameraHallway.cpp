@@ -33,11 +33,9 @@ void ACameraHallway::BeginPlay()
 
 void ACameraHallway::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	checkf(Player, TEXT("Player on CameraHallway.cpp is not initialized"));
 	if (!Player || OtherActor != Player || bPlayerOverlapped)
 	{
-		DebugHelper::LogWarning("Only player can overlap with camera or overlap already handled");
-		return;
+		Player = Cast<UICantCryGameInstance>(GetGameInstance())->GetCurrentPlayer();
 	}
 	
 	bPlayerOverlapped = true;
@@ -70,6 +68,8 @@ void ACameraHallway::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AA
 		else if (Player->GetWorldCamera() && Player  && Counter == 1)
 		{
 			Player->GetWorldCamera()->SetbDefaultCamera(true);
+			Cast<UICantCryGameInstance>(GetGameInstance())->GetPlayerRuntimeData().LastWorldCameraPosition = CameraFixedWaypoint->GetActorLocation();
+			Cast<UICantCryGameInstance>(GetGameInstance())->GetPlayerRuntimeData().LastWorldCameraRotation = CameraFixedWaypoint->GetActorRotation();
 			APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 			checkf(PlayerController, TEXT("PlayerController is NULL"));
 			PlayerController->SetViewTargetWithBlend(Player->GetWorldCamera(), 0.0f);
@@ -106,6 +106,8 @@ void ACameraHallway::Snap()
 		{
 			Player->GetWorldCamera()->SetbDefaultCamera(true);
 			Controller->SetViewTargetWithBlend(Player->GetWorldCamera(), 0.5f);
+			Cast<UICantCryGameInstance>(GetGameInstance())->GetPlayerRuntimeData().LastWorldCameraPosition = CameraFixedWaypoint->GetActorLocation();
+			Cast<UICantCryGameInstance>(GetGameInstance())->GetPlayerRuntimeData().LastWorldCameraRotation = CameraFixedWaypoint->GetActorRotation();
 		}
 		else
 		{
@@ -124,7 +126,7 @@ void ACameraHallway::Snap()
 	{
 		Player->GetWorldCamera()->SnapToFixedWaypoint(CameraBackWaypoint);
 
-		if (bEnableWorldCamera)
+		if (bEnableWorldCameraOnExit)
 		{
 			Player->GetWorldCamera()->SetbDefaultCamera(true);
 			Controller->SetViewTargetWithBlend(Player->GetWorldCamera(), CameraBlendSpeed);

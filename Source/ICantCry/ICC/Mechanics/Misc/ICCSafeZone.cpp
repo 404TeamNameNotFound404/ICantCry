@@ -71,13 +71,6 @@ void AICCSafeZone::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor
 	DebugHelper::LogWarning("Outside Safe area");
 }
 
-// Called every frame
-void AICCSafeZone::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-	
-}
-
 bool AICCSafeZone::IsPlayerInSafeZone() const
 {
 	return bInSafeArea;
