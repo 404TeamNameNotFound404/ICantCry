@@ -65,21 +65,6 @@ FText UVendingMachineSlot::UpdateCasingQuantity()
 	return FText(FText::FromString(FString::FromInt(Casings[CurrentCasingIndex].GetQuantity())));
 }
 
-void UVendingMachineSlot::GiveMe(const FEssence& What)
-{
-	for (auto& E : Essences)
-	{
-		
-	}
-}
-
-void UVendingMachineSlot::GiveMe(const FRecipe& What)
-{
-}
-
-void UVendingMachineSlot::GiveMe(const FCasing What)
-{
-}
 
 void UVendingMachineSlot::Setup()
 {

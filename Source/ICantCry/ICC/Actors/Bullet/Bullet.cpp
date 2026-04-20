@@ -124,3 +124,8 @@ FBullet FBullet::Clone() const
 	Clone.Quantity = Quantity;
 	return Clone;
 }
+
+bool FBullet::IsValid() const
+{
+	return GetQuantity() > 0 && BulletData != nullptr;
+}

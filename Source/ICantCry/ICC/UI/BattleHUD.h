@@ -236,6 +236,8 @@ public:
 	 */
 	UPROPERTY() bool bIsEvFirst = false;
 	
+	void ProcessExp(AMob* DeathEmotion);
+	
 	
 protected:
 	UFUNCTION(BlueprintPure) FText UpdateBulletName();

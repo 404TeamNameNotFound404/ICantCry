@@ -40,6 +40,8 @@ public:
 
 	void SetDisabled(const bool& Value);
 	bool IsDisabled() const;
+	
+	UCharacterUI* GetCharacterUI();
 
 
 protected:

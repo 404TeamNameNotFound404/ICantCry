@@ -39,8 +39,6 @@ void UCraftingTable::Initialize(UWorld* World)
     //
     // Player = Cast<AICC_Player>(Controller->GetPawn());
     // checkf(Player, TEXT("Player is invalid"))
-
-    DebugHelper::LogMessage(5, FColor::Black, "UCraftingTable::Initialize called");
 }
 
 
@@ -88,7 +86,6 @@ void UCraftingTable::SetRecipe( const FRecipe& InRecipe)
 
 bool UCraftingTable::ScanResources()
 {
-    DebugHelper::LogSuccess("Scanning ...");
     UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
     Inventory = Instance->GetInventory();
     
@@ -103,14 +100,12 @@ bool UCraftingTable::ScanResources()
         if (Casing.Value.GetType() == SelectedRecipe.RequiredCasingType)
         {
             AvailableCasing = Casing.Value.GetQuantity();
-            DebugHelper::LogWarning("Casing Quantities -> " + FString::FromInt(AvailableCasing));
             break;
         }
     }
 
     if (AvailableCasing < SelectedRecipe.Requirements->CasingQuantity)
     {
-        DebugHelper::LogWarning("Not enough casing of correct type");
         return IsCraftable = false;
     }
 
@@ -122,29 +117,24 @@ bool UCraftingTable::ScanResources()
         FEssence* StoredEssence = Instance->GetInventory().EssencesStored.Find(EssenceName);
         if (!StoredEssence)
         {
-            DebugHelper::LogError("Missing required essence: " + EssenceName);
             return IsCraftable = false;
         }
 
         if (StoredEssence->Quantity < RequiredEssence.Quantity)
         {
-            DebugHelper::LogError("Not enough of essence: " + EssenceName);
             return IsCraftable = false;
         }
     }
-
-    DebugHelper::LogSuccess("Item can be crafted!");
+    
     return IsCraftable = true;
 }
 
 bool UCraftingTable::ScanResources(UWorld* World)
 {
-    DebugHelper::LogSuccess("Scanning ...");
     UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(World->GetGameInstance());
 
     if (!Instance)
     {
-        DebugHelper::LogError("Game Instance is null!");
         return IsCraftable = false;
     }
 
@@ -163,7 +153,6 @@ bool UCraftingTable::ScanResources(UWorld* World)
         if (Casing.Value.GetType() == SelectedRecipe.RequiredCasingType)
         {
             AvailableCasing = Casing.Value.GetQuantity();
-            DebugHelper::LogWarning("Casing Quantities -> " + FString::FromInt(AvailableCasing));
             break;
         }
     }
@@ -171,7 +160,6 @@ bool UCraftingTable::ScanResources(UWorld* World)
 
     if (AvailableCasing < SelectedRecipe.Requirements->CasingQuantity)
     {
-        DebugHelper::LogWarning("Not enough casing of correct type");
         return IsCraftable = false;
     }
 
@@ -183,18 +171,15 @@ bool UCraftingTable::ScanResources(UWorld* World)
         FEssence* StoredEssence = Instance->GetInventory().EssencesStored.Find(EssenceName);
         if (!StoredEssence)
         {
-            DebugHelper::LogError("Missing required essence: " + EssenceName);
             return IsCraftable = false;
         }
 
         if (StoredEssence->Quantity < RequiredEssence.Quantity)
         {
-            DebugHelper::LogError("Not enough of essence: " + EssenceName);
             return IsCraftable = false;
         }
     }
-
-    DebugHelper::LogSuccess("Item can be crafted!");
+    
     return IsCraftable = true;
 }
 
@@ -458,16 +443,11 @@ FInventory UCraftingTable::GetInventory() const
 TArray<FRecipe> UCraftingTable::GetAvaiableRecipes()
 {
     TArray<FRecipe> AvailableRecipes;
-
-    DebugHelper::LogSuccess("GetAvailableRecipes called before loop");
     
     for (const FRecipe& R : GetInventory().Recipes)
     {
-        DebugHelper::LogError("Joining the recipe loop");
         AvailableRecipes.Add(R);
     }
-
-    DebugHelper::LogSuccess("GetAvailableRecipes called after loop");
 
     return AvailableRecipes;
 }

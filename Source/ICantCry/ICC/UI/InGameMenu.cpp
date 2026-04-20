@@ -115,3 +115,8 @@ bool UInGameMenu::IsDisabled() const
 {
 	return bDisable;
 }
+
+UCharacterUI* UInGameMenu::GetCharacterUI()
+{
+	return CharacterUI;
+}

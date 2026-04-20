@@ -87,9 +87,7 @@ void AICC_Player::BeginPlay()
 	UGameInstance* GameInstance = UGameplayStatics::GetGameInstance(GetWorld());
 	UICantCryGameInstance* DontDestroyOnLoad = Cast<UICantCryGameInstance>(GameInstance);
 	checkf(DontDestroyOnLoad, TEXT("Dontdestroyonload is invalid at player begin play"));
-
-	// detect if battle handler are in the scene
-
+	
 	for (TActorIterator<AMinigameHandler> It(GetWorld()); It; ++It)
 	{
 		MinigameHandler = *It;
@@ -97,11 +95,18 @@ void AICC_Player::BeginPlay()
 	}
 	
 	DontDestroyOnLoad->SetPlayerStats(Stats);
-	//DontDestroyOnLoad->GetInventory().StarterPack(); 
 	DontDestroyOnLoad->SetPersistentPlayer(this);
+
 	DontDestroyOnLoad->GetPersistentData()->InitialAttackPower = DontDestroyOnLoad->GetRuntimeStats().AttackPower;
 	DontDestroyOnLoad->GetPersistentData()->InitialDefencePower = DontDestroyOnLoad->GetRuntimeStats().DefencePower;
-	//bIsInFight = false;
+	
+	if (!DontDestroyOnLoad->bHealthInitialized)
+	{
+		DontDestroyOnLoad->GetRuntimeStats().CurrentHealth = DontDestroyOnLoad->GetPlayerStats()->MaxHealth;
+		DontDestroyOnLoad->bHealthInitialized = true;
+	}
+	
+	DebugHelper::LogMessage(5, FColor::Cyan, FString::Printf(TEXT("Health on Spawn: %f"), DontDestroyOnLoad->GetRuntimeStats().CurrentHealth));
 
 	BestiaryUI= CreateWidget<UBestiaryUI>(GetWorld(), BestiaryUIClass);
 	BestiaryUI->AddToViewport();
@@ -137,8 +142,6 @@ void AICC_Player::Tick(float DeltaTime)
 			int32 StepsTaken = FMath::FloorToInt(StepDistanceAccumulator / StepThreshold);
 			StepCounter += StepsTaken;
 			StepDistanceAccumulator -= StepsTaken * StepThreshold;
-
-			DebugHelper::LogSuccess(FString::Printf(TEXT("Steps taken: %d, Total steps: %d"), StepsTaken, StepCounter));
 		}
 	}
 
@@ -202,7 +205,7 @@ UCameraComponent* AICC_Player::GetCamera() const
 
 bool AICC_Player::IsAlive() const
 {
-	return Stats->CurrentHealth > 0;
+	return Cast<UICantCryGameInstance>(GetGameInstance())->GetRuntimeStats().CurrentHealth > 0;
 }
 
 bool AICC_Player::GetIsMinigameInputEnabled() const
@@ -737,16 +740,13 @@ void AICC_Player::Input_ToggleBestiary(const FInputActionValue& InputActionValue
 
 float AICC_Player::GetExpRequiredForNextLevel() const
 {
-	if(!Stats) return 100.0f; // default value;
-
-	// formula : Base EXP * Moltiplicatore per livello
-
-	float BaseExp = 100.0f; // exp for lv 1
-
-	float Multiplier = 1.0f + (Stats->Level * 0.5f);
+	if(!Stats) return 100.0f; 
+	
+	constexpr float BaseExp = 100.0f; 
+	
+	const float Multiplier = 1.0f + (Cast<UICantCryGameInstance>(GetGameInstance())->GetRuntimeStats().Level * 0.5f);
 
 	return BaseExp * Multiplier;
-
 }
 
 
@@ -754,11 +754,11 @@ float AICC_Player::GetCurrentExpPercentage() const
 {
     if(!Stats) return 0.0f;
 
-	float ExpRequired = GetExpRequiredForNextLevel();
+	const float ExpRequired = GetExpRequiredForNextLevel();
 
 	if(ExpRequired <= 0.0f) return 0.0f;
 
-	return FMath::Clamp(Stats->Experience / ExpRequired, 0.0f, 1.0f);
+	return FMath::Clamp(Cast<UICantCryGameInstance>(GetGameInstance())->GetRuntimeStats().Experience / ExpRequired, 0.0f, 1.0f);
 }
 
 UICC_GamepadBinder* AICC_Player::GetBinder() const
@@ -769,6 +769,11 @@ UICC_GamepadBinder* AICC_Player::GetBinder() const
 USpringArmComponent* AICC_Player::GetCameraBoom() const
 {
 	return CameraBoom;
+}
+
+FRuntimeStats& AICC_Player::GetRuntimeStats()
+{
+	return Cast<UICantCryGameInstance>(GetGameInstance())->GetRuntimeStats();
 }
 
 void AICC_Player::Input_ChallengeReleaseInteraction(const FInputActionValue& InputActionValue)

@@ -1313,7 +1313,7 @@ void UStatusTracker::Reset()
 	CurrentBuffedStatus = EBuffStatus::NoBuff;
 	CurrentActiveStatus = EAfflictedStatus::None;
 	CurrentDebuffStatus = EDebuffStatus::NoDebuff;
-	DebugHelper::LogMessage(8, FColor::Blue, "Stats successfully restored");
+	DebugHelper::LogMessage(8, FColor::Blue, "[Status Tracker]: Stats successfully restored");
 }
 
 void UStatusTracker::BuffAttack()

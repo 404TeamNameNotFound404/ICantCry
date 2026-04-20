@@ -41,6 +41,11 @@ public:
 	virtual void NativeConstruct() override;
 
 	virtual void NativeDestruct() override;
+	
+	/**
+ * refresh the ui with the new level of the XpBar
+ */
+	UFUNCTION() void UpdateExpBar();
 
 public: 
 
@@ -86,6 +91,8 @@ protected:
 	// Data Assets
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) UPlayerStats* Stats;
 
+	UPROPERTY() UICantCryGameInstance* Instance;
+	
 	// UI
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
     TSubclassOf<class UStatsButtonWidget> StatsButton;
@@ -127,11 +134,6 @@ private:
 	 */
 	
 	UFUNCTION(BlueprintCallable, Category = "Quest") void UpdateQuests();
-
-	/**
-	 * refresh the ui with the new level of the XpBar
-	 */
-	UFUNCTION() void UpdateExpBar();
 
 	
 

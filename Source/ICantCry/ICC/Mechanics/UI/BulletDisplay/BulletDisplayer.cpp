@@ -75,29 +75,29 @@ void UBulletDisplayer::Refresh()
 
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
 	int32 Index = 0;
-
+	
 	for (auto& Bullet : Instance->GetInventory().BulletsStored)
 	{
 		FBullet& B = Bullet.Value;
 		if (B.GetQuantity() <= 0) continue;
-
+	
 		UBulletSelector* Item = CreateWidget<UBulletSelector>(GetWorld(), BulletButtonItemClass);
 		Item->SetIsFocusable(true);
 		Item->Setup(B, B.GetQuantity());
 		Item->SetPadding(FMargin(2, 2));
-
+	
 		UGridSlot* BulletSlot = Cast<UGridSlot>(BulletGrid->AddChild(Item));
 		if (!BulletSlot)
 		{
 			continue;
 		}
-
+	
 		const int32 Row = Index / BulletSlotPadding;
 		const int32 Column = Index % BulletSlotPadding;
-
+	
 		BulletSlot->SetRow(Row);
 		BulletSlot->SetColumn(Column);
-
+	
 		//BulletGrid->AddChild(Item);
 		Bullets.Add(Item);
 		Index++;

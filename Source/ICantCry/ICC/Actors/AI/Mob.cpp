@@ -506,11 +506,17 @@ bool AMob::IsEShame() const
 void AMob::DealDamage()
 {
 	const float DamageDealt = Damage.CalculateDamage(false);
-	const AICC_Player* Player = Handler->GetBattlePlayer();
-	Player->GetStats()->CurrentHealth -= DamageDealt;
-	Player->GetStats()->CurrentHealth = FMath::Clamp(Player->GetStats()->CurrentHealth, 0.0f,
-	                                                 Player->GetStats()->MaxHealth);
-	const float HealthPercentage = Player->GetStats()->CurrentHealth / Player->GetStats()->MaxHealth;
+	AICC_Player* Player = Handler->GetBattlePlayer();
+	// Player->GetStats()->CurrentHealth -= DamageDealt;
+	 //Player->GetStats()->CurrentHealth = FMath::Clamp(Player->GetStats()->CurrentHealth, 0.0f,
+	//                                                  Player->GetStats()->MaxHealth);
+	//
+	// const float HealthPercentage = Player->GetStats()->CurrentHealth / Player->GetStats()->MaxHealth;
+	
+	Player->GetRuntimeStats().CurrentHealth -= DamageDealt;
+	Player->GetRuntimeStats().CurrentHealth = FMath::Clamp(Player->GetRuntimeStats().CurrentHealth, 0.0f, Player->GetStats()->MaxHealth);
+	const float HealthPercentage = Player->GetRuntimeStats().CurrentHealth / Player->GetStats()->MaxHealth;
+	
 	Player->GetBattleHUD()->PlayerHealth->SetPercent(HealthPercentage);
 }
 

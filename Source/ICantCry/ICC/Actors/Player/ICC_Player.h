@@ -135,7 +135,9 @@ public:
 
 	UICC_GamepadBinder* GetBinder() const;
 	USpringArmComponent* GetCameraBoom() const;
-
+	
+	FRuntimeStats& GetRuntimeStats();
+	
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Movement")
 	float WalkSpeed;

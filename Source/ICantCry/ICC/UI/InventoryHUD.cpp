@@ -1,8 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "InventoryHUD.h"
 #include "../Source/ICantCry/ICC/Actors/Player/ICC_Player.h"
-#include "../Source/ICantCry/ICC/Debug/DebugHelper.h"
-#include "ICantCry/ICC/UI/CasingWidget.h"
 
 void UInventoryHUD::NativeConstruct()
 {   
@@ -173,11 +171,8 @@ void UInventoryHUD::OnCraftPressed()
     
   
     FRecipe& CurrentRecipe = Instance->GetInventory().GetSelectedRecipe();
-    if (CurrentRecipe.Requirements == nullptr) // <-- QUESTO È IL CONTROLLO CHIAVE
+    if (CurrentRecipe.Requirements == nullptr) 
     {
-        DebugHelper::LogError("No recipe selected!");
-        
-        // Feedback opzionale
         if (CraftInfo)
         {
             CraftInfo->SetText(FText::FromString("Select recipe first"));
@@ -223,9 +218,6 @@ void UInventoryHUD::OnCraftReleased()
         CraftingProgressBar->SetPercent(0.0f);
     }
     
-    DebugHelper::LogWarning("Progress bar reset to 0");
-
-
 }
 
 void UInventoryHUD::UpdateProgressBar()
@@ -269,16 +261,11 @@ void UInventoryHUD::CompleteCrafting()
         return;
     }
     
-    DebugHelper::LogSuccess("Crafting completed! Crafting 1 bullet...");
-    
-    // 1. Crafta UN SOLO bullet
     CraftingTable->CraftSelectedBullet(GetWorld());
     Refresh();
     
-    // 2. Controlla se l'utente sta ancora tenendo premuto
     if (!bIsHolding)
     {
-        // Utente ha rilasciato, resetta tutto
         CurrentProgress = 0.0f;
         if (CraftingProgressBar)
         {
@@ -286,13 +273,9 @@ void UInventoryHUD::CompleteCrafting()
         }
         return;
     }
-    
-    // 3. Controlla se ci sono ancora risorse per craftare un altro bullet
+  
     if (!CraftingTable->ScanResources(GetWorld()))
     {
-        DebugHelper::LogWarning("No more resources available");
-        
-        // Nessuna risorsa, resetta tutto
         bIsHolding = false;
         CurrentProgress = 0.0f;
         if (CraftingProgressBar)
@@ -302,17 +285,12 @@ void UInventoryHUD::CompleteCrafting()
         return;
     }
     
-    // 4. Se l'utente tiene ancora premuto E ci sono risorse...
-    //    Ricomincia la progress bar da 0 per craftare il prossimo bullet
-    DebugHelper::LogWarning("User still holding - starting next bullet craft...");
-    
     CurrentProgress = 0.0f;
     if (CraftingProgressBar)
     {
         CraftingProgressBar->SetPercent(0.0f);
     }
     
-    // Ricomincia il timer per la prossima progress bar
     GetWorld()->GetTimerManager().ClearTimer(Timer);
     GetWorld()->GetTimerManager().SetTimer(
         Timer, 
@@ -348,7 +326,6 @@ void UInventoryHUD::Setup()
 {
     StandardBulletDisplayer->Init(this);
     StandardBulletDisplayer->Refresh();
-    DebugHelper::LogWarning("Setup InventoryHUD called");
 }
 
 

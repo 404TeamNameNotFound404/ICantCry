@@ -90,7 +90,6 @@ void UEncounterManager::TickEncouter()
 	if (!PlayerRef.IsValid())
 	{
 		PlayerRef = Instance->GetCurrentPlayer();
-		return; 
 	}
 	
 	if (bEncounterTimerPaused)

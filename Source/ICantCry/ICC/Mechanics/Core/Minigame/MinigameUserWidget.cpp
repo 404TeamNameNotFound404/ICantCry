@@ -32,12 +32,14 @@ bool UMinigameUserWidget::OffsideChecker()
 
 void UMinigameUserWidget::Handle(UBulletData* BulletData, AMinigameHandler* MinigameHandler)
 {
-	if (!BulletData)
+	if (!BulletData || 
+		!Cast<UICantCryGameInstance>(GetGameInstance())->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn())
 	{
 		DebugHelper::LogError("Bullet data is null!");
 		MinigameHandler->EndMinigame();
 		return;
 	}
+	
 	const UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
 	
 	switch (BulletData->MinigameTemplate)

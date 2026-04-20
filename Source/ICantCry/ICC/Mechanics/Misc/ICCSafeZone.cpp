@@ -27,18 +27,7 @@ void AICCSafeZone::BeginPlay()
 	SafeArea->OnComponentBeginOverlap.AddDynamic(this, &AICCSafeZone::OnOverlapBegin);
 	SafeArea->OnComponentEndOverlap.AddDynamic(this, &AICCSafeZone::OnOverlapEnd);
 	
-	TArray<AActor*> OverlappingActors;
-	SafeArea->GetOverlappingActors(OverlappingActors);
-
-	for (AActor* Actor : OverlappingActors)
-	{
-		if (Cast<AICC_Player>(Actor))
-		{
-			bInSafeArea = true;
-			DebugHelper::LogWarning("Player detected inside Safe Zone at Start!");
-			break; 
-		}
-	}
+	bInSafeArea = false; 
 }
 
 void AICCSafeZone::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,

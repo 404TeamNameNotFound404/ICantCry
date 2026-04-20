@@ -25,6 +25,7 @@ void AEncounterHandler::BeginPlay()
 	EncounterManager = NewObject<UEncounterManager>();
 	EncounterManager->Initialize(GetWorld());
 	EncounterManager->SetPlayerLocationMultiplier(MultiplierLocation);
+	bIsSafeZone = false;
 }
 
 void AEncounterHandler::Tick(float DeltaTime)

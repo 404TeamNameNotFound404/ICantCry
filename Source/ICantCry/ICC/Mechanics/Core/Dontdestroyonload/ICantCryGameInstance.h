@@ -53,11 +53,14 @@ public:
 
 	bool CanRecreatePlayer() const;
 	void SetCanRecreatePlayer(const bool& Value);
+	
 	FPlayerMemory& GetPlayerRuntimeData();
 
 	FRuntimeStats& GetRuntimeStats();
 
-
+	UPROPERTY()
+	bool bHealthInitialized = false;
+	
 	// Bestiary
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Bestiary")
     TArray<FString> CollectedNotes;

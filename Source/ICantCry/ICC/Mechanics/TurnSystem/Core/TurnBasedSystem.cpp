@@ -82,6 +82,8 @@ void UTurnBasedSystem::Start2(UWorld* World, FBattleMemory* Memory)
 	Instance = Cast<UICantCryGameInstance>(World->GetGameInstance());
 	checkf(Instance, TEXT("Instance is null at start2"))
 	
+	Instance->GetPlayerStats()->RuntimeStats = Instance->GetRuntimeStats();
+	
 	FTimerHandle DelayHandle;
 	World->GetTimerManager().SetTimer(DelayHandle, [this, World]()
 	{
@@ -299,6 +301,7 @@ void UTurnBasedSystem::Flow()
 			Instance->GetCurrentPlayer()->GetBattleHUD()->IncreaseAP(1);
 			DebugHelper::LogWarning("Mob removed from queue due to death.");
 			DebugHelper::AddMessageToLog("[Turn System]: " + Mob->GetActorLabel() + " died RIP.");
+			Instance->GetCurrentPlayer()->GetBattleHUD()->ProcessExp(Mob);
 		}
 	}
 
@@ -376,6 +379,12 @@ void UTurnBasedSystem::ExitBattle()
 		Instance->GetInventory().BulletsStored.Add(B->Type, Bullet);
 		DebugHelper::LogMessage(20, FColor::White, B->BulletName + " turned into Indifference");
 	}
+	
+	const FRuntimeStats& LiveResults = CurrentPlayer->GetRuntimeStats();
+	
+	Instance->GetRuntimeStats().CurrentHealth = LiveResults.CurrentHealth;
+	Instance->GetRuntimeStats().Experience = LiveResults.Experience;
+	Instance->GetPlayerStats()->RuntimeStats = Instance->GetRuntimeStats();
 }
 
 void UTurnBasedSystem::Reload()

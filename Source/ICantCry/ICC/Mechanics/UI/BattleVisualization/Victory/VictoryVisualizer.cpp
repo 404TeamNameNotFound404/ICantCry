@@ -63,18 +63,11 @@ void UVictoryVisualizer::Setup(const TArray<AICC_Actor*>& Queue)
 void UVictoryVisualizer::AfterBattle(const TArray<AICC_Actor*>& Queue)
 {
 	DropSystem->Drop(GetWorld(), this, Queue);
-	const int32 ExpGained = CalculateExp(Queue);
-	ExpInt->SetText(FText::FromString(FString::FromInt(ExpGained)));
 	
-	// UCircularBulletBuffer* Buffer = Instance->GetCurrentPlayer()->GetBattleHUD()->GetCircularBulletBuffer();
-	//
-	// for (const auto BulletsLeft = Buffer->GetBulletsLeft(); const auto Bullet : BulletsLeft)
-	// {
-	// 	FBullet B;
-	// 	B.SetBulletData(Bullet);
-	// 	B.SetQuantity(Buffer->GetCount());
-	// 	Instance->GetInventory().BulletsStored.Add(Bullet->Type, B);
-	// }
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	
+	ExpInt->SetText(FText::FromString(FString::FromInt(Instance->GetRuntimeStats().ExpSummary)));
+	Instance->GetRuntimeStats().ExpSummary = 0.0f;
 }
 
 UTextBlock* UVictoryVisualizer::GetEssenceDrop0() const
@@ -121,12 +114,12 @@ int32 UVictoryVisualizer::CalculateExp(const TArray<AICC_Actor*>& Queue)
 			continue;
 		}
 
-		AMob* Emotion = Cast<AMob>(Entity);
-
+		const AMob* Emotion = Cast<AMob>(Entity);
+		
 		TotalExp += Emotion->GetData()->ExpGiven;
 	}
 
-	Instance->GetPlayerStats()->Experience += TotalExp;
+	Instance->GetRuntimeStats().Experience += TotalExp;
 
 	return TotalExp;
 }

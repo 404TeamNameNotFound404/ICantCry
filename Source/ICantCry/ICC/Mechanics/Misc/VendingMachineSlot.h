@@ -72,13 +72,7 @@ protected:
 	UFUNCTION(BlueprintPure) FText UpdateCasingQuantity();
 	
 	UPROPERTY() UICantCryGameInstance* Instance;
-	
-	
-public:
-	void GiveMe(const FEssence& What);
-	void GiveMe(const FRecipe& What);
-	void GiveMe(const FCasing What);
-	
+
 private:
 	void Setup();
 	void SetupCasings();

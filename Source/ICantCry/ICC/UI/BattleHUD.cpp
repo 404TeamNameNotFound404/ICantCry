@@ -173,7 +173,7 @@ void UBattleHUD::NativeConstruct()
 
 	GameInstance = Cast<UICantCryGameInstance>(UGameplayStatics::GetGameInstance(this));
 	checkf(GameInstance, TEXT("Game instance is null at constructor battle hud"));
-	PlayerHealth->SetPercent(GameInstance->GetPlayerStats()->CurrentHealth);
+	PlayerHealth->SetPercent(GameInstance->GetRuntimeStats().CurrentHealth);
 
 	CurrentEnemyIndex = 0;
 
@@ -202,6 +202,9 @@ void UBattleHUD::NativeConstruct()
 	ApAccumulator = 0;
 	
 	CTR->SetVisibility(ESlateVisibility::Hidden);
+	
+	const float Percent = GameInstance->GetRuntimeStats().CurrentHealth / GameInstance->GetPlayerStats()->MaxHealth;
+	PlayerHealth->SetPercent(Percent);
 }
 
 // TARGET
@@ -218,6 +221,30 @@ void UBattleHUD::DecreaseAP(const int& Amount)
 	DebugHelper::LogWarning("AP decreased now " + FString::FromInt(CurrentAP));
 	DebugHelper::AddMessageToLog("[BattleHUD]: AP decreased now " + FString::FromInt(CurrentAP));
 	UpdateAPBar();
+}
+
+void UBattleHUD::ProcessExp(AMob* DeathEmotion)
+{
+	if (!DeathEmotion)
+	{
+		return;
+	}
+	
+	GameInstance->GetRuntimeStats().ExpSummary += DeathEmotion->GetData()->ExpGiven;
+	
+	GameInstance->GetRuntimeStats().Experience += DeathEmotion->GetData()->ExpGiven;
+	
+	DebugHelper::AddMessageToLog("[BattleHud]: " + DeathEmotion->GetActorLabel() +" is death so processing exp.. "
+		"Exp given " + FString::SanitizeFloat(DeathEmotion->GetData()->ExpGiven) + " so player exp is: " +
+		FString::SanitizeFloat(GameInstance->GetRuntimeStats().Experience));
+	
+	if (GameInstance->GetRuntimeStats().Experience >= GameInstance->GetRuntimeStats().MaxExperience)
+	{
+		DebugHelper::LogSuccess("Level Up!");
+		DebugHelper::AddMessageToLog("[BattleHud]: Level Up!");
+		// for now 
+		GameInstance->GetRuntimeStats().MaxExperience += 100;
+	}
 }
 
 FText UBattleHUD::UpdateBulletName()
@@ -1414,8 +1441,8 @@ void UBattleHUD::RestoreHealth()
 		return;
 	}
 
-	Player->GetStats()->CurrentHealth += CurrentBulletData->Power;
-	const float Percentage = Player->GetStats()->CurrentHealth / Player->GetStats()->MaxHealth;
+	Player->GetRuntimeStats().CurrentHealth += CurrentBulletData->Power;
+	const float Percentage = Player->GetRuntimeStats().CurrentHealth / Player->GetStats()->MaxHealth;
 	PlayerHealth->SetPercent(Percentage);
 	DebugHelper::LogWarning("Healed " + FString::SanitizeFloat(Percentage));
 }
@@ -1423,8 +1450,8 @@ void UBattleHUD::RestoreHealth()
 void UBattleHUD::ResetHealth()
 {
 	AICC_Player* Player = GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer();
-	Player->GetStats()->CurrentHealth = Player->GetStats()->MaxHealth;
-	const float Percentage = Player->GetStats()->CurrentHealth / Player->GetStats()->MaxHealth;
+	Player->GetRuntimeStats().CurrentHealth = Player->GetStats()->MaxHealth;
+	const float Percentage = Player->GetRuntimeStats().CurrentHealth / Player->GetStats()->MaxHealth;
 	PlayerHealth->SetPercent(Percentage);
 }
 

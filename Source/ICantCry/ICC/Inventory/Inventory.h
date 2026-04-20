@@ -105,8 +105,6 @@ public:
 
     bool CompareItemData(const FInventoryItem& Item, const FBullet& Bullet, const TArray<FEssence>& ItemEssences, const FRecipe& Recipe) const;
 
-    void StarterPack();
-
     void AddCraftedBullet(FBullet &Bullet);
 
 	int32 GetEssenceQuantity(EEssenceType EssenceType) const;

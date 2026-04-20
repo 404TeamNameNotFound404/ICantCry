@@ -125,8 +125,7 @@ void AEnemySpawnManager::ResetBattle(AMob* Emotion)
         AIController->BrainComponent->RestartLogic();
     }
 	
-    Instance->GetCurrentPlayer()->GetStats()->CurrentHealth =
-        Emotion->GetData()->MaxHealth;
+    Instance->GetCurrentPlayer()->GetStats()->CurrentHealth = Instance->GetPlayerStats()->MaxHealth;
 
     Instance->GetCurrentPlayer()->GetBattleHUD()->ResetHealth();
     Instance->GetCurrentPlayer()->GetBattleHUD()->ResetAp();
