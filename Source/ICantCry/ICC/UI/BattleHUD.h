@@ -237,6 +237,7 @@ public:
 	UPROPERTY() bool bIsEvFirst = false;
 	
 	void ProcessExp(AMob* DeathEmotion);
+	void RetrieveNotUsedBullets();
 	
 	
 protected:

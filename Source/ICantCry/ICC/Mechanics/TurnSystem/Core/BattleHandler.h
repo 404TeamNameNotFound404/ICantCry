@@ -40,6 +40,8 @@ public:
 	void DecreaseAura(const float& Value);
 	void DeactivateAura(const EBuffStatus& Status);
 	void DeactivateAura();
+	
+	UBulletData* GetIndifferenceData();
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -67,6 +69,10 @@ private:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle VFX", meta=(AllowPrivateAccess="true"))
 	float AuraIncreaseValue = 500.f;
+	
+	// To convert wasted bullet into indifference if not found
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Turn", meta=(AllowPrivateAccess=true))
+	UBulletData* Indifference;
 	
 	UPROPERTY()
 	UNiagaraComponent* Flash;

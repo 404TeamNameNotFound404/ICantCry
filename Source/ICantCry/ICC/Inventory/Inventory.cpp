@@ -153,9 +153,9 @@ void FInventory::AddCraftedBullet(FBullet& Bullet)
     TEnumAsByte<EBulletType> BulletType = Bullet.GetBulletData()->Type;
 
     FBullet* ExistingBullet = BulletsStored.Find(BulletType);
-	FBullet& FindBullet = BulletsStored.FindOrAdd(BulletType);
+	//FBullet& FindBullet = BulletsStored.FindOrAdd(BulletType);
     
-    if (/*ExistingBullet*/ FindBullet.IsValid())
+    if (ExistingBullet && ExistingBullet->IsValid())
     {
         const int32 CurrentQuantity = ExistingBullet->GetQuantity();
         ExistingBullet->SetQuantity(CurrentQuantity + 1);

@@ -29,7 +29,11 @@ void UGameOverVisualizer::RetryBattle()
 	->GetBattleHandler()
 	->GetEnemySpawnManager();
 	
-	checkf(SpawnManager, TEXT("Spawn manager invalid"))
+	if (!SpawnManager)
+	{
+		DebugHelper::LogMessage(9, FColor::Red,"SpawnManager is invalid");
+		return;
+	}
 
 	for (AMob* Emotion : SpawnManager->GetMemory().EmotionsSpawned)
 	{

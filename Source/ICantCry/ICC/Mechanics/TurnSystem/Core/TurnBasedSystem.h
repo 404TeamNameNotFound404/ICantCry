@@ -41,22 +41,13 @@ public:
 	TArray<AICC_Actor*> GetCopyQueue() const;
 
 	void SpawnBattleVictory(UWorld* World);
-
-	/**
-	 * --------- WIP FUNCTIONS -----------
-	 */
-
+	
 	void ExitBattle();
 	void Reload();
 
 	EBattlePhase GetBattlePhase() const;
 	void SetBattlePhase(const EBattlePhase &Phase);
-
 	void PrePrepareToBattle();
-	
-	/**
-     * --------- WIP FUNCTIONS -----------
-     */
 	
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Turn", meta=(AllowPrivateAccess=true))

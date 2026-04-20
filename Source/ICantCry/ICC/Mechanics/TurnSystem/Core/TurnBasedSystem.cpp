@@ -368,16 +368,23 @@ void UTurnBasedSystem::ExitBattle()
 	BattleTurnCounter = 0;
 	Instance->GetCurrentPlayer()->GetStatusTracker()->Reset();
 	
-	TArray<UBulletData*> WastedBullets = Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->GetWastedBullets();
+	Instance->GetCurrentPlayer()->GetBattleHUD()->RetrieveNotUsedBullets();
 	
-	for (auto B : WastedBullets)
+	const TArray<UBulletData*> WastedBullets = Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->GetWastedBullets(); 
+	if (const int32 TotalWastedBullets = WastedBullets.Num(); TotalWastedBullets > 0)
 	{
-		B->Type = EBulletType::Indifference;
-		FBullet Bullet;
-		Bullet.SetBulletData(B);
-		Bullet.SetQuantity(WastedBullets.Num());
-		Instance->GetInventory().BulletsStored.Add(B->Type, Bullet);
-		DebugHelper::LogMessage(20, FColor::White, B->BulletName + " turned into Indifference");
+		if (FBullet* Wasted = Instance->GetInventory().BulletsStored.Find(EBulletType::Indifference); 
+			Wasted)
+		{
+			Wasted->SetQuantity(Wasted->GetQuantity() + TotalWastedBullets);
+		}
+		else
+		{
+			FBullet Bullet;
+			Bullet.SetQuantity(TotalWastedBullets);
+			Bullet.SetBulletData(Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetIndifferenceData());
+			Instance->GetInventory().BulletsStored.Add(EBulletType::Indifference, Bullet);
+		}
 	}
 	
 	const FRuntimeStats& LiveResults = CurrentPlayer->GetRuntimeStats();
@@ -389,7 +396,6 @@ void UTurnBasedSystem::ExitBattle()
 
 void UTurnBasedSystem::Reload()
 {
-	//bRequestFight = true;
 	RequestFight(false);
 	bInit = false;
 	bVictory = false;

@@ -253,6 +253,7 @@ public:
 */
 	void BuffFlow(const EBuffStatus& NewBuffStatus);
 	bool DebuffFlow(const EDebuffStatus& NewDebuffStatus, AICC_Actor* Target = nullptr);
+	void ResetStatsIfDebuffedTwice(AICC_Actor* Target, const bool& bAtk);
 	bool BuffFlow(const EBuffStatus& NewBuffStatus, AICC_Actor* Target = nullptr);
 	
 

@@ -247,6 +247,40 @@ void UBattleHUD::ProcessExp(AMob* DeathEmotion)
 	}
 }
 
+void UBattleHUD::RetrieveNotUsedBullets()
+{
+	for (const TArray<UBulletData*>& BulletsLeft = GetCircularBulletBuffer()->GetBulletsLeft();
+		const auto& Bullet : BulletsLeft)
+	{
+		if (!Bullet) continue;
+		
+		const EBulletType Type = Bullet->Type;
+		
+		if (FBullet* Existing = GameInstance->GetInventory().BulletsStored.Find(Type); Existing)
+		{
+			Existing->SetQuantity(Existing->GetQuantity() + 1);
+			DebugHelper::LogMessage(5, FColor::White, "Putting back " + Existing->GetBulletData()->BulletName + " quantity " + 
+				FString::FromInt(Existing->GetQuantity()));
+			
+			DebugHelper::AddMessageToLog("[BattleHud]: Putting back " + Existing->GetBulletData()->BulletName + " quantity " + 
+				FString::FromInt(Existing->GetQuantity()));
+		}
+		else
+		{
+			FBullet NewBullet;
+			NewBullet.SetBulletData(Bullet);
+			NewBullet.SetQuantity(1);
+			GameInstance->GetInventory().BulletsStored.Add(Type, NewBullet);
+			
+			DebugHelper::LogMessage(5, FColor::White, "Creating and Putting back " + NewBullet.GetBulletData()->BulletName + " quantity " + 
+				FString::FromInt(NewBullet.GetQuantity()));
+			
+			DebugHelper::AddMessageToLog("[BattleHud]: Putting back " + NewBullet.GetBulletData()->BulletName + " quantity " + 
+				FString::FromInt(NewBullet.GetQuantity()));
+		}
+	}
+}
+
 FText UBattleHUD::UpdateBulletName()
 {
 	if (!GetCurrentBulletData()) return FText::FromString("");

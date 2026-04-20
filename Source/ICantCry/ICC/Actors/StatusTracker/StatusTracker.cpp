@@ -585,7 +585,9 @@ void UStatusTracker::InflictStatus(const EAfflictedStatus& Status, AICC_Actor* T
 
 void UStatusTracker::InflictDebuffStatus(const EDebuffStatus& Status, AICC_Actor* Target)
 {
-	if (Target->GetStatusTracker()->IsShieldActive())
+	UStatusTracker* Tracker = Target->GetStatusTracker();
+	
+	if (Tracker->IsShieldActive())
 	{
 		PlayerShieldAccumulator--;
 		
@@ -607,20 +609,20 @@ void UStatusTracker::InflictDebuffStatus(const EDebuffStatus& Status, AICC_Actor
 		return;
 	}
 	
-	if (Target->GetStatusTracker()->IsAfflicted() || !Target->GetStatusTracker()->CanDebuff())
-	{
-		DebugHelper::AddMessageToLog("[Status Tracker - DeBuffS]: Emotion attempted to cast " + GetDebuffName(CurrentDebuffStatus) + " To " + Target->GetActorLabel() + " but " + GetStatusName(CurrentActiveStatus) + " has already been inflicted");
-		return;
-	}
-
-	bAtkDebuffRevert = false;
-	bDefDebuffRevert = false;
-	
 	if (DebuffFlow(Status, Target))
 	{
 		DebugHelper::AddMessageToLog("[Status Tracker]: Debuff neutralized by Buff; nothing applied.");
 		return; 
 	}
+	
+	// if (Tracker->IsAfflicted() || !Tracker->CanDebuff())
+	// {
+	// 	DebugHelper::AddMessageToLog("[Status Tracker - DeBuffS]: Emotion attempted to cast " + GetDebuffName(CurrentDebuffStatus) + " To " + Target->GetActorLabel() + " but " + GetStatusName(CurrentActiveStatus) + " has already been inflicted");
+	// 	return;
+	// }
+
+	bAtkDebuffRevert = false;
+	bDefDebuffRevert = false;
 	
 	Priority.SetNextPriorityFromDebuff(Status);
 
@@ -1158,6 +1160,16 @@ bool UStatusTracker::DebuffFlow(const EDebuffStatus& NewDebuffStatus, AICC_Actor
 	UStatusTracker* Tracker = Target->GetStatusTracker();
 	EBuffStatus Clash = EBuffStatus::NoBuff;
 	
+	const bool bIsAtk = (NewDebuffStatus == EDebuffStatus::DebuffAtk);
+	const bool bHasBuffClash = (Clash != EBuffStatus::NoBuff && Tracker->BuffCounters.Contains(Clash));
+	
+	if (const bool bHasExistingDebuff = Tracker->DebuffCounters.Contains(NewDebuffStatus); 
+		bHasExistingDebuff && !bHasBuffClash)
+	{
+		ResetStatsIfDebuffedTwice(Target, bIsAtk);
+		return false; 
+	}
+	
 	if (NewDebuffStatus == EDebuffStatus::DebuffAtk)
 	{
 		Clash = EBuffStatus::AtkBuff;
@@ -1231,6 +1243,40 @@ bool UStatusTracker::DebuffFlow(const EDebuffStatus& NewDebuffStatus, AICC_Actor
 		Target->GetActorLabel());
 	
 	return true;
+}
+
+void UStatusTracker::ResetStatsIfDebuffedTwice(AICC_Actor* Target, const bool& bAtk)
+{
+	if (Target->IsA(AICC_Player::StaticClass()))
+	{
+		if (bAtk)
+		{
+			Instance->GetRuntimeStats().AttackPower = Instance->GetPersistentData()->InitialAttackPower;
+			DebugHelper::AddMessageToLog("[Status Tracker - Stats Re-setter]: " + Target->GetActorLabel() + " got debuffed again so reverting it's stats -> atk" +
+				FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower));
+		}
+		else
+		{
+			Instance->GetRuntimeStats().DefencePower = Instance->GetPersistentData()->InitialDefencePower;
+			DebugHelper::AddMessageToLog("[Status Tracker - Stats Re-setter]: " + Target->GetActorLabel() + " got debuffed again so reverting it's stats -> def " +
+				FString::SanitizeFloat(Instance->GetRuntimeStats().DefencePower));
+		}
+	}
+	else if (const AMob* Mob = Cast<AMob>(Target))
+	{
+		if (bAtk)
+		{
+			Mob->GetData()->RuntimeStats.AtkPower = Mob->GetAIMemory().InitialAttackPower;
+			DebugHelper::AddMessageToLog("[Status Tracker - Stats Re-setter]: " + Mob->GetActorLabel() + " got debuffed again so reverting it's stats -> atk" +
+				FString::SanitizeFloat(Mob->GetData()->RuntimeStats.AtkPower));
+		}
+		else
+		{
+			Mob->GetData()->RuntimeStats.DefPower = Mob->GetAIMemory().InitialDefencePower;
+			DebugHelper::AddMessageToLog("[Status Tracker - Stats Re-setter]: " + Mob->GetActorLabel() + " got debuffed again so reverting it's stats -> def " +
+				FString::SanitizeFloat(Mob->GetData()->RuntimeStats.DefPower));
+		}
+	}
 }
 
 bool UStatusTracker::BuffFlow(const EBuffStatus& NewBuffStatus, AICC_Actor* Target)

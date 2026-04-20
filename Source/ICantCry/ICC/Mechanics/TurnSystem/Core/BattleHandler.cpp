@@ -205,6 +205,11 @@ void ABattleHandler::DeactivateAura()
 	Aura->Deactivate();
 }
 
+UBulletData* ABattleHandler::GetIndifferenceData()
+{
+	return Indifference;
+}
+
 void ABattleHandler::UpdateMuzzleFlashPosition(const FVector& Location)
 {
 	if (!Flash)
