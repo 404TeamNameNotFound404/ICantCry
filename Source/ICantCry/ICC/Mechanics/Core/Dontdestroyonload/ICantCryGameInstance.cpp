@@ -338,5 +338,10 @@ UDataTable* UICantCryGameInstance::GetEssencesTable() const
 	return EssencesTable;
 }
 
+TMap<FString, UTexture2D*>& UICantCryGameInstance::GetIconMap()
+{
+	return IconPack;
+}
+
 
 

@@ -102,6 +102,7 @@ public:
 	UDataTable* GetRecipes() const;
 	UDataTable* GetCasingsTable() const;
 	UDataTable* GetEssencesTable() const;
+	TMap<FString, UTexture2D*>& GetIconMap();
 	
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))
@@ -148,6 +149,8 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Data Tables", meta=(AllowPrivateAccess=true))
 	UDataTable* EssencesTable;
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="ICCMisc", meta=(AllowPrivateAccess=true))
+	TMap<FString, UTexture2D*> IconPack;
 };
 
 

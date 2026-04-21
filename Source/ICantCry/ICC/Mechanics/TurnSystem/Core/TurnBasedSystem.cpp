@@ -371,10 +371,24 @@ void UTurnBasedSystem::ExitBattle()
 	Instance->GetCurrentPlayer()->GetBattleHUD()->RetrieveNotUsedBullets();
 	
 	const TArray<UBulletData*> WastedBullets = Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->GetWastedBullets(); 
+	
 	if (const int32 TotalWastedBullets = WastedBullets.Num(); TotalWastedBullets > 0)
 	{
 		FBullet Bullet;
-		Bullet.SetQuantity(TotalWastedBullets);
+		
+		if (!Bullet.GetBulletData()) 
+		{
+			Bullet.SetBulletData(Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetIndifferenceData());
+		}
+		
+		if (const FBullet* B = Instance->GetInventory().BulletsStored.Find(EBulletType::Indifference))
+		{
+			Bullet.SetQuantity( B->GetQuantity() + TotalWastedBullets);
+		}else
+		{
+			Bullet.SetQuantity(TotalWastedBullets);
+		}
+		
 		Bullet.SetBulletData(Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetIndifferenceData());
 		DebugHelper::LogMessage(20, FColor::Silver, "Wasted Bullet recreated and added and to indifference " + FString::FromInt(Bullet.GetQuantity()));
 		DebugHelper::AddMessageToLog("Wasted Bullet 'recreated' and added to indifference " + FString::FromInt(Bullet.GetQuantity()));

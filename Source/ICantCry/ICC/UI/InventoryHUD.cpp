@@ -32,6 +32,15 @@ void UInventoryHUD::NativeConstruct()
     }
 
     //StandardBulletDisplayer->Init(this);
+    
+    if (DebugHelper::IsGamepadPlugged())
+    {
+        CraftIcon->SetBrushFromTexture(GameInstance->GetIconMap()["OPad_X"]);
+    }
+    else
+    {
+        CraftIcon->SetBrushFromTexture(GameInstance->GetIconMap()["OKey_MouseClicked"]);
+    }
 }
 
 void UInventoryHUD::UpdateInventoryDisplay(const FInventory &Inventory)

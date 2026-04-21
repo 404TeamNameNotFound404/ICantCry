@@ -58,6 +58,11 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	UButton* Map;
+	
+	UPROPERTY(meta=(BindWidget))
+	UOverlay* OverviewFrame;
+	
+	void Hightlight(UWidget* What);
 
 
 private:

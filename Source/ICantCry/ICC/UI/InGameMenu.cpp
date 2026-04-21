@@ -32,6 +32,26 @@ void UInGameMenu::NativeConstruct()
 		Main->AddChild(CharacterUI);
 		CharacterUI->RefreshUI();
 	}
+	
+	Hightlight(Character);
+}
+
+void UInGameMenu::Hightlight(UWidget* What)
+{
+	if (!What || !OverviewFrame) return;
+	
+	OverviewFrame->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	UCanvasPanelSlot* FrameSlot = Cast<UCanvasPanelSlot>(OverviewFrame->Slot);
+	
+	if (const UCanvasPanelSlot* ButtonSlot = Cast<UCanvasPanelSlot>(What->Slot);
+		FrameSlot && ButtonSlot)
+	{
+		FrameSlot->SetPosition(ButtonSlot->GetPosition());
+		FrameSlot->SetSize(ButtonSlot->GetSize());
+		
+		FrameSlot->SetAnchors(ButtonSlot->GetAnchors());
+		FrameSlot->SetAlignment(ButtonSlot->GetAlignment());
+	}
 }
 
 
@@ -63,6 +83,7 @@ void UInGameMenu::OpenInventory()
 	InventoryHud->Refresh();
 	//CharacterUI->SetVisibility(ESlateVisibility::Hidden);
 	InventoryHud->SetVisibility(ESlateVisibility::Visible);
+	Hightlight(Inventory);
 }
 
 
@@ -81,6 +102,7 @@ void UInGameMenu::OpenCharacter()
 	//InventoryHud->SetVisibility(ESlateVisibility::Hidden);
 	CharacterUI->SetVisibility(ESlateVisibility::Visible);
 
+	Hightlight(Character);
 }
 
 

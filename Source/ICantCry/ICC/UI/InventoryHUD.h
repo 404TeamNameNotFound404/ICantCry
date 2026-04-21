@@ -16,6 +16,7 @@
 #include "Components/CanvasPanel.h"
 #include "Components/WidgetSwitcher.h"
 #include "../UI/EssenceWidget.h" 
+#include "Components/Overlay.h"
 #include "ICantCry/ICC/Inventory/CraftingTable.h"
 #include "Inventory/StandardBulletDisplayer.h"
 #include "Inventory/GoldBulletDisplayer.h"
@@ -78,6 +79,8 @@ public:
 	UPROPERTY(meta = (BindWidget))  UScrollBox* EssenceBox;
 
 	UPROPERTY(meta = (BindWidget)) UStandardBulletDisplayer* StandardBulletDisplayer;
+	
+	UPROPERTY(meta=(BindWidget)) UImage* CraftIcon;
 
 	UCraftingTable* GetTable();
 
