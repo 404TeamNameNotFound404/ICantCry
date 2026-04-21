@@ -314,7 +314,12 @@ void UInventoryHUD::RefreshEssence()
     for (const auto &Essence : GameInstance->GetInventory().EssencesStored)
     {
         UEssenceWidget *EssenceWidget = CreateWidget<UEssenceWidget>(GetWorld(), UEssenceWidgetClass);
-        checkf(EssenceWidget, TEXT("Essence widget is null"))
+   
+        if (!EssenceWidget)
+        {
+            DebugHelper::LogMessage(8, FColor::Red,"Essence widget is null");
+            return;
+        }
 
         EssenceBox->AddChild(EssenceWidget);
         const FEssence &E = Essence.Value;

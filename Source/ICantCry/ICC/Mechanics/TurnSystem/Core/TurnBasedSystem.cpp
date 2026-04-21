@@ -379,6 +379,7 @@ void UTurnBasedSystem::ExitBattle()
 		DebugHelper::LogMessage(20, FColor::Silver, "Wasted Bullet recreated and added and to indifference " + FString::FromInt(Bullet.GetQuantity()));
 		DebugHelper::AddMessageToLog("Wasted Bullet 'recreated' and added to indifference " + FString::FromInt(Bullet.GetQuantity()));
 		Instance->GetCurrentPlayer()->GetBattleHUD()->PushBackIndifferenceAsCasing(TotalWastedBullets, ECasingType::Base);
+		Instance->GetInventory().BulletsStored.Add(EBulletType::Indifference, Bullet); // note for myself this must be here otherwise it won't make indifference bullets playable
 	}
 	
 	const FRuntimeStats& LiveResults = CurrentPlayer->GetRuntimeStats();
