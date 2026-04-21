@@ -238,6 +238,7 @@ public:
 	
 	void ProcessExp(AMob* DeathEmotion);
 	void RetrieveNotUsedBullets();
+	void PushBackIndifferenceAsCasing(const int32& CasingQuantity, const ECasingType& CasingType);
 	
 	
 protected:

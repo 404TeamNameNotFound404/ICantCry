@@ -249,16 +249,22 @@ void UBattleHUD::ProcessExp(AMob* DeathEmotion)
 
 void UBattleHUD::RetrieveNotUsedBullets()
 {
-	for (const TArray<UBulletData*>& BulletsLeft = GetCircularBulletBuffer()->GetBulletsLeft();
-		const auto& Bullet : BulletsLeft)
+	for (const auto& Bullet: GetCircularBulletBuffer()->GetBulletsLeft())
 	{
-		if (!Bullet) continue;
+		DebugHelper::AddMessageToLog("[BattleHud]: Bullets left in magazine after battle: " + Bullet->BulletName);
+		
+		if (!Bullet)
+		{
+			DebugHelper::AddMessageToLog("[BattleHud]: Cant find the proper bullet inside the map , can't put bullets back");
+			continue;
+		}
 		
 		const EBulletType Type = Bullet->Type;
 		
 		if (FBullet* Existing = GameInstance->GetInventory().BulletsStored.Find(Type); Existing)
 		{
-			Existing->SetQuantity(Existing->GetQuantity() + 1);
+			const int32 NewQuantity = Existing->GetQuantity() + 1;
+			Existing->SetQuantity(NewQuantity);
 			DebugHelper::LogMessage(5, FColor::White, "Putting back " + Existing->GetBulletData()->BulletName + " quantity " + 
 				FString::FromInt(Existing->GetQuantity()));
 			
@@ -275,10 +281,26 @@ void UBattleHUD::RetrieveNotUsedBullets()
 			DebugHelper::LogMessage(5, FColor::White, "Creating and Putting back " + NewBullet.GetBulletData()->BulletName + " quantity " + 
 				FString::FromInt(NewBullet.GetQuantity()));
 			
-			DebugHelper::AddMessageToLog("[BattleHud]: Putting back " + NewBullet.GetBulletData()->BulletName + " quantity " + 
+			DebugHelper::AddMessageToLog("[BattleHud]: Creating and Putting back " + NewBullet.GetBulletData()->BulletName + " quantity " + 
 				FString::FromInt(NewBullet.GetQuantity()));
 		}
 	}
+}
+
+void UBattleHUD::PushBackIndifferenceAsCasing(const int32& CasingQuantity, const ECasingType& CasingType)
+{
+	const FName TargetCasingName = "Base";
+	
+	
+	if (const FCasing* TargetCasing = GameInstance->GetCasingsTable()->FindRow<FCasing>(TargetCasingName, TEXT("Looking for")); 
+	   TargetCasing)
+	{
+		FCasing Casing = *TargetCasing;
+		Casing.SetQuantity(CasingQuantity + GameInstance->GetInventory().CasingsStored["Base"].GetQuantity());
+		Casing.SetType(CasingType);
+		GameInstance->GetInventory().CasingsStored.Add(Casing.GetName(), Casing);
+	}
+	
 }
 
 FText UBattleHUD::UpdateBulletName()

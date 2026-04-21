@@ -147,18 +147,18 @@ void UBulletDisplayer::RemoveBullet()
 	}
 	
 	const EBulletType BulletType = RemovedBullet->Type;
-
-	if (Instance->GetInventory().BulletsStored.Contains(BulletType))
-	{
-		FBullet& BulletStruct = Instance->GetInventory().BulletsStored[BulletType];
-		const int32 NewQuantity = FMath::Max(0, BulletStruct.GetQuantity() - 1);
-		BulletStruct.SetQuantity(NewQuantity);
-
-		if (NewQuantity == 0)
-		{
-			Instance->GetInventory().BulletsStored.Remove(BulletType);
-		}
-	}
+	//
+	// if (Instance->GetInventory().BulletsStored.Contains(BulletType))
+	// {
+	// 	FBullet& BulletStruct = Instance->GetInventory().BulletsStored[BulletType];
+	// 	const int32 NewQuantity = FMath::Max(0, BulletStruct.GetQuantity() - 1);
+	// 	BulletStruct.SetQuantity(NewQuantity);
+	//
+	// 	if (NewQuantity == 0)
+	// 	{
+	// 		Instance->GetInventory().BulletsStored.Remove(BulletType);
+	// 	}
+	// }
 
 	const TArray<UMagazineBullet*>& MagazineBullets = Player->GetBattleHUD()->MagazineBullets;
 	const int32 NumSlots = MagazineBullets.Num();

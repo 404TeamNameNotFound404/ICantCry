@@ -175,10 +175,20 @@ void UBulletBottonItem::Show()
 
 	if (!Instance->GetInventory().BulletsStored.IsEmpty())
 	{
+		if (!MyBullet.IsValid() || !MyBullet.GetBulletData())
+		{
+			return;
+		}
+		
 		BulletQuantityText->SetText(FText::FromString("x " + FString::FromInt(Instance->GetInventory().BulletsStored[MyBullet.GetBulletData()->Type].GetQuantity())));
 	}
 	else
 	{
+		if (!MyBullet.IsValid() || !MyBullet.GetBulletData())
+		{
+			return;
+		}
+		
 		BulletQuantityText->SetText(FText::FromString("x 0"));
 	}
 }

@@ -1170,6 +1170,11 @@ bool UStatusTracker::DebuffFlow(const EDebuffStatus& NewDebuffStatus, AICC_Actor
 		return false; 
 	}
 	
+	if (!Tracker->IsBuffed())
+	{
+		return false;
+	}
+	
 	if (NewDebuffStatus == EDebuffStatus::DebuffAtk)
 	{
 		Clash = EBuffStatus::AtkBuff;

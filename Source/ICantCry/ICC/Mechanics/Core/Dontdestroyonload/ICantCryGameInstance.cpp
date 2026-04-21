@@ -323,5 +323,20 @@ void UICantCryGameInstance::DebugUnlockSpecificMobContent(FString MobType)
     UE_LOG(LogTemp, Warning, TEXT("[DEBUG] Unlocked content for mob: %s"), *MobType);
 }
 
+UDataTable* UICantCryGameInstance::GetRecipes() const
+{
+	return Recipes;
+}
+
+UDataTable* UICantCryGameInstance::GetCasingsTable() const
+{
+	return CasingsTable;
+}
+
+UDataTable* UICantCryGameInstance::GetEssencesTable() const
+{
+	return EssencesTable;
+}
+
 
 

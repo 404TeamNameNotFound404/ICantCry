@@ -99,6 +99,10 @@ public:
 	void DebugUnlockSpecificMobContent(FString MobType);
 	//[DEBUG END]
 	
+	UDataTable* GetRecipes() const;
+	UDataTable* GetCasingsTable() const;
+	UDataTable* GetEssencesTable() const;
+	
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))
 	UPersistentData* PersistentData;
@@ -134,6 +138,15 @@ private:
 
 	UPROPERTY()
 	bool bCanRecreatePlayer = false;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Data Tables", meta=(AllowPrivateAccess=true))
+	UDataTable* Recipes;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Data Tables", meta=(AllowPrivateAccess=true))
+	UDataTable* CasingsTable;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Data Tables", meta=(AllowPrivateAccess=true))
+	UDataTable* EssencesTable;
 	
 };
 

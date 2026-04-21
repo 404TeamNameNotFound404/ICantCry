@@ -260,7 +260,6 @@ private:
 	void CloseCraftingHUD();
 	
 
-
 	//Bestiary 
 	void CollectNote(const FString& NoteKey); // da cancellare
 	void OpenBestiary();

@@ -24,6 +24,7 @@ struct FCasing : public FTableRowBase
 	void SetQuantity(const int32& NewQuantity);
 
 	ECasingType& GetType();
+	void SetType(const ECasingType& NewType);
 	
 	bool IsValid() const;
 	
