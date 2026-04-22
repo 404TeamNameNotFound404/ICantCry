@@ -2023,6 +2023,7 @@ void UStatusTracker::InflictFreeze(AICC_Actor* Target)
 	Target->Freeze(true);
 	DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + " freezed");
 	PerkData.bFreezedUp = true;
+	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->SimulateFreezedUp(Target, FColor::White);
 }
 
 void UStatusTracker::InflictBurn(AICC_Actor* Target)

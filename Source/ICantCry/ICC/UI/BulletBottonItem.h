@@ -92,6 +92,7 @@ private:
     FRecipe BulletBlueprint;
     
     UFUNCTION() void DisplayBulletInfo();
+    UFUNCTION() FString DisplayIngredients();
     UFUNCTION() void HideBulletInfo();
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullets", meta=(AllowPrivateAccess="true"))

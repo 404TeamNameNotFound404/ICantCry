@@ -205,6 +205,16 @@ void ABattleHandler::DeactivateAura()
 	Aura->Deactivate();
 }
 
+void ABattleHandler::SimulateFreezedUp(AICC_Actor* Target, const FLinearColor& Color)
+{
+	if (!Target) return;
+	const FVector& SpawnLocation = Target->GetActorLocation() + FVector{0,0,-50};
+	const FRotator& SpawnRotation = Target->GetActorRotation();
+	
+	Freezed = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), FreezedUpPrefab, SpawnLocation, SpawnRotation,{2,2,2}, true);
+	Freezed->Activate();
+}
+
 UBulletData* ABattleHandler::GetIndifferenceData()
 {
 	return Indifference;

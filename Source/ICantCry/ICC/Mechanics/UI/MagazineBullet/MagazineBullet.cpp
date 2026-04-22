@@ -10,13 +10,36 @@ void UMagazineBullet::RemoveFromMagazine()
 	if (!bEnableRemoval || !Buffer)
 		return;
 	
+	if (BulletIndex < 0 || BulletIndex >= Buffer->GetCapacity())
+	{
+		DebugHelper::LogWarning("Invalid BulletIndex: " + FString::Printf(TEXT("%d"), BulletIndex));
+		return;
+	}
+	
 	Buffer->RemoveAt(BulletIndex);
-	FBullet* Bullet = Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentSelectedBullet();
-	Bullet->SetQuantity(Bullet->GetQuantity() + 1);
+
+	if (FBullet* Bullet = Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentSelectedBullet(); Bullet)
+	{
+		const int32 NewQuantity = Bullet->GetQuantity() + 1;
+		Bullet->SetQuantity(NewQuantity);
+	}
+	else
+	{
+		DebugHelper::LogWarning("No selected bullet found to update.");
+	}
+	
 	BulletBtn->SetBackgroundColor(FLinearColor::Transparent);
 	Setup(nullptr, nullptr, -1);
 	
 	Instance->GetCurrentPlayer()->GetBattleHUD()->RefreshPistolMagazine();
+	
+	// Buffer->RemoveAt(BulletIndex);
+	// FBullet* Bullet = Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentSelectedBullet();
+	// Bullet->SetQuantity(Bullet->GetQuantity() + 1);
+	// BulletBtn->SetBackgroundColor(FLinearColor::Transparent);
+	// Setup(nullptr, nullptr, -1);
+	//
+	// Instance->GetCurrentPlayer()->GetBattleHUD()->RefreshPistolMagazine();
 }
 
 UButton* UMagazineBullet::GetMagazineBulletButton() const

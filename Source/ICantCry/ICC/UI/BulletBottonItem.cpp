@@ -291,7 +291,7 @@ void UBulletBottonItem::DisplayBulletInfo()
 
 	OwnerHUD->SelectedBulletImage->SetBrushFromTexture(MyBullet.GetBulletData()->Icon);
 	OwnerHUD->SelectedBulletName->SetText(FText::FromString(MyBullet.GetBulletData()->BulletName));
-	OwnerHUD->CraftInfo->SetText(FText::FromString("Crafted with -"));
+	OwnerHUD->CraftInfo->SetText(FText::FromString(DisplayIngredients()));
 	OwnerHUD->SelectedBulletPower->SetText(
 		FText::FromString("Bullet Power: " + FString::FromInt(MyBullet.GetBulletData()->Power)));
 	OwnerHUD->SelectedBulletEffectiveness->SetText(
@@ -310,6 +310,25 @@ void UBulletBottonItem::DisplayBulletInfo()
 		OwnerHUD->CraftButton->SetIsEnabled(true);
 	}
 
+}
+
+FString UBulletBottonItem::DisplayIngredients()
+{
+	FString EssenceName = "";
+	int32 Quantity = 0;
+	
+	if (BulletBlueprint.GetRequiredEssences().IsEmpty()) return FString("Crafted With - Empty");
+	
+	for (FEssence& Essence : BulletBlueprint.GetRequiredEssences())
+	{
+		if (!Essence.IsValid()) continue;
+		EssenceName = Essence.GetName(Essence.EssenceType);
+		Quantity = Essence.Quantity;
+	}
+	
+	const int32& CasingQuantity = BulletBlueprint.RequiredCasingQuantity;
+	// Note for myself if essences are multiple i think it can be better if i move the below line inside the loop otherwise the EssenceName and Quantity will only be valid for the last one
+	return FString("Crafted With: " + FString::FromInt(Quantity) + " " + EssenceName + " " + FString::FromInt(CasingQuantity) + " " + "Indifference");
 }
 
 void UBulletBottonItem::HideBulletInfo()

@@ -40,6 +40,7 @@ public:
 	void DecreaseAura(const float& Value);
 	void DeactivateAura(const EBuffStatus& Status);
 	void DeactivateAura();
+	void SimulateFreezedUp(AICC_Actor* Target, const FLinearColor& Color);
 	
 	UBulletData* GetIndifferenceData();
 
@@ -62,6 +63,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle VFX", meta=(AllowPrivateAccess="true"))
 	UNiagaraSystem* AuraPrefab;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle VFX", meta=(AllowPrivateAccess="true"))
+	UNiagaraSystem* FreezedUpPrefab;
+	
 	UPROPERTY() TMap<TEnumAsByte<EBuffStatus>, UNiagaraComponent*> ActiveAuras;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle VFX", meta=(AllowPrivateAccess="true"))
@@ -79,6 +83,9 @@ private:
 	
 	UPROPERTY()
 	UNiagaraComponent* Aura;
+	
+	UPROPERTY()
+	UNiagaraComponent* Freezed;
 	
 	UPROPERTY()
 	FVector BeamPosition;
