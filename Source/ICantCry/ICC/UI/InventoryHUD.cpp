@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "InventoryHUD.h"
 #include "../Source/ICantCry/ICC/Actors/Player/ICC_Player.h"
+#include "ICantCry/ICC/Input/Tags/ICC_InputTags.h"
 
 void UInventoryHUD::NativeConstruct()
 {   
@@ -41,6 +42,14 @@ void UInventoryHUD::NativeConstruct()
     {
         CraftIcon->SetBrushFromTexture(GameInstance->GetIconMap()["OKey_MouseClicked"]);
     }
+    
+    FTimerHandle BindDelay;
+    GetWorld()->GetTimerManager().SetTimer(BindDelay, this, &UInventoryHUD::Bind, 0.4f, false);
+    
+    BulletSwitcher->SetFocus();
+    StandardBulletDisplayer->SetIsFocusable(true);
+    StandardBulletDisplayer->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+  
 }
 
 void UInventoryHUD::UpdateInventoryDisplay(const FInventory &Inventory)
@@ -155,8 +164,8 @@ void UInventoryHUD::OnToggleSwitcher()
 {
     if (!BulletSwitcher) return; 
     
-    int32 Current = BulletSwitcher->GetActiveWidgetIndex(); 
-    int32 Next = (Current == 0) ? 1 : 0; 
+    const int32 Current = BulletSwitcher->GetActiveWidgetIndex(); 
+    const int32 Next = (Current == 0) ? 1 : 0; 
     BulletSwitcher->SetActiveWidgetIndex(Next);
 }
 
@@ -314,6 +323,92 @@ void UInventoryHUD::CompleteCrafting()
 UCraftingTable* UInventoryHUD::GetTable()
 {
     return CraftingTable;
+}
+
+void UInventoryHUD::Bind()
+{
+    UICC_EnhancedInputCmp* Binder = Cast<UICantCryGameInstance>(GetGameInstance())->GetCurrentPlayer()->GetInputBinder();
+    UICC_InputDataAsset* Data = Cast<UICantCryGameInstance>(GetGameInstance())->GetCurrentPlayer()->GetInputDataAsset();
+    
+    Binder->BindNativeInputAction(Data, Icc_InputTags::InputTag_Interact, ETriggerEvent::Triggered, this, &UInventoryHUD::SimulateCraftClick);
+    Binder->BindNativeInputAction(Data, Icc_InputTags::InputTag_Interact, ETriggerEvent::Canceled, this, &UInventoryHUD::EndSimulateCraftClick);
+    Binder->BindNativeInputAction(Data, Icc_InputTags::InputTag_ScrollBulletsLeft, ETriggerEvent::Triggered, this, &UInventoryHUD::NavigateLeft);
+    Binder->BindNativeInputAction(Data, Icc_InputTags::InputTag_ScrollBulletsRight, ETriggerEvent::Triggered, this, &UInventoryHUD::NavigateRight);
+}
+
+void UInventoryHUD::SimulateCraftClick()
+{
+    OnCraftPressed();
+}
+
+void UInventoryHUD::EndSimulateCraftClick()
+{
+    OnCraftReleased();
+}
+
+void UInventoryHUD::NavigateThroughBullets(const int32& InDirection)
+{
+    if (StandardBulletDisplayer->GetBullet().IsEmpty()) return;
+
+    const int32 OriginalIndex = ScrollerIndex;
+    bool bFoundValidButton = false;
+	
+    for (int32 i = 0; i < StandardBulletDisplayer->GetBullet().Num(); ++i)
+    {
+        ScrollerIndex = (ScrollerIndex + InDirection + StandardBulletDisplayer->GetBullet().Num()) % StandardBulletDisplayer->GetBullet().Num();
+
+        if (const UBulletBottonItem* Target = StandardBulletDisplayer->GetBullet()[ScrollerIndex])
+        {
+            if (Target->GetIsEnabled() && Target->GetVisibility() == ESlateVisibility::Visible)
+            {
+                bFoundValidButton = true;
+                break; 
+            }
+        }
+    }
+	
+    if (bFoundValidButton)
+    {
+        if (UBulletBottonItem* Target = StandardBulletDisplayer->GetBullet()[ScrollerIndex])
+        {
+            Target->SetFocus();
+            Hightlight(Target);
+        }
+    }
+    else
+    {
+        ScrollerIndex = OriginalIndex;
+    }
+}
+
+void UInventoryHUD::NavigateLeft()
+{
+    NavigateThroughBullets(-1);
+    DebugHelper::LogMessage(5, FColor::Silver, "Im supposed to scroll bullet list up");
+}
+
+void UInventoryHUD::NavigateRight()
+{
+    NavigateThroughBullets(1);
+    DebugHelper::LogMessage(5, FColor::Silver, "Im supposed to scroll bullet list down");
+}
+
+void UInventoryHUD::Hightlight(UWidget* What)
+{
+    // if (!What || !OverviewFrame) return;
+	   //
+    // OverviewFrame->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+    // UCanvasPanelSlot* FrameSlot = Cast<UCanvasPanelSlot>(OverviewFrame->Slot);
+	   //
+    // if (const UCanvasPanelSlot* ButtonSlot = Cast<UCanvasPanelSlot>(What->Slot);
+    //     FrameSlot && ButtonSlot)
+    // {
+    //     FrameSlot->SetPosition(ButtonSlot->GetPosition());
+    //     FrameSlot->SetSize(ButtonSlot->GetSize());
+		  //
+    //     FrameSlot->SetAnchors(ButtonSlot->GetAnchors());
+    //     FrameSlot->SetAlignment(ButtonSlot->GetAlignment());
+    // }
 }
 
 void UInventoryHUD::RefreshEssence()

@@ -24,4 +24,10 @@ namespace Icc_InputTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_MinigameGuitarHero_A, "InputTag.Minigame.GuitarHero_A")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_MinigameGuitarHero_B, "InputTag.Minigame.GuitarHero_B")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_MinigameCurling, "InputTag.Minigame.Curling")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_ScrollMainMenuLeft, "InputTag.Main.ScrollMenuLeft")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_ScrollMainMenuRight, "InputTag.Main.ScrollMenuRight")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_ScrollBulletsUp, "InputTag.Main.ScrollBulletsUp")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_ScrollBulletsDown, "InputTag.Main.ScrollBulletsDown")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_ScrollBulletsLeft, "InputTag.Main.ScrollBulletsLeft")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_ScrollBulletsRight, "InputTag.Main.ScrollBulletsRight")
 }

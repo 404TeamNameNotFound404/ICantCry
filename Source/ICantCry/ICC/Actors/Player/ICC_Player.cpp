@@ -160,7 +160,7 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	UEnhancedInputLocalPlayerSubsystem* SubSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LocalPlayer);
 	checkf(SubSystem, TEXT("Subsystem not found"));
 	SubSystem->AddMappingContext(InputDataAsset->DefaultMappingContext, 0);
-	UICC_EnhancedInputCmp* LastChecked = CastChecked<UICC_EnhancedInputCmp>(PlayerInputComponent);
+	LastChecked = CastChecked<UICC_EnhancedInputCmp>(PlayerInputComponent);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Run, ETriggerEvent::Triggered, this, &ThisClass::Input_Run);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Interact, ETriggerEvent::Triggered, this, &ThisClass::Input_Interact);
@@ -774,6 +774,16 @@ USpringArmComponent* AICC_Player::GetCameraBoom() const
 FRuntimeStats& AICC_Player::GetRuntimeStats()
 {
 	return Cast<UICantCryGameInstance>(GetGameInstance())->GetRuntimeStats();
+}
+
+UICC_InputDataAsset* AICC_Player::GetInputDataAsset()
+{
+	return InputDataAsset;
+}
+
+UICC_EnhancedInputCmp* AICC_Player::GetInputBinder()
+{
+	return LastChecked;
 }
 
 void AICC_Player::Input_ChallengeReleaseInteraction(const FInputActionValue& InputActionValue)

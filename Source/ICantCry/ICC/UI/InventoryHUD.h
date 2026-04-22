@@ -94,6 +94,18 @@ protected:
     FLinearColor SelectedColor;
     UPROPERTY(EditDefaultsOnly, Category = "UI")
     FLinearColor UnselectedColor;
+	
+	UPROPERTY() int32 ScrollerIndex;
+	
+	
+	void Bind();
+	void SimulateCraftClick();
+	void EndSimulateCraftClick();
+	
+	void NavigateThroughBullets(const int32& InDirection);
+	void NavigateLeft();
+	void NavigateRight();
+	void Hightlight(UWidget* What);
 
 
 private:

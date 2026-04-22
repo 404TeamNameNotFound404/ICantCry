@@ -120,6 +120,7 @@ void UStandardBulletDisplayer::Unlock(ERecipeType Type)
             DebugHelper::LogSuccess("Unlocked " + Btn->GetBlueprint().GetName(Type));
             Btn->SetUnlocked(true);
             GameInstance->GetInventory().Recipes.Add(Btn->GetBlueprint());
+            Btn->SetIsFocusable(true);
         }
     }
 

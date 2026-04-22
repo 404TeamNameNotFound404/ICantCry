@@ -20,6 +20,26 @@ void UBulletBottonItem::NativeConstruct()
 	}
 }
 
+void UBulletBottonItem::NativeOnAddedToFocusPath(const FFocusEvent& InFocusEvent)
+{
+	Super::NativeOnAddedToFocusPath(InFocusEvent);
+	DisplayBulletInfo();
+	
+	if (const UWidget* Parent = GetParent())
+	{
+		if (UScrollBox* ScrollBox = Cast<UScrollBox>(Parent->GetParent()))
+		{
+			ScrollBox->ScrollWidgetIntoView(this, true, EDescendantScrollDestination::IntoView, 0.0f);
+		}
+	}
+}
+
+void UBulletBottonItem::NativeOnRemovedFromFocusPath(const FFocusEvent& InFocusEvent)
+{
+	Super::NativeOnRemovedFromFocusPath(InFocusEvent);
+	HideBulletInfo();
+}
+
 
 void UBulletBottonItem::Setup(const FBullet& NewBullet, int32 InQuantity)
 {
