@@ -242,7 +242,7 @@ void UCraftingTable::Craft()
     UE_LOG(LogTemp, Warning, TEXT("Casings:"));
     
     int32 CasingsNeeded = SelectedRecipe.Requirements->CasingQuantity;
-    ECasingType RequiredType = SelectedRecipe.RequiredCasingType;
+    const ECasingType RequiredType = SelectedRecipe.RequiredCasingType;
     
     UE_LOG(LogTemp, Warning, TEXT("  Needed: %d %s"), 
         CasingsNeeded, 
@@ -257,11 +257,11 @@ void UCraftingTable::Craft()
         if (Casing.GetType() != RequiredType)
             continue;
         
-        int32 Before = Casing.GetQuantity();
         
-        if (Before >= CasingsNeeded)
+        
+        if (const int32 Before = Casing.GetQuantity(); Before >= CasingsNeeded)
         {
-            int32 After = Before - CasingsNeeded;
+            const int32 After = Before - CasingsNeeded;
             Casing.SetQuantity(After);
             
             UE_LOG(LogTemp, Warning, TEXT("  %s: %d -> %d"), 
@@ -341,8 +341,8 @@ void UCraftingTable::Craft(UWorld* World)
             return;
         }
         
-        int32 Before = StoredEssence->Quantity;
-        int32 After = Before - RequiredEssence.Quantity;
+        const int32 Before = StoredEssence->Quantity;
+        const int32 After = Before - RequiredEssence.Quantity;
         
         UE_LOG(LogTemp, Warning, TEXT("  %s: %d -> %d"), 
             *EssenceName, Before, After);
@@ -375,11 +375,10 @@ void UCraftingTable::Craft(UWorld* World)
         if (Casing.GetType() != RequiredType)
             continue;
         
-        int32 Before = Casing.GetQuantity();
         
-        if (Before >= CasingsNeeded)
+        if ( const int32 Before = Casing.GetQuantity(); Before >= CasingsNeeded)
         {
-            int32 After = Before - CasingsNeeded;
+            const int32 After = Before - CasingsNeeded;
             Casing.SetQuantity(After);
             
             UE_LOG(LogTemp, Warning, TEXT("  %s: %d -> %d"), 

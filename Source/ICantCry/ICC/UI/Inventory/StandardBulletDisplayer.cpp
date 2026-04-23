@@ -59,7 +59,7 @@ void UStandardBulletDisplayer::Init(UInventoryHUD* Hud)
         SadnessEV,
         JoyDV,
         JoyEV,
-        NoneBullet,
+        CalmDv,
         CalmEV,
         JealousyDV,
         JealousyEV,
