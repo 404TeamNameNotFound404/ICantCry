@@ -11,6 +11,7 @@
 
 class UICantCryGameInstance;
 class UPlayerStats;
+class AICC_Actor;
 
 USTRUCT(BlueprintType)
 struct FDamage
@@ -31,6 +32,8 @@ struct FDamage
 
 	UPROPERTY()
 	UICantCryGameInstance* Instance;
+	
+	UPROPERTY() AICC_Actor* Self;
 
 	FDamage();
 
@@ -40,9 +43,10 @@ struct FDamage
 	 * @param PStats Player Stats
 	 * @param AITactics AIMoves
 	 * @param EData Enemy Data
+	 * @param SelfPtr Self Ptr
 	 * @param GI GameInstance
 	 */
-	FDamage(UBulletData* BData, UPlayerStats* PStats, UEnemyTactics* AITactics, UEnemyDatas* EData, UICantCryGameInstance* GI = nullptr);
+	FDamage(UBulletData* BData, UPlayerStats* PStats, UEnemyTactics* AITactics, UEnemyDatas* EData, AICC_Actor* SelfPtr ,UICantCryGameInstance* GI = nullptr);
 	int CalculateDamage(const bool& IsPlayerAttacking);
 	
 	

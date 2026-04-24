@@ -6,6 +6,7 @@
 #include "Chaos/PBDSuspensionConstraintData.h"
 #include "ICantCry/ICC/Actors/AI/ICC_AIController.h"
 #include "ICantCry/ICC/Actors/AI/Mob.h"
+#include "ICantCry/ICC/Actors/AI/BehaviorNodes/Default/UBTTask_DefaultAtk.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "ICantCry/ICC/Mechanics/TurnSystem/Core/BattleHandler.h"
@@ -34,8 +35,17 @@ EBTNodeResult::Type UBTTask_BuffOtherAtk::ExecuteTask(UBehaviorTreeComponent& Ow
 	BlackBoard->SetValueAsBool("IsBuffOtherAtk?", Current->GetBuffOtherAtk());
 	BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 
+	AICC_Player* Target = Cast<AICC_Player>(BlackBoard->GetValueAsObject("Target"));
+	
 	if (Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().CantBuffOthers())
 	{
+		if (Current->GetMobType() == EMobType::MobJealousy)
+		{
+			DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Atk]: this mf -> " + Current->GetActorLabel() + " tried to debuff atk someone but it's alone! so let's attack instead!");
+			UUBTTask_DefaultAtk::GetInstance()->StartAttackMinigame(Current, Target, Controller);
+			return EBTNodeResult::InProgress;
+		}
+		
 		DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Atk]: " + Current->GetActorLabel() + " attempted to buff other atk but it's alone! , rethink the action");
 		BlackBoard->SetValueAsBool("Rethinker", true);
 		return EBTNodeResult::Succeeded;
@@ -44,6 +54,13 @@ EBTNodeResult::Type UBTTask_BuffOtherAtk::ExecuteTask(UBehaviorTreeComponent& Ow
 	AMob* TargetToBuff = Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetMobInQueue(Current);
 	if (!TargetToBuff) // rethink if target buff appears to be nullptr again 
 	{
+		if (Current->GetMobType() == EMobType::MobJealousy)
+		{
+			DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Atk]: this mf -> " + Current->GetActorLabel() + " tried to debuff atk someone but it's alone! so let's attack instead!");
+			UUBTTask_DefaultAtk::GetInstance()->StartAttackMinigame(Current, Target, Controller);
+			return EBTNodeResult::InProgress;
+		}
+		
 		BlackBoard->SetValueAsBool("Rethinker", true);
 		DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Atk]: " + Current->GetActorLabel() + " attempted to buff other def but it didn't find a valid target (scrivetemelo se entra qua dentro)! , rethinking the action");
 		return EBTNodeResult::Succeeded;

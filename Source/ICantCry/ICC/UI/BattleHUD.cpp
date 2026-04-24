@@ -988,7 +988,7 @@ void UBattleHUD::PrepareToEngage()
 	
 	FDamage DummyDamage(CurrentBulletData, GameInstance->GetPlayerStats(),
 	                    Cast<AMob>(SelectedActorTarget)->GetTactics(),
-	                    Cast<AMob>(SelectedActorTarget)->GetData(), GameInstance);
+	                    Cast<AMob>(SelectedActorTarget)->GetData(), GameInstance->GetCurrentPlayer() ,GameInstance);
 
 	GameInstance->GetRuntimeStats().Stats = DummyDamage;
 

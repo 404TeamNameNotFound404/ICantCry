@@ -243,8 +243,8 @@ public:
 
 	void StartDefenceMinigame();
 	virtual void Heal(const float& RestoredHealth);
-
-	static void DealDamage();
+	
+	void InflictDamage();
 
 	void SetIsBusy(const bool& Value);
 	bool IsBusy() const;
@@ -258,7 +258,8 @@ public:
 	
 	void EndTurn();
 	static bool MinigameEnded;
-	static FDamage Damage;
+	
+	UPROPERTY() FDamage RefDamage;
 
 	FEmotionStat& GetStats();
 

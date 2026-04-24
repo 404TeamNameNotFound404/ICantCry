@@ -8,7 +8,6 @@
 #include "ICantCry/ICC/Mechanics/TurnSystem/Core/BattleHandler.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 
-FDamage AMob::Damage;
 bool AMob::MinigameEnded = false;
 bool AMob::bMinigameHasStarted = false;
 bool AMob::bStopTree = false;
@@ -61,11 +60,6 @@ void AMob::BeginPlay()
 	}
 
 	GameRef = Instance;
-	Damage.BulletData = nullptr;
-	Damage.EnemyData = EnemyData;
-	Damage.PlayerStats = Instance->GetPlayerStats(); //MinigameHandler->GetBattlePlayer()->GetStats();
-	Damage.AIMoves = Moves;
-	Damage.Instance = Instance;
 	Handler = MinigameHandler;
 	Memory.DefaultBattleLocation = GetActorLocation();
 	Memory.DefaultBattleOrientation = GetActorRotation();
@@ -79,8 +73,8 @@ void AMob::BeginPlay()
 	EnemyData->Type = Type;
 	Stats.Health = GetData()->MaxHealth;
 	Stats.bAlive = true;
-
-
+	
+	RefDamage = FDamage(nullptr,Instance->GetPlayerStats(), Moves, EnemyData, this, Instance);
 }
 
 // Called every frame
@@ -503,20 +497,15 @@ bool AMob::IsEShame() const
 	return bIsEShame;
 }
 
-void AMob::DealDamage()
+
+
+void AMob::InflictDamage()
 {
-	const float DamageDealt = Damage.CalculateDamage(false);
+	const float DamageDealt = RefDamage.CalculateDamage(false);
 	AICC_Player* Player = Handler->GetBattlePlayer();
-	// Player->GetStats()->CurrentHealth -= DamageDealt;
-	 //Player->GetStats()->CurrentHealth = FMath::Clamp(Player->GetStats()->CurrentHealth, 0.0f,
-	//                                                  Player->GetStats()->MaxHealth);
-	//
-	// const float HealthPercentage = Player->GetStats()->CurrentHealth / Player->GetStats()->MaxHealth;
-	
 	Player->GetRuntimeStats().CurrentHealth -= DamageDealt;
 	Player->GetRuntimeStats().CurrentHealth = FMath::Clamp(Player->GetRuntimeStats().CurrentHealth, 0.0f, Player->GetStats()->MaxHealth);
 	const float HealthPercentage = Player->GetRuntimeStats().CurrentHealth / Player->GetStats()->MaxHealth;
-	
 	Player->GetBattleHUD()->PlayerHealth->SetPercent(HealthPercentage);
 }
 

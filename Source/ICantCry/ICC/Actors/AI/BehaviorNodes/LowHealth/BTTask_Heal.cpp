@@ -1,4 +1,6 @@
 #include "BTTask_Heal.h"
+
+#include "BehaviorTree/BlackboardComponent.h"
 #include "ICantCry/ICC/Actors/AI/ICC_AIController.h"
 #include "ICantCry/ICC/Actors/AI/Mob.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
@@ -11,6 +13,7 @@ UBTTask_Heal::UBTTask_Heal()
 	NodeName = "Heal";
 	bNotifyTick = true;
 	BlackBoard = nullptr;
+	bNotifyTaskFinished = true;
 }
 
 EBTNodeResult::Type UBTTask_Heal::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -23,6 +26,11 @@ EBTNodeResult::Type UBTTask_Heal::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	AMob* Current = Cast<AMob>(Controller->GetPawn());
 	checkf(Current, TEXT("Current Mob is invalid heal execute task"));
 	
+	if (Current->GetStats().Health >= Current->GetData()->MaxHealth)
+	{
+		DebugHelper::AddMessageToLog("[Behavior Tree - Heal]: " + Current->GetActorLabel() + " Health is full ftw!");
+		return EBTNodeResult::Succeeded;
+	}
 	
 	DebugHelper::AddMessageToLog("[Behavior Tree - Heal]: " + Current->GetActorLabel() + " uses Heal");
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
@@ -47,32 +55,36 @@ void UBTTask_Heal::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 	AMob* Current = Cast<AMob>(Controller->GetPawn());
 	checkf(Current, TEXT("Current Mob is invalid heal TickTask"));
 
-	Timer += DeltaSeconds * 2.0f;
+	Current->Heal(Current->GetTactics()->HealingPoint); // Can be edited via editor on the EnemyTactics data asset
+	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " Healed ItSelf"));
+	DebugHelper::AddMessageToLog("[Behavior Tree - Heal]: " + Current->GetActorLabel() + " Healed ItSelf");
+	Timer = 0.0f;
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
+	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+}
 
-	if (Timer >= TimeToHeal)
+void UBTTask_Heal::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult)
+{
+	Super::OnTaskFinished(OwnerComp, NodeMemory, TaskResult);
+	
+	if (AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner()))
 	{
-		if (Decision == EDecision::HealItSelf)
+		AMob* Current = Cast<AMob>(Controller->GetPawn());
+
+		Current->SetHeal(false);
+		Current->SetIsAttacked(false);
+		Current->SetTreeId(-1);
+
+		if (OwnerComp.GetBlackboardComponent())
 		{
-			Current->Heal(Current->GetTactics()->HealingPoint); // Can be edited via editor on the EnemyTactics data asset
-			Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " Healed ItSelf"));
-			DebugHelper::AddMessageToLog("[Behavior Tree - Heal]: " + Current->GetActorLabel() + " Healed ItSelf");
-			Timer = 0.0f;
-			UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
-			Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
-			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+			OwnerComp.GetBlackboardComponent()->SetValueAsBool("IsHealing?", Current->GetIsHeal());
+			OwnerComp.GetBlackboardComponent()->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
+			OwnerComp.GetBlackboardComponent()->SetValueAsInt("Id", Current->GetTreeId());
 		}
 
-		if (Decision == EDecision::HealOther)
-		{
-			AMob* Other = Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetMobInQueue();
-			checkf(Other, TEXT("Other Mob is invalid heal TickTask"));
-			Other->Heal(Current->GetTactics()->HealingPoint);
-			Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " Healed " + Other->GetActorLabel()));
-			DebugHelper::AddMessageToLog("[Behavior Tree - Heal]: " + Current->GetActorLabel() + " Healed " + Other->GetActorLabel());
-			Timer = 0.0f;
-			UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
-			Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
-			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-		}
+		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
+		UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 	}
 }

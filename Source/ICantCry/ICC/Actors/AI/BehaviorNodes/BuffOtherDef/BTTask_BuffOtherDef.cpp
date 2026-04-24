@@ -32,6 +32,20 @@ EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& Ow
 	
 	if (Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().CantBuffOthers())
 	{
+		if (Current->GetMobType() == EMobType::MobFear)
+		{
+			DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: this mf " + Current->GetActorLabel() + " is a forever alone so its gonna buff it's def");
+			BlackBoard->SetValueAsBool("IsDefenceBuffed?", true);
+			return EBTNodeResult::Succeeded;
+		}
+		
+		else if (Current->GetMobType() == EMobType::MobCalm)
+		{
+			DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: this mf " + Current->GetActorLabel() + " is a forever alone so its gonna buff it's def");
+			BlackBoard->SetValueAsBool("IsDefenceBuffed?", true);
+			return EBTNodeResult::Succeeded;
+		}
+		
 		BlackBoard->SetValueAsBool("Rethinker", true);
 		DebugHelper::AddMessageToLog(Current->GetActorLabel() + " attempted to buff other def but it's alone! , rethink the action");
 		return EBTNodeResult::Succeeded;
@@ -41,6 +55,20 @@ EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& Ow
 
 	if (!TargetToBuff) // rethink if target buff appears to be nullptr again 
 	{
+		if (Current->GetMobType() == EMobType::MobFear)
+		{
+			DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: this mf " + Current->GetActorLabel() + " is a forever alone so its gonna buff it's def");
+			BlackBoard->SetValueAsBool("IsDefenceBuffed?", true);
+			return EBTNodeResult::Succeeded;
+		}
+		
+		else if (Current->GetMobType() == EMobType::MobCalm)
+		{
+			DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: this mf " + Current->GetActorLabel() + " is a forever alone so its gonna buff it's def");
+			BlackBoard->SetValueAsBool("IsDefenceBuffed?", true);
+			return EBTNodeResult::Succeeded;
+		}
+		
 		BlackBoard->SetValueAsBool("Rethinker", true);
 		DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: " + Current->GetActorLabel() + " attempted to buff other def but it didn't find a valid target (scrivetemelo se entra qua dentro)! , rethinking the action");
 		return EBTNodeResult::Succeeded;

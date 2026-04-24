@@ -1723,7 +1723,8 @@ void UStatusTracker::DebuffAtkF()
 		switch (Mob->GetMobType())
 		{
 		case MobAnger:
-			PerkData.bDebuffAtk = true;
+			Mob->GetStatusTracker()->GetPerkData().Clear();
+			Mob->GetStatusTracker()->GetPerkData().bDebuffAtk = true;
 			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff atk");
 			break;
 		case MobShame:
@@ -1732,13 +1733,15 @@ void UStatusTracker::DebuffAtkF()
 			break;
 		case MobDisgust:
 			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff atk");
-			PerkData.bDebuffAtk = true;
+			Mob->GetStatusTracker()->GetPerkData().Clear();
+			Mob->GetStatusTracker()->GetPerkData().bDebuffAtk = true;
 			break;
 		case MobFear:
 			break;
 		case MobJealousy:
 			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff atk");
-			PerkData.bDebuffAtk = true;
+			Mob->GetStatusTracker()->GetPerkData().Clear();
+			Mob->GetStatusTracker()->GetPerkData().bDebuffAtk = true;
 			break;
 		case MobSadness:
 			break;
@@ -1771,7 +1774,8 @@ void UStatusTracker::DebuffAtkF(AICC_Actor* Target)
 		switch (Mob->GetMobType())
 		{
 		case MobAnger:
-			PerkData.bDebuffAtk = true;
+			Mob->GetStatusTracker()->GetPerkData().Clear();
+			Mob->GetStatusTracker()->GetPerkData().bDebuffAtk = true;
 			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff atk");
 			break;
 		case MobShame:
@@ -1780,13 +1784,15 @@ void UStatusTracker::DebuffAtkF(AICC_Actor* Target)
 			break;
 		case MobDisgust:
 			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff atk");
-			PerkData.bDebuffAtk = true;
+			Mob->GetStatusTracker()->GetPerkData().Clear();
+			Mob->GetStatusTracker()->GetPerkData().bDebuffAtk = true;
 			break;
 		case MobFear:
 			break;
 		case MobJealousy:
 			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff atk");
-			PerkData.bDebuffAtk = true;
+			Mob->GetStatusTracker()->GetPerkData().Clear();
+			Mob->GetStatusTracker()->GetPerkData().bDebuffAtk = true;
 			break;
 		case MobSadness:
 			break;
@@ -1827,7 +1833,8 @@ void UStatusTracker::DebuffDefF()
 		case MobDisgust:
 			break;
 		case MobFear:
-			PerkData.bDebuffDef = true;
+			Mob->GetStatusTracker()->GetPerkData().Clear();
+			Mob->GetStatusTracker()->GetPerkData().bDebuffDef = true;
 			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff def");
 			break;
 		case MobJealousy:
@@ -1837,7 +1844,8 @@ void UStatusTracker::DebuffDefF()
 		case MobAnxiety:
 			break;
 		case MobCalm:
-			PerkData.bDebuffDef = true;
+			Mob->GetStatusTracker()->GetPerkData().Clear();
+			Mob->GetStatusTracker()->GetPerkData().bDebuffDef = true;
 			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff def");
 			break;
 		default:
@@ -1867,7 +1875,8 @@ void UStatusTracker::DebuffDefF(AICC_Actor* Target)
 		switch (Mob->GetMobType())
 		{
 		case MobAnger:
-			PerkData.bDebuffDef = true;
+			Mob->GetStatusTracker()->GetPerkData().Clear();
+			Mob->GetStatusTracker()->GetPerkData().bDebuffDef = true;
 			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff def");
 			break;
 		case MobShame:
@@ -1876,13 +1885,15 @@ void UStatusTracker::DebuffDefF(AICC_Actor* Target)
 			break;
 		case MobDisgust:
 			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff def");
-			PerkData.bDebuffDef = true;
+			Mob->GetStatusTracker()->GetPerkData().Clear();
+			Mob->GetStatusTracker()->GetPerkData().bDebuffDef = true;
 			break;
 		case MobFear:
 			break;
 		case MobJealousy:
 			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff def");
-			PerkData.bDebuffDef = true;
+			Mob->GetStatusTracker()->GetPerkData().Clear();
+			Mob->GetStatusTracker()->GetPerkData().bDebuffDef = true;
 			break;
 		case MobSadness:
 			break;
@@ -2022,7 +2033,7 @@ void UStatusTracker::InflictFreeze(AICC_Actor* Target)
 	bIsOwnerAfflicted = true;
 	Target->Freeze(true);
 	DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + " freezed");
-	PerkData.bFreezedUp = true;
+	Target->GetStatusTracker()->GetPerkData().bFreezedUp = true;
 	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->SimulateFreezedUp(Target, FColor::White);
 }
 

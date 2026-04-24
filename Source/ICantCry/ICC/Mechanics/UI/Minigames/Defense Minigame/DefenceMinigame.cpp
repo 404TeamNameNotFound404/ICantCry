@@ -10,6 +10,21 @@
 void UDefenceMinigame::NativeConstruct()
 {
 	Super::NativeConstruct();
+	
+	UTexture2D* InputIcon;
+	
+	if (DebugHelper::IsGamepadPlugged())
+	{
+		InputIcon = Cast<UICantCryGameInstance>(GetGameInstance())->GetIconMap()["OPad_X"];
+	}
+	else
+	{
+		InputIcon = Cast<UICantCryGameInstance>(GetGameInstance())->GetIconMap()["OKey_Spacebar"];
+	}
+	
+	Icon->SetBrushFromTexture(InputIcon);
+	const FVector2D TextureSize = FVector2D(InputIcon->GetSurfaceWidth(), InputIcon->GetSurfaceHeight());
+	Icon->SetDesiredSizeOverride(TextureSize);
 }
 
 EMinigameThreshold UDefenceMinigame::CheckBar()
@@ -52,25 +67,25 @@ void UDefenceMinigame::HandleScore()
 		DebugHelper::LogMessage(3, FColor::FromHex("640D5F"), "33% damage reduction");
 		DebugHelper::AddMessageToLog("[Defence Minigame]: 33% damage reduction");
 		Instance->GetRuntimeStats().MinigameModifier = 0.66f; // previously 0.70
-		AMob::DealDamage();
+		Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion()->InflictDamage();
 		break;
 	case EMinigameThreshold::Good:
 		DebugHelper::LogMessage(3, FColor::FromHex("D91656"), "66% reduction");
 		DebugHelper::AddMessageToLog("[Defence Minigame]: 66% damage reduction");
 		Instance->GetRuntimeStats().MinigameModifier = 0.33f;
-		AMob::DealDamage();
+		Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion()->InflictDamage();
 		break;
 	case EMinigameThreshold::Perfect:
 		DebugHelper::LogMessage(3, FColor::FromHex("EB5B00"), "Perfect parry");
 		DebugHelper::AddMessageToLog("[Defence Minigame]: Perfect parry");
 		Instance->GetRuntimeStats().MinigameModifier = 0.0f;
-		AMob::DealDamage();
+		Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion()->InflictDamage();
 		break;
 	default:
 		DebugHelper::LogError("You suck! miss");
 		DebugHelper::AddMessageToLog("[Defence Minigame]: You suck! miss");
 		Instance->GetRuntimeStats().MinigameModifier = 1.0f;
-		AMob::DealDamage();
+		Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion()->InflictDamage();
 		break;
 	}
 }
@@ -98,7 +113,7 @@ void UDefenceMinigame::MoveSlider(const FVector2D& Position)
 		checkf(Instance, TEXT("Instance not found UDefenceMinigame::HandleScore()"));
 		this->RemoveFromParent();
 		Instance->GetPlayerStats()->MinigameModifier = 1.0f;
-		AMob::DealDamage();
+		Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion()->InflictDamage();
 		AMob::MinigameEnded = true;
 		AMob::SetMinigameStarted(false);
 		DebugHelper::LogError("You hit late!");

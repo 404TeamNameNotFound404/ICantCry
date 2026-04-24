@@ -33,6 +33,9 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UImage* LeftSeparator;
 	
+	UPROPERTY(meta = (BindWidget))
+	UImage* Icon;
+	
 public:
 	virtual void MoveSlider(const FVector2D& Position) override;
 	virtual EMinigameThreshold CheckBar() override;

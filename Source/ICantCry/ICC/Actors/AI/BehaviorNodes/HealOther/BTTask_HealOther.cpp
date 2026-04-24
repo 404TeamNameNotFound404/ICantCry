@@ -6,6 +6,8 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "ICantCry/ICC/Actors/AI/ICC_AIController.h"
 #include "ICantCry/ICC/Actors/AI/Mob.h"
+#include "ICantCry/ICC/Actors/AI/BehaviorNodes/DebuffAtkTask/BTTask_DebuffAtk.h"
+#include "ICantCry/ICC/Actors/AI/BehaviorNodes/Default/UBTTask_DefaultAtk.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 
@@ -36,23 +38,31 @@ EBTNodeResult::Type UBTTask_HealOther::ExecuteTask(UBehaviorTreeComponent& Owner
 
 	if (Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().CantBuffOthers())
 	{
-		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " attempted to heal other but it's alone! , rethink the action");
-		Blackboard->SetValueAsBool("Rethinker", true);
-		return EBTNodeResult::Succeeded;
+		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " this mf can't heal other if it's alone so i'm attacking the main mf instead");
+		
+		UUBTTask_DefaultAtk::GetInstance()->StartAttackMinigame(Current, Target, Controller);
+		
+		return EBTNodeResult::InProgress;
 	}
 	
 	AMob* TargetToBuff = Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetMobInQueue(Current);
 	if (!TargetToBuff) 
 	{
-		Blackboard->SetValueAsBool("Rethinker", true);
-		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " attempted to buff other def but it didn't find a valid target (scrivetemelo se entra qua dentro)! , rethinking the action");
+		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " this mf can't heal other if the mf is invalid, so let's attack the main mf instead");
+		UUBTTask_DefaultAtk::GetInstance()->StartAttackMinigame(Current, Target, Controller);
 		return EBTNodeResult::Succeeded;
 	}
 
 	if (TargetToBuff->GetStats().Health >= TargetToBuff->GetData()->MaxHealth)
 	{
-		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " casted heal on " + TargetToBuff->GetActorLabel() + " but it's health is full .. rethinking");
-		Blackboard->SetValueAsBool("Rethinker", true);
+		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " this mf can't heal other if it's full life.. Show no mercy to the main mf");
+		UUBTTask_DefaultAtk::GetInstance()->StartAttackMinigame(Current, Target, Controller);
+		return EBTNodeResult::InProgress;
+	}
+	else
+	{
+		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " this mf can heal other so here's the cure king!");
+		Blackboard->SetValueAsBool("IsHealingOther?", true);
 		return EBTNodeResult::Succeeded;
 	}
 	

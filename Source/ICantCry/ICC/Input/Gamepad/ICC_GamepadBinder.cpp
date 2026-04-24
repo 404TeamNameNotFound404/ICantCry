@@ -179,6 +179,8 @@ void UICC_GamepadBinder::Input_GamepadMinigameRelease(const FInputActionValue& I
 		return;
 	}
 	
+	if (!Player->GetBattleHUD()->GetCurrentBulletData()) return;
+	
 	if (Player->GetBattleHUD()->GetCurrentBulletData()->MinigameTemplate == EMinigameType::Anger)
 	{
 		FTimerHandle Handle;
