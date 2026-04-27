@@ -36,8 +36,7 @@ EBTNodeResult::Type UBTTask_DebuffShield::ExecuteTask(UBehaviorTreeComponent& Ow
 	// Current->GetStatusTracker()->BuffFlow(EBuffStatus::Shield);
 	// Current->GetStatusTracker()->BuffWith(EBuffStatus::Shield);
 	Current->GetStatusTracker()->InflictStatus(EAfflictedStatus::ShieldDebuff, Current);
-
-	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " de-buffed it's shield"));
+	
 	DebugHelper::AddMessageToLog("[Behavior Tree - DS]: " + Current->GetActorLabel() + " de-buffed it's shield");
 
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
@@ -106,8 +105,7 @@ void UBTTask_DebuffShield::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uin
 			Blackboard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 			Blackboard->SetValueAsInt("Id", Current->GetTreeId());
 		}
-
-		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
+		
 		UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 	}

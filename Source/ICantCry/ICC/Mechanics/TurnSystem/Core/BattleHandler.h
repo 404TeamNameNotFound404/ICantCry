@@ -24,8 +24,6 @@ public:
 
 	UTurnBasedSystem* GetTurnBasedSystem() const;
 
-	UBattleInfo* GetBattleInfo() const;
-
 	AEnemySpawnManager* GetEnemySpawnManager();
 
 	bool IsControllerPlugged() const;
@@ -41,15 +39,15 @@ public:
 	void DeactivateAura(const EBuffStatus& Status);
 	void DeactivateAura();
 	void SimulateFreezedUp(AICC_Actor* Target, const FLinearColor& Color);
+	void SimulateDebuffDef(AICC_Actor* Target);
+	void SimulateDebuffAtk(AICC_Actor* Target);
+	void DeactivateDebuffAura(const bool& InDebuffAtk);
 	
 	UBulletData* GetIndifferenceData();
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UTurnBasedSystem* TurnBasedSystem;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category= "Battle Info" ,meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<UBattleInfo> BattleInfoWidget ;
 
 	/**
 	 * Shoot VFX
@@ -65,6 +63,12 @@ private:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle VFX", meta=(AllowPrivateAccess="true"))
 	UNiagaraSystem* FreezedUpPrefab;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle VFX", meta=(AllowPrivateAccess="true"))
+	UNiagaraSystem* DebuffAtkPrefab;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle VFX", meta=(AllowPrivateAccess="true"))
+	UNiagaraSystem* DebuffDefPrefab;
 	
 	UPROPERTY() TMap<TEnumAsByte<EBuffStatus>, UNiagaraComponent*> ActiveAuras;
 	
@@ -88,13 +92,16 @@ private:
 	UNiagaraComponent* Freezed;
 	
 	UPROPERTY()
+	UNiagaraComponent* DebuffDef;
+	
+	UPROPERTY()
+	UNiagaraComponent* DebuffAtk;
+	
+	UPROPERTY()
 	FVector BeamPosition;
 
 	UPROPERTY()
 	bool bControllerPlugged = false;
-	
-	UPROPERTY()
-	UBattleInfo* BattleInfo;
 
 	UPROPERTY()
 	AEnemySpawnManager* SpawnManager;

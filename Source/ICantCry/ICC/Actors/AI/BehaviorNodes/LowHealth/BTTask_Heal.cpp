@@ -56,7 +56,6 @@ void UBTTask_Heal::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 	checkf(Current, TEXT("Current Mob is invalid heal TickTask"));
 
 	Current->Heal(Current->GetTactics()->HealingPoint); // Can be edited via editor on the EnemyTactics data asset
-	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " Healed ItSelf"));
 	DebugHelper::AddMessageToLog("[Behavior Tree - Heal]: " + Current->GetActorLabel() + " Healed ItSelf");
 	Timer = 0.0f;
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
@@ -82,8 +81,7 @@ void UBTTask_Heal::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* Node
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 			OwnerComp.GetBlackboardComponent()->SetValueAsInt("Id", Current->GetTreeId());
 		}
-
-		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
+		
 		UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 	}

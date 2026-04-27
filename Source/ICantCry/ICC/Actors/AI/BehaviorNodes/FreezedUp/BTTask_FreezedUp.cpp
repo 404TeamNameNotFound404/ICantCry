@@ -38,8 +38,7 @@ EBTNodeResult::Type UBTTask_FreezedUp::ExecuteTask(UBehaviorTreeComponent& Owner
 	Target->GetStatusTracker()->InflictStatus(EAfflictedStatus::Freezed, Target);
 
 	//TODO Implement Player->Freeze();
-
-	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " freezed " + Target->GetActorLabel()));
+	
 	DebugHelper::AddMessageToLog("[Behavior Tree - FreezedUp]: " + Current->GetActorLabel() + " freezed " + Target->GetActorLabel());
 
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
@@ -108,8 +107,7 @@ void UBTTask_FreezedUp::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8*
 			Blackboard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 			Blackboard->SetValueAsInt("Id", Current->GetTreeId());
 		}
-
-		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
+		
 		UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 	}

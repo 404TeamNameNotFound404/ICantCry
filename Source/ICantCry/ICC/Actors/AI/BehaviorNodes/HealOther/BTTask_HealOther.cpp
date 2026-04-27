@@ -14,6 +14,7 @@
 UBTTask_HealOther::UBTTask_HealOther()
 {
 	NodeName = "HealOther";
+	bCreateNodeInstance = true;
 	bNotifyTick = true;
 	bNotifyTaskFinished = true;
 }
@@ -59,15 +60,10 @@ EBTNodeResult::Type UBTTask_HealOther::ExecuteTask(UBehaviorTreeComponent& Owner
 		UUBTTask_DefaultAtk::GetInstance()->StartAttackMinigame(Current, Target, Controller);
 		return EBTNodeResult::InProgress;
 	}
-	else
-	{
-		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " this mf can heal other so here's the cure king!");
-		Blackboard->SetValueAsBool("IsHealingOther?", true);
-		return EBTNodeResult::Succeeded;
-	}
-	
-	TargetToBuff->Heal(TargetToBuff->GetStats().Health *= 0.20f);
-	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " heals " + TargetToBuff->GetActorLabel()));
+
+	DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " this mf can heal other so here's the cure king!");
+	Blackboard->SetValueAsBool("IsHealingOther?", true);
+	TargetToBuff->Heal(TargetToBuff->GetStats().Health * 0.20f);
 	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetActorLabel() + " heals " + TargetToBuff->GetActorLabel()));
 	Target->GetBattleHUD()->DecisionDisplayer->Show();
 	DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " heals " + TargetToBuff->GetActorLabel());
@@ -136,7 +132,6 @@ void UBTTask_HealOther::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8*
 
 		const UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
-		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
 		
 	}
 

@@ -118,8 +118,7 @@ void UUBTTask_DefaultAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 	BlackBoard->SetValueAsInt("Id", CurrentMob->GetTreeId());
 	BlackBoard->SetValueAsBool("IsBuffed?", CurrentMob->GetIsIsBuffedAtk());
 	BlackBoard->SetValueAsBool("IsDefenceDebuffed?", CurrentMob->GetIsTargetDefenceDebuffed());
-
-	CurrentMob->GetBattleHandler()->GetBattleInfo()->ClearInfo();
+	
 
 	bBusy = false;
 	bWaitingForThinkCompletion = false;
@@ -175,8 +174,7 @@ void UUBTTask_DefaultAtk::StartAttackMinigame(AMob* Current, AICC_Player* Target
 
 	Controller->MoveToActor(Target);
 
-	Current->GetBattleHandler()->GetBattleInfo()->
-	         SetInfo(FText::FromString(Current->GetActorLabel() + " is attacking"));
+
 	DebugHelper::AddMessageToLog("[Behavior Tree]: " + Current->GetActorLabel() + " is attacking");
 
 	Current->GetAIMemory().AttackLocation = Current->GetActorLocation();
@@ -232,8 +230,6 @@ void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackbo
 	case EDecision::DebuffDefence:
 		if (Current->IsESadness() || Current->IsEAnxiety())
 		{
-			Current->GetBattleHandler()->GetBattleInfo()->SetTurnInfo(
-				FText::FromString(Current->GetActorLabel() + " de-buff"));
 			Current->SetIsTargetDefDebuffed(true);
 			BlackBoard->SetValueAsBool("IsDefenceDebuffed?", Current->GetIsTargetDefenceDebuffed());
 		}

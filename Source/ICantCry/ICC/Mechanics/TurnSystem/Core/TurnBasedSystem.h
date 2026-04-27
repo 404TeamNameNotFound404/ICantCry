@@ -65,6 +65,9 @@ private:
 
 	UPROPERTY()
 	bool bIsPlayerTurn;
+	
+	UPROPERTY()
+	bool bHideDecision;
 
 	UPROPERTY()
 	AICC_Player* CurrentPlayer;

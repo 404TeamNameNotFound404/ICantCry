@@ -126,9 +126,9 @@ void UTurnBasedSystem::Update(UWorld* World, FBattleMemory* Memory)
 	
 		if (Turn.Queue.IsValidIndex(Turn.CurrentTurn))
 		{
-			AICC_Actor* Who = Turn.Queue[Turn.CurrentTurn];
+			Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 			// if first to play is Emotion / AI
-			if (Who->IsA(AMob::StaticClass()))
+			if (AICC_Actor* Who = Turn.Queue[Turn.CurrentTurn]; Who->IsA(AMob::StaticClass()))
 			{
 				AMob* Mob = Cast<AMob>(Who);
 				bIsAiTurn = true;
@@ -148,9 +148,10 @@ void UTurnBasedSystem::Update(UWorld* World, FBattleMemory* Memory)
 				AICC_Player* Player = Cast<AICC_Player>(Who);
 				DebugHelper::AddTurnMaterialOverlayToStaticMesh(Player->DebugMesh);
 				CurrentPlayer = Player;
-				BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Your Turn"));
 				Instance->GetCurrentPlayer()->GetBinder()->FocusOn(Instance->GetCurrentPlayer()->GetBattleHUD()->Shoot);
 				DebugHelper::AddMessageToLog("[Turn System]: Turn: " +  FString::FromInt(BattleTurnCounter) + " Your turn");
+				Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
+				Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString("Your Turn"));
 			}
 		}
 
@@ -182,8 +183,14 @@ void UTurnBasedSystem::Update(UWorld* World, FBattleMemory* Memory)
 	if (bIsPlayerTurn && CurrentPlayer)
 	{
 		DebugHelper::AddTurnMaterialOverlayToStaticMesh(CurrentPlayer->DebugMesh);
-		BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Your Turn"));
 		DebugHelper::AddMessageToLog("[Turn System]: Your turn");
+		
+		if (!bHideDecision)
+		{
+			Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
+			Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString("Your Turn"));
+			bHideDecision = true;
+		}
 		
 		if (CurrentPlayer->GetBattleHUD()->IsShootFired())
 		{
@@ -226,6 +233,9 @@ void UTurnBasedSystem::StartNextTurn()
 			bIsPlayerTurn = true;
 			AICC_Player* Player = Cast<AICC_Player>(Who);
 			
+			Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
+			Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString("Your Turn"));
+			
 			if (!bTurnOverlayApplied)
 			{
 				DebugHelper::AddTurnMaterialOverlayToStaticMesh(Player->DebugMesh);
@@ -246,7 +256,8 @@ void UTurnBasedSystem::EndTurn()
 		bAIPlayTurn = false;
 		Instance->GetCurrentPlayer()->GetBattleHUD()->SetApAccumulator(0);
 	}
-
+	
+	bHideDecision = false;
 	Turn.CurrentTurn = Turn.NextTurn;
 	Turn.NextTurn = (Turn.NextTurn + 1) % Turn.Queue.Num();
 }
@@ -311,7 +322,7 @@ void UTurnBasedSystem::Flow()
 		bIsPlayerTurn = false;
 		bIsAiTurn = false;
 		
-		BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Victory!"));
+
 		DebugHelper::AddMessageToLog("[Turn System]: Victory!");
 
 		if (!bVictory)
@@ -332,7 +343,7 @@ void UTurnBasedSystem::Flow()
 		bFightStarted = false;
 		bIsPlayerTurn = false;
 		bIsAiTurn = false;
-		BattleHandler->GetBattleInfo()->SetInfo(FText::FromString("Game Over"));
+
 		DebugHelper::AddMessageToLog("[Turn System]: Game Over!");
 		
 		TryGetCurrentPlayer()->GetBattleHUD()->DisplayGameOverVisualizer();
@@ -358,7 +369,6 @@ void UTurnBasedSystem::SpawnBattleVictory(UWorld* World)
 
 void UTurnBasedSystem::ExitBattle()
 {
-	BattleHandler->GetBattleInfo()->RemoveFromParent();
 	CurrentPlayer->GetInGameMenu()->SetDisabled(false);
 	bRequestFight = false;
 	bInit = false;

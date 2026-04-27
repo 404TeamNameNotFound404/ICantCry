@@ -366,6 +366,7 @@ void UBattleHUD::OnShootPressed()
 	}
 
 	DecisionDisplayer->Hide();
+	DecisionDisplayer->SetDecisionText(FText::FromString(""));
 	DisableButtonsDuringShooting();
 
 	CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Hidden);
@@ -435,6 +436,7 @@ void UBattleHUD::OnFocusPressed()
 	// GameInstance->GetCurrentPlayer()->GetStatusTracker()->BuffWith(EBuffStatus::DefBuff);
 	IncreaseAP(1);
 	Bar->IncreaseAP(1);
+	GameInstance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 	
 	/*
 	 * TODO Reorder bullets in magazine allowing player to change slot idx ( show confirm button and bullet magazine hud ) change only the bullets in magazine , NO ADD
@@ -470,6 +472,7 @@ void UBattleHUD::OnReloadPressed()
 	bShootFired = false;
 	bTargetSelection = false;
 	bSelectTarget = false;
+	GameInstance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 
 	if (GameInstance->GetInventory().BulletsStored.IsEmpty())
 	{
@@ -533,15 +536,18 @@ void UBattleHUD::OnPassPressed()
 	CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Hidden);
 	Displayer->SetVisibility(ESlateVisibility::Hidden);
 	CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
-	IncreaseAP(1);
-	Bar->IncreaseAP(1);
+	// IncreaseAP(1);
+	// Bar->IncreaseAP(1);
 	DebugHelper::LogSuccess("Player passed the turn");
 	DebugHelper::AddMessageToLog("[BattleHUD]: Player passed the turn");
 	BattleHandler->GetTurnBasedSystem()->EndTurn();
 	FTimerHandle StartNextHandle;
 
+	GetWorld()->GetTimerManager().ClearTimer(StartNextHandle);
 	GetWorld()->GetTimerManager().SetTimer(StartNextHandle, [this]()
 	{
+		IncreaseAP(1);
+		Bar->IncreaseAP(1);
 		BattleHandler->GetTurnBasedSystem()->StartNextTurn();
 	}, 0.35f, false);
 
@@ -551,7 +557,7 @@ void UBattleHUD::OnPassPressed()
 	DebugHelper::RemoveOverlayMaterialFromStaticMesh(
 		BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
 	bTargetSelection = false;
-	BattleHandler->GetBattleInfo()->ClearInfo();
+	
 	GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateStatus();
 	GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateBuffStatus();
 	GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateDebuffStatus();

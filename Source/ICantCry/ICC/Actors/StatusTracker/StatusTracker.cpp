@@ -7,6 +7,7 @@
 #include "ICantCry/ICC/Actors/AI/Mob.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
+#include "Slate/SGameLayerManager.h"
 
 
 /**
@@ -1706,19 +1707,23 @@ void UStatusTracker::DebuffAtkF()
 
 	if (Target->IsA(AICC_Player::StaticClass()))
 	{
-		const AICC_Player* Player = Cast<AICC_Player>(Target);
+		AICC_Player* Player = Cast<AICC_Player>(Target);
 		DebugHelper::AddMessageToLog("[Status Tracker]: Player debuff math :starting Debuff atk" + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower));
 		Instance->GetRuntimeStats().AttackPower -= Instance->GetRuntimeStats().AttackPower * Player->GetBattleData()->DebuffAtkMalus;
 		DebugHelper::AddMessageToLog("[Status Tracker]: Player debuff math : Debuff atk post malus -> " + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower) +
 			"\n[Status Tracker]: Atk malus dealed -> " + FString::SanitizeFloat(Player->GetBattleData()->DebuffAtkMalus));
+		
+		Player->GetBattleHUD()->GetBattleHandler()->SimulateDebuffAtk(Player);
 	}
 
 	if (Target->IsA(AMob::StaticClass()))
 	{
-		const AMob* Mob = Cast<AMob>(Target);
+		AMob* Mob = Cast<AMob>(Target);
 		Mob->GetData()->RuntimeStats.AtkPower -= Mob->GetData()->RuntimeStats.AtkPower * Mob->GetBattleData()->EmotionAtkDebuffMalus;
 		DebugHelper::LogSuccess("[Status Tracker]: " +Mob->GetActorLabel() + "got it's atk de-buffed now has " + FString::SanitizeFloat(Mob->GetData()->RuntimeStats.AtkPower));
 		DebugHelper::AddMessageToLog("[Status Tracker]: AI atk value (debuff) " + FString::SanitizeFloat(Mob->GetData()->RuntimeStats.AtkPower));
+		
+		Mob->GetBattleHandler()->SimulateDebuffAtk(Mob);
 
 		switch (Mob->GetMobType())
 		{
@@ -1755,9 +1760,11 @@ void UStatusTracker::DebuffAtkF()
 
 void UStatusTracker::DebuffAtkF(AICC_Actor* Target)
 {
+	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->SimulateDebuffAtk(Target);
+	
 	if (Target->IsA(AICC_Player::StaticClass()))
 	{
-		AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+		const AICC_Player* Player = Cast<AICC_Player>(GetOwner());
 		DebugHelper::AddMessageToLog("[Status Tracker]: Player debuff math :starting Debuff atk" + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower));
 		Instance->GetRuntimeStats().AttackPower -= Instance->GetRuntimeStats().AttackPower * Player->GetBattleData()->DebuffAtkMalus;
 		DebugHelper::AddMessageToLog("[Status Tracker]: Player debuff math : Debuff atk post malus -> " + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower) +
@@ -1856,6 +1863,8 @@ void UStatusTracker::DebuffDefF()
 
 void UStatusTracker::DebuffDefF(AICC_Actor* Target)
 {
+	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->SimulateDebuffDef(Target);
+	
 	if (Target->IsA(AICC_Player::StaticClass()))
 	{
 		AICC_Player* Player = Cast<AICC_Player>(GetOwner());
@@ -1867,11 +1876,11 @@ void UStatusTracker::DebuffDefF(AICC_Actor* Target)
 	
 	if (Target->IsA(AMob::StaticClass()))
 	{
-		const AMob* Mob = Cast<AMob>(Target);
+		AMob* Mob = Cast<AMob>(Target);
 		Mob->GetData()->RuntimeStats.DefPower -= Mob->GetData()->RuntimeStats.DefPower * Mob->GetBattleData()->EmotionDefDebuffMalus;
 		DebugHelper::LogSuccess("[Status Tracker]: " +Mob->GetActorLabel() + "got it's def de-buffed now has " + FString::SanitizeFloat(Mob->GetData()->RuntimeStats.DefPower));
 		DebugHelper::AddMessageToLog("[Status Tracker]: AI def value (debuff) " + FString::SanitizeFloat(Mob->GetData()->RuntimeStats.DefPower));
-
+		
 		switch (Mob->GetMobType())
 		{
 		case MobAnger:

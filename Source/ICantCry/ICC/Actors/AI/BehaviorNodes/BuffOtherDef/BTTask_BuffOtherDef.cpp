@@ -10,6 +10,7 @@ UBTTask_BuffOtherDef::UBTTask_BuffOtherDef()
 	NodeName = "BuffOtherDef";
 	bNotifyTick = true;
 	bNotifyTaskFinished = true;
+	bCreateNodeInstance = true;
 }
 
 EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -76,9 +77,7 @@ EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& Ow
 	
 
 	TargetToBuff->GetStatusTracker()->BuffWith(EBuffStatus::DefBuff);
-
-	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(
-		FText::FromString(Current->GetActorLabel() + " buffed " + TargetToBuff->GetActorLabel() + " def"));
+	
 
 	DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: " + Current->GetActorLabel() + " buffed " + TargetToBuff->GetActorLabel() + " def");
 
@@ -149,8 +148,7 @@ void UBTTask_BuffOtherDef::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uin
 			BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 			BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
 		}
-
-		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
+		
 		UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 	}

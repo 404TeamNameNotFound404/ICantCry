@@ -43,7 +43,6 @@ EBTNodeResult::Type UBTTask_SelfHeal::ExecuteTask(UBehaviorTreeComponent& OwnerC
 	}
 	
 	Current->Heal(Current->GetStats().Health*= 0.20f);
-	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " use Heal"));
 	
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(Current->GetWorld()->GetGameInstance());
 	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
@@ -112,8 +111,7 @@ void UBTTask_SelfHeal::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* 
 			Blackboard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 			Blackboard->SetValueAsInt("Id", Current->GetTreeId());
 		}
-
-		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
+		
 		const UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(Current->GetWorld()->GetGameInstance());
 		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(""));
 		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();

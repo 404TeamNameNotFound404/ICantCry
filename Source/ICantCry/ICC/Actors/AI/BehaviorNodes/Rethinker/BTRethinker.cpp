@@ -170,9 +170,7 @@ void UBTRethinker::StartAttackMinigame(AMob* CurrentMob, AICC_Player* Target, AI
 	if (!CurrentMob || !Target || !Controller) return;
 
 	Controller->MoveToActor(Target);
-
-	CurrentMob->GetBattleHandler()->GetBattleInfo()->SetInfo(
-		FText::FromString(Current->GetActorLabel() + " is attacking"));
+	
 	DebugHelper::AddMessageToLog("[Behavior Tree - Rethinker]: " + Current->GetActorLabel() + " is attacking");
 
 	CurrentMob->GetAIMemory().AttackLocation = CurrentMob->GetActorLocation();
@@ -257,8 +255,6 @@ void UBTRethinker::ProcessDecision(EDecision Dec, AMob* CurrentMob, UBlackboardC
 		{
 			CurrentMob->SetRethink(false);
 			BlackBoard->SetValueAsBool("Rethinker", CurrentMob->GetRethink());
-			CurrentMob->GetBattleHandler()->GetBattleInfo()->SetTurnInfo(
-				FText::FromString(Current->GetActorLabel() + " de-buff"));
 			CurrentMob->SetIsTargetDefDebuffed(true);
 			BlackBoard->SetValueAsBool("IsDefenceDebuffed?", CurrentMob->GetIsTargetDefenceDebuffed());
 			FinishTask(OwnerComp, EBTNodeResult::Succeeded);

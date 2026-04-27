@@ -72,9 +72,6 @@ EBTNodeResult::Type UBTTask_BuffOtherAtk::ExecuteTask(UBehaviorTreeComponent& Ow
 	TargetToBuff->GetStatusTracker()->BuffWith(EBuffStatus::AtkBuff);
 	
 
-	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(
-		FText::FromString(Current->GetActorLabel() + " buffed " + TargetToBuff->GetActorLabel() + " atk"));
-
 	DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Atk]: " + Current->GetActorLabel() + " buffed " + TargetToBuff->GetActorLabel() + " atk");
 
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
@@ -143,8 +140,7 @@ void UBTTask_BuffOtherAtk::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uin
 			BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 			BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
 		}
-
-		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
+		
 		UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 	}

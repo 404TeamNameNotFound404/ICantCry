@@ -28,9 +28,6 @@ void ABattleHandler::BeginPlay()
 	}
 	
 	TurnBasedSystem = NewObject<UTurnBasedSystem>();
-	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), BattleInfoWidget);
-	BattleInfo = Cast<UBattleInfo>(Widget);
-	BattleInfo->AddToViewport();
 	TurnBasedSystem->Start2(GetWorld(), &SpawnManager->GetMemory());
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	checkf(PlayerController, TEXT("PlayerController is null at ABattleHandler::BeginPlay"));
@@ -63,11 +60,6 @@ UTurnBasedSystem *ABattleHandler::GetTurnBasedSystem() const
     return TurnBasedSystem;
 }
 
-UBattleInfo* ABattleHandler::GetBattleInfo() const
-{
-	checkf(BattleInfo, TEXT("Battle Info is invalid"))
-	return BattleInfo;
-}
 
 AEnemySpawnManager* ABattleHandler::GetEnemySpawnManager()
 {
@@ -213,6 +205,39 @@ void ABattleHandler::SimulateFreezedUp(AICC_Actor* Target, const FLinearColor& C
 	
 	Freezed = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), FreezedUpPrefab, SpawnLocation, SpawnRotation,{2,2,2}, true);
 	Freezed->Activate();
+}
+
+void ABattleHandler::SimulateDebuffDef(AICC_Actor* Target)
+{
+	if (!Target) return;
+	const FVector& SpawnLocation = Target->GetActorLocation() + FVector{0,0,-50};
+	const FRotator& SpawnRotation = Target->GetActorRotation();
+	
+	DebuffDef = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DebuffDefPrefab, SpawnLocation, SpawnRotation,{2,2,2}, true);
+	DebuffDef->Activate();
+}
+
+void ABattleHandler::SimulateDebuffAtk(AICC_Actor* Target)
+{
+	if (!Target) return;
+	const FVector& SpawnLocation = Target->GetActorLocation() + FVector{0,0,-50};
+	const FRotator& SpawnRotation = Target->GetActorRotation();
+	
+	DebuffAtk = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DebuffAtkPrefab, SpawnLocation, SpawnRotation,{2,2,2}, true);
+	DebuffAtk->Activate();
+}
+
+void ABattleHandler::DeactivateDebuffAura(const bool& InDebuffAtk)
+{
+	if (InDebuffAtk)
+	{
+		DebuffAtk->Deactivate();
+	}
+	
+	else
+	{
+		DebuffDef->Deactivate();
+	}
 }
 
 UBulletData* ABattleHandler::GetIndifferenceData()
