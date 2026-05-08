@@ -102,6 +102,7 @@ void UNoteHighwayMinigame::HandleScore()
 	Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 	Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
+	Instance->GetPlayerStats()->RuntimeStats.ApModifier = 0;
 }
 
 void UNoteHighwayMinigame::Flow()

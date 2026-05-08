@@ -15,31 +15,42 @@ void UMagazineBullet::RemoveFromMagazine()
 		DebugHelper::LogWarning("Invalid BulletIndex: " + FString::Printf(TEXT("%d"), BulletIndex));
 		return;
 	}
+
+	if (const UBulletData* Data = Buffer->PeekAt(BulletIndex))
+	{
+		if (FBullet* ToUpdate = Instance->GetInventory().BulletsStored.Find(Data->Type))
+		{
+			const int32 NewQuantity = ToUpdate->GetQuantity() + 1;
+			ToUpdate->SetQuantity(NewQuantity);
+			DebugHelper::LogMessage(20, FColor::White, "Added to existing stack: " + Data->BulletName);
+		}
+		else
+		{
+			DebugHelper::LogMessage(20, FColor::White, "Readding " + Data->BulletName + " to inventory");
+		}
+	}
 	
 	Buffer->RemoveAt(BulletIndex);
+	
+	// Buffer->RemoveAt(BulletIndex);
 
-	if (FBullet* Bullet = Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentSelectedBullet(); Bullet)
-	{
-		const int32 NewQuantity = Bullet->GetQuantity() + 1;
-		Bullet->SetQuantity(NewQuantity);
-	}
-	else
-	{
-		DebugHelper::LogWarning("No selected bullet found to update.");
-	}
+	// if (FBullet* Bullet = Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentSelectedBullet(); Bullet)
+	// {
+	// 	DebugHelper::LogMessage(20, FColor::White, "Placing back " + Bullet->GetBulletData()->BulletName);
+	// 	const int32 NewQuantity = Bullet->GetQuantity() + 1;
+	// 	Bullet->SetQuantity(NewQuantity);
+	// }
+	
+	
+	// else
+	// {
+	// 	DebugHelper::LogWarning("No selected bullet found to update.");
+	// }
 	
 	BulletBtn->SetBackgroundColor(FLinearColor::Transparent);
 	Setup(nullptr, nullptr, -1);
 	
 	Instance->GetCurrentPlayer()->GetBattleHUD()->RefreshPistolMagazine();
-	
-	// Buffer->RemoveAt(BulletIndex);
-	// FBullet* Bullet = Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentSelectedBullet();
-	// Bullet->SetQuantity(Bullet->GetQuantity() + 1);
-	// BulletBtn->SetBackgroundColor(FLinearColor::Transparent);
-	// Setup(nullptr, nullptr, -1);
-	//
-	// Instance->GetCurrentPlayer()->GetBattleHUD()->RefreshPistolMagazine();
 }
 
 UButton* UMagazineBullet::GetMagazineBulletButton() const

@@ -199,6 +199,7 @@ public:
 	void SetApAccumulator(const int& Value);
 
 	FBullet* GetCurrentSelectedBullet() const;
+	FBullet& GetCurrentSelectedBulletRef();
 	void DisableButtonsDuringShooting();
 	void EnableButtonsAfterShooting();
 

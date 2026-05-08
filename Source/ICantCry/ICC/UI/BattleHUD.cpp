@@ -1634,6 +1634,11 @@ FBullet* UBattleHUD::GetCurrentSelectedBullet() const
 	return CurrentSelectedBullet->GetBulletPtr();
 }
 
+FBullet& UBattleHUD::GetCurrentSelectedBulletRef()
+{
+	return CurrentSelectedBullet->GetBullet();
+}
+
 void UBattleHUD::DisableButtonsDuringShooting()
 {
 	Focus->SetIsEnabled(false);
