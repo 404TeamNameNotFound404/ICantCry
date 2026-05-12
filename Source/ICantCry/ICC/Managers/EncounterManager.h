@@ -81,4 +81,6 @@ protected:
     UPROPERTY() bool bEncounterTimerPaused = false;
     
     UPROPERTY() UICantCryGameInstance* Instance;
+    
+    UPROPERTY() TArray<FName> BattleScenes;
 };

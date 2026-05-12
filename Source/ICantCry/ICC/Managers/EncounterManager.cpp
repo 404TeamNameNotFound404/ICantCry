@@ -22,6 +22,12 @@ void UEncounterManager::Initialize(UWorld* World)
 	Instance = Cast<UICantCryGameInstance>(World->GetGameInstance());
 	
 	World->GetTimerManager().SetTimer(EncounterTimer, this, &UEncounterManager::TickEncouter, EncounterRateSpeed, true);
+	
+	BattleScenes = {
+		"RandomSpawner",
+		"RandomBattle1",
+		"RandomBattle2"
+	};
 }
 
 void UEncounterManager::UpdateThreshold(UWorld* World)
@@ -126,7 +132,7 @@ void UEncounterManager::StartBattle(UWorld* World)
 	PlayerRef.Get()->ResetStepCounter();
 	Instance->StoreLastPlayerTransform(PlayerRef.Get(), PlayerRef.Get()->GetActorLocation(), PlayerRef.Get()->GetActorRotation());
 	Instance->SavePlayerTransformBegin(Instance->GetCurrentPlayer(), true);
-	UtilityFunctions::LoadSceneByName(World, "RandomSpawner");
+	UtilityFunctions::LoadBattleSceneRandom(World, BattleScenes);
 }
 
 void UEncounterManager::Reset()
