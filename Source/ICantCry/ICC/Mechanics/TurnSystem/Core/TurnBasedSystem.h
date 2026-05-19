@@ -49,6 +49,11 @@ public:
 	void SetBattlePhase(const EBattlePhase &Phase);
 	void PrePrepareToBattle();
 	
+	/**
+ * Check win condition or player death condition at runtime
+ */
+	void Flow();
+	
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Turn", meta=(AllowPrivateAccess=true))
 	FTurn Turn;
@@ -71,11 +76,6 @@ private:
 
 	UPROPERTY()
 	AICC_Player* CurrentPlayer;
-
-	/**
-	 * Check win condition or player death condition at runtime
-	 */
-	void Flow();
 
 	UPROPERTY()
 	AEnemySpawnManager* EnemySpawnManager;

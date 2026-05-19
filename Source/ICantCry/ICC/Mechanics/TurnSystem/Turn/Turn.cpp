@@ -179,3 +179,57 @@ bool FTurn::CantBuffOthers()
 
 	return MobCount <= 1;
 }
+
+bool FTurn::LastMobStanding()
+{
+	int32 MobCount = 0;
+	
+	if (Queue.IsEmpty()) return false;
+
+	for (const AICC_Actor* Actor : Queue)
+	{
+		if (Actor->IsA(AICC_Player::StaticClass()))
+		{
+			continue;
+		}
+		
+		MobCount++;
+	}
+	
+	return MobCount == 1;
+}
+
+bool FTurn::AreAnxietyOrCalmAlone()
+{
+	if (Queue.IsEmpty())
+	{
+		return false;
+	}
+
+	int32 MobCount = 0;
+
+	for (const AICC_Actor* Actor : Queue)
+	{
+		if (Actor->IsA(AICC_Player::StaticClass()))
+		{
+			continue;
+		}
+
+		const AMob* Mob = Cast<AMob>(Actor);
+
+		if (!Mob)
+		{
+			continue;
+		}
+
+		MobCount++;
+
+		if (Mob->GetMobType() != EMobType::MobAnxiety &&
+			Mob->GetMobType() != EMobType::MobCalm)
+		{
+			return false;
+		}
+	}
+
+	return MobCount > 0;
+}

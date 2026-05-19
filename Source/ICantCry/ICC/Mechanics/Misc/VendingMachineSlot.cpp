@@ -287,10 +287,16 @@ void UVendingMachineSlot::DecreaseCasingQuantity()
 	}
 }
 
+
 void UVendingMachineSlot::AddCasing()
 {
 	const FCasing& Casing = Casings[CurrentCasingIndex];
 	Instance->GetInventory().CasingsStored.Add(Casing.GetName(), Casing);
+	
+	FBullet Bullet;
+	Bullet.SetBulletData(Indifference);
+	Bullet.SetQuantity(CasingAmount);
+	Instance->GetInventory().BulletsStored.Add(Bullet.GetBulletData()->Type, Bullet);
 }
 
 void UVendingMachineSlot::RefreshEssence()

@@ -360,6 +360,29 @@ void AMob::SetRethink(const bool& Value)
 	bRethink = Value;
 }
 
+bool AMob::IsFleeing() const
+{
+	return bFlee;
+}
+
+void AMob::SetFleeing(const bool& Value)
+{
+	bFlee = Value;
+}
+
+void AMob::Flee()
+{
+	SetActorTickEnabled(false);
+	SetActorEnableCollision(false);
+	SetActorHiddenInGame(true);
+	
+	AIController = Cast<AICC_AIController>(GetController());
+	if (AIController && AIController->GetBrainComponent())
+	{
+		AIController->GetBrainComponent()->StopLogic("Flee"); 
+	}
+}
+
 void AMob::UnlockContentOnDeath()
 {
 	 if (!Instance)
@@ -507,6 +530,7 @@ void AMob::InflictDamage()
 	Player->GetRuntimeStats().CurrentHealth = FMath::Clamp(Player->GetRuntimeStats().CurrentHealth, 0.0f, Player->GetStats()->MaxHealth);
 	const float HealthPercentage = Player->GetRuntimeStats().CurrentHealth / Player->GetStats()->MaxHealth;
 	Player->GetBattleHUD()->PlayerHealth->SetPercent(HealthPercentage);
+	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->Flow();
 }
 
 void AMob::SetIsBusy(const bool& Value)
@@ -550,6 +574,7 @@ void AMob::PlayTurn()
 	bHealOther = false;
 	Bt_Id = 0;
 	bRethink = false;
+	bFlee = false;
 	
 	AIController = Cast<AICC_AIController>(GetController());
 	checkf(AIController, TEXT("AI Controller is invalid at AMob::PlayTurn"));
@@ -572,6 +597,7 @@ void AMob::PlayTurn()
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsHealing?", bHeal);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsHealingOther?", bHealOther);
 	AIController->GetBlackboardComponent()->SetValueAsBool("Rethinker", bRethink);
+	AIController->GetBlackboardComponent()->SetValueAsBool("Flee?", bFlee);
 
 	GetWorld()->GetTimerManager().SetTimer(BehaviorTreeTimerHandle, [this]()
 	{

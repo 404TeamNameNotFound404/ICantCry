@@ -207,7 +207,7 @@ void UTurnBasedSystem::Update(UWorld* World, FBattleMemory* Memory)
 		}
 	}
 	
-	Flow();
+	//Flow();
 }
 
 void UTurnBasedSystem::StartNextTurn()
@@ -294,6 +294,8 @@ void UTurnBasedSystem::SetTurnOverlayApplied(const bool& Applied)
 
 void UTurnBasedSystem::Flow()
 {
+	DebugHelper::LogMessage(10, FColor::Orange, "Flow called");
+	
 	if (!CurrentPlayer->GetBattleHUD()->IsReadyToBattle())
 	{
 		return;
@@ -313,6 +315,12 @@ void UTurnBasedSystem::Flow()
 			DebugHelper::LogWarning("Mob removed from queue due to death.");
 			DebugHelper::AddMessageToLog("[Turn System]: " + Mob->GetActorLabel() + " died RIP.");
 			Instance->GetCurrentPlayer()->GetBattleHUD()->ProcessExp(Mob);
+		}
+		
+		else if (Mob && Mob->IsFleeing())
+		{
+			Turn.Queue.RemoveAt(i);
+			Mob->Flee();
 		}
 	}
 
@@ -349,7 +357,6 @@ void UTurnBasedSystem::Flow()
 		TryGetCurrentPlayer()->GetBattleHUD()->DisplayGameOverVisualizer();
 		SetBattlePhase(EBattlePhase::Finished);
 	}
-	
 }
 
 

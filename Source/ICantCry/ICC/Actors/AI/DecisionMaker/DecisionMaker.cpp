@@ -18,7 +18,7 @@ void FDecisionMaker::Setup(AMob* Current)
     if (!Current || !Current->GetDecisionTable())
         return;
 	
-    FDecisionWeight CurrentWeights;
+    //FDecisionWeight CurrentWeights;
 
     if (Current->GetStatusTracker()->GetPerkData().bBuffAtk)
     {
@@ -148,34 +148,44 @@ void FDecisionMaker::Setup(AMob* Current)
 			DecisionMap.Add(EDecision::Low, CurrentWeights.LowHealthWeight);
 		break;
 	case MobAnxiety:
-		if (CurrentWeights.FreezedUpWeight > 0.f)
-			DecisionMap.Add(EDecision::FreezedUp, CurrentWeights.FreezedUpWeight);
+		{
+			if (CurrentWeights.FleeWeight > 0.f)
+				DecisionMap.Add(EDecision::Flee, CurrentWeights.FleeWeight); 
 		
-		if (CurrentWeights.DebuffDefWeight > 0.f)
-			DecisionMap.Add(EDecision::DebuffDefence, CurrentWeights.DebuffDefWeight);
+			if (CurrentWeights.FreezedUpWeight > 0.f)
+				DecisionMap.Add(EDecision::FreezedUp, CurrentWeights.FreezedUpWeight);
 		
-		if (CurrentWeights.DebuffAtkWeight > 0.f)
-			DecisionMap.Add(EDecision::DebuffAtk, CurrentWeights.DebuffAtkWeight);
+			if (CurrentWeights.DebuffDefWeight > 0.f)
+				DecisionMap.Add(EDecision::DebuffDefence, CurrentWeights.DebuffDefWeight);
 		
-		if (CurrentWeights.LowHealthWeight > 0.f)
-			DecisionMap.Add(EDecision::Low, CurrentWeights.LowHealthWeight);
- 		break;
+			if (CurrentWeights.DebuffAtkWeight > 0.f)
+				DecisionMap.Add(EDecision::DebuffAtk, CurrentWeights.DebuffAtkWeight);
+		
+			if (CurrentWeights.LowHealthWeight > 0.f)
+				DecisionMap.Add(EDecision::Low, CurrentWeights.LowHealthWeight);
+			
+		}break;
 	case MobCalm:
-		if (CurrentWeights.ShieldWeight > 0.f )
-			DecisionMap.Add(EDecision::DebuffShieldItSelf, CurrentWeights.ShieldWeight);
+		{
+			if (CurrentWeights.FleeWeight > 0.f)
+				DecisionMap.Add(EDecision::Flee, CurrentWeights.FleeWeight); 
+			
+			if (CurrentWeights.ShieldWeight > 0.f )
+				DecisionMap.Add(EDecision::DebuffShieldItSelf, CurrentWeights.ShieldWeight);
 		
-		if (CurrentWeights.ShieldOtherWeight > 0.f )
-			DecisionMap.Add(EDecision::DebuffShieldOther, CurrentWeights.ShieldOtherWeight);
+			if (CurrentWeights.ShieldOtherWeight > 0.f )
+				DecisionMap.Add(EDecision::DebuffShieldOther, CurrentWeights.ShieldOtherWeight);
 		
-		if (CurrentWeights.BuffDefWeight > 0.f  && !Current->IsLowHealth())
-			DecisionMap.Add(EDecision::BuffDefence, CurrentWeights.BuffDefWeight);
+			if (CurrentWeights.BuffDefWeight > 0.f  && !Current->IsLowHealth())
+				DecisionMap.Add(EDecision::BuffDefence, CurrentWeights.BuffDefWeight);
 		
-		if (CurrentWeights.BuffOtherDefWeight > 0.f)
-			DecisionMap.Add(EDecision::BuffOtherDefence, CurrentWeights.BuffOtherDefWeight);
+			if (CurrentWeights.BuffOtherDefWeight > 0.f)
+				DecisionMap.Add(EDecision::BuffOtherDefence, CurrentWeights.BuffOtherDefWeight);
 		
-		if (CurrentWeights.LowHealthWeight > 0.f)
-			DecisionMap.Add(EDecision::Low, CurrentWeights.LowHealthWeight);
-		break;
+			if (CurrentWeights.LowHealthWeight > 0.f)
+				DecisionMap.Add(EDecision::Low, CurrentWeights.LowHealthWeight);
+			
+		}break;
     default:
     	break;
 	}
@@ -285,6 +295,11 @@ FString FDecisionMaker::GetDecisionString(const EDecision& Decision) const
 	case EDecision::Invalid:
 		return "";
 	}
+}
+
+FDecisionWeight& FDecisionMaker::GetCurrentWeight()
+{
+	return CurrentWeights;
 }
 
 

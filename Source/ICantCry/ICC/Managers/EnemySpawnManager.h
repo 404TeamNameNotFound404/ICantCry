@@ -45,7 +45,7 @@ protected:
 private:
 
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Spawning", meta = (AllowPrivateAccess = "true"))
 	TArray<TSubclassOf<AMob>> EnemyList;
 
 	UPROPERTY()

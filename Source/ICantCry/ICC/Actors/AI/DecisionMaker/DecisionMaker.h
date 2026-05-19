@@ -26,7 +26,8 @@ enum class EDecision : uint8
 	EnvyBurned UMETA(DisplayName = "Envy Burned"),
 	None UMETA(DisplayName = "Attack"),
 	Low UMETA(DisplayName = "LowHealth"),
-	Invalid UMETA(DisplayName = "Invalid")
+	Invalid UMETA(DisplayName = "Invalid"),
+	Flee UMETA(DisplayName = "Flee")
 };
 
 /**
@@ -64,11 +65,17 @@ struct FDecisionMaker
 	void ResetDecision();
 
 	FString GetDecisionString(const EDecision& Decision) const;
+	
+	FDecisionWeight& GetCurrentWeight();
+	
 private:
 	UPROPERTY()
 	EDecision LastDecision = EDecision::None;
 
 	bool CanRepeat(const EDecision& Decision);
+	
+	UPROPERTY()
+	FDecisionWeight CurrentWeights;
 
 };
 

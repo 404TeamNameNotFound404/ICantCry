@@ -298,7 +298,6 @@ void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackbo
 			BlackBoard->SetValueAsBool("IsOtherShieldDebuffed?", Current->GetIsDebuffOtherShield());
 		}
 		break;
-
 	case EDecision::Low:
 		if (Current->IsEShame())
 		{
@@ -309,6 +308,16 @@ void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackbo
 		
 		break;
 
+	case EDecision::Flee:
+		if (Current->IsEAnxiety() || Current->IsECalm())
+		{
+			Current->SetFleeing(true);
+			BlackBoard->SetValueAsBool("Flee?", true);
+			break;
+		}
+		
+		break;
+		
 	case EDecision::None:
 	default:
 		StartAttackMinigame(Current, Target, Controller);

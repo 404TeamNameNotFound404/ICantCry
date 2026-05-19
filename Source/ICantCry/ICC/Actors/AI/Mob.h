@@ -180,6 +180,9 @@ protected:
 
 	UPROPERTY()
 	int Bt_Id;
+	
+	UPROPERTY()
+	bool bFlee;
 
 	UPROPERTY()
 	bool bRethink = false;
@@ -371,6 +374,11 @@ public:
 	int GetTreeId() const;
 	bool GetRethink() const;
 	void SetRethink(const bool& Value);
+	
+	bool IsFleeing() const;
+	void SetFleeing(const bool& Value);
+	
+	void Flee();
 	
 	UFUNCTION() void UpdateBestiaryUI();
 

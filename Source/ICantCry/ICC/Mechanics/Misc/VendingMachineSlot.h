@@ -79,6 +79,9 @@ private:
 	void SetupRecipes();
 	void SetupEssences();
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Vending Machine", meta=(AllowPrivateAccess = "true"))
+	UBulletData* Indifference;
+	
 	UFUNCTION() void ScrollRecipe();
 	UFUNCTION() void ScrollEssence();
 	UFUNCTION() void ScrollCasing();

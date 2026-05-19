@@ -181,6 +181,8 @@ void UBulletDisplayer::RemoveBullet()
 	const float Damage = Instance->GetCurrentDamageData()->CalculateDamage(true);
 	Target->GetStats().Health -= Damage;
 	Target->GetHealthBar()->SetCurrentHealth(Target->GetStats().Health);
+	
+	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->Flow();
 
 	DebugHelper::AddMessageToLog(
 		"Minigame modifier post engage -> " + FString::SanitizeFloat(Instance->GetPlayerStats()->MinigameModifier));

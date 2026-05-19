@@ -33,4 +33,11 @@ struct FTurn
 	AMob* GetMobInQueue(AMob* Emotion) const;
 
 	bool CantBuffOthers();
+	/**
+	 * Look if there's only one mob left battling
+	 * @return true if there's only one emotion
+	 */
+	bool LastMobStanding();
+	
+	bool AreAnxietyOrCalmAlone();
 };

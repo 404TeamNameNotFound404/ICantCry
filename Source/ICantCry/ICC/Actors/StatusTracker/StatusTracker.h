@@ -120,6 +120,7 @@ struct FInternalPerkData
 	UPROPERTY() bool bDebuffDef;
 	UPROPERTY() bool bEnvyBurned;
 	UPROPERTY() bool bIdle;
+	UPROPERTY() bool bFlee;
 
 	FStatusPriority Priority;
 	
@@ -135,6 +136,7 @@ struct FInternalPerkData
 		bAshamed = false;
 		bEnvyBurned = false;
 		bIdle = false;
+		bFlee = false;
 	}
 
 	bool HasBuffHighPriority(AMob* Emotion) const;
