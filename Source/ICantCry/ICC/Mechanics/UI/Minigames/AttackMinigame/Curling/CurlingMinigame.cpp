@@ -1,5 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "CurlingMinigame.h"
+
+#include "Blueprint/SlateBlueprintLibrary.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 
@@ -103,25 +105,50 @@ void UCurlingMinigame::HandleScore()
 
 EMinigameThreshold UCurlingMinigame::CheckBar()
 {
+	// const float P = Slider->GetPercent();
+	//
+	// if (P >= PerfectScoreRange && P <= PerfectScoreRangeMax) 
+	// {
+	// 	return EMinigameThreshold::Perfect;
+	// }
+	//
+	// else if (P >= GoodScoreRange && P <= GoodScoreRangeMax)
+	// {
+	// 	return EMinigameThreshold::Good;
+	// }
+	//
+	// else if (P >= BadScoreRange && P <= BadScoreRangeMax)
+	// {
+	// 	return EMinigameThreshold::Bad;
+	// }
+	//
+	// DebugHelper::LogMessage(6, FColor::White, "Bar y pos " + FString::SanitizeFloat(Slider->GetPercent()));
+	//
+	// return EMinigameThreshold::Miss;
+	
 	const float P = Slider->GetPercent();
 	
-	if (P >= PerfectScoreRange && P <= PerfectScoreRangeMax) 
+	const float NotBadBottomPct = 1.0f - GetImagePercentOnBar(NotBadFrontierBottom);
+	const float GoodBottomPct   = 1.0f - GetImagePercentOnBar(GoodFrontierBottom);
+	const float PerfectPct      = 1.0f - GetImagePercentOnBar(PerfectFrontier);
+	const float GoodUpPct       = 1.0f - GetImagePercentOnBar(GoodFrontierUp);
+	const float NotBadUpPct     = 1.0f - GetImagePercentOnBar(NotBadFrontierUp);
+
+	if (constexpr float PerfectTolerance = 0.03f; P >= (PerfectPct - PerfectTolerance) && P <= (PerfectPct + PerfectTolerance))
 	{
 		return EMinigameThreshold::Perfect;
 	}
 	
-	else if (P >= GoodScoreRange && P <= GoodScoreRangeMax)
+	if (P >= GoodBottomPct && P <= GoodUpPct)
 	{
 		return EMinigameThreshold::Good;
 	}
 	
-	else if (P >= BadScoreRange && P <= BadScoreRangeMax)
+	if (P >= NotBadBottomPct && P <= NotBadUpPct)
 	{
 		return EMinigameThreshold::Bad;
 	}
 	
-	DebugHelper::LogMessage(6, FColor::White, "Bar y pos " + FString::SanitizeFloat(Slider->GetPercent()));
-
 	return EMinigameThreshold::Miss;
 	
 }
@@ -212,4 +239,22 @@ FString UCurlingMinigame::GetThresholdName(const EMinigameThreshold& Threshold) 
 	case Miss:
 		return "MISS";
 	}
+}
+
+float UCurlingMinigame::GetImagePercentOnBar(UWidget* TargetWidget)
+{
+	if (!Slider || !TargetWidget) return 0.0f;
+
+	const FGeometry& BarGeometry = Slider->GetCachedGeometry();
+	const FGeometry& FrontierGeometry = TargetWidget->GetCachedGeometry();
+	
+	const FVector2D LocalPos = USlateBlueprintLibrary::AbsoluteToLocal(BarGeometry, FrontierGeometry.GetAbsolutePosition());
+	
+	const float BarLocalHeight = BarGeometry.GetLocalSize().Y;
+
+	if (BarLocalHeight <= 0.0f) return 0.0f;
+	
+	const float FrontierCenterOffsetY = FrontierGeometry.GetLocalSize().Y * 0.5f;
+	
+	return (LocalPos.Y + FrontierCenterOffsetY) / BarLocalHeight;
 }

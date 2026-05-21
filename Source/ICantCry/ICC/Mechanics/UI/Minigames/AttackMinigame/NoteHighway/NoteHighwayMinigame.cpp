@@ -42,35 +42,72 @@ EMinigameThreshold UNoteHighwayMinigame::CheckBar()
 
 void UNoteHighwayMinigame::Simulate(const ESpawnableHighwayBtn& Target)
 {
-	const UCanvasPanelSlot* SliderSlot = Cast<UCanvasPanelSlot>(Slider->Slot);
-	if (!SliderSlot) return;
+	// const UCanvasPanelSlot* SliderSlot = Cast<UCanvasPanelSlot>(Slider->Slot);
+	// if (!SliderSlot) return;
+	// const float SliderX = Slider->GetTickSpaceGeometry().GetAbsolutePosition().X;
+	//
+	// for (FHighwayNote& Note : NotesData)
+	// {
+	// 	if (Note.bHit || Note.Row != Target)
+	// 		continue;
+	//
+	// 	const float NoteX = Note.CachedSelf->GetTickSpaceGeometry().GetAbsolutePosition().X;
+	// 	
+	// 	if (const float Distance = FMath::Abs(SliderX - NoteX);
+	// 		Distance <= HitTolerance)
+	// 	{
+	// 		Note.bHit = true;
+	//
+	// 		const FString IconName = GetNoteName(Target);
+	// 		const FString Prefix = DebugHelper::IsGamepadPlugged() ? TEXT("OPad_") : TEXT("OKey_");
+	// 		const FName FinalMapKey = FName(*(Prefix + IconName));
+	//
+	// 		if (UTexture2D** FoundTexture = Icons.Find(FinalMapKey))
+	// 		{
+	// 			Score = FMath::Min(Score + 0.25f, 1.5f);
+	// 			Note.CachedSelf->SetBrushFromTexture(*FoundTexture);
+	// 		}
+	//
+	// 		DebugHelper::LogSuccess("Note hit!");
+	// 		break;
+	// 	}
+	// }
+	
+	FHighwayNote* TargetNote = FindClosestNote(Target);
+    
+	if (!TargetNote) return;
+
 	const float SliderX = Slider->GetTickSpaceGeometry().GetAbsolutePosition().X;
-
-	for (FHighwayNote& Note : NotesData)
+	const float NoteX = TargetNote->CachedSelf->GetTickSpaceGeometry().GetAbsolutePosition().X;
+	const float Distance = FMath::Abs(SliderX - NoteX);
+	
+	const float PerfectWindow = HitTolerance; 
+	const float EarlyPenalizeWindow = HitTolerance * 2.5f; 
+	
+	if (Distance <= PerfectWindow)
 	{
-		if (Note.bHit || Note.Row != Target)
-			continue;
-
-		const float NoteX = Note.CachedSelf->GetTickSpaceGeometry().GetAbsolutePosition().X;
-		
-		if (const float Distance = FMath::Abs(SliderX - NoteX);
-			Distance <= HitTolerance)
+		TargetNote->bHit = true;
+		Score = FMath::Min(Score + 0.25f, 1.5f);
+        
+		if (UTexture2D** FoundTexture = Icons.Find(FName(*(DebugHelper::IsGamepadPlugged() ? TEXT("OPad_") : TEXT("OKey_") + GetNoteName(Target)))))
 		{
-			Note.bHit = true;
-
-			const FString IconName = GetNoteName(Target);
-			const FString Prefix = DebugHelper::IsGamepadPlugged() ? TEXT("OPad_") : TEXT("OKey_");
-			const FName FinalMapKey = FName(*(Prefix + IconName));
-
-			if (UTexture2D** FoundTexture = Icons.Find(FinalMapKey))
-			{
-				Score = FMath::Min(Score + 0.25f, 1.5f);
-				Note.CachedSelf->SetBrushFromTexture(*FoundTexture);
-			}
-
-			DebugHelper::LogSuccess("Note hit!");
-			break;
+			TargetNote->CachedSelf->SetBrushFromTexture(*FoundTexture);
 		}
+		DebugHelper::LogSuccess("Note hit perfectly!");
+	}
+	
+	else if (NoteX > SliderX && Distance <= EarlyPenalizeWindow)
+	{
+		TargetNote->bHit = true; 
+		Score = FMath::Max(Score - 0.15f, 0.0f); 
+		//TODO ADD MISS LABEL
+		TargetNote->CachedSelf->SetColorAndOpacity(FLinearColor::Red);
+		DebugHelper::LogWarning("Hit too early!");
+	}
+	else 
+	{
+		DebugHelper::LogError("Spam press / Missed completely!");
+		//TODO ADD MISS LABEL
 	}
 }
 
@@ -215,21 +252,42 @@ void UNoteHighwayMinigame::Reset()
 
 FHighwayNote* UNoteHighwayMinigame::FindClosestNote(const ESpawnableHighwayBtn& Type)
 {
+	// FHighwayNote* ClosestNote = nullptr;
+	// float MinDistance = FLT_MAX;
+	//
+	// const float SliderX = Slider->GetRenderTransform().Translation.X;
+	//
+	// for (FHighwayNote& Note : NotesData)
+	// {
+	// 	if (Note.bHit)
+	// 		continue;
+	//
+	// 	if (Note.Row != Type)
+	// 		continue;
+	// 	
+	//
+	// 	if (const float Distance = FMath::Abs(SliderX - Note.X); Distance < MinDistance)
+	// 	{
+	// 		MinDistance = Distance;
+	// 		ClosestNote = &Note;
+	// 	}
+	// }
+	//
+	// return ClosestNote;
+	
 	FHighwayNote* ClosestNote = nullptr;
 	float MinDistance = FLT_MAX;
 
-	const float SliderX = Slider->GetRenderTransform().Translation.X;
+	const float SliderX = Slider->GetTickSpaceGeometry().GetAbsolutePosition().X;
 
 	for (FHighwayNote& Note : NotesData)
 	{
-		if (Note.bHit)
+		if (Note.bHit || Note.Row != Type || !Note.CachedSelf)
 			continue;
 
-		if (Note.Row != Type)
-			continue;
+		const float NoteX = Note.CachedSelf->GetTickSpaceGeometry().GetAbsolutePosition().X;
 		
-
-		if (const float Distance = FMath::Abs(SliderX - Note.X); Distance < MinDistance)
+		if (const float Distance = FMath::Abs(SliderX - NoteX); Distance < MinDistance)
 		{
 			MinDistance = Distance;
 			ClosestNote = &Note;

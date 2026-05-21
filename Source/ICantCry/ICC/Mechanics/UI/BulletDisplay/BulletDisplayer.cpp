@@ -15,6 +15,37 @@ void UBulletDisplayer::NativeConstruct()
 	Setup();
 }
 
+void UBulletDisplayer::InsertIndifference()
+{
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	
+	if (const int32 TotalWastedBullets = WastedBullets.Num(); TotalWastedBullets > 0)
+	{
+		FBullet Bullet;
+		
+		if (!Bullet.GetBulletData()) 
+		{
+			Bullet.SetBulletData(Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetIndifferenceData());
+		}
+		
+		if (const FBullet* B = Instance->GetInventory().BulletsStored.Find(EBulletType::Indifference))
+		{
+			Bullet.SetQuantity( B->GetQuantity() + TotalWastedBullets);
+		}else
+		{
+			Bullet.SetQuantity(TotalWastedBullets);
+		}
+		
+		Bullet.SetBulletData(Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetIndifferenceData());
+		DebugHelper::LogMessage(20, FColor::Silver, "Wasted Bullet recreated and added and to indifference " + FString::FromInt(Bullet.GetQuantity()));
+		DebugHelper::AddMessageToLog("Wasted Bullet 'recreated' and added to indifference " + FString::FromInt(Bullet.GetQuantity()));
+		Instance->GetCurrentPlayer()->GetBattleHUD()->PushBackIndifferenceAsCasing(TotalWastedBullets, ECasingType::Base);
+		Instance->GetInventory().BulletsStored.Add(EBulletType::Indifference, Bullet); // note for myself this must be here otherwise it won't make indifference bullets playable
+		
+		DebugHelper::LogMessage(10, FColor::White, "Bullet turned into indifference - now has " + FString::FromInt(Instance->GetInventory().BulletsStored[EBulletType::Indifference].GetQuantity()));
+	}
+}
+
 void UBulletDisplayer::Setup()
 {
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
@@ -147,19 +178,6 @@ void UBulletDisplayer::RemoveBullet()
 	}
 	
 	const EBulletType BulletType = RemovedBullet->Type;
-	//
-	// if (Instance->GetInventory().BulletsStored.Contains(BulletType))
-	// {
-	// 	FBullet& BulletStruct = Instance->GetInventory().BulletsStored[BulletType];
-	// 	const int32 NewQuantity = FMath::Max(0, BulletStruct.GetQuantity() - 1);
-	// 	BulletStruct.SetQuantity(NewQuantity);
-	//
-	// 	if (NewQuantity == 0)
-	// 	{
-	// 		Instance->GetInventory().BulletsStored.Remove(BulletType);
-	// 	}
-	// }
-
 	const TArray<UMagazineBullet*>& MagazineBullets = Player->GetBattleHUD()->MagazineBullets;
 	const int32 NumSlots = MagazineBullets.Num();
     
@@ -188,6 +206,9 @@ void UBulletDisplayer::RemoveBullet()
 		"Minigame modifier post engage -> " + FString::SanitizeFloat(Instance->GetPlayerStats()->MinigameModifier));
 
 	Player->GetBattleHUD()->RefreshPistolMagazine();
+	
+	InsertIndifference();
+	WastedBullets.Empty();
 }
 
 UGridPanel* UBulletDisplayer::GetBulletGrid() const

@@ -83,4 +83,6 @@ private:
 	float GetPercentFromImage(UImage* Image);
 	
 	FString GetThresholdName(const EMinigameThreshold& Threshold) const;
+	
+	float GetImagePercentOnBar(UWidget* TargetWidget);
 };

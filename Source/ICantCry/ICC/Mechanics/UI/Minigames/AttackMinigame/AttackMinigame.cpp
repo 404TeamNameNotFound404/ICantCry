@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "AttackMinigame.h"
 
+#include "Blueprint/SlateBlueprintLibrary.h"
 #include "Components/PanelWidget.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
@@ -39,35 +40,38 @@ void UAttackMinigame::MoveSlider(const FVector2D& Position)
 
 EMinigameThreshold UAttackMinigame::CheckBar()
 {
-	//const FVector2D CurrentPosition = Slider->GetTickSpaceGeometry().GetAbsolutePosition();
-	//const float X = CurrentPosition.X;
-	const float X = Slider->GetRenderTransform().Translation.X;
-
-	const float LeftDangerX = DangerBorderLeft->GetCachedGeometry().GetAbsolutePosition().X;
-	const float LeftSafeX = SafeAreaLeft->GetCachedGeometry().GetAbsolutePosition().X;
-	const float PerfectLeftX = PerfectAreaLeft->GetCachedGeometry().GetAbsolutePosition().X;
-	const float PerfectRightX = PerfectAreaRight->GetCachedGeometry().GetAbsolutePosition().X;
-	const float RightSafeX = SafeAreaRight->GetCachedGeometry().GetAbsolutePosition().X;
-	const float RightDangerX = DangerBorderRight->GetCachedGeometry().GetAbsolutePosition().X;
+	checkf(Slider, TEXT("Slider is null"));
 	
-	DebugHelper::LogMessage(9, FColor::White, "Slider X: " + FString::SanitizeFloat(X)  + "Perfect X " + FString::SanitizeFloat(PerfectLeftX) + " Rigth Perfect " + FString::SanitizeFloat(PerfectRightX));
+    const FGeometry& SliderGeometry = Slider->GetCachedGeometry();
+    const FVector2D SliderAbsolutePos = USlateBlueprintLibrary::GetAbsoluteSize(SliderGeometry) * 0.5f + SliderGeometry.GetAbsolutePosition();
+    const FGeometry& MyGeometry = GetCachedGeometry();
 	
-	if (X >= PerfectLeftX && X <= PerfectRightX)
-	{
-		return EMinigameThreshold::Perfect;
-	}
+    float SliderLocalX  = USlateBlueprintLibrary::AbsoluteToLocal(MyGeometry, SliderGeometry.GetAbsolutePosition()).X;
+    float LeftDangerX   = USlateBlueprintLibrary::AbsoluteToLocal(MyGeometry, DangerBorderLeft->GetCachedGeometry().GetAbsolutePosition()).X;
+    float LeftSafeX     = USlateBlueprintLibrary::AbsoluteToLocal(MyGeometry, SafeAreaLeft->GetCachedGeometry().GetAbsolutePosition()).X;
+    float PerfectLeftX  = USlateBlueprintLibrary::AbsoluteToLocal(MyGeometry, PerfectAreaLeft->GetCachedGeometry().GetAbsolutePosition()).X;
+    float PerfectRightX = USlateBlueprintLibrary::AbsoluteToLocal(MyGeometry, PerfectAreaRight->GetCachedGeometry().GetAbsolutePosition()).X;
+    float RightSafeX    = USlateBlueprintLibrary::AbsoluteToLocal(MyGeometry, SafeAreaRight->GetCachedGeometry().GetAbsolutePosition()).X;
+    float RightDangerX  = USlateBlueprintLibrary::AbsoluteToLocal(MyGeometry, DangerBorderRight->GetCachedGeometry().GetAbsolutePosition()).X;
 
-	if ((X >= LeftSafeX && X < PerfectLeftX) || (X > PerfectRightX && X <= RightSafeX))
-	{
-		return EMinigameThreshold::Good;
-	}
+    DebugHelper::LogMessage(9, FColor::White, "LOCAL - Slider X: " + FString::SanitizeFloat(SliderLocalX) + " Perfect Left: " + FString::SanitizeFloat(PerfectLeftX));
+	
+    if (SliderLocalX >= PerfectLeftX && SliderLocalX <= PerfectRightX)
+    {
+       return EMinigameThreshold::Perfect;
+    }
 
-	if ((X >= LeftDangerX && X < LeftSafeX) || (X > RightSafeX && X <= RightDangerX))
-	{
-		return EMinigameThreshold::Bad;
-	}
+    if ((SliderLocalX >= LeftSafeX && SliderLocalX < PerfectLeftX) || (SliderLocalX > PerfectRightX && SliderLocalX <= RightSafeX))
+    {
+       return EMinigameThreshold::Good;
+    }
 
-	return EMinigameThreshold::Miss;
+    if ((SliderLocalX >= LeftDangerX && SliderLocalX < LeftSafeX) || (SliderLocalX > RightSafeX && SliderLocalX <= RightDangerX))
+    {
+       return EMinigameThreshold::Bad;
+    }
+
+    return EMinigameThreshold::Miss;
 }
 
 // ----------------REMINDER-------------------------------------
@@ -79,11 +83,12 @@ void UAttackMinigame::HandleScore()
 
 	switch (Result)
 	{
+	default:
 	case EMinigameThreshold::Bad:
 		DebugHelper::LogError("Bad minigame score!");
 		Instance->GetRuntimeStats().MinigameModifier = 0.5f;
 		DebugHelper::LogWarning("Minigame modifier On Bad" + FString::SanitizeFloat(Instance->GetRuntimeStats().MinigameModifier));
-		DebugHelper::AddMessageToLog("[Attack Minigame]: Player Minigame modifier " + FString::SanitizeFloat(Instance->GetRuntimeStats().MinigameModifier) + "\nBad minigame score!");
+		DebugHelper::AddMessageToLog("[Attack Minigame]: Player Minigame modifier " + FString::SanitizeFloat(Instance->GetRuntimeStats().MinigameModifier) + " - Bad minigame score!");
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
@@ -119,16 +124,16 @@ void UAttackMinigame::HandleScore()
 		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
 		Instance->GetPlayerStats()->RuntimeStats.ApModifier = 0;
 		break;
-	default:
-		DebugHelper::LogMessage(3, FColor::FromHex("ADB2D4"), "Unknown minigame score!");
-		Instance->GetRuntimeStats().MinigameModifier = 0.5f;
-		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
-		Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
-		Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
-		
-		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
-		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
-		Instance->GetPlayerStats()->RuntimeStats.ApModifier = 0;
-		break;
+	// default:
+	// 	DebugHelper::LogMessage(3, FColor::FromHex("ADB2D4"), "Unknown minigame score!");
+	// 	Instance->GetRuntimeStats().MinigameModifier = 0.5f;
+	// 	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
+	// 	Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+	// 	Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+	// 	
+	// 	Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
+	// 	Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
+	// 	Instance->GetPlayerStats()->RuntimeStats.ApModifier = 0;
+	// 	break;
 	}
 }

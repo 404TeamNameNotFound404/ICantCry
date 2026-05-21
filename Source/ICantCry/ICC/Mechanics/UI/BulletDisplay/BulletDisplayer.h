@@ -37,6 +37,8 @@ protected:
 	
 	UPROPERTY()
 	TArray<UBulletData*> WastedBullets;
+	
+	void InsertIndifference();
 
 public:
 	void Setup();
