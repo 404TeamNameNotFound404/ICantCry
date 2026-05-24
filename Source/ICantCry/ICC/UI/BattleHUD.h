@@ -65,6 +65,9 @@ public:
 	UPROPERTY(meta = (BindWidget)) UButton* ConfirmReloadBullet;
 	UPROPERTY(meta = (BindWidget)) UButton* EngageBtn;
 	UPROPERTY(meta=(BindWidget)) UDecisionDisplayer* DecisionDisplayer;
+	
+	// Misc
+	UPROPERTY(meta=(BindWidget)) UButton* BackBtn;
 
     // Status Bars
     UPROPERTY(meta = (BindWidget)) UProgressBar* PlayerHealth;
@@ -303,6 +306,7 @@ private:
     UFUNCTION() void OnFocusPressed();
     UFUNCTION() void OnReloadPressed();
     UFUNCTION() void OnPassPressed();
+	UFUNCTION() void OnRevertAction();
 
 	UFUNCTION() void RefreshBulletUI();
 	void ReflectBullets();

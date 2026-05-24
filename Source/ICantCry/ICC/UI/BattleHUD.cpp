@@ -20,6 +20,9 @@ void UBattleHUD::NativeConstruct()
 	if (ConfirmButton) ConfirmButton->OnClicked.AddDynamic(this, &UBattleHUD::ConfirmBulletSelection);
 	if (EngageBtn) EngageBtn->OnClicked.AddDynamic(this, &UBattleHUD::Engage);
 	ConfirmReloadBullet->OnClicked.AddDynamic(this, &UBattleHUD::UBattleHUD::HideBulletMagazineOnReload);
+	
+	BackBtn->OnClicked.AddDynamic(this, &UBattleHUD::OnRevertAction);
+	BackBtn->SetVisibility(ESlateVisibility::Hidden);
 
 	// Gamepad stuff initializations
 	Shoot->IsFocusable = true;
@@ -417,6 +420,7 @@ void UBattleHUD::OnShootPressed()
 	bTargetSelection = true;
 
 	bIsEvFirst = false;
+	BackBtn->SetVisibility(ESlateVisibility::Visible);
 	//FSlateApplication::Get().ClearAllUserFocus();
 }
 
@@ -567,6 +571,32 @@ void UBattleHUD::OnPassPressed()
 	Quantity->SetVisibility(ESlateVisibility::Hidden);
 	FSlateApplication::Get().ClearAllUserFocus();
 	bIsEvFirst = false;
+}
+
+void UBattleHUD::OnRevertAction()
+{
+	Bar->UpdateHighlights(0);
+	UpdateAPBar();
+	ApAccumulator=0;
+	bTargetSelection = false;
+	bSelectTarget = false;
+	bShootFired = false;
+	BackBtn->SetVisibility(ESlateVisibility::Hidden);
+	EnableButtonsAfterShooting();
+	TargetNameText_1->SetText(FText::FromString(""));
+	TargetNameText_1->SetAutoWrapText(true);
+	TargetNameText_1->SetVisibility(ESlateVisibility::Hidden);
+	TargetNameText_3->SetText(FText::FromString(""));
+	TargetNameText_3->SetAutoWrapText(true);
+	TargetNameText_3->SetVisibility(ESlateVisibility::Hidden);
+	TargetNameText_2->SetVisibility(ESlateVisibility::Hidden);
+	TargetNameText->SetText(FText::FromString(""));
+	TargetText->SetText(FText::FromString(FString("")));
+	TargetText->SetVisibility(ESlateVisibility::Hidden);
+	TargetText_2->SetVisibility(ESlateVisibility::Hidden);
+	TargetText_3->SetVisibility(ESlateVisibility::Hidden);
+	EngageBtn->SetVisibility(ESlateVisibility::Hidden);
+	StatusText->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UBattleHUD::ScrollTargetSelection(float ScrollValue)
@@ -1005,6 +1035,7 @@ void UBattleHUD::PrepareToEngage()
 	checkf(MinigameHandler, TEXT("Minigame handler is null at UBattleHUD::Engage"));
 	MinigameHandler->StartMinigame(CurrentBulletData,true);
 	EngageBtn->SetVisibility(ESlateVisibility::Hidden);
+	BackBtn->SetVisibility(ESlateVisibility::Hidden);
 	CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
 	BulletName->SetVisibility(ESlateVisibility::Hidden);
 	Quantity->SetVisibility(ESlateVisibility::Hidden);
