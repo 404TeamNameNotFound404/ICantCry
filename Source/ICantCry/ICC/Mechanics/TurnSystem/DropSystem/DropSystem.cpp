@@ -11,127 +11,139 @@
 void UDropSystem::Drop(UWorld* World, UVictoryVisualizer* VictoryVisualizer, const TArray<AICC_Actor*>& Queue)
 {
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(World->GetGameInstance());
-	checkf(Instance, TEXT("Game instance null at UDropSystem::Drop"))
 
-	UBattleData* Bd = Instance->GetCurrentPlayer()->GetBattleData();
-
-	FEssence Indifference;
-	// Indifference.Quantity = 1;
-	Indifference.EssenceName = "Indifference";
-	Indifference.EssenceType = EEssenceType::Indifference;
-	Indifference.Quantity = 0;
-	//
-	// Instance->GetCurrentPlayer()->GetInventoryManager()->AddEssence2(Indifference);
-	// VictoryVisualizer->GetEssenceDrop0()->SetText(FText::FromString(Indifference.EssenceName + " x" + FString::FromInt(Indifference.Quantity)));
-	
 	if (Queue.IsEmpty())
 	{
+		DebugHelper::LogMessage(15, FColor::Emerald, "Queue is invalid");
 		return;
 	}
 
-	int32 Index = 0;
-	TArray<UTextBlock*> Slots = {VictoryVisualizer->GetEssenceDrop1(), VictoryVisualizer->GetEssenceDrop2(), VictoryVisualizer->GetEssenceDrop3()};
+	UBattleData* Bd = Instance->GetCurrentPlayer()->GetBattleData();
 
-	FEssence MobEssence;
-
-	TArray<FString> EnemySlayedSlot;
-	TSet<EEssenceType> PrintedTypes;
+	TArray<UTextBlock*> Slots =
+	{
+		VictoryVisualizer->GetEssenceDrop1(),
+		VictoryVisualizer->GetEssenceDrop2(),
+		VictoryVisualizer->GetEssenceDrop3()
+	};
 	
+	TMap<EEssenceType, FEssence> RewardMap;
+
 	for (AICC_Actor* Entity : Queue)
 	{
-		if (Entity->IsA(AICC_Player::StaticClass()))
+		if (!Entity || Entity->IsA(AICC_Player::StaticClass()))
 		{
 			continue;
 		}
 
 		AMob* Emotion = Cast<AMob>(Entity);
 
-		if (!Emotion || Emotion->IsAlive() || Index >= Slots.Num())
+		if (!Emotion || Emotion->IsAlive())
 		{
 			continue;
 		}
-		
-		// FEssence MobEssence;
+
+		FEssence DroppedEssence;
 
 		switch (Emotion->GetMobType())
 		{
 		case MobAnger:
-			MobEssence.Quantity = Bd->AngerDropQuantity;
-			MobEssence.EssenceName = "Anger";
-			MobEssence.EssenceType = EEssenceType::Anger;
-			Indifference.Quantity++;
+			DroppedEssence.Quantity = Bd->AngerDropQuantity;
+			DroppedEssence.EssenceName = "Anger";
+			DroppedEssence.EssenceType = EEssenceType::Anger;
 			break;
+
 		case MobShame:
-			MobEssence.Quantity = Bd->ShameDropQuantity;
-			MobEssence.EssenceName = "Shame";
-			MobEssence.EssenceType = EEssenceType::Shame;
-			Indifference.Quantity++;
+			DroppedEssence.Quantity = Bd->ShameDropQuantity;
+			DroppedEssence.EssenceName = "Shame";
+			DroppedEssence.EssenceType = EEssenceType::Shame;
 			break;
+
 		case MobJoy:
-			MobEssence.Quantity = Bd->JoyDropQuantity;
-			MobEssence.EssenceName = "Joy";
-			MobEssence.EssenceType = EEssenceType::Joy;
-			Indifference.Quantity++;
+			DroppedEssence.Quantity = Bd->JoyDropQuantity;
+			DroppedEssence.EssenceName = "Joy";
+			DroppedEssence.EssenceType = EEssenceType::Joy;
 			break;
+
 		case MobDisgust:
-			MobEssence.Quantity = Bd->DisgustDropQuantity;
-			MobEssence.EssenceName = "Disgust";
-			MobEssence.EssenceType = EEssenceType::Disgust;
-			Indifference.Quantity++;
+			DroppedEssence.Quantity = Bd->DisgustDropQuantity;
+			DroppedEssence.EssenceName = "Disgust";
+			DroppedEssence.EssenceType = EEssenceType::Disgust;
 			break;
+
 		case MobFear:
-			MobEssence.Quantity = Bd->FearDropQuantity;
-			MobEssence.EssenceName = "Fear";
-			MobEssence.EssenceType = EEssenceType::Fear;
-			Indifference.Quantity++;
+			DroppedEssence.Quantity = Bd->FearDropQuantity;
+			DroppedEssence.EssenceName = "Fear";
+			DroppedEssence.EssenceType = EEssenceType::Fear;
 			break;
+
 		case MobJealousy:
-			MobEssence.Quantity = Bd->JealousyDropQuantity;
-			MobEssence.EssenceName = "Jealousy";
-			MobEssence.EssenceType = EEssenceType::Jealousy;
-			Indifference.Quantity++;
+			DroppedEssence.Quantity = Bd->JealousyDropQuantity;
+			DroppedEssence.EssenceName = "Jealousy";
+			DroppedEssence.EssenceType = EEssenceType::Jealousy;
 			break;
+
 		case MobSadness:
-			MobEssence.Quantity = Bd->SadnessDropQuantity;
-			MobEssence.EssenceName = "Sadness";
-			MobEssence.EssenceType = EEssenceType::Sadness;
-			Indifference.Quantity++;
+			DroppedEssence.Quantity = Bd->SadnessDropQuantity;
+			DroppedEssence.EssenceName = "Sadness";
+			DroppedEssence.EssenceType = EEssenceType::Sadness;
 			break;
+
 		case MobAnxiety:
-			MobEssence.Quantity = Bd->AnxietyDropQuantity;
-			MobEssence.EssenceName = "Anxiety";
-			MobEssence.EssenceType = EEssenceType::Anxiety;
-			Indifference.Quantity++;
+			DroppedEssence.Quantity = Bd->AnxietyDropQuantity;
+			DroppedEssence.EssenceName = "Anxiety";
+			DroppedEssence.EssenceType = EEssenceType::Anxiety;
 			break;
+
 		case MobCalm:
-			MobEssence.Quantity = Bd->CalmDropQuantity;
-			MobEssence.EssenceName = "Calm";
-			MobEssence.EssenceType = EEssenceType::Calm;
-			Indifference.Quantity++;
+			DroppedEssence.Quantity = Bd->CalmDropQuantity;
+			DroppedEssence.EssenceName = "Calm";
+			DroppedEssence.EssenceType = EEssenceType::Calm;
 			break;
+
 		default:
 			continue;
 		}
-
-		Instance->GetCurrentPlayer()->GetInventoryManager()->AddEssence(MobEssence);
-		Instance->GetCurrentPlayer()->GetInventoryManager()->AddEssence(Indifference);
-
-		if (!PrintedTypes.Contains(MobEssence.EssenceType))
+		
+		Instance->GetCurrentPlayer()->GetInventoryManager()->AddEssence(DroppedEssence);
+		
+		if (RewardMap.Contains(DroppedEssence.EssenceType))
 		{
-			FString DisplayText = MobEssence.EssenceName + " x" + FString::FromInt(MobEssence.Quantity);
-			EnemySlayedSlot.Add(DisplayText);
-			PrintedTypes.Add(MobEssence.EssenceType);
+			RewardMap[DroppedEssence.EssenceType].Quantity += DroppedEssence.Quantity;
 		}
-		// Slots[Index]->SetText(FText::FromString(MobEssence.EssenceName + " x" + FString::FromInt(MobEssence.Quantity)));
-		Index++;
-		DebugHelper::LogMessage(8, FColor::Orange, "Dropped " + MobEssence.EssenceName); 
-	}
+		else
+		{
+			RewardMap.Add(DroppedEssence.EssenceType, DroppedEssence);
+		}
 
-	for (int32 i = 0; i < EnemySlayedSlot.Num() && i < Slots.Num(); ++i)
-	{
-		Slots[i]->SetText(FText::FromString(EnemySlayedSlot[i]));
+		DebugHelper::LogMessage(
+			18,
+			FColor::Orange,
+			"Dropped " + DroppedEssence.EssenceName);
 	}
 	
-	VictoryVisualizer->GetEssenceDrop0()->SetText(FText::FromString(Indifference.EssenceName + " x" + FString::FromInt(Indifference.Quantity)));
+	int32 SlotIndex = 0;
+
+	for (const TPair<EEssenceType, FEssence>& Pair : RewardMap)
+	{
+		if (SlotIndex >= Slots.Num())
+		{
+			break;
+		}
+
+		const FEssence& Essence = Pair.Value;
+
+		Slots[SlotIndex]->SetText(
+			FText::FromString(
+				Essence.EssenceName +
+				" x" +
+				FString::FromInt(Essence.Quantity)));
+
+		++SlotIndex;
+	}
 	
+	VictoryVisualizer->GetEssenceDrop0()->SetText(
+		FText::FromString(
+			"Essence Types: " +
+			FString::FromInt(RewardMap.Num())));
 }

@@ -29,30 +29,43 @@ void UAngerAtkMinigame::NativeConstruct()
 EMinigameThreshold UAngerAtkMinigame::CheckBar()
 {
 	const float SliderThreshold = Slider->GetPercent();
-	const FGeometry& Geometry = Slider->GetCachedGeometry();
-	const float SliderLeft = Geometry.GetAbsolutePosition().X;
-	const float SliderWidth = Geometry.GetLocalSize().X;
+    const FGeometry& SliderGeo = Slider->GetCachedGeometry();
 	
-	const float FirstLeft = FirstThreshold->GetCachedGeometry().GetAbsolutePosition().X;
-	const float SecondLeft = SecondThreshold->GetCachedGeometry().GetAbsolutePosition().Y;
+    const float SliderLeft = SliderGeo.GetAbsolutePosition().X;
+    const float SliderWidth = SliderGeo.GetAbsoluteSize().X; 
+    
+    const FGeometry& FirstGeo = FirstThreshold->GetCachedGeometry();
+    const float FirstLeft = FirstGeo.GetAbsolutePosition().X;
+    const float FirstWidth = FirstGeo.GetAbsoluteSize().X;
+
+    const FGeometry& SecondGeo = SecondThreshold->GetCachedGeometry();
+    const float SecondLeft = SecondGeo.GetAbsolutePosition().X;
+    const float SecondWidth = SecondGeo.GetAbsoluteSize().X;
+
+    if (SliderWidth <= 0.0f) return EMinigameThreshold::Bad;
 	
-	const float FirstBarrier = (FirstLeft - SliderLeft) / SliderWidth;
-	const float SecondBarrier = (SecondLeft - SliderLeft) / SliderWidth;
+    auto NormalizeX = [&](float X) { return (X - SliderLeft) / SliderWidth; };
+
+    const float FirstNormLeft = NormalizeX(FirstLeft);
+    const float FirstNormRight = NormalizeX(FirstLeft + FirstWidth);
+
+    const float SecondNormLeft = NormalizeX(SecondLeft);
+    const float SecondNormRight = NormalizeX(SecondLeft + SecondWidth);
 	
-	const bool bInside = SliderThreshold >= FirstBarrier && SliderThreshold <= SecondBarrier;
-	const bool bPastSecond = SliderThreshold > SecondBarrier;
-	
-	if (bInside)
-	{
-		return EMinigameThreshold::Good;
-	}
-	
-	if (bPastSecond)
-	{
-		return EMinigameThreshold::Perfect;
-	}
-	
-	return EMinigameThreshold::Bad;
+    if (SliderThreshold >= SecondNormLeft && SliderThreshold <= SecondNormRight)
+    {
+    	DebugHelper::LogSuccess("RESULT: PERFECT");
+        return EMinigameThreshold::Perfect;
+    }
+
+    if (SliderThreshold >= FirstNormLeft && SliderThreshold <= FirstNormRight)
+    {
+        DebugHelper::LogSuccess("RESULT: GOOD");
+        return EMinigameThreshold::Good;
+    }
+
+	DebugHelper::LogError("RESULT: BAD");
+    return EMinigameThreshold::Bad;
 }
 
 void UAngerAtkMinigame::HandleScore()
@@ -112,10 +125,55 @@ FString UAngerAtkMinigame::GetMinigameScore(const EMinigameThreshold& Value) con
 
 void UAngerAtkMinigame::MoveSlider(const FVector2D& Position)
 {
+	// float Percentage = Slider->GetPercent();
+	//
+	// MinigameResult = CheckBar();
+	//
+	//
+	// if (ScrollValue > 0)
+	// {
+	// 	if ( !Instance->GetCurrentPlayer()->GetBinder()->GetDecreaseMinigameScrollValue())
+	// 	{
+	// 		Percentage += ScrollValue * GetWorld()->GetDeltaSeconds() * SliderSpeed;
+	// 		Percentage = FMath::Clamp(Percentage, 0.f, 1.f);
+	// 		Slider->SetPercent(Percentage);
+	// 	}
+	// 	
+	// 	else if (Instance->GetCurrentPlayer()->GetBinder()->GetDecreaseMinigameScrollValue())
+	// 	{
+	// 		Percentage -= GetWorld()->GetDeltaSeconds() * DecreaseSpeed;
+	// 		Percentage = FMath::Clamp(Percentage, 0.f, 1.f);
+	// 		Slider->SetPercent(Percentage);
+	// 	}
+	// }
+	//
+	// TimerLeft += GetWorld()->GetDeltaSeconds() * TimerSpeed;
+	//
+	// if (TimerLeft >= TimeToDie)
+	// {
+	// 	UBattleHUD* Hud = Instance->GetCurrentPlayer()->GetBattleHUD();
+	// 	Hud->EnableButtonsAfterShooting();
+	// 	Hud->UpdateAp();
+	// 	Instance->GetCurrentPlayer()->GetBinder()->SetDecreaseMinigameScrollValue(false);
+	// 	HandleScore();
+	// 	Instance->GetCurrentPlayer()->GetMinigameHandler()->EndMinigame();
+	// 	
+	// 	Hud->GetBattleHandler()->Fire(Hud->GetSelectedActor()->GetActorLocation(), Hud->GetCurrentBulletData()->DisplayColor);
+	// 	Hud->GetBattleHandler()->SimulateHurt(Hud->GetCurrentBulletData()->DisplayColor);
+	// }
+	
 	float Percentage = Slider->GetPercent();
 	
-	MinigameResult = CheckBar();
+	EMinigameThreshold CurrentFrameResult = CheckBar();
 	
+	if (CurrentFrameResult == EMinigameThreshold::Perfect)
+	{
+		MinigameResult = EMinigameThreshold::Perfect;
+	}
+	else if (CurrentFrameResult == EMinigameThreshold::Good && MinigameResult != EMinigameThreshold::Perfect)
+	{
+		MinigameResult = EMinigameThreshold::Good;
+	}
 	
 	if (ScrollValue > 0)
 	{
@@ -125,7 +183,6 @@ void UAngerAtkMinigame::MoveSlider(const FVector2D& Position)
 			Percentage = FMath::Clamp(Percentage, 0.f, 1.f);
 			Slider->SetPercent(Percentage);
 		}
-		
 		else if (Instance->GetCurrentPlayer()->GetBinder()->GetDecreaseMinigameScrollValue())
 		{
 			Percentage -= GetWorld()->GetDeltaSeconds() * DecreaseSpeed;

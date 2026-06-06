@@ -11,8 +11,8 @@ void UBulletBottonItem::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	SelectButton->OnHovered.AddDynamic(this, &UBulletBottonItem::DisplayBulletInfo);
-	SelectButton->OnUnhovered.AddDynamic(this, &UBulletBottonItem::HideBulletInfo);
+	SelectButton->OnClicked.AddDynamic(this, &UBulletBottonItem::DisplayBulletInfo);
+	//SelectButton->OnUnhovered.AddDynamic(this, &UBulletBottonItem::HideBulletInfo);
 
 	if (UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance()))
 	{
