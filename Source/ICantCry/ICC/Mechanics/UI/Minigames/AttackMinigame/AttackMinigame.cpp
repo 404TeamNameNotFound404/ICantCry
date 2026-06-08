@@ -165,16 +165,5 @@ void UAttackMinigame::HandleScore()
 		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
 		Instance->GetPlayerStats()->RuntimeStats.ApModifier = 0;
 		break;
-		// default:
-		// 	DebugHelper::LogMessage(3, FColor::FromHex("ADB2D4"), "Unknown minigame score!");
-		// 	Instance->GetRuntimeStats().MinigameModifier = 0.5f;
-		// 	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
-		// 	Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
-		// 	Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
-		// 	
-		// 	Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
-		// 	Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
-		// 	Instance->GetPlayerStats()->RuntimeStats.ApModifier = 0;
-		// 	break;
 	}
 }
