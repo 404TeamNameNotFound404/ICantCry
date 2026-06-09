@@ -57,6 +57,8 @@ void UTurnBasedSystem::Start(UWorld* World)
 	CurrentPlayer->GetBattleHUD()->ShowHUD();
 }
 
+static TArray<AICC_Actor*> StaticQueue;
+
 void UTurnBasedSystem::Start2(UWorld* World, FBattleMemory* Memory)
 {
 	for (TActorIterator<AEnemySpawnManager> It(World); It; ++It)
@@ -89,11 +91,12 @@ void UTurnBasedSystem::Start2(UWorld* World, FBattleMemory* Memory)
 	{
 		EnemySpawnManager->SpawnRandomEnemy();
 		Turn.PopulateQueue(World);
+		StaticQueue = Turn.Queue;
+		EnemySpawnManager->GetMemory().LastStoredQueue = StaticQueue;
 		TryGetCurrentPlayer()->GetBattleHUD()->SpawnVisualizer();
 		TryGetCurrentPlayer()->GetBattleHUD()->SpawnGameOverVisualizer();
 	}, 0.5f, false);
 	
-
 	FTimerHandle DelayHudHandle;
 	World->GetTimerManager().SetTimer(DelayHudHandle, [this]()
 	{

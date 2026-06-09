@@ -62,12 +62,12 @@ void UVictoryVisualizer::Setup(const TArray<AICC_Actor*>& Queue)
 
 void UVictoryVisualizer::AfterBattle(const TArray<AICC_Actor*>& Queue)
 {
-	DropSystem->Drop(GetWorld(), this, Queue);
-	
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
-	
 	ExpInt->SetText(FText::FromString(FString::FromInt(Instance->GetRuntimeStats().ExpSummary)));
 	Instance->GetRuntimeStats().ExpSummary = 0.0f;
+	DropSystem->Drop(GetWorld(), this, Queue);
+	
+	DebugHelper::LogMessage(10, FColor::Orange, "[VictoryVisualizer]: After battle reached!");
 }
 
 UTextBlock* UVictoryVisualizer::GetEssenceDrop0() const

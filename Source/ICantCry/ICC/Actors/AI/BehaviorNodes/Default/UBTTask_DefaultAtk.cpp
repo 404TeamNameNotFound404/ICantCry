@@ -5,6 +5,7 @@
 #include "ICantCry/ICC/Actors/AI/Mob.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
+#include "Navigation/PathFollowingComponent.h"
 
 UUBTTask_DefaultAtk* UUBTTask_DefaultAtk::Instance;
 
@@ -102,9 +103,6 @@ void UUBTTask_DefaultAtk::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 		return;
 	}
 	
-	// if (!CurrentMob->IsMinigameStarted() || !CurrentMob->IsMinigameEnded() || !Target->GetMinigameHandler()->
-	// 	IsPlayerMinigameEnded())
-	// 	return;
 
 	if (!(CurrentMob->IsMinigameStarted() && CurrentMob->IsMinigameEnded() &&
 	  Target->GetMinigameHandler()->IsPlayerMinigameEnded()))
@@ -172,7 +170,25 @@ void UUBTTask_DefaultAtk::StartAttackMinigame(AMob* Current, AICC_Player* Target
 {
 	if (!Current || !Target || !Controller) return;
 
-	Controller->MoveToActor(Target);
+	FAIMoveRequest Request;
+	Request.SetGoalActor(Target);
+	Request.SetAcceptanceRadius(100.f); // or attack range
+	Request.SetUsePathfinding(true);
+	Request.SetAllowPartialPath(true); 
+	Request.SetNavigationFilter(nullptr);
+	// Controller->MoveToActor(Target);
+	//Controller->MoveTo(Request);
+	
+	EPathFollowingRequestResult::Type Result = Controller->MoveTo(Request);
+
+	if (Result == EPathFollowingRequestResult::Failed)
+	{
+		DebugHelper::LogMessage(10, FColor::White, "AI Move Failed Immediately! Check collision or NavMesh connection.");
+	}
+	else if (Result == EPathFollowingRequestResult::AlreadyAtGoal)
+	{
+		DebugHelper::LogMessage(10, FColor::White,"AI thinks it is already at the target!");
+	}
 
 
 	DebugHelper::AddMessageToLog("[Behavior Tree]: " + Current->GetActorLabel() + " is attacking");

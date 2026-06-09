@@ -527,6 +527,10 @@ void UBattleHUD::OnReloadPressed()
 	GameInstance->GetCurrentPlayer()->GetBinder()->SetIsNavigatingInsideWidget(true);
 	GameInstance->GetCurrentPlayer()->GetBinder()->FocusOn(Displayer->GetBulletGrid());
 	bIsEvFirst = false;
+	
+	CanvasMiniGames->SetFocus();
+	CanvasAmmoSelection->SetFocus();
+	
 	//FSlateApplication::Get().ClearAllUserFocus();
 }
 

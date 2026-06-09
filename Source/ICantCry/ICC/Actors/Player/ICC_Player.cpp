@@ -61,8 +61,6 @@ void AICC_Player::BeginPlay()
 {
 	Super::BeginPlay();
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
-	//GetCapsuleComponent()->SetCapsuleRadius(90.0f);
-	//GetCapsuleComponent()->SetCapsuleSize(90.0f, 200.0f);
 	OldSpeed = GetCharacterMovement()->MaxWalkSpeed;
 	
 	InGameMenu = CreateWidget<UInGameMenu>(GetWorld(), InGameMenuClass);

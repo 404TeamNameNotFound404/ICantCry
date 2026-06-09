@@ -76,4 +76,7 @@ private:
 
 	UPROPERTY()
 	UICantCryGameInstance* GameInstance;
+	
+	UPROPERTY()
+	TEnumAsByte<EMinigameThreshold> T;
 };
