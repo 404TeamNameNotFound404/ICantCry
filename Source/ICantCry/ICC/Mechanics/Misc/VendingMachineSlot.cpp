@@ -297,6 +297,7 @@ void UVendingMachineSlot::AddCasing()
 	Bullet.SetBulletData(Indifference);
 	Bullet.SetQuantity(CasingAmount);
 	Instance->GetInventory().BulletsStored.Add(Bullet.GetBulletData()->Type, Bullet);
+	DebugHelper::LogMessage(10, FColor::Emerald, "Adding " + FString::FromInt(CasingAmount));
 }
 
 void UVendingMachineSlot::RefreshEssence()
