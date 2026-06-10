@@ -138,11 +138,12 @@ void UInventoryHUD::MoveSelectionDown()
 
 FText UInventoryHUD::OnQuantityChanged()
 {
-    for (UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
-       const auto& Pair : Instance->GetInventory().CasingsStored)
+    UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+    
+    if ( const FBullet& Indifference = Instance->GetInventory().BulletsStored[EBulletType::Indifference];
+        Indifference.IsValid())
     {
-        const FString Txt = FString("x " + FString::FromInt(Pair.Value.GetQuantity()));
-        return FText(FText::FromString(Txt));
+        return FText::FromString("x " + FString::FromInt(Indifference.GetQuantity()));
     }
 
     return FText::FromString("x 0");
