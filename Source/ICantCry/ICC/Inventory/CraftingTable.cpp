@@ -312,13 +312,9 @@ void UCraftingTable::Craft()
 
 void UCraftingTable::Craft(UWorld* World)
 {
-
-    
-
     UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(World->GetGameInstance());
     FRecipe& SelectedRecipe = Inventory.GetSelectedRecipe();
     
-    // LOG: Inizio craft
     UE_LOG(LogTemp, Warning, TEXT("--- CRAFT START ---"));
     
     if (SelectedRecipe.ResultBullet.GetBulletData())
@@ -327,7 +323,6 @@ void UCraftingTable::Craft(UWorld* World)
             *SelectedRecipe.ResultBullet.GetBulletData()->BulletName);
     }
     
-    // 1. Consuma essences
     UE_LOG(LogTemp, Warning, TEXT("Essences:"));
     
     for (const FEssence& RequiredEssence : SelectedRecipe.RequiredEssences)
@@ -347,7 +342,6 @@ void UCraftingTable::Craft(UWorld* World)
         UE_LOG(LogTemp, Warning, TEXT("  %s: %d -> %d"), 
             *EssenceName, Before, After);
         
-        // Consuma
         StoredEssence->Quantity = After;
         
         if (StoredEssence->Quantity <= 0)
@@ -356,11 +350,10 @@ void UCraftingTable::Craft(UWorld* World)
         }
     }
     
-    // 2. Consuma casings
     UE_LOG(LogTemp, Warning, TEXT("Casings:"));
     
     int32 CasingsNeeded = SelectedRecipe.Requirements->CasingQuantity;
-    ECasingType RequiredType = SelectedRecipe.RequiredCasingType;
+    const ECasingType RequiredType = SelectedRecipe.RequiredCasingType;
     
     UE_LOG(LogTemp, Warning, TEXT("  Needed: %d %s"), 
         CasingsNeeded, 
@@ -380,6 +373,7 @@ void UCraftingTable::Craft(UWorld* World)
         {
             const int32 After = Before - CasingsNeeded;
             Casing.SetQuantity(After);
+            Instance->GetInventory().BulletsStored[EBulletType::Indifference].SetQuantity(After);
             
             UE_LOG(LogTemp, Warning, TEXT("  %s: %d -> %d"), 
                 *UEnum::GetValueAsString(RequiredType),
