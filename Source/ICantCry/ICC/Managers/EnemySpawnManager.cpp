@@ -62,6 +62,43 @@ void AEnemySpawnManager::RespawnEnemy(TSubclassOf<AMob> Class, const FVector& Lo
 	Emotion->SetIsRespawned(true);
 }
 
+TArray<AMob*> AEnemySpawnManager::SpawnFixedEnemies()
+{
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	if (!Instance) return {};
+    
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+    
+	const int32 SavedCount = Instance->CachedBattleMemory.EmotionsSpawnedClasses.Num();
+    
+	Memory.EmotionsSpawned.Empty();
+
+	TArray<AMob*> SpawnedMobsThisRetry;
+    
+	for (int32 i = 0; i < SavedCount; ++i)
+	{
+		TSubclassOf<AMob> EnemyClass = Instance->CachedBattleMemory.EmotionsSpawnedClasses[i];
+        
+		const FVector SpawnLocation = Instance->CachedBattleMemory.Locations.IsValidIndex(i) ? Instance->CachedBattleMemory.Locations[i] : FVector::ZeroVector;
+		const FRotator SpawnRotation = Instance->CachedBattleMemory.Orientations.IsValidIndex(i) ? Instance->CachedBattleMemory.Orientations[i] : FRotator::ZeroRotator;
+
+		if (EnemyClass)
+		{
+			if (AMob* Emotion = GetWorld()->SpawnActor<AMob>(EnemyClass, SpawnLocation, SpawnRotation, SpawnParams); Emotion)
+			{
+				SpawnedMobsThisRetry.Add(Emotion);
+				Memory.EmotionsSpawned.Add(Emotion);
+				
+				AICC_AIController* Controller = Cast<AICC_AIController>(Emotion->GetController());
+				Controller->RunBehaviorTree(Emotion->GetBehaviorTree());
+			}
+		}
+	}
+	
+	return SpawnedMobsThisRetry;
+}
+
 void AEnemySpawnManager::ResetBattle(AMob* Emotion)
 {
 	if (!Emotion)
@@ -134,6 +171,7 @@ void AEnemySpawnManager::ResetBattle(AMob* Emotion)
 void AEnemySpawnManager::Spawn()
 {
 	const int32 Aleatory = RandomSpawn(GetRandomSpawnType());
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
 
 	TArray<AESpawner*> ValidSpawnPoints;
 	for (AESpawner* Point : SpawnPoints)
@@ -166,8 +204,8 @@ void AEnemySpawnManager::Spawn()
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
 		AMob* Enemy = GetWorld()->SpawnActor<AMob>(SelectedEnemyClass, SpawnLocation, SpawnRotation, SpawnParams);
-		Memory.Register(SelectedEnemyClass, SpawnLocation, SpawnRotation);
-		Memory.EmotionsSpawned.Add(Enemy);
+		Instance->CachedBattleMemory.Register(SelectedEnemyClass, SpawnLocation, SpawnRotation);
+		Instance->CachedBattleMemory.EmotionsSpawned.Add(Enemy);
 
 		if (Enemy)
 		{

@@ -28,7 +28,7 @@ void ABattleHandler::BeginPlay()
 	}
 	
 	TurnBasedSystem = NewObject<UTurnBasedSystem>();
-	TurnBasedSystem->Start2(GetWorld(), &SpawnManager->GetMemory());
+	TurnBasedSystem->Start2(GetWorld(), &Instance->CachedBattleMemory);
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	checkf(PlayerController, TEXT("PlayerController is null at ABattleHandler::BeginPlay"));
 
@@ -41,7 +41,7 @@ void ABattleHandler::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	TurnBasedSystem->Update(GetWorld(), &SpawnManager->GetMemory());
+	TurnBasedSystem->Update(GetWorld(), &Instance->CachedBattleMemory);
 
 	if (DebugHelper::IsGamepadPlugged())
 	{

@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "FBattleMemory.h"
+#include "ICantCry/ICC/Actors/ICC_Actor.h"
+#include "ICantCry/ICC/Actors/AI/Mob.h"
 
 FBattleMemory::FBattleMemory()
 {

@@ -2,6 +2,7 @@
 
 #include "UtilityFunctions.h"
 
+#include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 
 void UtilityFunctions::LoadSceneByName(UWorld* World, const FName& Name)
@@ -14,6 +15,8 @@ void UtilityFunctions::LoadBattleSceneRandom(UWorld* World, const TArray<FName>&
 	if (!World) return;
 	
 	const int Aleatory = FMath::RandRange(0, BattleSceneRandomNames.Num() - 1);
+	
+	Cast<UICantCryGameInstance>(World->GetGameInstance())->LastBattleSceneLoaded = BattleSceneRandomNames[Aleatory];
 	
 	UGameplayStatics::OpenLevel(World, BattleSceneRandomNames[Aleatory]);
 }

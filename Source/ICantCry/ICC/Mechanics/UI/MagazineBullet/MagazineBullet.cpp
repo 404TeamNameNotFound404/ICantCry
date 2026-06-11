@@ -88,7 +88,7 @@ void UMagazineBullet::Clear()
 		return;
 	}
 	
-	Instance->GetInventory().BulletsStored = Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetEnemySpawnManager()->GetMemory().InBattleBullets;
+	Instance->GetInventory().BulletsStored = Instance->CachedBattleMemory.InBattleBullets;
 	
 	Buffer->Clear();
 	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->Refresh();
