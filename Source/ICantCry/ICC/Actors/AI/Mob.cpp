@@ -179,16 +179,16 @@ void AMob::ReinizializeTree()
 	// DebugHelper::LogWarning("Emotion BT re-initialized!");
 	// DebugHelper::AddMessageToLog("Emotion BT re-initialized!");
 	
-	AICC_AIController* Controller = Cast<AICC_AIController>(GetController());
+	AICC_AIController* AiController = Cast<AICC_AIController>(GetController());
 
-	if (!Controller)
+	if (!AiController)
 	{
 		DebugHelper::LogMessage(10, FColor::Red,
 			"Controller not ready yet in ReinizializeTree()");
 		return;
 	}
 
-	UBlackboardComponent* BB = Controller->GetBlackboardComponent();
+	UBlackboardComponent* BB = AiController->GetBlackboardComponent();
 	if (!BB)
 	{
 		DebugHelper::LogMessage(10, FColor::Red,
