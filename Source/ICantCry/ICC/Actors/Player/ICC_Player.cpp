@@ -1,24 +1,31 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "ICC_Player.h"
 #include "EngineUtils.h"
+#include "CollisionQueryParams.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "EnhancedInput/Public/EnhancedInputSubsystems.h"
 #include "EntitySystem/MovieSceneEntityManager.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/WidgetInteractionComponent.h"
+
+
 #include "ICantCry/ICC/Input/ICC_EnhancedInputCmp.h"
 #include "ICantCry/ICC/Input/ICC_PlayerController.h"
 #include "ICantCry/ICC/Input/Tags/ICC_InputTags.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "ICantCry/ICC/UI/InventoryHUD.h"
-#include "Kismet/GameplayStatics.h"
 #include "ICantCry/ICC/Mechanics/ChallengeMinigames/ChallengeMinigame.h"
 #include "ICantCry/ICC/Narrative/Components/InteractionComponent.h"
 #include "ICantCry/ICC/Narrative/Core/QuestManagerSystem.h"
 #include "ICantCry/ICC/Mechanics/Pickups/BasePickup.h"
-#include "CollisionQueryParams.h"
+#include "ICantCry/ICC/Narrative/Data/DialogueAsset.h"
+#include "ICantCry/ICC/Narrative/UI/DialogueWidget.h"
+#include "ICantCry/ICC/Narrative/UI/BarkWidget.h" 
+
 
 // Sets default values
 AICC_Player::AICC_Player()
@@ -54,6 +61,15 @@ AICC_Player::AICC_Player()
 	MinigameHandler = nullptr;
 
 	PadBinder = CreateDefaultSubobject<UICC_GamepadBinder>(TEXT("GamepadBinder"));
+	
+	WidgetInteractionComp = CreateDefaultSubobject<UWidgetInteractionComponent>(TEXT("WidgetInteractionComp"));
+	if (WidgetInteractionComp)
+	{
+		// Imposta un indice utente virtuale per isolare l'input
+		WidgetInteractionComp->VirtualUserIndex = 99;
+		// Impedisci che interagisca con il focus hardware
+		WidgetInteractionComp->bShowDebug = false;
+	}
 }
 
 // Called when the game starts or when spawned
@@ -106,8 +122,19 @@ void AICC_Player::BeginPlay()
 	BestiaryUI= CreateWidget<UBestiaryUI>(GetWorld(), BestiaryUIClass);
 	BestiaryUI->AddToViewport();
 	BestiaryUI->SetVisibility(ESlateVisibility::Hidden);
+
+	if (UICantCryGameInstance* GI = Cast<UICantCryGameInstance>(GetGameInstance()))
+	{
+		GI->ActiveBestiaryUI = BestiaryUI;
+	}
 	
 	PadBinder->Init(this);
+
+	if (WidgetInteractionComp)
+	{
+		WidgetInteractionComp->RegisterComponent();
+		WidgetInteractionComp->Activate();
+	}
 }
 
 // Called every frame
@@ -120,7 +147,7 @@ void AICC_Player::Tick(float DeltaTime)
 
 	Super::Tick(DeltaTime);
 
-	// --- Sistema di conteggio passi ---
+	// Step counting system 
 	const FVector CurrentLocation = GetActorLocation();
 	const float CurrentSpeed = GetVelocity().Size();
 
@@ -144,6 +171,68 @@ void AICC_Player::Tick(float DeltaTime)
 
 	PreviousLocation = CurrentLocation;
 
+	// LOGIC OF THE VISUAL SCANNER
+
+	UInteractionComponent* FoundTarget = ScanForInteractables();
+
+	// Se abbiamo cambiato bersaglio (o lo abbiamo perso)
+	if (FoundTarget != CurrentInteractableTarget)
+	{
+		if (CurrentInteractableTarget)
+		{
+			CurrentInteractableTarget->HideAllInteractionUI();
+		}
+		CurrentInteractableTarget = FoundTarget;
+		LookTimer = 0.0f; // Resetta il timer anti-flicker
+	}
+
+	// Se stiamo guardando validamente un oggetto
+	if (CurrentInteractableTarget)
+	{
+		float Distance = FVector::Dist(GetActorLocation(), CurrentInteractableTarget->GetOwner()->GetActorLocation());
+
+		//if (Distance <= InteractableRadius)
+		//{
+		//	LookTimer += DeltaTime;
+		//	// Se lo stiamo guardando da più di 0.2 secondi e siamo vicini, mostriamo il tasto "E"
+		//	if (LookTimer >= 0.2f)
+		//	{
+		//		CurrentInteractableTarget->ShowInteractButtonPrompt();
+		//	}
+		//	else
+		//	{
+		//		// Nel frattempo mostriamo solo il cerchietto
+		//		CurrentInteractableTarget->ShowDistantCircleIcon();
+		//	}
+		//}
+		//else
+		//{
+		//	// Siamo lontani, mostriamo solo il cerchietto bianco
+		//	CurrentInteractableTarget->ShowDistantCircleIcon();
+		//	LookTimer = 0.0f;
+		//}
+
+		//float EffectiveRadius = (CurrentInteractableDistance <= InteractableRadius)
+		//	? InteractableRadius + 20.0f  // se già dentro, serve uscire di più per uscire
+		//	: InteractableRadius;         // se fuori, serve entrare per entrare
+
+		if (Distance <= InteractableRadius)
+		{
+			LookTimer += DeltaTime;
+			if (LookTimer >= 0.2f)
+				CurrentInteractableTarget->ShowInteractButtonPrompt();
+			else
+				CurrentInteractableTarget->ShowDistantCircleIcon();
+		}
+		else
+		{
+			CurrentInteractableTarget->ShowDistantCircleIcon();
+			LookTimer = 0.0f;
+		}
+
+		CurrentInteractableDistance = Distance;
+
+	}
 
 	// // Aggiorna sempre la posizione precedente
 	// PreviousLocation = CurrentLocation;
@@ -307,23 +396,25 @@ void AICC_Player::Input_Move(const FInputActionValue& InputActionValue)
 		return;
 	}
 	
-	const FVector2d Direction = InputActionValue.Get<FVector2d>();
-	DirectionMovement = FVector::ZeroVector;
-	const FRotator Rotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
-	GetCharacterMovement()->MaxWalkSpeed = OldSpeed;
 	
-	if (Direction.Y != 0.f)
+
+	const FVector2D MovementVector = InputActionValue.Get<FVector2D>();
+
+	const float DeadZone = 0.2f;
+
+	if (Controller && MovementVector.Size() > DeadZone) // Controller && (MovementVector.SizeSquared() > 0.0f)
 	{
-		const FVector ForwardDirection = Rotation.RotateVector(FVector::ForwardVector);
-		AddMovementInput(ForwardDirection, Direction.Y);
-		DirectionMovement.Y = Direction.Y;
-	}
-	
-	if (Direction.X != 0.f)
-	{
-		const FVector RightDirection = Rotation.RotateVector(FVector::RightVector);
-		AddMovementInput(RightDirection, Direction.X);
-		DirectionMovement.X = Direction.X;
+		// Trova la direzione Forward basata sulla rotazione della telecamera (Control Rotation)
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0.f, Rotation.Yaw, 0.f);
+
+		// Calcola i vettori di direzione corretti nello spazio del mondo
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+		// Applica l'input direttamente senza passare dal Tick
+		AddMovementInput(ForwardDirection, MovementVector.Y);
+		AddMovementInput(RightDirection, MovementVector.X);
 	}
 }
 
@@ -377,81 +468,14 @@ void AICC_Player::Input_MinigameReleased(const FInputActionValue& InputActionVal
 
 void AICC_Player::Input_Interact(const FInputActionValue& InputActionValue)
 {
-	// if (bIsInFight)
-	// {
-	// 	return;
-	// }
-
-	// if (!InputActionValue.Get<bool>()) return;
-
-	// // Definiamo il raggio di interazione
-	// FHitResult Hit; 
-	// FVector Start = GetActorLocation(); // Oppure usa la posizione della camera
-	// FVector End = Start + (GetActorForwardVector() * 200.0f); // 2 metri avanti
 	
-	// FCollisionQueryParams Params;
-	// Params.AddIgnoredActor(this);
-
-	// // Eseguiamo il colpo (Raycast)
-	// if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
-	// {
-	// 	if (AActor* HitActor = Hit.GetActor())
-	// 	{
-	// 		// Cerchiamo il componente di interazione che abbiamo creato
-	// 		UInteractionComponent* InteractComp = HitActor->FindComponentByClass<UInteractionComponent>();
-	// 		if (InteractComp)
-	// 		{
-	// 			InteractComp->TriggerInteraction(this);
-	// 		}
-	// 	}
-	// }
-	
-	// DebugHelper::LogSuccess("Interacting with something");
-
-
-
 	if (bIsInFight) return;
 	if (!InputActionValue.Get<bool>()) return;
 
-	// 1. Definiamo il raggio (usiamo la camera per precisione)
-	FHitResult Hit; 
-	FVector Start = GetActorLocation(); // Oppure usa la posizione della camera
-	FVector End = Start + (GetActorForwardVector() * 200.0f); // Aumentato a 5 metri per test
-	
-	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(this);
-
-	// Disegna una linea rossa nell'editor per vedere dove stai puntando (SOLO DEBUG)
-	DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.0f, 0, 2.0f);
-
-	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
+	if (CurrentInteractableTarget)
 	{
-		AActor* HitActor = Hit.GetActor();
-		if (!HitActor) return;
-
-		DebugHelper::LogSuccess("Colpito: " + HitActor->GetName());
-
-		// A. PROVA PICKUP (Sasso)
-		ABasePickup* Pickup = Cast<ABasePickup>(HitActor);
-		if (Pickup)
-		{
-			DebugHelper::LogSuccess("Eseguo Collect su Pickup");
-			Pickup->Collect(this); //
-			return; 
-		}
-
-		// B. PROVA COMPONENTE INTERACTION (NPC)
-		UInteractionComponent* InteractComp = HitActor->FindComponentByClass<UInteractionComponent>();
-		if (InteractComp)
-		{
-			DebugHelper::LogSuccess("Eseguo Trigger su InteractionComponent");
-			InteractComp->TriggerInteraction(this); //
-			return;
-		}
-	}
-	else
-	{
-		DebugHelper::LogError("Il LineTrace non ha colpito nulla!");
+		DebugHelper::LogSuccess("I run Trigger on InteractionComponent from Scanner!");
+		CurrentInteractableTarget->TriggerInteraction(this);
 	}
 }
 
@@ -703,13 +727,18 @@ void AICC_Player::OpenBestiary()
 
 	BestiaryUI->SetIsOpen(true);
 	DebugHelper::LogSuccess("Bestiary opened");
+
+	
 }
 
 
 void AICC_Player::CloseBestiary()
 {
-	BestiaryUI->SetVisibility(ESlateVisibility::Hidden);
-	BestiaryUI->SetIsOpen(false);
+	if (BestiaryUI)
+	{
+		BestiaryUI->SetVisibility(ESlateVisibility::Hidden);
+		BestiaryUI->SetIsOpen(false);
+	}
 
 	if (AICC_PlayerController* PC = Cast<AICC_PlayerController>(GetController()))
 	{
@@ -718,6 +747,15 @@ void AICC_Player::CloseBestiary()
 	}
 
 	DebugHelper::LogSuccess("Bestiary closed");
+
+	// Se c'è un bark in sospeso (es. dopo aver raccolto un ItemWithNote),
+	// lo facciamo partire ORA che il Bestiario è stato chiuso. Una volta sola.
+	if (PendingBark)
+	{
+		SpawnBark(PendingBark);
+		PendingBark = nullptr;
+	}
+
 }
 
 void AICC_Player::Input_ToggleBestiary(const FInputActionValue& InputActionValue)
@@ -733,6 +771,84 @@ void AICC_Player::Input_ToggleBestiary(const FInputActionValue& InputActionValue
 		OpenBestiary();
 	}
 }
+
+
+void AICC_Player::OpenBestiaryOnEntryAndListenForClose(const FString& EntryID, UDialogueAsset* BarkToPlay)
+{
+	//// 1. Memorizziamo il dialogo per riprodurlo DOPO la chiusura
+	//PendingBark = BarkToPlay;
+
+	//// 2. Apriamo fisicamente il menu a schermo
+	//OpenBestiary();
+
+	//if (BestiaryUI)
+	//{
+	//	BestiaryUI->SetIsOpen(true);
+	//	// Qui, se vuoi che il bestiario si apra DIRETTAMENTE sulla pagina della nota appena raccolta,
+	//	// dovrai chiamare la funzione del BestiaryUI che seleziona la nota. Ad esempio:
+	//	// BestiaryUI->OnNoteSelected(EntryID); // *Attenzione: OnNoteSelected nel tuo codice attuale richiede un FString!
+	//}
+
+	PendingBark = BarkToPlay;
+
+	
+	OpenBestiary();
+
+	if (BestiaryUI)
+	{
+		BestiaryUI->SetIsOpen(true);
+		
+		BestiaryUI->ForceOpenNoteByKey(EntryID);
+	}
+}
+
+void AICC_Player::PlayBarkImmediately(UDialogueAsset* BarkToPlay)
+{
+
+	//if (!BarkToPlay) return;
+
+	//
+	//bool bIsAnyMenuOpen = (BestiaryUI && BestiaryUI->IsOpen()) || (InGameMenu && InGameMenu->IsOpen());
+
+	//if (bIsAnyMenuOpen)
+	//{
+	//	// The menu is open! Let's not start the dialogue now.
+	//	// i saving it so it will start automatically when the player closes the UI.
+	//	PendingBark = BarkToPlay;
+	//	DebugHelper::LogMessage(3, FColor::Yellow, "Menu aperto: Bark messo in coda.");
+	//	return;
+	//}
+
+	//// If no menu is open (standard behavior for Quest Items), we start the dialogue
+	//if (DialogueWidgetClass)
+	//{
+	//	UDialogueWidget* DialogueWidget = CreateWidget<UDialogueWidget>(GetWorld(), DialogueWidgetClass);
+	//	if (DialogueWidget)
+	//	{
+	//		DialogueWidget->AddToViewport();
+	//		DialogueWidget->StartDialogue(BarkToPlay);
+	//	}
+	//}
+
+	if (!BarkToPlay) return;
+
+	bool bIsAnyMenuOpen = (BestiaryUI && BestiaryUI->IsOpen()) || (InGameMenu && InGameMenu->IsOpen());
+	if (bIsAnyMenuOpen)
+	{
+		// Il menu è aperto: non avviamo subito il bark.
+		// Lo salviamo così parte automaticamente quando il player chiude la UI (in CloseBestiary).
+		PendingBark = BarkToPlay;
+		DebugHelper::LogMessage(3, FColor::Yellow, "Menu aperto: Bark messo in coda.");
+		return;
+	}
+
+	// Nessun menu aperto: avvia subito il bark
+	SpawnBark(BarkToPlay);
+}
+
+
+
+
 
 
 float AICC_Player::GetExpRequiredForNextLevel() const
@@ -780,4 +896,122 @@ void AICC_Player::Input_ChallengeReleaseInteraction(const FInputActionValue& Inp
 			Paper->Release();
 		}
 	}
+}
+
+
+UInteractionComponent* AICC_Player::ScanForInteractables()
+{
+	if (!Camera) return nullptr;
+
+	FVector CameraLoc = Camera->GetComponentLocation();
+	FVector CameraForward = Camera->GetForwardVector();
+
+	UInteractionComponent* BestTarget = nullptr;
+	float ClosestDot = -1.0f;
+
+	// 1. Troviamo gli attori in un raggio attorno al player
+	TArray<AActor*> OverlappingActors;
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(this);
+
+	UKismetSystemLibrary::SphereOverlapActors(this, GetActorLocation(), DetectionRadius,
+		TArray<TEnumAsByte<EObjectTypeQuery>>(), AActor::StaticClass(), ActorsToIgnore, OverlappingActors);
+
+	for (AActor* Actor : OverlappingActors)
+	{
+		UInteractionComponent* InteractComp = Actor->FindComponentByClass<UInteractionComponent>();
+
+		// Se non ha il componente o se è una nota già letta (CanInteract() restituisce false), lo ignoriamo!
+		if (!InteractComp || !InteractComp->CanInteract()) continue;
+
+		FVector DirToTarget = (Actor->GetActorLocation() - CameraLoc).GetSafeNormal();
+		float DotProduct = FVector::DotProduct(CameraForward, DirToTarget);
+
+		// 2. L'oggetto è davanti a noi? (0.65f corrisponde a un cono visivo di circa 45 gradi)
+		if (DotProduct >= 0.65f)
+		{
+			// 3. C'è un muro in mezzo? Facciamo un raycast per controllare
+			FHitResult Hit;
+			FCollisionQueryParams Params;
+			Params.AddIgnoredActor(this);
+
+			bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, CameraLoc, Actor->GetActorLocation(), ECC_Visibility, Params);
+
+			if (bHit && Hit.GetActor() == Actor)
+			{
+				// Se ci sono più oggetti vicini, diamo la priorità a quello più centrato nello schermo
+				if (DotProduct > ClosestDot)
+				{
+					ClosestDot = DotProduct;
+					BestTarget = InteractComp;
+				}
+			}
+		}
+	}
+
+	return BestTarget;
+}
+
+
+void AICC_Player::SpawnBark(UDialogueAsset* BarkToPlay)
+{
+	if (!BarkToPlay || !BarkWidgetClass) return;
+
+	if (UBarkWidget* Bark = CreateWidget<UBarkWidget>(GetWorld(), BarkWidgetClass))
+	{
+		Bark->AddToViewport();
+		Bark->StartBark(BarkToPlay);
+	}
+}
+
+UICC_InputDataAsset* AICC_Player::GetInputDataAsset() const
+{
+	return InputDataAsset;
+}
+
+
+void AICC_Player::SetInputModeToGameOnly()
+{
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (PC)
+	{
+		FInputModeGameOnly InputMode;
+		PC->SetInputMode(InputMode);
+		PC->bShowMouseCursor = false;
+	}
+}
+
+void AICC_Player::SetInputModeToGameAndUI()
+{
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (PC)
+	{
+		FInputModeGameAndUI InputMode;
+		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		InputMode.SetHideCursorDuringCapture(false);
+		PC->SetInputMode(InputMode);
+		PC->bShowMouseCursor = true;
+	}
+}
+
+FKey AICC_Player::GetInteractKey() const
+{
+	if (InputDataAsset)
+	{
+		if (UInputAction* Action = InputDataAsset->FindNativeInputByTag(Icc_InputTags::InputTag_Interact))
+		{
+			if (const APlayerController* PC = Cast<APlayerController>(GetController()))
+			{
+				if (ULocalPlayer* LP = PC->GetLocalPlayer())
+				{
+					if (UEnhancedInputLocalPlayerSubsystem* Sub = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+					{
+						TArray<FKey> Keys = Sub->QueryKeysMappedToAction(Action);
+						if (Keys.Num() > 0) return Keys[0];
+					}
+				}
+			}
+		}
+	}
+	return EKeys::E;
 }

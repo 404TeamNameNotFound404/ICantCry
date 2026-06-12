@@ -195,6 +195,57 @@ void UBestiaryUI::SetIsOpen(const bool &Value)
     bIsOpen = Value;
 }
 
+void UBestiaryUI::ForceOpenNoteByKey(const FString& NoteKey)
+{
+    if (!NoteData || !ICantCryGameInstance) return;
+
+    
+    if (!ICantCryGameInstance->CollectedNotes.Contains(NoteKey))
+    {
+        ICantCryGameInstance->CollectedNotes.Add(NoteKey);
+    }
+
+    // upd list
+    UpdateNotesDisplay();
+
+    // find the data from the note and fill in the right part (Details)
+    if (NoteData->Notes.Contains(NoteKey))
+    {
+        const FNoteContent& NoteContent = NoteData->Notes[NoteKey];
+
+        if (TitleText) TitleText->SetText(FText::FromString(NoteContent.Title));
+        if (NoteContentText)
+        {
+            NoteContentText->SetText(FText::FromString(NoteContent.Content));
+            NoteContentText->SetVisibility(ESlateVisibility::Visible);
+        }
+        if (ContentImage)
+        {
+            if (NoteContent.NoteImage)
+            {
+                ContentImage->SetBrushFromTexture(NoteContent.NoteImage);
+                ContentImage->SetVisibility(ESlateVisibility::Visible);
+            }
+            else
+            {
+                ContentImage->SetVisibility(ESlateVisibility::Hidden);
+            }
+        }
+
+        
+        if (ContentSwitcher)
+        {
+            ContentSwitcher->SetActiveWidget(NoteDetailsPage);
+        }
+
+        //deselect any previously clicked emotions
+        for (auto& Pair : EmotionButtonMap)
+        {
+            if (Pair.Value) Pair.Value->SetSelected(false);
+        }
+    }
+}
+
 void UBestiaryUI::UpdateEmotionDetails(EEmotionType Emotion)
 {
     bool bIsUnlocked = ICantCryGameInstance && ICantCryGameInstance->UnlockedEmotions.Contains(Emotion);

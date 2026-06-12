@@ -75,6 +75,10 @@ public:
 
     void SetIsOpen(const bool& Value);
 
+    /** Forces the UI to open directly on the details of a specific note (Used when picking up an item) */
+    UFUNCTION(BlueprintCallable, Category = "Bestiary")
+    void ForceOpenNoteByKey(const FString& NoteKey);
+
 protected:
 
 

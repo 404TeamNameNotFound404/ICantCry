@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "ICantCry/ICC/Narrative/Data/NPCProfile.h"
+#include "ICantCry/ICC/Narrative/Data/PlayerProfile.h"
 #include "ICantCry/ICC/Narrative/GameplayEvent.h"
 #include "DialogueAsset.generated.h"
 
@@ -19,15 +20,19 @@ struct FDialogueLine
 {
 	GENERATED_BODY()
 
-	/** the actual text spoken by the npc in this line */
+	/** the actual text spoken */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FText Text;
 
-	/** events triggered when this specific line is displayed (sound, animations, etc) */
+    // aggiunta: Determina se questa riga è pronunciata dal Player invece che dall'NPC
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Speaker")
+    bool bIsPlayerLine = false;
+
+	/** events triggered when this specific line is displayed */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Events")
     TArray<TObjectPtr<class UGameplayEvent>> Events;
 
-	/** emotional state for this line, used to pick the correct portrait from the npc profile */
+	/** emotional state for this line */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FGameplayTag EmotionTag;
 };
@@ -57,9 +62,14 @@ class ICANTCRY_API UDialogueAsset : public UPrimaryDataAsset
 
 public:
 
+	// aggiunta: Riferimento opzionale al profilo del player se ci sono linee pronunciate da lui
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Profiles")
+    TObjectPtr<class UPlayerProfile> PlayerProfile;
+
+
 	/** which npc is speaking this dialogue, used for name and portraits */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Config")
-	UNPCProfile* NPCProfile;
+	TObjectPtr<class UNPCProfile> NPCProfile;
 
 	/** the actual lines of dialogue in order */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Content")

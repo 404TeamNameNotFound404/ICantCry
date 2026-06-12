@@ -5,11 +5,9 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "ICantCry/ICC/Narrative/Data/NPCProfile.h"
+#include "ICantCry/ICC/Narrative/Data/PlayerProfile.h"
 #include "ICantCry/ICC/Narrative/GameplayEvent.h"
-#include "Components/TextBlock.h"
 #include "Fonts/SlateFontInfo.h"
-#include "Components/Image.h"
-#include "Components/Button.h"
 #include "DialogueWidget.generated.h"
 
 
@@ -17,6 +15,11 @@ class UDialogueAsset;
 class UDialogueChoiceButton;
 class UICantCryGameInstance;
 class UQuestManagerSystem;
+class UVerticalBox;
+class UImage;
+class UButton;
+class UTextBlock;
+
 
 /**
  * CLASS: UDialogueWidget
