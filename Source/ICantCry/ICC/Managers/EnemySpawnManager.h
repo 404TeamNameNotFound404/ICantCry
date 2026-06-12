@@ -36,6 +36,8 @@ public:
 	void ResetBattle(AMob* Emotion);
 
 	FBattleMemory& GetMemory() { return Memory; }
+	
+	TArray<AMob*> SpawnFixedEnemies();
 
 protected:
 	// Called when the game starts or when spawned
@@ -45,7 +47,7 @@ protected:
 private:
 
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Spawning", meta = (AllowPrivateAccess = "true"))
 	TArray<TSubclassOf<AMob>> EnemyList;
 
 	UPROPERTY()

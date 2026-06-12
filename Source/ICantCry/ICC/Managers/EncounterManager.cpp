@@ -14,21 +14,20 @@ UEncounterManager::UEncounterManager()
 
 void UEncounterManager::Initialize(UWorld* World)
 {
-	
 	EncounterThreshold = FMath::RandRange(50, 200);
 	CurrentThreshold = EncounterThreshold;
 	SprintMultiplier = 1.5f;
 	LocationMultiplier = 1.0f;
-
-	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(World->GetGameInstance());
-	checkf(Instance, TEXT("Instance invalid"))
-
-	FTimerHandle TimerHandle;
-
-	World->GetTimerManager().SetTimer(TimerHandle, [this, World, Instance]()
-	{
-		PlayerRef = Instance->GetCurrentPlayer();
-	}, 0.25f, false);
+	
+	Instance = Cast<UICantCryGameInstance>(World->GetGameInstance());
+	
+	World->GetTimerManager().SetTimer(EncounterTimer, this, &UEncounterManager::TickEncouter, EncounterRateSpeed, true);
+	
+	BattleScenes = {
+		"RandomSpawner",
+		"RandomBattle1",
+		"RandomBattle2"
+	};
 }
 
 void UEncounterManager::UpdateThreshold(UWorld* World)
@@ -42,8 +41,8 @@ void UEncounterManager::UpdateThreshold(UWorld* World)
 			return;
 		}
 		
-		int32 CurrentSteps = PlayerRef.Get()->GetStepCounter();
-		int32 StepsTaken = CurrentSteps - LastStepCounter;
+		const int32 CurrentSteps = PlayerRef.Get()->GetStepCounter();
+		const int32 StepsTaken = CurrentSteps - LastStepCounter;
 
 		if (StepsTaken <= 0)
 		{
@@ -87,34 +86,53 @@ void UEncounterManager::SetPlayerLocationMultiplier(EPlayerLocation NewLocation)
 	}
 }
 
+void UEncounterManager::SetPaused(const bool& bPaused)
+{
+	bEncounterTimerPaused = bPaused;
+}
+
+void UEncounterManager::TickEncouter()
+{
+	if (!PlayerRef.IsValid())
+	{
+		PlayerRef = Instance->GetCurrentPlayer();
+	}
+	
+	if (bEncounterTimerPaused)
+	{
+		return;
+	}
+
+	const int32 CurrentSteps = PlayerRef.Get()->GetStepCounter();
+	const int32 StepsTaken = CurrentSteps - LastStepCounter;
+	
+	if (StepsTaken <= 0) return;
+
+	LastStepCounter = CurrentSteps;
+	float ReductionValue = StepsTaken * LocationMultiplier;
+
+	if (PlayerRef.Get()->IsSprinting())
+	{
+		ReductionValue *= SprintMultiplier;
+	}
+
+	CurrentThreshold -= ReductionValue;
+
+	if (CurrentThreshold <= 0)
+	{
+		StartBattle(PlayerRef.Get()->GetWorld());
+		Reset();
+	}
+}
+
 
 void UEncounterManager::StartBattle(UWorld* World)
 {
 	DebugHelper::LogSuccess("StartBattle");
 	PlayerRef.Get()->ResetStepCounter();
-	// UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(World->GetGameInstance());
-	// Instance->StoreLastPlayerTransform(PlayerRef.Get(), PlayerRef.Get()->GetActorLocation(), PlayerRef.Get()->GetActorRotation());
-	// Instance->SavePlayerTransformBegin(Instance->GetCurrentPlayer(), true);
-	// UtilityFunctions::LoadSceneByName(World, "RandomSpawner");
-
-	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(World->GetGameInstance());
-    if (Instance)
-    {
-
-		//RECUPERO E PULIZIA DEL NOME MAPPA
-        FString CleanMapName = World->GetMapName();
-
-		// Rimuove i prefissi del Play-In-Editor (es. UEDPIE_0_)
-        CleanMapName.RemoveFromStart(World->StreamingLevelsPrefix);
-
-        // Usa la funzione Setter
-        Instance->SetLastMainMapName(FName(*CleanMapName));
-        
-        Instance->SavePlayerTransformBegin(Instance->GetCurrentPlayer(), true);
-        Instance->StoreLastPlayerTransform(Instance->GetCurrentPlayer(), Instance->GetCurrentPlayer()->GetActorLocation(), Instance->GetCurrentPlayer()->GetActorRotation());
-    }
-
-    UtilityFunctions::LoadSceneByName(World, "RandomSpawner");
+	Instance->StoreLastPlayerTransform(PlayerRef.Get(), PlayerRef.Get()->GetActorLocation(), PlayerRef.Get()->GetActorRotation());
+	Instance->SavePlayerTransformBegin(Instance->GetCurrentPlayer(), true);
+	UtilityFunctions::LoadBattleSceneRandom(World, BattleScenes);
 }
 
 void UEncounterManager::Reset()

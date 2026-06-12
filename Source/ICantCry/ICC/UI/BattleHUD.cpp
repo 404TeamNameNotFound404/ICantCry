@@ -20,6 +20,9 @@ void UBattleHUD::NativeConstruct()
 	if (ConfirmButton) ConfirmButton->OnClicked.AddDynamic(this, &UBattleHUD::ConfirmBulletSelection);
 	if (EngageBtn) EngageBtn->OnClicked.AddDynamic(this, &UBattleHUD::Engage);
 	ConfirmReloadBullet->OnClicked.AddDynamic(this, &UBattleHUD::UBattleHUD::HideBulletMagazineOnReload);
+	
+	BackBtn->OnClicked.AddDynamic(this, &UBattleHUD::OnRevertAction);
+	BackBtn->SetVisibility(ESlateVisibility::Hidden);
 
 	// Gamepad stuff initializations
 	Shoot->IsFocusable = true;
@@ -173,7 +176,7 @@ void UBattleHUD::NativeConstruct()
 
 	GameInstance = Cast<UICantCryGameInstance>(UGameplayStatics::GetGameInstance(this));
 	checkf(GameInstance, TEXT("Game instance is null at constructor battle hud"));
-	PlayerHealth->SetPercent(GameInstance->GetPlayerStats()->CurrentHealth);
+	PlayerHealth->SetPercent(GameInstance->GetRuntimeStats().CurrentHealth);
 
 	CurrentEnemyIndex = 0;
 
@@ -202,6 +205,9 @@ void UBattleHUD::NativeConstruct()
 	ApAccumulator = 0;
 	
 	CTR->SetVisibility(ESlateVisibility::Hidden);
+	
+	const float Percent = GameInstance->GetRuntimeStats().CurrentHealth / GameInstance->GetPlayerStats()->MaxHealth;
+	PlayerHealth->SetPercent(Percent);
 }
 
 // TARGET
@@ -218,6 +224,86 @@ void UBattleHUD::DecreaseAP(const int& Amount)
 	DebugHelper::LogWarning("AP decreased now " + FString::FromInt(CurrentAP));
 	DebugHelper::AddMessageToLog("[BattleHUD]: AP decreased now " + FString::FromInt(CurrentAP));
 	UpdateAPBar();
+}
+
+void UBattleHUD::ProcessExp(AMob* DeathEmotion)
+{
+	if (!DeathEmotion)
+	{
+		return;
+	}
+	
+	GameInstance->GetRuntimeStats().ExpSummary += DeathEmotion->GetData()->ExpGiven;
+	
+	GameInstance->GetRuntimeStats().Experience += DeathEmotion->GetData()->ExpGiven;
+	
+	DebugHelper::AddMessageToLog("[BattleHud]: " + DeathEmotion->GetActorLabel() +" is death so processing exp.. "
+		"Exp given " + FString::SanitizeFloat(DeathEmotion->GetData()->ExpGiven) + " so player exp is: " +
+		FString::SanitizeFloat(GameInstance->GetRuntimeStats().Experience));
+	
+	if (GameInstance->GetRuntimeStats().Experience >= GameInstance->GetRuntimeStats().MaxExperience)
+	{
+		DebugHelper::LogSuccess("Level Up!");
+		DebugHelper::AddMessageToLog("[BattleHud]: Level Up!");
+		// for now 
+		GameInstance->GetRuntimeStats().MaxExperience += 100;
+	}
+}
+
+void UBattleHUD::RetrieveNotUsedBullets()
+{
+	for (const auto& Bullet: GetCircularBulletBuffer()->GetBulletsLeft())
+	{
+		DebugHelper::AddMessageToLog("[BattleHud]: Bullets left in magazine after battle: " + Bullet->BulletName);
+		
+		if (!Bullet)
+		{
+			DebugHelper::AddMessageToLog("[BattleHud]: Cant find the proper bullet inside the map , can't put bullets back");
+			continue;
+		}
+		
+		const EBulletType Type = Bullet->Type;
+		
+		if (FBullet* Existing = GameInstance->GetInventory().BulletsStored.Find(Type); Existing)
+		{
+			const int32 NewQuantity = Existing->GetQuantity() + 1;
+			Existing->SetQuantity(NewQuantity);
+			DebugHelper::LogMessage(5, FColor::White, "Putting back " + Existing->GetBulletData()->BulletName + " quantity " + 
+				FString::FromInt(Existing->GetQuantity()));
+			
+			DebugHelper::AddMessageToLog("[BattleHud]: Putting back " + Existing->GetBulletData()->BulletName + " quantity " + 
+				FString::FromInt(Existing->GetQuantity()));
+		}
+		else
+		{
+			FBullet NewBullet;
+			NewBullet.SetBulletData(Bullet);
+			NewBullet.SetQuantity(1);
+			GameInstance->GetInventory().BulletsStored.Add(Type, NewBullet);
+			
+			DebugHelper::LogMessage(5, FColor::White, "Creating and Putting back " + NewBullet.GetBulletData()->BulletName + " quantity " + 
+				FString::FromInt(NewBullet.GetQuantity()));
+			
+			DebugHelper::AddMessageToLog("[BattleHud]: Creating and Putting back " + NewBullet.GetBulletData()->BulletName + " quantity " + 
+				FString::FromInt(NewBullet.GetQuantity()));
+		}
+	}
+}
+
+void UBattleHUD::PushBackIndifferenceAsCasing(const int32& CasingQuantity, const ECasingType& CasingType)
+{
+	const FName TargetCasingName = "Base";
+	
+	
+	if (const FCasing* TargetCasing = GameInstance->GetCasingsTable()->FindRow<FCasing>(TargetCasingName, TEXT("Looking for")); 
+	   TargetCasing)
+	{
+		FCasing Casing = *TargetCasing;
+		Casing.SetQuantity(CasingQuantity + GameInstance->GetInventory().CasingsStored["Base"].GetQuantity());
+		Casing.SetType(CasingType);
+		GameInstance->GetInventory().CasingsStored.Add(Casing.GetName(), Casing);
+	}
+	
 }
 
 FText UBattleHUD::UpdateBulletName()
@@ -243,8 +329,12 @@ void UBattleHUD::OnShootPressed()
 		DebugHelper::AddMessageToLog(
 			"[BattleHUD]: " + GameInstance->GetCurrentPlayer()->GetActorLabel() +
 			" can't attack because it's under ashamed state!");
+		
+		Shoot->SetIsEnabled(false);
 		return;
 	}
+	
+	Shoot->SetIsEnabled(true);
 
 	if (!GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn() /* || CurrentAP <= 0*/)
 	{
@@ -279,6 +369,7 @@ void UBattleHUD::OnShootPressed()
 	}
 
 	DecisionDisplayer->Hide();
+	DecisionDisplayer->SetDecisionText(FText::FromString(""));
 	DisableButtonsDuringShooting();
 
 	CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Hidden);
@@ -329,6 +420,7 @@ void UBattleHUD::OnShootPressed()
 	bTargetSelection = true;
 
 	bIsEvFirst = false;
+	BackBtn->SetVisibility(ESlateVisibility::Visible);
 	//FSlateApplication::Get().ClearAllUserFocus();
 }
 
@@ -348,6 +440,7 @@ void UBattleHUD::OnFocusPressed()
 	// GameInstance->GetCurrentPlayer()->GetStatusTracker()->BuffWith(EBuffStatus::DefBuff);
 	IncreaseAP(1);
 	Bar->IncreaseAP(1);
+	GameInstance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 	
 	/*
 	 * TODO Reorder bullets in magazine allowing player to change slot idx ( show confirm button and bullet magazine hud ) change only the bullets in magazine , NO ADD
@@ -383,6 +476,7 @@ void UBattleHUD::OnReloadPressed()
 	bShootFired = false;
 	bTargetSelection = false;
 	bSelectTarget = false;
+	GameInstance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 
 	if (GameInstance->GetInventory().BulletsStored.IsEmpty())
 	{
@@ -433,6 +527,10 @@ void UBattleHUD::OnReloadPressed()
 	GameInstance->GetCurrentPlayer()->GetBinder()->SetIsNavigatingInsideWidget(true);
 	GameInstance->GetCurrentPlayer()->GetBinder()->FocusOn(Displayer->GetBulletGrid());
 	bIsEvFirst = false;
+	
+	CanvasMiniGames->SetFocus();
+	CanvasAmmoSelection->SetFocus();
+	
 	//FSlateApplication::Get().ClearAllUserFocus();
 }
 
@@ -446,15 +544,18 @@ void UBattleHUD::OnPassPressed()
 	CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Hidden);
 	Displayer->SetVisibility(ESlateVisibility::Hidden);
 	CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
-	IncreaseAP(1);
-	Bar->IncreaseAP(1);
+	// IncreaseAP(1);
+	// Bar->IncreaseAP(1);
 	DebugHelper::LogSuccess("Player passed the turn");
 	DebugHelper::AddMessageToLog("[BattleHUD]: Player passed the turn");
 	BattleHandler->GetTurnBasedSystem()->EndTurn();
 	FTimerHandle StartNextHandle;
 
+	GetWorld()->GetTimerManager().ClearTimer(StartNextHandle);
 	GetWorld()->GetTimerManager().SetTimer(StartNextHandle, [this]()
 	{
+		IncreaseAP(1);
+		Bar->IncreaseAP(1);
 		BattleHandler->GetTurnBasedSystem()->StartNextTurn();
 	}, 0.35f, false);
 
@@ -464,15 +565,42 @@ void UBattleHUD::OnPassPressed()
 	DebugHelper::RemoveOverlayMaterialFromStaticMesh(
 		BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
 	bTargetSelection = false;
-	BattleHandler->GetBattleInfo()->ClearInfo();
+	
 	GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateStatus();
 	GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateBuffStatus();
+	GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateDebuffStatus();
 	Displayer->SetVisibility(ESlateVisibility::Hidden);
 	OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
 	BulletName->SetVisibility(ESlateVisibility::Hidden);
 	Quantity->SetVisibility(ESlateVisibility::Hidden);
 	FSlateApplication::Get().ClearAllUserFocus();
 	bIsEvFirst = false;
+}
+
+void UBattleHUD::OnRevertAction()
+{
+	Bar->UpdateHighlights(0);
+	UpdateAPBar();
+	ApAccumulator=0;
+	bTargetSelection = false;
+	bSelectTarget = false;
+	bShootFired = false;
+	BackBtn->SetVisibility(ESlateVisibility::Hidden);
+	EnableButtonsAfterShooting();
+	TargetNameText_1->SetText(FText::FromString(""));
+	TargetNameText_1->SetAutoWrapText(true);
+	TargetNameText_1->SetVisibility(ESlateVisibility::Hidden);
+	TargetNameText_3->SetText(FText::FromString(""));
+	TargetNameText_3->SetAutoWrapText(true);
+	TargetNameText_3->SetVisibility(ESlateVisibility::Hidden);
+	TargetNameText_2->SetVisibility(ESlateVisibility::Hidden);
+	TargetNameText->SetText(FText::FromString(""));
+	TargetText->SetText(FText::FromString(FString("")));
+	TargetText->SetVisibility(ESlateVisibility::Hidden);
+	TargetText_2->SetVisibility(ESlateVisibility::Hidden);
+	TargetText_3->SetVisibility(ESlateVisibility::Hidden);
+	EngageBtn->SetVisibility(ESlateVisibility::Hidden);
+	StatusText->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UBattleHUD::ScrollTargetSelection(float ScrollValue)
@@ -900,7 +1028,7 @@ void UBattleHUD::PrepareToEngage()
 	
 	FDamage DummyDamage(CurrentBulletData, GameInstance->GetPlayerStats(),
 	                    Cast<AMob>(SelectedActorTarget)->GetTactics(),
-	                    Cast<AMob>(SelectedActorTarget)->GetData(), GameInstance);
+	                    Cast<AMob>(SelectedActorTarget)->GetData(), GameInstance->GetCurrentPlayer() ,GameInstance);
 
 	GameInstance->GetRuntimeStats().Stats = DummyDamage;
 
@@ -911,6 +1039,7 @@ void UBattleHUD::PrepareToEngage()
 	checkf(MinigameHandler, TEXT("Minigame handler is null at UBattleHUD::Engage"));
 	MinigameHandler->StartMinigame(CurrentBulletData,true);
 	EngageBtn->SetVisibility(ESlateVisibility::Hidden);
+	BackBtn->SetVisibility(ESlateVisibility::Hidden);
 	CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
 	BulletName->SetVisibility(ESlateVisibility::Hidden);
 	Quantity->SetVisibility(ESlateVisibility::Hidden);
@@ -1309,6 +1438,9 @@ void UBattleHUD::Engage()
 			PrepareToEngage();
 			break;
 		}
+	case SadnessEv:
+		PrepareToEngageEv(EDebuffStatus::DebuffDef);
+		break;
 	case JoyDv:
 		{
 			PrepareToEngage();
@@ -1406,8 +1538,8 @@ void UBattleHUD::RestoreHealth()
 		return;
 	}
 
-	Player->GetStats()->CurrentHealth += CurrentBulletData->Power;
-	const float Percentage = Player->GetStats()->CurrentHealth / Player->GetStats()->MaxHealth;
+	Player->GetRuntimeStats().CurrentHealth += CurrentBulletData->Power;
+	const float Percentage = Player->GetRuntimeStats().CurrentHealth / Player->GetStats()->MaxHealth;
 	PlayerHealth->SetPercent(Percentage);
 	DebugHelper::LogWarning("Healed " + FString::SanitizeFloat(Percentage));
 }
@@ -1415,8 +1547,8 @@ void UBattleHUD::RestoreHealth()
 void UBattleHUD::ResetHealth()
 {
 	AICC_Player* Player = GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer();
-	Player->GetStats()->CurrentHealth = Player->GetStats()->MaxHealth;
-	const float Percentage = Player->GetStats()->CurrentHealth / Player->GetStats()->MaxHealth;
+	Player->GetRuntimeStats().CurrentHealth = Player->GetStats()->MaxHealth;
+	const float Percentage = Player->GetRuntimeStats().CurrentHealth / Player->GetStats()->MaxHealth;
 	PlayerHealth->SetPercent(Percentage);
 }
 
@@ -1535,6 +1667,11 @@ void UBattleHUD::SetApAccumulator(const int& Value)
 FBullet* UBattleHUD::GetCurrentSelectedBullet() const
 {
 	return CurrentSelectedBullet->GetBulletPtr();
+}
+
+FBullet& UBattleHUD::GetCurrentSelectedBulletRef()
+{
+	return CurrentSelectedBullet->GetBullet();
 }
 
 void UBattleHUD::DisableButtonsDuringShooting()

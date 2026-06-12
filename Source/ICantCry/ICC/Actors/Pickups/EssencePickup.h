@@ -34,8 +34,9 @@ public:
 
 	UPROPERTY()
 	FEssence Self;
-
-
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Essence")
+	UDataTable* EssenceTable;
     
     UFUNCTION()
     void OnOverlapBegin(

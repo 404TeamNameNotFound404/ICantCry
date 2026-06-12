@@ -10,10 +10,9 @@
 // Sets default values
 AEnemySpawnManager::AEnemySpawnManager()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
-	PrimaryActorTick.bStartWithTickEnabled= false;
-
+	PrimaryActorTick.bStartWithTickEnabled = false;
 }
 
 
@@ -26,7 +25,6 @@ void AEnemySpawnManager::BeginPlay()
 	{
 		SpawnPoints.Add(*It);
 	}
-	
 }
 
 void AEnemySpawnManager::SpawnRandomEnemy()
@@ -50,17 +48,55 @@ void AEnemySpawnManager::RespawnEnemy(TSubclassOf<AMob> Class, const FVector& Lo
 		Location,
 		Rotation,
 		SpawnParams);
-	
+
 	if (!Emotion->GetController())
 	{
 		FActorSpawnParameters AISP;
 		AISP.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		AICC_AIController* Controller = GetWorld()->SpawnActor<AICC_AIController>(Emotion->AIControllerClass, Emotion->GetActorLocation(), Emotion->GetActorRotation(), AISP);
-    
+		AICC_AIController* Controller = GetWorld()->SpawnActor<AICC_AIController>(
+			Emotion->AIControllerClass, Emotion->GetActorLocation(), Emotion->GetActorRotation(), AISP);
+
 		Controller->Possess(Emotion);
 	}
 
 	Emotion->SetIsRespawned(true);
+}
+
+TArray<AMob*> AEnemySpawnManager::SpawnFixedEnemies()
+{
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	if (!Instance) return {};
+    
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+    
+	const int32 SavedCount = Instance->CachedBattleMemory.EmotionsSpawnedClasses.Num();
+    
+	Memory.EmotionsSpawned.Empty();
+
+	TArray<AMob*> SpawnedMobsThisRetry;
+    
+	for (int32 i = 0; i < SavedCount; ++i)
+	{
+		TSubclassOf<AMob> EnemyClass = Instance->CachedBattleMemory.EmotionsSpawnedClasses[i];
+        
+		const FVector SpawnLocation = Instance->CachedBattleMemory.Locations.IsValidIndex(i) ? Instance->CachedBattleMemory.Locations[i] : FVector::ZeroVector;
+		const FRotator SpawnRotation = Instance->CachedBattleMemory.Orientations.IsValidIndex(i) ? Instance->CachedBattleMemory.Orientations[i] : FRotator::ZeroRotator;
+
+		if (EnemyClass)
+		{
+			if (AMob* Emotion = GetWorld()->SpawnActor<AMob>(EnemyClass, SpawnLocation, SpawnRotation, SpawnParams); Emotion)
+			{
+				SpawnedMobsThisRetry.Add(Emotion);
+				Memory.EmotionsSpawned.Add(Emotion);
+				
+				AICC_AIController* Controller = Cast<AICC_AIController>(Emotion->GetController());
+				Controller->RunBehaviorTree(Emotion->GetBehaviorTree());
+			}
+		}
+	}
+	
+	return SpawnedMobsThisRetry;
 }
 
 void AEnemySpawnManager::ResetBattle(AMob* Emotion)
@@ -70,72 +106,72 @@ void AEnemySpawnManager::ResetBattle(AMob* Emotion)
 		return;
 	}
 
-    UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(Emotion->GetGameInstance());
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(Emotion->GetGameInstance());
 
-    AICC_AIController* AIController = Cast<AICC_AIController>(Emotion->GetController());
+	AICC_AIController* AIController = Cast<AICC_AIController>(Emotion->GetController());
 
-    checkf(AIController, TEXT("AIController is null in ResetEnemy"));
+	checkf(AIController, TEXT("AIController is null in ResetEnemy"));
 
-    UCharacterMovementComponent* MoveCmp = Emotion->GetCharacterMovement();
-	
-    AIController->StopMovement();
+	UCharacterMovementComponent* MoveCmp = Emotion->GetCharacterMovement();
 
-    if (AIController->BrainComponent)
-    {
-        AIController->BrainComponent->StopLogic(TEXT("Battle Reset"));
-    }
+	AIController->StopMovement();
 
-    if (MoveCmp)
-    {
-        MoveCmp->StopMovementImmediately();
-        MoveCmp->DisableMovement();
-    }
-	
-    Emotion->SetMinigameHasStarted(false);
-    Emotion->SetIsBusy(false);
-    Emotion->SetIsReadyToPlay(true);
+	if (AIController->BrainComponent)
+	{
+		AIController->BrainComponent->StopLogic(TEXT("Battle Reset"));
+	}
 
-    Emotion->SetActorHiddenInGame(false);
-    Emotion->SetActorEnableCollision(true);
-    Emotion->SetActorTickEnabled(true);
+	if (MoveCmp)
+	{
+		MoveCmp->StopMovementImmediately();
+		MoveCmp->DisableMovement();
+	}
 
-    Emotion->GetStats().bAlive = true;
-    Emotion->GetStats().Health = Emotion->GetData()->MaxHealth;
-    Emotion->GetHealthBar()->Restore(Emotion->GetData()->MaxHealth);
+	Emotion->SetMinigameHasStarted(false);
+	Emotion->SetIsBusy(false);
+	Emotion->SetIsReadyToPlay(true);
 
-    Emotion->TeleportTo(
-        Emotion->GetAIMemory().DefaultBattleLocation,
-        Emotion->GetAIMemory().DefaultBattleOrientation,
-        false,
-        true
-    );
-	
-    if (AIController->GetPawn() != Emotion)
-    {
-        AIController->Possess(Emotion);
-    }
-	
-    if (MoveCmp)
-    {
-        MoveCmp->SetMovementMode(MOVE_Walking);
-    }
-	
-    if (AIController->BrainComponent)
-    {
-        AIController->BrainComponent->RestartLogic();
-    }
-	
-    Instance->GetCurrentPlayer()->GetStats()->CurrentHealth =
-        Emotion->GetData()->MaxHealth;
+	Emotion->SetActorHiddenInGame(false);
+	Emotion->SetActorEnableCollision(true);
+	Emotion->SetActorTickEnabled(true);
 
-    Instance->GetCurrentPlayer()->GetBattleHUD()->ResetHealth();
-    Instance->GetCurrentPlayer()->GetBattleHUD()->ResetAp();
-    // Instance->GetCurrentPlayer()->GetBattleHUD()->Reset(Memory.InBattleBullets);
+	Emotion->GetStats().bAlive = true;
+	Emotion->GetStats().Health = Emotion->GetData()->MaxHealth;
+	Emotion->GetHealthBar()->Restore(Emotion->GetData()->MaxHealth);
+
+	Emotion->SetActorLocationAndRotation(
+		Emotion->GetAIMemory().DefaultBattleLocation,
+		Emotion->GetAIMemory().DefaultBattleOrientation,
+		false,
+		nullptr,
+		ETeleportType::TeleportPhysics
+	);
+
+	if (AIController->GetPawn() != Emotion)
+	{
+		AIController->Possess(Emotion);
+	}
+
+	if (MoveCmp)
+	{
+		MoveCmp->SetMovementMode(MOVE_Walking);
+	}
+
+	if (AIController->BrainComponent)
+	{
+		AIController->BrainComponent->RestartLogic();
+	}
+
+	Instance->GetCurrentPlayer()->GetStats()->CurrentHealth = Instance->GetPlayerStats()->MaxHealth;
+
+	Instance->GetCurrentPlayer()->GetBattleHUD()->ResetHealth();
+	Instance->GetCurrentPlayer()->GetBattleHUD()->ResetAp();
 }
 
 void AEnemySpawnManager::Spawn()
 {
 	const int32 Aleatory = RandomSpawn(GetRandomSpawnType());
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
 
 	TArray<AESpawner*> ValidSpawnPoints;
 	for (AESpawner* Point : SpawnPoints)
@@ -168,8 +204,8 @@ void AEnemySpawnManager::Spawn()
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
 		AMob* Enemy = GetWorld()->SpawnActor<AMob>(SelectedEnemyClass, SpawnLocation, SpawnRotation, SpawnParams);
-		Memory.Register(SelectedEnemyClass, SpawnLocation, SpawnRotation);
-		Memory.EmotionsSpawned.Add(Enemy);
+		Instance->CachedBattleMemory.Register(SelectedEnemyClass, SpawnLocation, SpawnRotation);
+		Instance->CachedBattleMemory.EmotionsSpawned.Add(Enemy);
 
 		if (Enemy)
 		{

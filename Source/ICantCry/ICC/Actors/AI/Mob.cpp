@@ -8,7 +8,6 @@
 #include "ICantCry/ICC/Mechanics/TurnSystem/Core/BattleHandler.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 
-FDamage AMob::Damage;
 bool AMob::MinigameEnded = false;
 bool AMob::bMinigameHasStarted = false;
 bool AMob::bStopTree = false;
@@ -61,11 +60,6 @@ void AMob::BeginPlay()
 	}
 
 	GameRef = Instance;
-	Damage.BulletData = nullptr;
-	Damage.EnemyData = EnemyData;
-	Damage.PlayerStats = Instance->GetPlayerStats(); //MinigameHandler->GetBattlePlayer()->GetStats();
-	Damage.AIMoves = Moves;
-	Damage.Instance = Instance;
 	Handler = MinigameHandler;
 	Memory.DefaultBattleLocation = GetActorLocation();
 	Memory.DefaultBattleOrientation = GetActorRotation();
@@ -79,8 +73,8 @@ void AMob::BeginPlay()
 	EnemyData->Type = Type;
 	Stats.Health = GetData()->MaxHealth;
 	Stats.bAlive = true;
-
-
+	
+	RefDamage = FDamage(nullptr,Instance->GetPlayerStats(), Moves, EnemyData, this, Instance);
 }
 
 // Called every frame
@@ -157,32 +151,72 @@ bool AMob::IsRespawned() const
 
 void AMob::ReinizializeTree()
 {
-	if (!AIController)
+	// if (!AIController)
+	// {
+	// 	DebugHelper::LogMessage(10, FColor::Red, "AI controller is invalid at AMob::ReinizializeTree()");
+	// 	return;
+	// }
+	//
+	// AIController->GetBlackboardComponent()->SetValueAsObject("Target", DebugPlayer);
+	// AIController->GetBlackboardComponent()->SetValueAsObject("SelfActor", this);
+	// AIController->GetBlackboardComponent()->SetValueAsBool("IsBuffed?", bIsBuffedAtk);
+	// AIController->GetBlackboardComponent()->SetValueAsBool("IsDefenceDebuffed?", bIsDebuffedDefence);
+	// AIController->GetBlackboardComponent()->SetValueAsBool("IsDefenceBuffed?", bBuffDefence);
+	// AIController->GetBlackboardComponent()->SetValueAsBool("IsShieldDebuffed?", bDebuffShield);
+	// AIController->GetBlackboardComponent()->SetValueAsBool("IsOtherShieldDebuffed?", bDebuffOtherShield);
+	// AIController->GetBlackboardComponent()->SetValueAsBool("IsBuffedOtherDef?", bBuffOtherDefence);
+	// AIController->GetBlackboardComponent()->SetValueAsBool("IsAlive?", GetStats().bAlive);
+	// AIController->GetBlackboardComponent()->SetValueAsBool("IsEnvyBurnedState?", bEnvyBurned);
+	// AIController->GetBlackboardComponent()->SetValueAsBool("IsAshamedState?", bIsAshamedState);
+	// AIController->GetBlackboardComponent()->SetValueAsBool("Attacked?", bAttacked);
+	// AIController->GetBlackboardComponent()->SetValueAsBool("IsFreezedUp?", bFreezedUp);
+	// AIController->GetBlackboardComponent()->SetValueAsBool("IsAttackDebuffed?", bIsAttackDebuffed);
+	// AIController->GetBlackboardComponent()->SetValueAsBool("IsBuffOtherAtk?", bBuffOtherAtk);
+	// AIController->GetBlackboardComponent()->SetValueAsBool("IsHealing?", bHeal);
+	// AIController->GetBlackboardComponent()->SetValueAsBool("IsHealingOther?", bHealOther);
+	// bIsReady = true;
+	// bRespawned = false;
+	// DebugHelper::LogWarning("Emotion BT re-initialized!");
+	// DebugHelper::AddMessageToLog("Emotion BT re-initialized!");
+	
+	AICC_AIController* Controller = Cast<AICC_AIController>(GetController());
+
+	if (!Controller)
 	{
-		DebugHelper::LogMessage(10, FColor::Red, "AI controller is invalid at AMob::ReinizializeTree()");
+		DebugHelper::LogMessage(10, FColor::Red,
+			"Controller not ready yet in ReinizializeTree()");
 		return;
 	}
-	
-	AIController->GetBlackboardComponent()->SetValueAsObject("Target", DebugPlayer);
-	AIController->GetBlackboardComponent()->SetValueAsObject("SelfActor", this);
-	AIController->GetBlackboardComponent()->SetValueAsBool("IsBuffed?", bIsBuffedAtk);
-	AIController->GetBlackboardComponent()->SetValueAsBool("IsDefenceDebuffed?", bIsDebuffedDefence);
-	AIController->GetBlackboardComponent()->SetValueAsBool("IsDefenceBuffed?", bBuffDefence);
-	AIController->GetBlackboardComponent()->SetValueAsBool("IsShieldDebuffed?", bDebuffShield);
-	AIController->GetBlackboardComponent()->SetValueAsBool("IsOtherShieldDebuffed?", bDebuffOtherShield);
-	AIController->GetBlackboardComponent()->SetValueAsBool("IsBuffedOtherDef?", bBuffOtherDefence);
-	AIController->GetBlackboardComponent()->SetValueAsBool("IsAlive?", GetStats().bAlive);
-	AIController->GetBlackboardComponent()->SetValueAsBool("IsEnvyBurnedState?", bEnvyBurned);
-	AIController->GetBlackboardComponent()->SetValueAsBool("IsAshamedState?", bIsAshamedState);
-	AIController->GetBlackboardComponent()->SetValueAsBool("Attacked?", bAttacked);
-	AIController->GetBlackboardComponent()->SetValueAsBool("IsFreezedUp?", bFreezedUp);
-	AIController->GetBlackboardComponent()->SetValueAsBool("IsAttackDebuffed?", bIsAttackDebuffed);
-	AIController->GetBlackboardComponent()->SetValueAsBool("IsBuffOtherAtk?", bBuffOtherAtk);
-	AIController->GetBlackboardComponent()->SetValueAsBool("IsHealing?", bHeal);
-	AIController->GetBlackboardComponent()->SetValueAsBool("IsHealingOther?", bHealOther);
+
+	UBlackboardComponent* BB = Controller->GetBlackboardComponent();
+	if (!BB)
+	{
+		DebugHelper::LogMessage(10, FColor::Red,
+			"Blackboard not ready yet");
+		return;
+	}
+
+	BB->SetValueAsObject("Target", DebugPlayer);
+	BB->SetValueAsObject("SelfActor", this);
+	BB->SetValueAsBool("IsBuffed?", bIsBuffedAtk);
+	BB->SetValueAsBool("IsDefenceDebuffed?", bIsDebuffedDefence);
+	BB->SetValueAsBool("IsDefenceBuffed?", bBuffDefence);
+	BB->SetValueAsBool("IsShieldDebuffed?", bDebuffShield);
+	BB->SetValueAsBool("IsOtherShieldDebuffed?", bDebuffOtherShield);
+	BB->SetValueAsBool("IsBuffedOtherDef?", bBuffOtherDefence);
+	BB->SetValueAsBool("IsAlive?", GetStats().bAlive);
+	BB->SetValueAsBool("IsEnvyBurnedState?", bEnvyBurned);
+	BB->SetValueAsBool("IsAshamedState?", bIsAshamedState);
+	BB->SetValueAsBool("Attacked?", bAttacked);
+	BB->SetValueAsBool("IsFreezedUp?", bFreezedUp);
+	BB->SetValueAsBool("IsAttackDebuffed?", bIsAttackDebuffed);
+	BB->SetValueAsBool("IsBuffOtherAtk?", bBuffOtherAtk);
+	BB->SetValueAsBool("IsHealing?", bHeal);
+	BB->SetValueAsBool("IsHealingOther?", bHealOther);
+
 	bIsReady = true;
 	bRespawned = false;
-	DebugHelper::LogWarning("Emotion BT re-initialized!");
+	
 	DebugHelper::AddMessageToLog("Emotion BT re-initialized!");
 }
 
@@ -366,6 +400,29 @@ void AMob::SetRethink(const bool& Value)
 	bRethink = Value;
 }
 
+bool AMob::IsFleeing() const
+{
+	return bFlee;
+}
+
+void AMob::SetFleeing(const bool& Value)
+{
+	bFlee = Value;
+}
+
+void AMob::Flee()
+{
+	SetActorTickEnabled(false);
+	SetActorEnableCollision(false);
+	SetActorHiddenInGame(true);
+	
+	AIController = Cast<AICC_AIController>(GetController());
+	if (AIController && AIController->GetBrainComponent())
+	{
+		AIController->GetBrainComponent()->StopLogic("Flee"); 
+	}
+}
+
 void AMob::UnlockContentOnDeath()
 {
 	 if (!Instance)
@@ -503,15 +560,17 @@ bool AMob::IsEShame() const
 	return bIsEShame;
 }
 
-void AMob::DealDamage()
+
+
+void AMob::InflictDamage()
 {
-	const float DamageDealt = Damage.CalculateDamage(false);
-	const AICC_Player* Player = Handler->GetBattlePlayer();
-	Player->GetStats()->CurrentHealth -= DamageDealt;
-	Player->GetStats()->CurrentHealth = FMath::Clamp(Player->GetStats()->CurrentHealth, 0.0f,
-	                                                 Player->GetStats()->MaxHealth);
-	const float HealthPercentage = Player->GetStats()->CurrentHealth / Player->GetStats()->MaxHealth;
+	const float DamageDealt = RefDamage.CalculateDamage(false);
+	AICC_Player* Player = Handler->GetBattlePlayer();
+	Player->GetRuntimeStats().CurrentHealth -= DamageDealt;
+	Player->GetRuntimeStats().CurrentHealth = FMath::Clamp(Player->GetRuntimeStats().CurrentHealth, 0.0f, Player->GetStats()->MaxHealth);
+	const float HealthPercentage = Player->GetRuntimeStats().CurrentHealth / Player->GetStats()->MaxHealth;
 	Player->GetBattleHUD()->PlayerHealth->SetPercent(HealthPercentage);
+	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->Flow();
 }
 
 void AMob::SetIsBusy(const bool& Value)
@@ -530,17 +589,7 @@ void AMob::PlayTurn()
 	{
 		return;
 	}
-
-	// For some reason after the merge the 'DebugPlayer' couldn't be found, so I just iterate again if it does not find it at the 'BeginPlay'
-	if (!DebugPlayer)
-	{
-		for (TActorIterator<AICC_Player> It(GetWorld()); It; ++It)
-		{
-			DebugPlayer = *It;
-			break;
-		}
-	}
-
+	
 	bIsBuffedAtk = false;
 	bIsDebuffedDefence = false;
 	bIsLow = false;
@@ -555,11 +604,12 @@ void AMob::PlayTurn()
 	bHealOther = false;
 	Bt_Id = 0;
 	bRethink = false;
+	bFlee = false;
 	
 	AIController = Cast<AICC_AIController>(GetController());
 	checkf(AIController, TEXT("AI Controller is invalid at AMob::PlayTurn"));
 
-	AIController->GetBlackboardComponent()->SetValueAsObject("Target", DebugPlayer);
+	AIController->GetBlackboardComponent()->SetValueAsObject("Target", Instance->GetCurrentPlayer());
 	AIController->GetBlackboardComponent()->SetValueAsObject("SelfActor", this);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsBuffed?", bIsBuffedAtk);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsDefenceDebuffed?", bIsDebuffedDefence);
@@ -577,10 +627,19 @@ void AMob::PlayTurn()
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsHealing?", bHeal);
 	AIController->GetBlackboardComponent()->SetValueAsBool("IsHealingOther?", bHealOther);
 	AIController->GetBlackboardComponent()->SetValueAsBool("Rethinker", bRethink);
+	AIController->GetBlackboardComponent()->SetValueAsBool("Flee?", bFlee);
 
 	GetWorld()->GetTimerManager().SetTimer(BehaviorTreeTimerHandle, [this]()
 	{
 		AIController->RunBehaviorTree(Tree);
+		DebugHelper::LogMessage(10, FColor::White, "Ready " + FString::FromInt(bIsReady) +
+			" Alive " + FString::FromInt(Stats.bAlive) + 
+			" " + GetNameSafe(AIController) + " "  + GetNameSafe(Tree));
+		
+		DebugHelper::AddMessageToLog("[Mob - PlayTurn]: Ready " + FString::FromInt(bIsReady) +
+			" Alive " + FString::FromInt(Stats.bAlive) + 
+			" " + GetNameSafe(AIController) + " "  + GetNameSafe(Tree));
+		
 	}, FMath::RandRange(0.25f, 0.3f), false);
 }
 
@@ -609,7 +668,7 @@ bool AMob::IsAlive()
         }
 
 
-		// Destroy();
+		
 		SetActorTickEnabled(false);
 		SetActorEnableCollision(false);
 		SetActorHiddenInGame(true);

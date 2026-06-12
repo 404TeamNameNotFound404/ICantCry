@@ -43,13 +43,13 @@ enum class ECasingType : uint8
 
 
 USTRUCT(BlueprintType)
-struct ICANTCRY_API FRecipe
+struct ICANTCRY_API FRecipe : public FTableRowBase
 {
 	GENERATED_BODY()
 
 public:
 	// Tipo blueprint richiesto
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	ERecipeType RequiredBlueprintType; // Base o Gold
 
 	// Tipo di casing richiesto (base/gold)

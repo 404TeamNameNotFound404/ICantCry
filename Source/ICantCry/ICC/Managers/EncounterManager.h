@@ -32,6 +32,10 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Encounter")
     void SetPlayerLocationMultiplier(EPlayerLocation NewLocation);
+    
+    void SetPaused(const bool& bPaused);
+    
+    void TickEncouter();
 
 protected:
 
@@ -58,6 +62,9 @@ protected:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Encounter")
     float LocationMultiplier;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Encounter")
+    float EncounterRateSpeed = 0.45f;
 
     // Evento Blueprint per innescare una battaglia
     UFUNCTION(Category = "Encounter")
@@ -69,4 +76,11 @@ protected:
     UPROPERTY()
 	int32 LastStepCounter = 0;
     
+    
+    UPROPERTY() FTimerHandle EncounterTimer;
+    UPROPERTY() bool bEncounterTimerPaused = false;
+    
+    UPROPERTY() UICantCryGameInstance* Instance;
+    
+    UPROPERTY() TArray<FName> BattleScenes;
 };

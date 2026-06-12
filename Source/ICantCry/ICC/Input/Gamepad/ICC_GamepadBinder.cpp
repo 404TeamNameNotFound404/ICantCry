@@ -179,6 +179,8 @@ void UICC_GamepadBinder::Input_GamepadMinigameRelease(const FInputActionValue& I
 		return;
 	}
 	
+	if (!Player->GetBattleHUD()->GetCurrentBulletData()) return;
+	
 	if (Player->GetBattleHUD()->GetCurrentBulletData()->MinigameTemplate == EMinigameType::Anger)
 	{
 		FTimerHandle Handle;
@@ -213,6 +215,8 @@ void UICC_GamepadBinder::Input_GamepadMinigameGuitarHero_B(const FInputActionVal
 
 void UICC_GamepadBinder::Input_GamepadMinigameCurling(const FInputActionValue& InputActionValue)
 {
+	if (!DebugHelper::IsGamepadPlugged()) return;
+	
 	if (!Player || !Player->GetBattleHUD()) return;
 	if (!Player->bIsInFight) return;
 	if (!Player->GetBattleHUD()->GetBattleHandler()) return;

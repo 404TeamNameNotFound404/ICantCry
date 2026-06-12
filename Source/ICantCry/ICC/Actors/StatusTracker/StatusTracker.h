@@ -120,6 +120,7 @@ struct FInternalPerkData
 	UPROPERTY() bool bDebuffDef;
 	UPROPERTY() bool bEnvyBurned;
 	UPROPERTY() bool bIdle;
+	UPROPERTY() bool bFlee;
 
 	FStatusPriority Priority;
 	
@@ -135,6 +136,7 @@ struct FInternalPerkData
 		bAshamed = false;
 		bEnvyBurned = false;
 		bIdle = false;
+		bFlee = false;
 	}
 
 	bool HasBuffHighPriority(AMob* Emotion) const;
@@ -252,9 +254,10 @@ public:
 *  check if Another buff is applied and the AI is buffed the current buff is replaced with the new one
 */
 	void BuffFlow(const EBuffStatus& NewBuffStatus);
-	void DebuffFlow(const EDebuffStatus& NewDebuffStatus, AICC_Actor* Target = nullptr);
-	void BuffFlow(const EBuffStatus& NewBuffStatus, AMob* Target);
-
+	bool DebuffFlow(const EDebuffStatus& NewDebuffStatus, AICC_Actor* Target = nullptr);
+	void ResetStatsIfDebuffedTwice(AICC_Actor* Target, const bool& bAtk);
+	bool BuffFlow(const EBuffStatus& NewBuffStatus, AICC_Actor* Target = nullptr);
+	
 
 	/**
 	 * Check If AI / Player is buffed and is being target by a debuff the current buff removed and the debuff is not applied
@@ -276,11 +279,16 @@ public:
 	FString GetStatusName(const EAfflictedStatus& Status) const;
 	FString GetDebuffName(const EDebuffStatus& Status) const;
 	FString GetBuffName(const EBuffStatus& Buff) const;
+	
+	bool IsShieldActive() const;
 
 private:
 
 	UPROPERTY()
 	TMap<TEnumAsByte<EBuffStatus>, int32> BuffCounters;
+	
+	UPROPERTY()
+	TMap<TEnumAsByte<EDebuffStatus>, int32> DebuffCounters;
 
 	UPROPERTY()
 	int32 StatusCounter = 0;
@@ -315,6 +323,21 @@ private:
 	UPROPERTY()
 	bool bBuffedTwice = false;
 	
+	UPROPERTY()
+	bool bDebuffedTwice = false;
+	
+	UPROPERTY()
+	bool bAtkBuffRevert = false;
+	
+	UPROPERTY()
+	bool bDefBuffRevert = false;
+	
+	UPROPERTY()
+	bool bAtkDebuffRevert = false;
+	
+	UPROPERTY()
+	bool bDefDebuffRevert = false;
+	
 	void InflictFreeze(AICC_Actor* Target);
 	void InflictBurn(AICC_Actor* Target);
 	void InflictShieldDebuff(AICC_Actor* Target);
@@ -322,6 +345,8 @@ private:
 	void BuffAttack();
 	void BuffDefence();
 	void BuffShield();
+	void ExpireBuff(const EBuffStatus& ExpiredTarget);
+	void ExpireBuff(const EBuffStatus& ExpiredBuff, AICC_Actor* Target);
 	
 	/**
 	 * Used for joy ev / ai 

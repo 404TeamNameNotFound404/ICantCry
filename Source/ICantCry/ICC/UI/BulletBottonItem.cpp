@@ -11,13 +11,33 @@ void UBulletBottonItem::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	SelectButton->OnHovered.AddDynamic(this, &UBulletBottonItem::DisplayBulletInfo);
-	SelectButton->OnUnhovered.AddDynamic(this, &UBulletBottonItem::HideBulletInfo);
+	SelectButton->OnClicked.AddDynamic(this, &UBulletBottonItem::DisplayBulletInfo);
+	//SelectButton->OnUnhovered.AddDynamic(this, &UBulletBottonItem::HideBulletInfo);
 
 	if (UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance()))
 	{
 		Instance->GetInventory().OnBulletCrafted.AddUObject(this, &UBulletBottonItem::UpdateQuantity);
 	}
+}
+
+void UBulletBottonItem::NativeOnAddedToFocusPath(const FFocusEvent& InFocusEvent)
+{
+	Super::NativeOnAddedToFocusPath(InFocusEvent);
+	DisplayBulletInfo();
+	
+	if (const UWidget* Parent = GetParent())
+	{
+		if (UScrollBox* ScrollBox = Cast<UScrollBox>(Parent->GetParent()))
+		{
+			ScrollBox->ScrollWidgetIntoView(this, true, EDescendantScrollDestination::IntoView, 0.0f);
+		}
+	}
+}
+
+void UBulletBottonItem::NativeOnRemovedFromFocusPath(const FFocusEvent& InFocusEvent)
+{
+	Super::NativeOnRemovedFromFocusPath(InFocusEvent);
+	HideBulletInfo();
 }
 
 
@@ -175,10 +195,20 @@ void UBulletBottonItem::Show()
 
 	if (!Instance->GetInventory().BulletsStored.IsEmpty())
 	{
+		if (!MyBullet.IsValid() || !MyBullet.GetBulletData())
+		{
+			return;
+		}
+		
 		BulletQuantityText->SetText(FText::FromString("x " + FString::FromInt(Instance->GetInventory().BulletsStored[MyBullet.GetBulletData()->Type].GetQuantity())));
 	}
 	else
 	{
+		if (!MyBullet.IsValid() || !MyBullet.GetBulletData())
+		{
+			return;
+		}
+		
 		BulletQuantityText->SetText(FText::FromString("x 0"));
 	}
 }
@@ -261,7 +291,7 @@ void UBulletBottonItem::DisplayBulletInfo()
 
 	OwnerHUD->SelectedBulletImage->SetBrushFromTexture(MyBullet.GetBulletData()->Icon);
 	OwnerHUD->SelectedBulletName->SetText(FText::FromString(MyBullet.GetBulletData()->BulletName));
-	OwnerHUD->CraftInfo->SetText(FText::FromString("Crafted with -"));
+	OwnerHUD->CraftInfo->SetText(FText::FromString(DisplayIngredients()));
 	OwnerHUD->SelectedBulletPower->SetText(
 		FText::FromString("Bullet Power: " + FString::FromInt(MyBullet.GetBulletData()->Power)));
 	OwnerHUD->SelectedBulletEffectiveness->SetText(
@@ -280,6 +310,25 @@ void UBulletBottonItem::DisplayBulletInfo()
 		OwnerHUD->CraftButton->SetIsEnabled(true);
 	}
 
+}
+
+FString UBulletBottonItem::DisplayIngredients()
+{
+	FString EssenceName = "";
+	int32 Quantity = 0;
+	
+	if (BulletBlueprint.GetRequiredEssences().IsEmpty()) return FString("Crafted With - Empty");
+	
+	for (FEssence& Essence : BulletBlueprint.GetRequiredEssences())
+	{
+		if (!Essence.IsValid()) continue;
+		EssenceName = Essence.GetName(Essence.EssenceType);
+		Quantity = Essence.Quantity;
+	}
+	
+	const int32& CasingQuantity = BulletBlueprint.RequiredCasingQuantity;
+	// Note for myself if essences are multiple i think it can be better if i move the below line inside the loop otherwise the EssenceName and Quantity will only be valid for the last one
+	return FString("Crafted With: " + FString::FromInt(Quantity) + " " + EssenceName + " " + FString::FromInt(CasingQuantity) + " " + "Indifference");
 }
 
 void UBulletBottonItem::HideBulletInfo()

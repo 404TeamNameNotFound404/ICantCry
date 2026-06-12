@@ -33,16 +33,11 @@ EBTNodeResult::Type UBTTask_DebuffDef::ExecuteTask(UBehaviorTreeComponent& Owner
 	AICC_Player* Target = Cast<AICC_Player>(Blackboard->GetValueAsObject("Target"));
 
 	checkf(Target, TEXT("Player invalid at UBTTask_DebuffDef::ExecuteTask"))
-
-	//Target->GetStatusTracker()->MalusFlow();
-	Target->GetStatusTracker()->DebuffFlow(EDebuffStatus::DebuffDef, Target);
-	//Target->GetStatusTracker()->InflictStatus(EAfflictedStatus::DebuffDef, Target);
+	
+	//Target->GetStatusTracker()->DebuffFlow(EDebuffStatus::DebuffDef, Target);
 	Target->GetStatusTracker()->InflictDebuffStatus(EDebuffStatus::DebuffDef, Target);
 	
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
-
-	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " de-buffed " + Target->GetActorLabel() + " def"));
-	Current->GetBattleHandler()->GetBattleInfo()->SetTurnInfo(FText::FromString("Target def is now -> " + FString::SanitizeFloat(Instance->GetRuntimeStats().DefencePower)));
 
 	DebugHelper::AddMessageToLog("[Behavior Tree - Debuff Def]: " + Current->GetActorLabel() + " de-buffed " + Target->GetActorLabel() + " def");
 	DebugHelper::AddMessageToLog("[Behavior Tree - Debuff Def]: Target def is now -> " + FString::SanitizeFloat(Instance->GetRuntimeStats().DefencePower));
@@ -114,8 +109,7 @@ void UBTTask_DebuffDef::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8*
 			Blackboard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 			Blackboard->SetValueAsInt("Id", Current->GetTreeId());
 		}
-
-		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
+		
 		UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 		

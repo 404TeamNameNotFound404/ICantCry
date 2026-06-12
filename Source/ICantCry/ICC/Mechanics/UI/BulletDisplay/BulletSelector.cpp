@@ -200,6 +200,7 @@ void UBulletSelector::AddToRevolver()
 	if (const bool bIsEmpty = BulletRefPtr->GetQuantity() <= 0; bIsEmpty)
 	{
 		DebugHelper::LogWarning(BulletRefPtr->GetBulletData()->BulletName + " is empty");
+		return;
 	}
 	
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
@@ -216,6 +217,8 @@ void UBulletSelector::AddToRevolver()
 		DebugHelper::LogWarning("Revolver is already full");
 		return;
 	}
+	
+	
 	
 	Buffer->AddBullet(BulletRefPtr->GetBulletData());
 	

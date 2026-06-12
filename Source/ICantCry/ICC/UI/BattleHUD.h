@@ -65,6 +65,9 @@ public:
 	UPROPERTY(meta = (BindWidget)) UButton* ConfirmReloadBullet;
 	UPROPERTY(meta = (BindWidget)) UButton* EngageBtn;
 	UPROPERTY(meta=(BindWidget)) UDecisionDisplayer* DecisionDisplayer;
+	
+	// Misc
+	UPROPERTY(meta=(BindWidget)) UButton* BackBtn;
 
     // Status Bars
     UPROPERTY(meta = (BindWidget)) UProgressBar* PlayerHealth;
@@ -199,6 +202,7 @@ public:
 	void SetApAccumulator(const int& Value);
 
 	FBullet* GetCurrentSelectedBullet() const;
+	FBullet& GetCurrentSelectedBulletRef();
 	void DisableButtonsDuringShooting();
 	void EnableButtonsAfterShooting();
 
@@ -235,6 +239,10 @@ public:
 	 * Check if the current bullet to shot is a EV one
 	 */
 	UPROPERTY() bool bIsEvFirst = false;
+	
+	void ProcessExp(AMob* DeathEmotion);
+	void RetrieveNotUsedBullets();
+	void PushBackIndifferenceAsCasing(const int32& CasingQuantity, const ECasingType& CasingType);
 	
 	
 protected:
@@ -298,6 +306,7 @@ private:
     UFUNCTION() void OnFocusPressed();
     UFUNCTION() void OnReloadPressed();
     UFUNCTION() void OnPassPressed();
+	UFUNCTION() void OnRevertAction();
 
 	UFUNCTION() void RefreshBulletUI();
 	void ReflectBullets();

@@ -13,12 +13,9 @@ void UStatsButtonWidget::NativeConstruct()
 
 void UStatsButtonWidget::UpdateStatValue(int32 Value)
 {
-    
     if(StatValueTxt) 
     {
-
-        FString ValueString = FText::AsNumber(Value).ToString();
-
+        const FString ValueString = FText::AsNumber(Value).ToString();
         StatValueTxt->SetText(FText::FromString(ValueString));
     }
 }

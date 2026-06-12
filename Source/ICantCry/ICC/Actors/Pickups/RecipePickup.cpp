@@ -34,8 +34,15 @@ ARecipePickup::ARecipePickup()
 void ARecipePickup::BeginPlay()
 {
 	Super::BeginPlay();
-
-    Self.RequiredBlueprintType = RecipeType;
+    
+    const FName TargetName = "AngerDv";
+    if (const FRecipe* TargetRecipe = Recipes->FindRow<FRecipe>(TargetName, TEXT("Looking for")); 
+        TargetRecipe)
+    {
+        Self = *TargetRecipe;
+        Self.RequiredBlueprintType = RecipeType;
+        DebugHelper::LogSuccess("Recipe " + Self.GetName(Self.RequiredBlueprintType) + " found");
+    }
 }
 
 
@@ -78,7 +85,7 @@ void ARecipePickup::OnPickedUp(AActor* OtherActor)
         // }
 
         Player->GetInventoryManager()->RecipeUnlocked.Broadcast(Self.RequiredBlueprintType);
-
+        
         Player->SetIsPickedUp(false);
     }
 }

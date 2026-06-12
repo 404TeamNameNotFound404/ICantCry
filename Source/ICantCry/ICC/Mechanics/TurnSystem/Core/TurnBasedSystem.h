@@ -41,22 +41,18 @@ public:
 	TArray<AICC_Actor*> GetCopyQueue() const;
 
 	void SpawnBattleVictory(UWorld* World);
-
-	/**
-	 * --------- WIP FUNCTIONS -----------
-	 */
-
+	
 	void ExitBattle();
 	void Reload();
 
 	EBattlePhase GetBattlePhase() const;
 	void SetBattlePhase(const EBattlePhase &Phase);
-
 	void PrePrepareToBattle();
 	
 	/**
-     * --------- WIP FUNCTIONS -----------
-     */
+ * Check win condition or player death condition at runtime
+ */
+	void Flow();
 	
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Turn", meta=(AllowPrivateAccess=true))
@@ -74,14 +70,12 @@ private:
 
 	UPROPERTY()
 	bool bIsPlayerTurn;
+	
+	UPROPERTY()
+	bool bHideDecision;
 
 	UPROPERTY()
 	AICC_Player* CurrentPlayer;
-
-	/**
-	 * Check win condition or player death condition at runtime
-	 */
-	void Flow();
 
 	UPROPERTY()
 	AEnemySpawnManager* EnemySpawnManager;

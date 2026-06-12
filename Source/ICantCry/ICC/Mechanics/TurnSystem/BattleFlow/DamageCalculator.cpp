@@ -3,18 +3,20 @@
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
+#include "ICantCry/ICC/Actors/ICC_Actor.h"
 
 FDamage::FDamage(): BulletData(nullptr), PlayerStats(nullptr), AIMoves(nullptr), EnemyData(nullptr)
 {
 }
 
-FDamage::FDamage(UBulletData* BData, UPlayerStats* PStats, UEnemyTactics* AITactics, UEnemyDatas* EData, UICantCryGameInstance* GI ) 
+FDamage::FDamage(UBulletData* BData, UPlayerStats* PStats, UEnemyTactics* AITactics, UEnemyDatas* EData, AICC_Actor* SelfPtr ,UICantCryGameInstance* GI ) 
 {
 	BulletData = BData;
 	PlayerStats = PStats;
 	AIMoves = AITactics;
 	EnemyData = EData;
 	Instance = GI;
+	Self = SelfPtr;
 }
 
 int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
@@ -53,6 +55,7 @@ int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 		const float Result = (((BulletData->Power / (2 - RuntimeStats.MinigameModifier)) * (RuntimeStats.AttackPower / EnemyData->RuntimeStats.DefPower))) * (RuntimeStats.ApModifier * Coefficient/*BulletData->WeaknessModifier*/);
 		const int RoundedResult = FMath::RoundToInt(Result);
 
+		DebugHelper::AddMessageToLog("[DamageMath]: Doing math under requests of " + Self->GetActorLabel());
 		DebugHelper::AddMessageToLog("[DamageMath]: Data gathered for dmg math:\nBullet Pwr : " + FString::SanitizeFloat(BulletData->Power) +"\nMinigame Modifier " + FString::SanitizeFloat(RuntimeStats.MinigameModifier)
 			+ "\nPlayer Atk: " + FString::SanitizeFloat(RuntimeStats.AttackPower) + "\nTarget Def : " + FString::SanitizeFloat(EnemyData->RuntimeStats.DefPower) +
 			"\nPlayer Ap Modifier " + FString::SanitizeFloat(RuntimeStats.ApModifier) + "\nWeaknessModifier " + FString::SanitizeFloat(Coefficient));
@@ -81,6 +84,7 @@ int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 		
 		DebugHelper::LogMessage(3, FColor::FromHex("433878"), "Damage dealt -> " + FString::SanitizeFloat(RoundedResult));
 
+		DebugHelper::AddMessageToLog("[DamageMath]: Doing math under requests of " + Self->GetActorLabel());
 		DebugHelper::AddMessageToLog("[DamageMath]: AI To Player Formula is -> ( " +FString::SanitizeFloat(AIMoves->MovePower)  + ") / (2 - " + FString::SanitizeFloat(AIMoves->MinigamePower) +
 			") x (" + FString::SanitizeFloat(EnemyData->RuntimeStats.AtkPower) + " / " + FString::SanitizeFloat(RuntimeStats.DefencePower) + ") x (" + FString::SanitizeFloat(AIMoves->ActionPointsModifier) + " x " +
 			" * " + FString::SanitizeFloat(RuntimeStats.MinigameModifier) + ")");

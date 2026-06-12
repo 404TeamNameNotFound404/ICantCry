@@ -27,15 +27,15 @@ void ACameraHallway::BeginPlay()
 	{
 		Travelers.Add(*It);
 	}
+	
+	Rooms = {"LivingRoom", "Hallway", "MaxRoom", "Bedroom", "Office"};
 }
 
 void ACameraHallway::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	checkf(Player, TEXT("Player on CameraHallway.cpp is not initialized"));
 	if (!Player || OtherActor != Player || bPlayerOverlapped)
 	{
-		DebugHelper::LogWarning("Only player can overlap with camera or overlap already handled");
-		return;
+		Player = Cast<UICantCryGameInstance>(GetGameInstance())->GetCurrentPlayer();
 	}
 	
 	bPlayerOverlapped = true;
@@ -43,6 +43,7 @@ void ACameraHallway::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AA
 	if (bSnap)
 	{
 		Snap();
+		RenderSeen(RoomTag);
 	}
 	else
 	{
@@ -67,6 +68,8 @@ void ACameraHallway::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AA
 		else if (Player->GetWorldCamera() && Player  && Counter == 1)
 		{
 			Player->GetWorldCamera()->SetbDefaultCamera(true);
+			Cast<UICantCryGameInstance>(GetGameInstance())->GetPlayerRuntimeData().LastWorldCameraPosition = CameraFixedWaypoint->GetActorLocation();
+			Cast<UICantCryGameInstance>(GetGameInstance())->GetPlayerRuntimeData().LastWorldCameraRotation = CameraFixedWaypoint->GetActorRotation();
 			APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 			checkf(PlayerController, TEXT("PlayerController is NULL"));
 			PlayerController->SetViewTargetWithBlend(Player->GetWorldCamera(), 0.0f);
@@ -90,60 +93,92 @@ void ACameraHallway::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AAct
 
 void ACameraHallway::Snap()
 {
+	if (!Player || !Player->GetWorldCamera()) return;
+	
 	Counter = Player->GetWorldCameraCounter();
-
-	if (Player->GetWorldCamera() && Player && Counter == 0)
+	AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
+	
+	if (Counter == 0)
 	{
-		DebugHelper::LogSuccess("Snap To fixed");
 		Player->GetWorldCamera()->SnapToFixedWaypoint(CameraFixedWaypoint);
-		AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
-		Player->GetWorldCamera()->SetbDefaultCamera(true);
-		Controller->SetViewTargetWithBlend(Player->GetWorldCamera(), 0.0f);
-		Counter++;
-		Player->SetWorldCameraCounter(Counter);
-
+        
 		if (bEnableWorldCamera)
 		{
 			Player->GetWorldCamera()->SetbDefaultCamera(true);
 			Controller->SetViewTargetWithBlend(Player->GetWorldCamera(), 0.5f);
+			Cast<UICantCryGameInstance>(GetGameInstance())->GetPlayerRuntimeData().LastWorldCameraPosition = CameraFixedWaypoint->GetActorLocation();
+			Cast<UICantCryGameInstance>(GetGameInstance())->GetPlayerRuntimeData().LastWorldCameraRotation = CameraFixedWaypoint->GetActorRotation();
 		}
 		else
 		{
-			Player->GetWorldCamera()->SetbDefaultCamera(false);
 			Controller->SetViewTargetWithBlend(Player, 0.0f);
-			DebugHelper::LogMessage(6, FColor::Orange, "Moving");
 		}
 
-		if (bPlayerMustTeleport)
+		if (bPlayerMustTeleport && InEntry.IsValid())
 		{
-			Player->SetActorLocation(InEntry.Get()->GetActorLocation());
-			Player->SetActorRotation(InEntry.Get()->GetActorRotation());
+			Player->SetActorLocationAndRotation(InEntry->GetActorLocation(), InEntry->GetActorRotation());
 		}
+		
+		Player->SetWorldCameraCounter(1);
 	}
-	else if (Player->GetWorldCamera() && Player && Counter == 1)
+	
+	else if (Counter == 1)
 	{
 		Player->GetWorldCamera()->SnapToFixedWaypoint(CameraBackWaypoint);
-		AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
 
-		if (bEnableWorldCamera)
+		if (bEnableWorldCameraOnExit)
 		{
 			Player->GetWorldCamera()->SetbDefaultCamera(true);
-			Controller->SetViewTargetWithBlend(Player->GetWorldCamera(), 0.5f);
+			Controller->SetViewTargetWithBlend(Player->GetWorldCamera(), CameraBlendSpeed);
 		}
 		else
 		{
 			Player->GetWorldCamera()->SetbDefaultCamera(false);
 			Controller->SetViewTargetWithBlend(Player, 0.0f);
-			DebugHelper::LogMessage(6, FColor::Orange, "Moving");
 		}
 
-		Counter = 0;
-		Player->SetWorldCameraCounter(Counter);
-
-		if (bPlayerMustTeleport)
+		if (bPlayerMustTeleport && OutEntry.IsValid())
 		{
-			Player->SetActorLocation(OutEntry.Get()->GetActorLocation());
-			Player->SetActorRotation(OutEntry.Get()->GetActorRotation());
+			Player->SetActorLocationAndRotation(OutEntry->GetActorLocation(), OutEntry->GetActorRotation());
+		}
+		
+		Player->SetWorldCameraCounter(0);
+		RenderSeen(RoomTag);
+	}
+}
+
+void ACameraHallway::ToggleRoom(const FName& Room, const bool& bRenderRoom)
+{
+	TArray<AActor*> SpawnedRooms;
+	UGameplayStatics::GetAllActorsWithTag(GetWorld(), Room,  SpawnedRooms);
+	
+	for (AActor* R : SpawnedRooms)
+	{
+		if (!R)
+		{
+			DebugHelper::LogError("Room is invalid");
+			continue;
+		}
+		
+		R->SetActorHiddenInGame(!bRenderRoom);
+		R->SetActorEnableCollision(bRenderRoom);
+		R->SetActorTickEnabled(bRenderRoom); // I dont think we'll need this but Im gonna keep it for now
+		
+		DebugHelper::LogMessage(6, FColor::Cyan, FString(RoomTag.ToString() + FString(bRenderRoom ? "Hidden" : "Shown")));
+	}
+}
+
+void ACameraHallway::RenderSeen(const FName& TargetToHide)
+{
+	for (FName& Room : Rooms)
+	{
+		if (Room == TargetToHide)
+		{
+			ToggleRoom(Room, true);
+		}
+		else
+		{
+			ToggleRoom(Room, false);
 		}
 	}
 }

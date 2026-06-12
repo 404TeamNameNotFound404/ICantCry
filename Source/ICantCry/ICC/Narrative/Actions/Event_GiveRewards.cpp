@@ -22,6 +22,6 @@ void UEvent_GiveRewards::ExecuteEvent_Implementation(AICC_Player* Player, UObjec
     // apply heal and clamp to max capacity
 	if (HealthToRestore > 0.0f)
 	{
-		Stats->CurrentHealth = FMath::Clamp(Stats->CurrentHealth + HealthToRestore, 0.0f, Stats->MaxHealth);
+		Player->GetRuntimeStats().CurrentHealth = FMath::Clamp(Player->GetRuntimeStats().CurrentHealth + HealthToRestore, 0.0f, Stats->MaxHealth);
 	}
 }

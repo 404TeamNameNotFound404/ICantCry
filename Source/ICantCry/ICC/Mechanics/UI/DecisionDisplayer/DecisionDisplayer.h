@@ -28,4 +28,5 @@ public:
 	void SetDecisionText(const FText& Text);
 	void Hide();
 	void Show();
+	void Show(bool& InPlayerTurn);
 };

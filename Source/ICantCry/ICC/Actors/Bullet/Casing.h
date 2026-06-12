@@ -11,7 +11,7 @@
  */
 
 USTRUCT(BlueprintType)
-struct FCasing
+struct FCasing : public FTableRowBase
 {
 	GENERATED_BODY()
 	
@@ -24,6 +24,9 @@ struct FCasing
 	void SetQuantity(const int32& NewQuantity);
 
 	ECasingType& GetType();
+	void SetType(const ECasingType& NewType);
+	
+	bool IsValid() const;
 	
 protected:
 

@@ -40,11 +40,21 @@ public:
 
 	void SetDisabled(const bool& Value);
 	bool IsDisabled() const;
+	
+	UCharacterUI* GetCharacterUI();
 
 
 protected:
 	virtual void NativeConstruct() override;
-
+	virtual void NativeOnAddedToFocusPath(const FFocusEvent& InFocusEvent) override;
+	virtual void NativeOnRemovedFromFocusPath(const FFocusEvent& InFocusEvent) override;
+	
+	void LeftNavigation();
+	void RightNavigation();
+	void NavigateThroughtButtons(const int32& InDirection);
+	void Bind();
+	void PadClick();
+	
 	UPROPERTY(meta = (BindWidget))
 	UScaleBox* Main;
 
@@ -56,6 +66,15 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	UButton* Map;
+	
+	UPROPERTY(meta=(BindWidget))
+	UOverlay* OverviewFrame;
+	
+	void Hightlight(UWidget* What);
+	
+	UPROPERTY() TArray<UButton*> Scrollers;
+	UPROPERTY() int32 ScrollerIndex;
+	UPROPERTY() AICC_PlayerController* Controller;
 
 
 private:

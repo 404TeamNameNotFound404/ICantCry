@@ -24,7 +24,8 @@ void UPuzzleAssembled::DisableMinigame()
 	Controller->SetShowMouseCursor(false);
 	MinigameOwner->GetTriggerComponent()->SetActive(false);
 	MinigameOwner->GetTriggerComponent()->DestroyComponent();
-	Instance->GetCurrentPlayer()->GetInventoryManager()->AddRecipe(Self);
+	//Instance->GetCurrentPlayer()->GetInventoryManager()->AddRecipe(Self);
+	Instance->GetCurrentPlayer()->GetInventoryManager()->RecipeUnlocked.Broadcast(Self.RequiredBlueprintType);
 	RemoveFromParent();
 }
 

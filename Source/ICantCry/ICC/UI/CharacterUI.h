@@ -28,9 +28,7 @@
 class AICC_Player;
 
 /**
- * CLASS: UCharacterUI
- * DESCRIPTION: main character screen widget that shows player stats, level, exp, and active quests
- * handles the layout with three columns: quest list (left), character image (center), stats (right)
+ * 
  */
 UCLASS()
 class ICANTCRY_API UCharacterUI : public UUserWidget
@@ -39,34 +37,42 @@ class ICANTCRY_API UCharacterUI : public UUserWidget
 
 
 public:
+
 	virtual void NativeConstruct() override;
+
 	virtual void NativeDestruct() override;
 
 public: 
-	/** refreshes the entire ui with current player data */
+
+	/**
+	 * upd the intire UI
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Character UI") void RefreshUI();
 
-	/** clears all quest details panels and resets selection state */
 	UFUNCTION(BlueprintCallable, Category = "Quest System") void ClearQuestDetails();
 
-	/** displays the detailed information for a selected quest including objectives and progress */
+
 	UFUNCTION(BlueprintCallable, Category = "Quest System") void DisplayQuestDetails(const FQuestProgress& Details);
     
 protected:
-	// left column - quest list
+
+
+	// LEFT
 	UPROPERTY(meta = (BindWidget))	UScrollBox* MainQuestScrollBox;
 	UPROPERTY(meta = (BindWidget))	UScrollBox* SideQuestScrollBox;
 	UPROPERTY(meta = (BindWidget))	UTextBlock* TextQuestTitle;
 	UPROPERTY(meta = (BindWidget))	UTextBlock* TextQuestDescription;
 	UPROPERTY(meta = (BindWidget))	UVerticalBox* VerticalBoxObjectives;
     
-	// center column - character portrait
+	// CENTER
 	UPROPERTY(meta = (BindWidget))	UImage* CharacterImage;
+	//UPROPERTY(meta = (BindWidget))	UTextBlock* StatsDescription;
 
-	// right column - stats and level
+
+	// RIGHT
 	UPROPERTY(meta = (BindWidget))	UTextBlock* CharacterLVTop;
 	UPROPERTY(meta = (BindWidget))  UProgressBar* ExpBar;
-	UPROPERTY(meta = (BindWidget))  UTextBlock* ExpCurrentTextBar; // shows "120 / 450" format
+	UPROPERTY(meta = (BindWidget))  UTextBlock* ExpCurrentTextBar; // es  "120 / 450"
 	UPROPERTY(meta = (BindWidget))	UStatsButtonWidget* HealthStats;
 	UPROPERTY(meta = (BindWidget))	UStatsButtonWidget* AttackStats;
 	UPROPERTY(meta = (BindWidget))	UStatsButtonWidget* DefenceStats;
@@ -79,6 +85,9 @@ protected:
 	/** data asset containing the player's current stats */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) UPlayerStats* Stats;
 
+	UPROPERTY() UICantCryGameInstance* Instance;
+	
+	// UI
 	/** widget class for stat buttons, used if we need to create them dynamically */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
     TSubclassOf<class UStatsButtonWidget> StatsButton;
@@ -105,6 +114,7 @@ protected:
 	/** tag of the currently selected quest, used to preserve selection during updates */
 	UPROPERTY(EditAnywhere, Category = "Quest System")
 	FGameplayTag CurrentSelectedQuestTag;
+
 
 private:
 	/** refreshes all stat values from the player stats asset */

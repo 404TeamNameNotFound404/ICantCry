@@ -10,6 +10,7 @@ UBTTask_BuffOtherDef::UBTTask_BuffOtherDef()
 	NodeName = "BuffOtherDef";
 	bNotifyTick = true;
 	bNotifyTaskFinished = true;
+	bCreateNodeInstance = true;
 }
 
 EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -32,6 +33,20 @@ EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& Ow
 	
 	if (Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().CantBuffOthers())
 	{
+		if (Current->GetMobType() == EMobType::MobFear)
+		{
+			DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: this mf " + Current->GetActorLabel() + " is a forever alone so its gonna buff it's def");
+			BlackBoard->SetValueAsBool("IsDefenceBuffed?", true);
+			return EBTNodeResult::Succeeded;
+		}
+		
+		else if (Current->GetMobType() == EMobType::MobCalm)
+		{
+			DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: this mf " + Current->GetActorLabel() + " is a forever alone so its gonna buff it's def");
+			BlackBoard->SetValueAsBool("IsDefenceBuffed?", true);
+			return EBTNodeResult::Succeeded;
+		}
+		
 		BlackBoard->SetValueAsBool("Rethinker", true);
 		DebugHelper::AddMessageToLog(Current->GetActorLabel() + " attempted to buff other def but it's alone! , rethink the action");
 		return EBTNodeResult::Succeeded;
@@ -41,16 +56,28 @@ EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& Ow
 
 	if (!TargetToBuff) // rethink if target buff appears to be nullptr again 
 	{
+		if (Current->GetMobType() == EMobType::MobFear)
+		{
+			DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: this mf " + Current->GetActorLabel() + " is a forever alone so its gonna buff it's def");
+			BlackBoard->SetValueAsBool("IsDefenceBuffed?", true);
+			return EBTNodeResult::Succeeded;
+		}
+		
+		else if (Current->GetMobType() == EMobType::MobCalm)
+		{
+			DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: this mf " + Current->GetActorLabel() + " is a forever alone so its gonna buff it's def");
+			BlackBoard->SetValueAsBool("IsDefenceBuffed?", true);
+			return EBTNodeResult::Succeeded;
+		}
+		
 		BlackBoard->SetValueAsBool("Rethinker", true);
 		DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: " + Current->GetActorLabel() + " attempted to buff other def but it didn't find a valid target (scrivetemelo se entra qua dentro)! , rethinking the action");
 		return EBTNodeResult::Succeeded;
 	}
 	
-	TargetToBuff->GetStatusTracker()->BuffFlow(EBuffStatus::DefBuff, TargetToBuff);
-	TargetToBuff->GetStatusTracker()->BuffWith(EBuffStatus::DefBuff);
 
-	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(
-		FText::FromString(Current->GetActorLabel() + " buffed " + TargetToBuff->GetActorLabel() + " def"));
+	TargetToBuff->GetStatusTracker()->BuffWith(EBuffStatus::DefBuff);
+	
 
 	DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: " + Current->GetActorLabel() + " buffed " + TargetToBuff->GetActorLabel() + " def");
 
@@ -121,8 +148,7 @@ void UBTTask_BuffOtherDef::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uin
 			BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 			BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
 		}
-
-		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
+		
 		UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 	}

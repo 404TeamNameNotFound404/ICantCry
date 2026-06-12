@@ -28,3 +28,14 @@ void UDecisionDisplayer::Show()
 {
 	SetVisibility(ESlateVisibility::Visible);
 }
+
+void UDecisionDisplayer::Show(bool& InPlayerTurn)
+{
+	if (InPlayerTurn)
+	{
+		SetVisibility(ESlateVisibility::Visible);
+		InPlayerTurn = false;
+	}
+	
+	SetVisibility(ESlateVisibility::Visible);
+}

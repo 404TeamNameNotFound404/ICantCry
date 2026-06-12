@@ -50,4 +50,6 @@ public:
 	FString GetWeakAgainstName() const;
 
 	FBullet Clone() const;
+	
+	bool IsValid() const;
 };

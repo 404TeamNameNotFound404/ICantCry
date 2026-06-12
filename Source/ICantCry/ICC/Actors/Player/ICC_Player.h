@@ -22,6 +22,8 @@
 #include "ICantCry/ICC/UI/BattleHUD.h"
 #include "ICantCry/ICC/UI/BestiaryUI.h"
 #include "ICantCry/ICC/Mechanics/Core/Data/PlayerStats.h"
+#include "ICantCry/ICC/Input/ICC_EnhancedInputCmp.h"
+#include "ICantCry/ICC/Input/ICC_PlayerController.h"
 #include "ICC_Player.generated.h"
 
 class UDialogueAsset;
@@ -180,7 +182,12 @@ public:
 
 	UICC_GamepadBinder* GetBinder() const;
 	USpringArmComponent* GetCameraBoom() const;
-
+	
+	FRuntimeStats& GetRuntimeStats();
+	
+	UICC_InputDataAsset* GetInputDataAsset();
+	UICC_EnhancedInputCmp* GetInputBinder();
+	
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Movement")
 	float WalkSpeed;
@@ -303,7 +310,6 @@ private:
 	void CloseCraftingHUD();
 	
 
-
 	//Bestiary 
 	void CollectNote(const FString& NoteKey); // da cancellare
 	void OpenBestiary();
@@ -320,6 +326,8 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
     TSubclassOf<UBestiaryUI> BestiaryUIClass;
+	
+	UPROPERTY() UICC_EnhancedInputCmp* LastChecked;
 
 	// BARKS
 

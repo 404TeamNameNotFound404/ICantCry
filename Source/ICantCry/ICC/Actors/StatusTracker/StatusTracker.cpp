@@ -1,10 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "StatusTracker.h"
+
+#include "Chaos/PBDSuspensionConstraintData.h"
 #include "ICantCry/ICC/Actors/ICC_Actor.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Actors/AI/Mob.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
+#include "Slate/SGameLayerManager.h"
 
 
 /**
@@ -485,7 +488,9 @@ void UStatusTracker::BeginPlay()
 
 	BuffCounters.Add(EBuffStatus::AtkBuff, 0);
 	BuffCounters.Add(EBuffStatus::DefBuff, 0);
-	//BuffCounters.Add(EBuffStatus::Shield, 0);
+	
+	DebuffCounters.Add(EDebuffStatus::DebuffAtk, 0);
+	DebuffCounters.Add(EDebuffStatus::DebuffDef, 0);
 }
 
 
@@ -513,23 +518,6 @@ void UStatusTracker::InflictStatus(const EAfflictedStatus& Status, AICC_Actor* T
 		return;
 	}
 
-	if (bShieldBuffed)
-	{
-		PlayerShieldAccumulator--;
-		DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetActorLabel() + " attempted to inflict " + GetStatusName(Status) + " but fortunately a shield was used to protect from the debuff "
-			+ FString::FromInt(PlayerShieldAccumulator) + " left");
-
-		if (PlayerShieldAccumulator <= 0)
-		{
-			bShieldBuffed = false;
-			PlayerShieldAccumulator = 0;
-			DebugHelper::AddMessageToLog("[Status Tracker]: Shield debuff protection for " + GetOwner()->GetActorLabel() + " ended");
-		}
-		else
-		{
-			return;
-		}
-	}
 
 	//Priority.SetNextPriorityFromDebuff(Status);
 
@@ -598,30 +586,45 @@ void UStatusTracker::InflictStatus(const EAfflictedStatus& Status, AICC_Actor* T
 
 void UStatusTracker::InflictDebuffStatus(const EDebuffStatus& Status, AICC_Actor* Target)
 {
-	if (Target->GetStatusTracker()->IsAfflicted() || !Target->GetStatusTracker()->CanDebuff())
-	{
-		DebugHelper::AddMessageToLog("[Status Tracker - DeBuffS]: Emotion attempted to cast " + GetDebuffName(CurrentDebuffStatus) + " To " + Target->GetActorLabel() + " but " + GetStatusName(CurrentActiveStatus) + " has already been inflicted");
-		return;
-	}
-
-	if (bShieldBuffed)
+	UStatusTracker* Tracker = Target->GetStatusTracker();
+	
+	if (Tracker->IsShieldActive())
 	{
 		PlayerShieldAccumulator--;
-		DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetActorLabel() + " attempted to inflict " + GetDebuffName(CurrentDebuffStatus) + " but fortunately a shield was used to protect from the debuff "
+		
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetActorLabel() + " attempted to inflict " + GetDebuffName(Status) + " but fortunately a shield was used to protect from the debuff "
 			+ FString::FromInt(PlayerShieldAccumulator) + " left");
 
 		if (PlayerShieldAccumulator <= 0)
 		{
-			bShieldBuffed = false;
 			PlayerShieldAccumulator = 0;
+			bIsOwnerAfflicted = false;
+			bShieldBuffed = false;
+			StatusCounter = 0;
+			Target->ShieldDebuff(false);
+			bCanDebuff = true;
 			DebugHelper::AddMessageToLog("[Status Tracker]: Shield debuff protection for " + GetOwner()->GetActorLabel() + " ended");
-		}
-		else
-		{
 			return;
 		}
+		
+		return;
 	}
+	
+	if (DebuffFlow(Status, Target))
+	{
+		DebugHelper::AddMessageToLog("[Status Tracker]: Debuff neutralized by Buff; nothing applied.");
+		return; 
+	}
+	
+	// if (Tracker->IsAfflicted() || !Tracker->CanDebuff())
+	// {
+	// 	DebugHelper::AddMessageToLog("[Status Tracker - DeBuffS]: Emotion attempted to cast " + GetDebuffName(CurrentDebuffStatus) + " To " + Target->GetActorLabel() + " but " + GetStatusName(CurrentActiveStatus) + " has already been inflicted");
+	// 	return;
+	// }
 
+	bAtkDebuffRevert = false;
+	bDefDebuffRevert = false;
+	
 	Priority.SetNextPriorityFromDebuff(Status);
 
 	if (GetOwner()->IsA(AMob::StaticClass()))
@@ -635,9 +638,17 @@ void UStatusTracker::InflictDebuffStatus(const EDebuffStatus& Status, AICC_Actor
 			bIsOwnerAfflicted = true;
 		}
 	}
-
-
-	CurrentDebuffStatus = Status;
+	
+	if (DebuffCounters.Contains(Status))
+	{
+		DebuffCounters[Status] = 0;
+		DebugHelper::AddMessageToLog("[Status Tracker]: Debuff " + GetDebuffName(Status) + " added to the counters");
+	}
+	else 
+	{
+		DebuffCounters.Add(Status, 0); 
+	}
+	
 	DebuffCounter = 0;
 	bIsOwnerDebuffed = true;
 	
@@ -661,57 +672,55 @@ void UStatusTracker::InflictDebuffStatus(const EDebuffStatus& Status, AICC_Actor
 
 void UStatusTracker::BuffWith(const EBuffStatus& BuffStatus)
 {
-	if (bIsOwnerAlreadyBuffed || !bCanBuff)
+	if (!bCanBuff)
 	{
 		return;
 	}
-
-	if (static_cast<int32>(CurrentBuffedStatus) == static_cast<int32>(BuffStatus))
+	
+	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+	bAtkBuffRevert = false;
+	bDefBuffRevert = false;
+	// BuffFlow(BuffStatus, Target);
+	
+	// if (bAtkBuffRevert || bDefBuffRevert)
+	// {
+	// 	bIsOwnerAlreadyBuffed = false;
+	// 	DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + " just cancel the opposite debuff so no buff");
+	// 	return; 
+	// }
+	
+	if (BuffFlow(BuffStatus, Target))
 	{
-		bBuffedTwice = true;
-		DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetActorLabel() + " got buffed twice with " + GetBuffName(BuffStatus));
-		DebugHelper::AddMessageToLog("[Status Tracker]: Current status of " + GetOwner()->GetActorLabel() + " is still " + GetBuffName(CurrentBuffedStatus));
-		BuffStatusCounter = 0;
+		bIsOwnerAlreadyBuffed = false;
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + " cancelled debuff; buff consumed.");
+		return; 
+	}
+	
+	if (BuffCounters.Contains(BuffStatus) && CurrentBuffedStatus == BuffStatus)
+	{
+		BuffCounters[BuffStatus] = 0;
 		return;
 	}
-
+	
+	BuffCounters.Add(BuffStatus, 0);
 	CurrentBuffedStatus = BuffStatus;
-	BuffStatusCounter = 0;
-
-	CurrentBuffedStatus = BuffStatus;
-	BuffCounters.FindOrAdd(BuffStatus) = 0;
-
 	bIsOwnerAlreadyBuffed = true;
 
 	switch (BuffStatus)
 	{
 	case AtkBuff:
 		Priority.SetPriotity(1);
-		
-		if (!bBuffedTwice)
-		{
-			BuffAttack();
-			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->SimulateAura(Cast<AICC_Actor>(GetOwner()), 500.f, FColor::Red);
-		}
-		
+		BuffAttack();
+		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->SimulateAura(Cast<AICC_Actor>(GetOwner()), 500.f, FColor::Red, EBuffStatus::AtkBuff);
 		break;
 	case DefBuff:
 		Priority.SetPriotity(2);
-
-		if (!bBuffedTwice)
-		{
-			BuffDefence();
-		}
-		
-		//BuffDefence();
+		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->SimulateAura(Cast<AICC_Actor>(GetOwner()), 500.f, FColor::Blue, EBuffStatus::DefBuff);
+		BuffDefence();
 		break;
 	case LowHealth:
 		Heal();
 		break;
-	// case Shield:
-	// 	Priority.SetPriotity(4);
-	// 	BuffShield();
-	// 	break;
 	default:
 	case NoBuff:
 		break;
@@ -740,8 +749,8 @@ void UStatusTracker::UpdateStatus()
 
 	StatusCounter += 1;
 
-	DebugHelper::LogWarning("Status Counter for " + GetStatusName(CurrentActiveStatus) + FString::FromInt(StatusCounter));
-	DebugHelper::AddMessageToLog("[Status Tracker]: Status Counter for " + GetStatusName(CurrentActiveStatus) + FString::FromInt(StatusCounter));
+	DebugHelper::LogWarning("Status Counter for " + GetStatusName(CurrentActiveStatus) + " " + FString::FromInt(StatusCounter));
+	DebugHelper::AddMessageToLog("[Status Tracker]: Status Counter for " + GetStatusName(CurrentActiveStatus) +  " " + FString::FromInt(StatusCounter));
 	
 
 	if (StatusCounter < 3)
@@ -789,6 +798,12 @@ void UStatusTracker::UpdateStatus()
 		bIsOwnerAfflicted = false;
 		StatusCounter = 0;
 		Target->Ashamed(false);
+		
+		if (Target->IsA(AICC_Player::StaticClass()))
+		{
+			Cast<AICC_Player>(Target)->GetBattleHUD()->Shoot->SetIsEnabled(true);
+			Cast<AICC_Player>(Target)->Ashamed(false);
+		}
 		
 		if (Cast<AMob>(GetOwner()))
 		{
@@ -846,68 +861,40 @@ void UStatusTracker::UpdateDebuffStatus()
 		return;
 	}
 
-	DebuffCounter += 1;
+	//DebuffCounter += 1;
+	
+	TArray<EDebuffStatus> DebuffsToRemove;
+	
+	for (auto& Pair : DebuffCounters)
+	{
+		const EDebuffStatus Status = Pair.Key;
+		int32& Counter = Pair.Value;
+		
+		Counter++;
+		
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetActorLabel() + " has " + 
+			GetDebuffName(Status) + " at turn " + FString::FromInt(Counter));
+
+		if (Counter >= 3)
+		{
+			DebuffsToRemove.Add(Status);
+		}
+	}
+	
+	for (const EDebuffStatus& S : DebuffsToRemove)
+	{
+		DebuffCounters.Remove(S);
+	}
+	
+	bIsOwnerDebuffed = (DebuffCounters.Num() > 0);
+	
+	if (!bIsOwnerDebuffed)
+	{
+		bDebuffedTwice = false;
+	}
 
 	DebugHelper::LogWarning("Status Counter for " + GetStatusName(CurrentActiveStatus) + FString::FromInt(StatusCounter));
 	DebugHelper::AddMessageToLog("[Status Tracker]: Status Counter for " + GetStatusName(CurrentActiveStatus) + FString::FromInt(StatusCounter));
-	
-
-	if (DebuffCounter < 3)
-	{
-		return;
-	}
-
-	RevertInflictedMalus(CurrentActiveStatus);
-
-	DebugHelper::AddMessageToLog("[Status Tracker]: " + GetDebuffName(CurrentDebuffStatus) + " has been reset for " + GetOwner()->GetActorLabel());
-
-	switch (CurrentDebuffStatus)
-	{
-	case DebuffAtk:
-		bIsOwnerDebuffed = false;
-		DebuffCounter = 0;
-
-		if (GetOwner()->IsA(AICC_Player::StaticClass()))
-		{
-			AICC_Player* Player = Cast<AICC_Player>(GetOwner());
-			Instance->GetRuntimeStats().AttackPower = Instance->GetPersistentData()->InitialAttackPower;
-			DebugHelper::AddMessageToLog("[Status Tracker]: Debuff for Atk ended, atk of " + Player->GetActorLabel() + " restored as " + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower));
-		}
-		
-		if (Cast<AMob>(GetOwner()))
-		{
-			PerkData.bDebuffAtk = false;
-			bIsOwnerAfflicted = false;
-			StatusCounter = 0;
-			Priority.SetPriotity(0);
-		}
-		
-		CurrentDebuffStatus = EDebuffStatus::NoDebuff;
-		break;
-	case DebuffDef:
-		bIsOwnerDebuffed = false;
-		DebuffCounter = 0;
-
-		if (GetOwner()->IsA(AICC_Player::StaticClass()))
-		{
-			AICC_Player* Player = Cast<AICC_Player>(GetOwner());
-			Instance->GetRuntimeStats().DefencePower = Instance->GetPersistentData()->InitialDefencePower;
-			DebugHelper::AddMessageToLog("[Status Tracker]: Debuff for Def ended, def of " + Player->GetActorLabel() + " restored as " + FString::SanitizeFloat(Instance->GetRuntimeStats().DefencePower));
-		}
-		
-		if (Cast<AMob>(GetOwner()))
-		{
-			PerkData.bDebuffDef = false;
-			bIsOwnerAfflicted = false;
-			StatusCounter = 0;
-			Priority.SetPriotity(0);
-		}
-		
-		CurrentDebuffStatus = EDebuffStatus::NoDebuff;
-		break;
-		default:
-		break;
-	}
 }
 
 void UStatusTracker::UpdateBuffStatus()
@@ -918,118 +905,49 @@ void UStatusTracker::UpdateBuffStatus()
 		return;
 	}
 
-	BuffStatusCounter += 1;
-	int32& Counter = BuffCounters.FindOrAdd(CurrentBuffedStatus);
-	Counter++;
-	
-	//Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DecreaseAura(1.f);
-
 	const AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
-
-	for (const auto& Pair : BuffCounters)
+	TArray<EBuffStatus> BuffToRemove;
+	
+	for (auto& B : BuffCounters)
 	{
-		if (Pair.Key == EBuffStatus::NoBuff)
+		EBuffStatus S = B.Key; // Actual Status
+		int32& C = B.Value; // Counter
+		
+		if (S == EBuffStatus::NoBuff)
 		{
+			DebugHelper::AddMessageToLog("[Status Tracker]: No buff founds for " + GetOwner()->GetActorLabel());
 			continue;
-		}
+		};
+		
+		const FString BuffName = StaticEnum<EBuffStatus>()->GetNameStringByValue(S);
 
-		if (Pair.Value > 0)
+		DebugHelper::AddMessageToLog(
+			"[Status Tracker]: " + Target->GetActorLabel() +
+			" " + BuffName + " is at turn " + FString::FromInt(C)
+		);
+		
+		C++;
+		
+		// DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + 
+		// 	" " + GetBuffName(S) + " is at turn " + FString::FromInt(C));
+		
+		if (C >= 3)
 		{
-			DebugHelper::AddMessageToLog( "[Status Tracker]: " + Target->GetActorLabel() +
-				" Buff Status counter of " + GetBuffName(Pair.Key) + " " + FString::FromInt(Pair.Value)
-			);
+			ExpireBuff(S);
+			BuffToRemove.Add(S);
 		}
 	}
-
 	
-	if (Counter < 3)
+	for (const EBuffStatus& S : BuffToRemove)
 	{
-		return; // I don't need to check further if counter is not 3 (3 turns elapsed)
+		BuffCounters.Remove(S);
 	}
-
-	switch (CurrentBuffedStatus)
-	{
-	case AtkBuff:
-		if (Target->IsA(AICC_Player::StaticClass()))
-		{
-			AICC_Player* Player = Instance->GetCurrentPlayer();
-			DebugHelper::AddMessageToLog("[Status Tracker]: Player buff before returning back to normal " + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower));
-			Instance->GetRuntimeStats().AttackPower = Instance->GetPersistentData()->InitialAttackPower;
-			DebugHelper::AddMessageToLog("[Status Tracker]: Player Buff ended atk returns to " + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower));
-			Counter = 0;
-			
-			bIsOwnerAlreadyBuffed = false;
-			bCanDebuff = true;
-			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura();
-		}
-		if (Target->IsA(AMob::StaticClass()))
-		{
-			const AMob* Emotion = Cast<AMob>(GetOwner());
-			DebugHelper::AddMessageToLog("[Status Tracker]:" + Target->GetActorLabel() + " before returning back to normal " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.AtkPower));
-			Emotion->GetData()->RuntimeStats.AtkPower = Emotion->GetAIMemory().InitialAttackPower;
-			DebugHelper::AddMessageToLog("[Status Tracker]: " +  Target->GetActorLabel() +  " Buff ended, atk returns to " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.AtkPower));
-			Counter = 0;
-			PerkData.bBuffAtk = false;
-			bIsOwnerAlreadyBuffed = false;
-			bCanBuff = true;
-			bBuffedTwice = false;
-		}
-		break;
-	case DefBuff:
-		if (Target->IsA(AICC_Player::StaticClass()))
-		{
-			AICC_Player* Player = Instance->GetCurrentPlayer();
-			Instance->GetRuntimeStats().DefencePower = Instance->GetPersistentData()->InitialDefencePower;
-			DebugHelper::AddMessageToLog("[Status Tracker]: Buff ended def returns to " + FString::SanitizeFloat(Instance->GetRuntimeStats().DefencePower));
-			Counter = 0;
-			bIsOwnerAlreadyBuffed = false;
-			bCanDebuff = true;
-		}
-		if (Target->IsA(AMob::StaticClass()))
-		{
-			const AMob* Emotion = Cast<AMob>(GetOwner());
-			DebugHelper::AddMessageToLog("[Status Tracker]:" + Target->GetActorLabel() + " before returning back to normal " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.DefPower));
-			Emotion->GetData()->RuntimeStats.DefPower = Emotion->GetAIMemory().InitialDefencePower;
-			DebugHelper::AddMessageToLog("[Status Tracker]: " +  Target->GetActorLabel() +  " Buff ended, def returns to " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.DefPower));
-			Counter = 0;
-			bIsOwnerAlreadyBuffed = false;
-			PerkData.bBuffDef = false;
-			bCanBuff = true;
-			bBuffedTwice = false;
-		}
-		break;
-	case LowHealth:
-		Counter = 0;
-		bIsOwnerAlreadyBuffed = false;
-		PerkData.bLowHealth = false;
-		bCanBuff = true;
-		bBuffedTwice = false;
-		break;
-
-	// case Shield:
-	// 	
-	// 	if (Target->IsA(AICC_Player::StaticClass()))
-	// 	{
-	// 		Counter = 0;
-	// 		bIsOwnerAlreadyBuffed = false;
-	// 	}
-	// 	if (Target->IsA(AMob::StaticClass()))
-	// 	{
-	// 		Counter = 0;
-	// 		bIsOwnerAlreadyBuffed = false;
-	// 		bCanDebuff = true;
-	// 		PerkData.bShieldDebuff = false;
-	// 		bBuffedTwice = false;
-	// 	}
-	// 	break;
 	
-	case NoBuff:
-		Counter = 0;
-		bIsOwnerAlreadyBuffed = false;
+	bIsOwnerAlreadyBuffed = (BuffCounters.Num() > 0);
+	
+	if (!bIsOwnerAlreadyBuffed)
+	{
 		bBuffedTwice = false;
-		break;
-	default:
-		break;
 	}
 }
 
@@ -1171,6 +1089,10 @@ FString UStatusTracker::GetBuffName(const EBuffStatus& Buff) const
 	}
 }
 
+bool UStatusTracker::IsShieldActive() const
+{
+	return bShieldBuffed;
+}
 
 /*
 * Buff Atk riceve buff atk -> counter a 0 ma buff comunque attivo
@@ -1232,132 +1154,180 @@ void UStatusTracker::BuffFlow(const EBuffStatus& NewBuffStatus)
 			" received " + GetBuffName(NewBuffStatus) + " and counter has been reset to" + FString::FromInt(Counter));
 		PerkData.AssignPriority(Cast<AMob>(GetOwner()));
 	}
-	
-	CurrentBuffedStatus = NewBuffStatus;
-	int32& Counter = BuffCounters.FindOrAdd(CurrentBuffedStatus);
-	
-	Counter = 0;
-	// CurrentBuffedStatus = NewBuffStatus;
-	DebugHelper::LogMessage(7, FColor::Orange, "Old buff " + GetBuffName(CurrentBuffedStatus) + "Removed " + "New buff assigned " + GetBuffName(NewBuffStatus));
-	DebugHelper::AddMessageToLog("[Status Tracker - buff flow]: Old buff " + GetBuffName(CurrentBuffedStatus) + "Removed " + "New buff assigned " + GetBuffName(NewBuffStatus) + " and counter has been reset to "
-		+ FString::FromInt(Counter));
 }
 
-void UStatusTracker::DebuffFlow(const EDebuffStatus& NewDebuffStatus, AICC_Actor* Target)
+bool UStatusTracker::DebuffFlow(const EDebuffStatus& NewDebuffStatus, AICC_Actor* Target)
 {
-	if (!bIsOwnerDebuffed)
+	UStatusTracker* Tracker = Target->GetStatusTracker();
+	EBuffStatus Clash = EBuffStatus::NoBuff;
+	
+	const bool bIsAtk = (NewDebuffStatus == EDebuffStatus::DebuffAtk);
+	const bool bHasBuffClash = (Clash != EBuffStatus::NoBuff && Tracker->BuffCounters.Contains(Clash));
+	
+	if (const bool bHasExistingDebuff = Tracker->DebuffCounters.Contains(NewDebuffStatus); 
+		bHasExistingDebuff && !bHasBuffClash)
 	{
-		DebugHelper::AddMessageToLog("[Status Tracker - Debuff Flow]: " + GetOwner()->GetActorLabel() + " atm is not debuff affected");
-		return;
+		ResetStatsIfDebuffedTwice(Target, bIsAtk);
+		return false; 
 	}
-
-	if (CurrentDebuffStatus == NewDebuffStatus)
+	
+	if (!Tracker->IsBuffed())
 	{
-		DebugHelper::AddMessageToLog("[Status Tracker - Debuff flow]: " + GetOwner()->GetActorLabel() + " got the same debuff " + GetDebuffName(NewDebuffStatus) + " So..");
-		DebuffCounter = 0;
-		bIsOwnerDebuffed = true;
-		
-		switch (NewDebuffStatus)
-		{
-		case EDebuffStatus::DebuffAtk:
-			Instance->GetRuntimeStats().AttackPower = Instance->GetCurrentPlayer()->GetStats()->RuntimeStats.AttackPower;
-			DebugHelper::AddMessageToLog("[Status Tracker - Debuff Flow]: " + GetOwner()->GetActorLabel() + " restored its stats" + FString::FromInt(Instance->GetRuntimeStats().AttackPower) 
-				+ ", reset it's counter: " + FString::FromInt(DebuffCounter) + " and it got debuffed again");
-			break;
-			
-		case EDebuffStatus::DebuffDef:
-			Instance->GetRuntimeStats().DefencePower = Instance->GetCurrentPlayer()->GetStats()->RuntimeStats.DefencePower;
-			DebugHelper::AddMessageToLog("[Status Tracker - Debuff Flow]: " + GetOwner()->GetActorLabel() + " restored its stats" + FString::FromInt(Instance->GetRuntimeStats().DefencePower) 
-				+ ", reset it's counter: " + FString::FromInt(DebuffCounter) + " and it got debuffed again");
-			break;
-			
-		case EDebuffStatus::NoDebuff:
-		default:
-			return;
-		}
-		
-		return;
+		return false;
 	}
-
-	if (NewDebuffStatus == EDebuffStatus::DebuffAtk && CurrentBuffedStatus == EBuffStatus::AtkBuff)
+	
+	if (NewDebuffStatus == EDebuffStatus::DebuffAtk)
 	{
-		DebuffCounter = 0;
-
-		if (Target && Target->IsA(AICC_Player::StaticClass()))
+		Clash = EBuffStatus::AtkBuff;
+	}
+	else if (NewDebuffStatus == EDebuffStatus::DebuffDef)
+	{
+		Clash = EBuffStatus::DefBuff;
+	}
+	
+	if (Clash == EBuffStatus::NoBuff || !Tracker->BuffCounters.Contains(Clash))
+	{
+		return false; 
+	}
+	
+	if (AICC_Player* Player = Cast<AICC_Player>(Target))
+	{
+		if (Clash == EBuffStatus::AtkBuff)
 		{
-			DebugHelper::AddMessageToLog("[Status Tracker - Debuff flow]: " + Target->GetActorLabel() + " collided with " + GetDebuffName(NewDebuffStatus) + " but it has " + GetBuffName(CurrentBuffedStatus) + " so counter and stats are reverted");
+			DebugHelper::AddMessageToLog("[Status Tracker - DebuffFlow]: Collision! " +  GetDebuffName(NewDebuffStatus) + " cancels " +
+				GetBuffName(Clash) + " on " + Target->GetActorLabel());
+			DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetActorLabel() + " got buffed so reverting");
 			Instance->GetRuntimeStats().AttackPower = Instance->GetPersistentData()->InitialAttackPower;
-			DebugHelper::AddMessageToLog("[Status Tracker - Debuff flow]: Counter now is " + FString::FromInt(DebuffCounter) + " and the attack power now restored as " + FString::FromInt(Instance->GetRuntimeStats().AttackPower));
-			return;
+			DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetActorLabel() + " Atk now is  "  + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower));
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura(EBuffStatus::AtkBuff);
+			bAtkDebuffRevert = true;
 		}
-
-		if (Target && Target->IsA(AMob::StaticClass()))
+		else if (Clash == EBuffStatus::DefBuff)
 		{
-			DebugHelper::AddMessageToLog("[Status Tracker - Debuff flow]: " + Target->GetActorLabel() + " collided with " + GetDebuffName(NewDebuffStatus) + " but it has " + GetBuffName(CurrentBuffedStatus) + " so counter and stats are reverted");
-			const AMob* E = Cast<AMob>(Target);
-			E->GetData()->RuntimeStats.AtkPower = E->GetAIMemory().InitialAttackPower;
-			DebugHelper::AddMessageToLog("[Status Tracker - Debuff flow]: Counter now is " + FString::FromInt(DebuffCounter) + " and the attack power now restored as " + FString::FromInt(E->GetData()->RuntimeStats.AtkPower));
-			return;
+			DebugHelper::AddMessageToLog("[Status Tracker - DebuffFlow]: Collision! " +  GetDebuffName(NewDebuffStatus) + " cancels " + 
+				GetBuffName(Clash) + " on " + Target->GetActorLabel());
+			DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetActorLabel() + " got buffed so reverting");
+			Instance->GetRuntimeStats().DefencePower = Instance->GetPersistentData()->InitialDefencePower;
+			DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetActorLabel() + " def now is  "  + FString::SanitizeFloat(Instance->GetRuntimeStats().DefencePower));
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura(EBuffStatus::DefBuff);
+			bDefDebuffRevert = true;
 		}
 	}
-
-
-	if (NewDebuffStatus == EDebuffStatus::DebuffAtk && CurrentBuffedStatus == EBuffStatus::DefBuff)
+	else if (const AMob* Mob = Cast<AMob>(Target))
 	{
-		DebuffCounter = 0;
-
-		if (Target && Target->IsA(AICC_Player::StaticClass()))
+		if (Clash == EBuffStatus::AtkBuff)
 		{
-			DebugHelper::AddMessageToLog("[Status Tracker - Debuff flow]: " + Target->GetActorLabel() + " collided with " + GetDebuffName(NewDebuffStatus) + " but it has " + GetBuffName(CurrentBuffedStatus) + " so counter and stats are reverted");
-			Instance->GetRuntimeStats().DefencePower = Instance->GetPersistentData()->InitialDefencePower;
-			DebugHelper::AddMessageToLog("[Status Tracker - Debuff flow]: Counter now is " + FString::FromInt(DebuffCounter) + " and the defence power now restored as " + FString::FromInt(Instance->GetRuntimeStats().DefencePower));
-			return;
+			DebugHelper::AddMessageToLog("[Status Tracker - DebuffFlow]: Collision! " +  GetDebuffName(NewDebuffStatus) + " cancels " +
+				GetBuffName(Clash) + " on " + Target->GetActorLabel());
+			DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetActorLabel() + " got buffed so reverting");
+			Mob->GetData()->RuntimeStats.AtkPower = Mob->GetAIMemory().InitialAttackPower;
+			DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetActorLabel() + " atk now is  "  + FString::SanitizeFloat(Mob->GetData()->RuntimeStats.AtkPower ));
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura(EBuffStatus::AtkBuff);
+			bAtkDebuffRevert = true;
+			
 		}
-
-		if (Target && Target->IsA(AMob::StaticClass()))
+		else if (Clash == EBuffStatus::DefBuff)
 		{
-			DebugHelper::AddMessageToLog("[Status Tracker - Debuff flow]: " + Target->GetActorLabel() + " collided with " + GetDebuffName(NewDebuffStatus) + " but it has " + GetBuffName(CurrentBuffedStatus) + " so counter and stats are reverted");
-			const AMob* E = Cast<AMob>(Target);
-			E->GetData()->RuntimeStats.DefPower = E->GetAIMemory().InitialDefencePower;
-			DebugHelper::AddMessageToLog("[Status Tracker - Debuff flow]: Counter now is " + FString::FromInt(DebuffCounter) + " and the attack power now restored as " + FString::FromInt(E->GetData()->RuntimeStats.DefPower));
-			return;
+			DebugHelper::AddMessageToLog("[Status Tracker - DebuffFlow]: Collision! " +  GetDebuffName(NewDebuffStatus) + " cancels " +
+				GetBuffName(Clash) + " on " + Target->GetActorLabel());
+			DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetActorLabel() + " got buffed so reverting");
+			Mob->GetData()->RuntimeStats.DefPower = Mob->GetAIMemory().InitialDefencePower;
+			DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetActorLabel() + " def now is  "  + FString::SanitizeFloat(Mob->GetData()->RuntimeStats.DefPower));
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura(EBuffStatus::DefBuff);
+			bDefDebuffRevert = true;
+		}
+	}
+	
+	Tracker->BuffCounters[Clash] = 0;
+	Tracker->BuffCounters.Remove(Clash);
+	Tracker->bIsOwnerAlreadyBuffed = (Tracker->BuffCounters.Num() > 0);
+
+	if (Tracker->CurrentBuffedStatus == Clash)
+		Tracker->CurrentBuffedStatus = EBuffStatus::NoBuff;
+
+	DebugHelper::AddMessageToLog("[Flow]: Buff removed and stats restored for " +
+		Target->GetActorLabel());
+	
+	return true;
+}
+
+void UStatusTracker::ResetStatsIfDebuffedTwice(AICC_Actor* Target, const bool& bAtk)
+{
+	if (Target->IsA(AICC_Player::StaticClass()))
+	{
+		if (bAtk)
+		{
+			Instance->GetRuntimeStats().AttackPower = Instance->GetPersistentData()->InitialAttackPower;
+			DebugHelper::AddMessageToLog("[Status Tracker - Stats Re-setter]: " + Target->GetActorLabel() + " got debuffed again so reverting it's stats -> atk" +
+				FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower));
+		}
+		else
+		{
+			Instance->GetRuntimeStats().DefencePower = Instance->GetPersistentData()->InitialDefencePower;
+			DebugHelper::AddMessageToLog("[Status Tracker - Stats Re-setter]: " + Target->GetActorLabel() + " got debuffed again so reverting it's stats -> def " +
+				FString::SanitizeFloat(Instance->GetRuntimeStats().DefencePower));
+		}
+	}
+	else if (const AMob* Mob = Cast<AMob>(Target))
+	{
+		if (bAtk)
+		{
+			Mob->GetData()->RuntimeStats.AtkPower = Mob->GetAIMemory().InitialAttackPower;
+			DebugHelper::AddMessageToLog("[Status Tracker - Stats Re-setter]: " + Mob->GetActorLabel() + " got debuffed again so reverting it's stats -> atk" +
+				FString::SanitizeFloat(Mob->GetData()->RuntimeStats.AtkPower));
+		}
+		else
+		{
+			Mob->GetData()->RuntimeStats.DefPower = Mob->GetAIMemory().InitialDefencePower;
+			DebugHelper::AddMessageToLog("[Status Tracker - Stats Re-setter]: " + Mob->GetActorLabel() + " got debuffed again so reverting it's stats -> def " +
+				FString::SanitizeFloat(Mob->GetData()->RuntimeStats.DefPower));
 		}
 	}
 }
 
-void UStatusTracker::BuffFlow(const EBuffStatus& NewBuffStatus, AMob* Target)
+bool UStatusTracker::BuffFlow(const EBuffStatus& NewBuffStatus, AICC_Actor* Target)
 {
-	const AMob* Emotion = Cast<AMob>(GetOwner());
+	UStatusTracker* Tracker = Target->GetStatusTracker();
+	EDebuffStatus Clash = EDebuffStatus::NoDebuff;
 	
-	if (!Emotion)
+	if (NewBuffStatus == EBuffStatus::AtkBuff)
 	{
-		return;
+		Clash = EDebuffStatus::DebuffAtk;
 	}
+	else if (NewBuffStatus == EBuffStatus::DefBuff)
+	{
+		Clash = EDebuffStatus::DebuffDef;
+	}
+	
+	if (Clash == EDebuffStatus::NoDebuff || !Tracker->DebuffCounters.Contains(Clash))
+	{
+		return false; 
+	}
+	
+	if (Clash != EDebuffStatus::NoDebuff && Tracker->DebuffCounters.Contains(Clash))
+	{
+		return false; 
+	}
+	
+	DebugHelper::AddMessageToLog("[Status Tracker - BuffFlow]: Collision! " + GetBuffName(NewBuffStatus) + " neutralized " + GetDebuffName(Clash));
+	ExpireBuff(NewBuffStatus, Target); 
+	Tracker->DebuffCounters.Remove(Clash);
+	Tracker->bIsOwnerDebuffed = (Tracker->DebuffCounters.Num() > 0);
+	if (Tracker->CurrentDebuffStatus == Clash) Tracker->CurrentDebuffStatus = EDebuffStatus::NoDebuff;
+	
+	Tracker->DebuffCounters[Clash] = 0;
+	Tracker->DebuffCounters.Remove(Clash);
+	
+	Tracker->bIsOwnerDebuffed = (Tracker->DebuffCounters.Num() > 0);
 
-	BuffWith(NewBuffStatus);
-	
-	Priority.SetNextPriorityFromBuff(NewBuffStatus);
-	
-	if (const FStatusPriority& P = Priority; !P.CanUsePriority(Emotion->GetMobType(), P.GetNextPrioritySource()))
+	if (Tracker->CurrentDebuffStatus == Clash)
 	{
-		DebugHelper::AddMessageToLog("[Status Tracker - buff flow]: " + Emotion->GetActorLabel() +
-			" cannot use priority source " + UEnum::GetValueAsString(P.GetNextPrioritySource()));
-
-		Priority.ClearNextBuff();
-	}
-	else
-	{
-		if (PerkData.HasBuffHighPriority(Cast<AMob>(GetOwner()))) // probably i have to set to target Cast<AMob>(GetOwner())
-		{
-			DebugHelper::AddMessageToLog("[Status Tracker - buff flow]: High priority detected ");
-			PerkData.AssignPriority(Target);
-		}
+		Tracker->CurrentDebuffStatus = EDebuffStatus::NoDebuff;
 	}
 	
-	DebugHelper::LogMessage(7, FColor::Orange, "Old buff " + GetBuffName(CurrentBuffedStatus) + "Removed " + "New buff assigned " + GetBuffName(NewBuffStatus));
-	DebugHelper::AddMessageToLog("[Status Tracker - buff flow]: Old buff " + GetBuffName(CurrentBuffedStatus) + "Removed " + "New buff assigned " + GetBuffName(NewBuffStatus));
-	BuffStatusCounter = 0;
-	CurrentBuffedStatus = NewBuffStatus;
+	DebugHelper::AddMessageToLog("[Status Tracker - BuffFlow]: Debuff removed and stats restored for " + Target->GetActorLabel());
+	
+	return true;
 }
 
 void UStatusTracker::MalusFlow(const EAfflictedStatus& NewStatus)
@@ -1395,7 +1365,7 @@ void UStatusTracker::Reset()
 	CurrentBuffedStatus = EBuffStatus::NoBuff;
 	CurrentActiveStatus = EAfflictedStatus::None;
 	CurrentDebuffStatus = EDebuffStatus::NoDebuff;
-	DebugHelper::LogMessage(8, FColor::Blue, "Stats successfully restored");
+	DebugHelper::LogMessage(8, FColor::Blue, "[Status Tracker]: Stats successfully restored");
 }
 
 void UStatusTracker::BuffAttack()
@@ -1532,19 +1502,19 @@ void UStatusTracker::BuffShield()
 	 */
 	
 	const AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+	bShieldBuffed = true;
+	bCanDebuff = false;
+	PlayerShieldAccumulator = 3;
 	
 	if (Target->IsA(AICC_Player::StaticClass()))
 	{
-		bCanDebuff = false;
-		bShieldBuffed = true;
-		PlayerShieldAccumulator = 3;
-		DebugHelper::LogWarning("[Status Tracker]: " + Target->GetActorLabel() + " uses shield debuff. Shield left " + FString::FromInt(PlayerShieldAccumulator));
+		DebugHelper::LogWarning("[Status Tracker]: " + Target->GetActorLabel() + " uses shield debuff. Shield left " + FString::FromInt(PlayerShieldAccumulator) + 
+			"\nStatus Tracker]: shield debuff and candebuff for "  + Target->GetActorLabel() + " is " + FString(bShieldBuffed ? "True" : "False") + " " + FString(bCanDebuff ? "True" : "False"));
 		DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + " uses shield debuff. Shield left " + FString::FromInt(PlayerShieldAccumulator));
 	}
 
 	if (Target->IsA(AMob::StaticClass()))
 	{
-		bCanDebuff  = false;
 		// PerkData.bShieldDebuff = true;
 		DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + " has shield");
 		
@@ -1575,6 +1545,142 @@ void UStatusTracker::BuffShield()
 	}
 }
 
+void UStatusTracker::ExpireBuff(const EBuffStatus& ExpiredTarget)
+{
+	const AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+	
+	switch (ExpiredTarget)
+	{
+	case AtkBuff:
+		if (Target->IsA(AICC_Player::StaticClass()))
+		{
+			AICC_Player* Player = Instance->GetCurrentPlayer();
+			DebugHelper::AddMessageToLog("[Status Tracker]: Player buff before returning back to normal " + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower));
+			Instance->GetRuntimeStats().AttackPower = Instance->GetPersistentData()->InitialAttackPower;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Player Buff ended atk returns to " + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower));
+			
+			bIsOwnerAlreadyBuffed = false;
+			bCanDebuff = true;
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura(ExpiredTarget);
+		}
+		if (Target->IsA(AMob::StaticClass()))
+		{
+			const AMob* Emotion = Cast<AMob>(GetOwner());
+			DebugHelper::AddMessageToLog("[Status Tracker]:" + Target->GetActorLabel() + " before returning back to normal " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.AtkPower));
+			Emotion->GetData()->RuntimeStats.AtkPower = Emotion->GetAIMemory().InitialAttackPower;
+			DebugHelper::AddMessageToLog("[Status Tracker]: " +  Target->GetActorLabel() +  " Buff ended, atk returns to " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.AtkPower));
+			PerkData.bBuffAtk = false;
+			bIsOwnerAlreadyBuffed = false;
+			bCanBuff = true;
+			bBuffedTwice = false;
+			Emotion->GetBattleHandler()->DeactivateAura(ExpiredTarget);
+		}
+		break;
+	case DefBuff:
+		if (Target->IsA(AICC_Player::StaticClass()))
+		{
+			AICC_Player* Player = Instance->GetCurrentPlayer();
+			Instance->GetRuntimeStats().DefencePower = Instance->GetPersistentData()->InitialDefencePower;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Buff ended def returns to " + FString::SanitizeFloat(Instance->GetRuntimeStats().DefencePower));
+			bIsOwnerAlreadyBuffed = false;
+			bCanDebuff = true;
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura(ExpiredTarget);
+		}
+		if (Target->IsA(AMob::StaticClass()))
+		{
+			const AMob* Emotion = Cast<AMob>(GetOwner());
+			DebugHelper::AddMessageToLog("[Status Tracker]:" + Target->GetActorLabel() + " before returning back to normal " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.DefPower));
+			Emotion->GetData()->RuntimeStats.DefPower = Emotion->GetAIMemory().InitialDefencePower;
+			DebugHelper::AddMessageToLog("[Status Tracker]: " +  Target->GetActorLabel() +  " Buff ended, def returns to " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.DefPower));
+			bIsOwnerAlreadyBuffed = false;
+			PerkData.bBuffDef = false;
+			bCanBuff = true;
+			bBuffedTwice = false;
+			Emotion->GetBattleHandler()->DeactivateAura(ExpiredTarget);
+		}
+		break;
+	case LowHealth:
+		bIsOwnerAlreadyBuffed = false;
+		PerkData.bLowHealth = false;
+		bCanBuff = true;
+		bBuffedTwice = false;
+		break;
+	case NoBuff:
+		bIsOwnerAlreadyBuffed = false;
+		bBuffedTwice = false;
+		break;
+	default:
+		break;
+	}
+}
+
+void UStatusTracker::ExpireBuff(const EBuffStatus& ExpiredBuff, AICC_Actor* Target)
+{
+	switch (ExpiredBuff)
+	{
+	case AtkBuff:
+		if (Target->IsA(AICC_Player::StaticClass()))
+		{
+			AICC_Player* Player = Instance->GetCurrentPlayer();
+			DebugHelper::AddMessageToLog("[Status Tracker]: Player buff before returning back to normal " + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower));
+			Instance->GetRuntimeStats().AttackPower = Instance->GetPersistentData()->InitialAttackPower;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Player Buff ended atk returns to " + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower));
+			
+			bIsOwnerAlreadyBuffed = false;
+			bCanDebuff = true;
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura(ExpiredBuff);
+		}
+		if (Target->IsA(AMob::StaticClass()))
+		{
+			const AMob* Emotion = Cast<AMob>(GetOwner());
+			DebugHelper::AddMessageToLog("[Status Tracker]:" + Target->GetActorLabel() + " before returning back to normal " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.AtkPower));
+			Emotion->GetData()->RuntimeStats.AtkPower = Emotion->GetAIMemory().InitialAttackPower;
+			DebugHelper::AddMessageToLog("[Status Tracker]: " +  Target->GetActorLabel() +  " Buff ended, atk returns to " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.AtkPower));
+			PerkData.bBuffAtk = false;
+			bIsOwnerAlreadyBuffed = false;
+			bCanBuff = true;
+			bBuffedTwice = false;
+			Emotion->GetBattleHandler()->DeactivateAura(ExpiredBuff);
+		}
+		break;
+	case DefBuff:
+		if (Target->IsA(AICC_Player::StaticClass()))
+		{
+			AICC_Player* Player = Instance->GetCurrentPlayer();
+			Instance->GetRuntimeStats().DefencePower = Instance->GetPersistentData()->InitialDefencePower;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Buff ended def returns to " + FString::SanitizeFloat(Instance->GetRuntimeStats().DefencePower));
+			bIsOwnerAlreadyBuffed = false;
+			bCanDebuff = true;
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura(ExpiredBuff);
+		}
+		if (Target->IsA(AMob::StaticClass()))
+		{
+			const AMob* Emotion = Cast<AMob>(GetOwner());
+			DebugHelper::AddMessageToLog("[Status Tracker]:" + Target->GetActorLabel() + " before returning back to normal " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.DefPower));
+			Emotion->GetData()->RuntimeStats.DefPower = Emotion->GetAIMemory().InitialDefencePower;
+			DebugHelper::AddMessageToLog("[Status Tracker]: " +  Target->GetActorLabel() +  " Buff ended, def returns to " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.DefPower));
+			bIsOwnerAlreadyBuffed = false;
+			PerkData.bBuffDef = false;
+			bCanBuff = true;
+			bBuffedTwice = false;
+			Emotion->GetBattleHandler()->DeactivateAura(ExpiredBuff);
+		}
+		break;
+	case LowHealth:
+		bIsOwnerAlreadyBuffed = false;
+		PerkData.bLowHealth = false;
+		bCanBuff = true;
+		bBuffedTwice = false;
+		break;
+	case NoBuff:
+		bIsOwnerAlreadyBuffed = false;
+		bBuffedTwice = false;
+		break;
+	default:
+		break;
+	}
+}
+
 void UStatusTracker::Heal()
 {
 	const AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
@@ -1597,28 +1703,33 @@ void UStatusTracker::Heal()
 
 void UStatusTracker::DebuffAtkF()
 {
-	const AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
 
 	if (Target->IsA(AICC_Player::StaticClass()))
 	{
-		AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+		AICC_Player* Player = Cast<AICC_Player>(Target);
 		DebugHelper::AddMessageToLog("[Status Tracker]: Player debuff math :starting Debuff atk" + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower));
 		Instance->GetRuntimeStats().AttackPower -= Instance->GetRuntimeStats().AttackPower * Player->GetBattleData()->DebuffAtkMalus;
 		DebugHelper::AddMessageToLog("[Status Tracker]: Player debuff math : Debuff atk post malus -> " + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower) +
 			"\n[Status Tracker]: Atk malus dealed -> " + FString::SanitizeFloat(Player->GetBattleData()->DebuffAtkMalus));
+		
+		Player->GetBattleHUD()->GetBattleHandler()->SimulateDebuffAtk(Player);
 	}
 
 	if (Target->IsA(AMob::StaticClass()))
 	{
-		const AMob* Mob = Cast<AMob>(GetOwner());
+		AMob* Mob = Cast<AMob>(Target);
 		Mob->GetData()->RuntimeStats.AtkPower -= Mob->GetData()->RuntimeStats.AtkPower * Mob->GetBattleData()->EmotionAtkDebuffMalus;
 		DebugHelper::LogSuccess("[Status Tracker]: " +Mob->GetActorLabel() + "got it's atk de-buffed now has " + FString::SanitizeFloat(Mob->GetData()->RuntimeStats.AtkPower));
 		DebugHelper::AddMessageToLog("[Status Tracker]: AI atk value (debuff) " + FString::SanitizeFloat(Mob->GetData()->RuntimeStats.AtkPower));
+		
+		Mob->GetBattleHandler()->SimulateDebuffAtk(Mob);
 
 		switch (Mob->GetMobType())
 		{
 		case MobAnger:
-			PerkData.bDebuffAtk = true;
+			Mob->GetStatusTracker()->GetPerkData().Clear();
+			Mob->GetStatusTracker()->GetPerkData().bDebuffAtk = true;
 			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff atk");
 			break;
 		case MobShame:
@@ -1627,13 +1738,15 @@ void UStatusTracker::DebuffAtkF()
 			break;
 		case MobDisgust:
 			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff atk");
-			PerkData.bDebuffAtk = true;
+			Mob->GetStatusTracker()->GetPerkData().Clear();
+			Mob->GetStatusTracker()->GetPerkData().bDebuffAtk = true;
 			break;
 		case MobFear:
 			break;
 		case MobJealousy:
 			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff atk");
-			PerkData.bDebuffAtk = true;
+			Mob->GetStatusTracker()->GetPerkData().Clear();
+			Mob->GetStatusTracker()->GetPerkData().bDebuffAtk = true;
 			break;
 		case MobSadness:
 			break;
@@ -1647,9 +1760,11 @@ void UStatusTracker::DebuffAtkF()
 
 void UStatusTracker::DebuffAtkF(AICC_Actor* Target)
 {
+	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->SimulateDebuffAtk(Target);
+	
 	if (Target->IsA(AICC_Player::StaticClass()))
 	{
-		AICC_Player* Player = Cast<AICC_Player>(GetOwner());
+		const AICC_Player* Player = Cast<AICC_Player>(GetOwner());
 		DebugHelper::AddMessageToLog("[Status Tracker]: Player debuff math :starting Debuff atk" + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower));
 		Instance->GetRuntimeStats().AttackPower -= Instance->GetRuntimeStats().AttackPower * Player->GetBattleData()->DebuffAtkMalus;
 		DebugHelper::AddMessageToLog("[Status Tracker]: Player debuff math : Debuff atk post malus -> " + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower) +
@@ -1666,7 +1781,8 @@ void UStatusTracker::DebuffAtkF(AICC_Actor* Target)
 		switch (Mob->GetMobType())
 		{
 		case MobAnger:
-			PerkData.bDebuffAtk = true;
+			Mob->GetStatusTracker()->GetPerkData().Clear();
+			Mob->GetStatusTracker()->GetPerkData().bDebuffAtk = true;
 			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff atk");
 			break;
 		case MobShame:
@@ -1675,13 +1791,15 @@ void UStatusTracker::DebuffAtkF(AICC_Actor* Target)
 			break;
 		case MobDisgust:
 			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff atk");
-			PerkData.bDebuffAtk = true;
+			Mob->GetStatusTracker()->GetPerkData().Clear();
+			Mob->GetStatusTracker()->GetPerkData().bDebuffAtk = true;
 			break;
 		case MobFear:
 			break;
 		case MobJealousy:
 			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff atk");
-			PerkData.bDebuffAtk = true;
+			Mob->GetStatusTracker()->GetPerkData().Clear();
+			Mob->GetStatusTracker()->GetPerkData().bDebuffAtk = true;
 			break;
 		case MobSadness:
 			break;
@@ -1722,7 +1840,8 @@ void UStatusTracker::DebuffDefF()
 		case MobDisgust:
 			break;
 		case MobFear:
-			PerkData.bDebuffDef = true;
+			Mob->GetStatusTracker()->GetPerkData().Clear();
+			Mob->GetStatusTracker()->GetPerkData().bDebuffDef = true;
 			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff def");
 			break;
 		case MobJealousy:
@@ -1732,7 +1851,8 @@ void UStatusTracker::DebuffDefF()
 		case MobAnxiety:
 			break;
 		case MobCalm:
-			PerkData.bDebuffDef = true;
+			Mob->GetStatusTracker()->GetPerkData().Clear();
+			Mob->GetStatusTracker()->GetPerkData().bDebuffDef = true;
 			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff def");
 			break;
 		default:
@@ -1743,7 +1863,8 @@ void UStatusTracker::DebuffDefF()
 
 void UStatusTracker::DebuffDefF(AICC_Actor* Target)
 {
-
+	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->SimulateDebuffDef(Target);
+	
 	if (Target->IsA(AICC_Player::StaticClass()))
 	{
 		AICC_Player* Player = Cast<AICC_Player>(GetOwner());
@@ -1752,37 +1873,42 @@ void UStatusTracker::DebuffDefF(AICC_Actor* Target)
 		DebugHelper::AddMessageToLog("[Status Tracker]: Player debuff math : Debuff def post malus -> " + FString::SanitizeFloat(Instance->GetRuntimeStats().DefencePower) +
 			"\n[Status Tracker]: Def malus dealed -> " + FString::SanitizeFloat(Player->GetBattleData()->DebuffDefMalus));
 	}
-
+	
 	if (Target->IsA(AMob::StaticClass()))
 	{
-		const AMob* Mob = Cast<AMob>(GetOwner());
+		AMob* Mob = Cast<AMob>(Target);
 		Mob->GetData()->RuntimeStats.DefPower -= Mob->GetData()->RuntimeStats.DefPower * Mob->GetBattleData()->EmotionDefDebuffMalus;
+		DebugHelper::LogSuccess("[Status Tracker]: " +Mob->GetActorLabel() + "got it's def de-buffed now has " + FString::SanitizeFloat(Mob->GetData()->RuntimeStats.DefPower));
+		DebugHelper::AddMessageToLog("[Status Tracker]: AI def value (debuff) " + FString::SanitizeFloat(Mob->GetData()->RuntimeStats.DefPower));
 		
 		switch (Mob->GetMobType())
 		{
 		case MobAnger:
+			Mob->GetStatusTracker()->GetPerkData().Clear();
+			Mob->GetStatusTracker()->GetPerkData().bDebuffDef = true;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff def");
 			break;
 		case MobShame:
 			break;
 		case MobJoy:
 			break;
 		case MobDisgust:
+			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff def");
+			Mob->GetStatusTracker()->GetPerkData().Clear();
+			Mob->GetStatusTracker()->GetPerkData().bDebuffDef = true;
 			break;
 		case MobFear:
-			PerkData.bDebuffDef = true;
-			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff def");
 			break;
 		case MobJealousy:
+			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff def");
+			Mob->GetStatusTracker()->GetPerkData().Clear();
+			Mob->GetStatusTracker()->GetPerkData().bDebuffDef = true;
 			break;
 		case MobSadness:
 			break;
 		case MobAnxiety:
 			break;
 		case MobCalm:
-			PerkData.bDebuffDef = true;
-			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now debuff def");
-			break;
-		default:
 			break;
 		}
 	}
@@ -1916,7 +2042,8 @@ void UStatusTracker::InflictFreeze(AICC_Actor* Target)
 	bIsOwnerAfflicted = true;
 	Target->Freeze(true);
 	DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + " freezed");
-	PerkData.bFreezedUp = true;
+	Target->GetStatusTracker()->GetPerkData().bFreezedUp = true;
+	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->SimulateFreezedUp(Target, FColor::White);
 }
 
 void UStatusTracker::InflictBurn(AICC_Actor* Target)
@@ -1975,10 +2102,7 @@ void UStatusTracker::InflictShieldDebuff(AICC_Actor* Target)
 
 void UStatusTracker::InflictAShamed(AICC_Actor* Target)
 {
-	// AI can't target for attack and player can't attack
-	
 	bIsOwnerAfflicted = true;
-	Target->Ashamed(true);
 	DebugHelper::LogMessage(5, FColor::FromHex("FE7743"), Target->GetActorLabel() + " can't perform attack");
 	DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + " can't perform attack");
 
@@ -1990,38 +2114,27 @@ void UStatusTracker::InflictAShamed(AICC_Actor* Target)
 
 	if (Target->IsA(AMob::StaticClass()))
 	{
-		switch (const AMob* Mob = Cast<AMob>(Target); Mob->GetMobType())
+		AMob* Mob = Cast<AMob>(Target);
+		Mob->Ashamed(true);
+		
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + Mob->GetActorLabel() + " ashamed");
+		DebugHelper::LogMessage(8, FColor::White, "[Status Tracker]: " + Mob->GetActorLabel() + " ashamed");
+		
+		switch ( Mob->GetMobType())
 		{
 		case MobAnger:
-			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now ashamed");
+		case MobJoy:
+		case MobDisgust:
+		case MobFear:
+		case MobJealousy:
+		case MobSadness:
+			PerkData.Clear();
 			PerkData.bAshamed = true;
+			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now ashamed");
 			break;
 		case MobShame:
-			break;
-		case MobJoy:
-			PerkData.bAshamed = true;
-			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now ashamed");
-			break;
-		case MobDisgust:
-			PerkData.bAshamed = true;
-			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now ashamed");
-			break;
-		case MobFear:
-			PerkData.bAshamed = true;
-			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now ashamed");
-			break;
-		case MobJealousy:
-			PerkData.bAshamed = true;
-			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now ashamed");
-			break;
-		case MobSadness:
-			PerkData.bAshamed = true;
-			DebugHelper::AddMessageToLog("[Status Tracker]: Decision table of " + Mob->GetActorLabel() + " is now ashamed");
-			break;
 		case MobAnxiety:
-			break;
 		case MobCalm:
-			break;
 		default:
 			break;
 		}

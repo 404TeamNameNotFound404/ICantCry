@@ -10,6 +10,9 @@ USTRUCT(Blueprintable)
 struct FRuntimeStats
 {
 	GENERATED_BODY()
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Stats")
+	float CurrentHealth;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Stats")
 	int32 AttackPower = 5;
@@ -18,7 +21,16 @@ struct FRuntimeStats
 	int32 DefencePower = 4;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stats")
+	float MaxExperience = 100.f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stats")
 	float Experience = 0.0f;
+
+	/**
+	 * Display the total Exp gained after battle if won
+	 */
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category="Stats")
+	float ExpSummary = 0.0f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stats")
 	int32 Level = 0;

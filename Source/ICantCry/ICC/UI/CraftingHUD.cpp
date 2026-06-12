@@ -3,8 +3,6 @@
 #include "CraftingHUD.h"
 #include "RecipeButtonWidget.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
-#include "../Source/ICantCry/ICC/Debug/DebugHelper.h"
-#include "ICantCry/ICC/Actors/Pickups/RecipePickup.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 
 FRecipe UCraftingHUD::SelectedRecipe;
@@ -66,7 +64,6 @@ void UCraftingHUD::RefreshUI()
     //checkf(CraftingTable, TEXT("Crafting table is null at CraftingHUD"))
     if(!CraftingTable)
     {
-        DebugHelper::LogError("Crafting table is null at CraftingHUD");
     }
     checkf(InventoryManager, TEXT("InventoryManager is null at CraftingHUD"))
 

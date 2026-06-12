@@ -26,6 +26,7 @@ struct FDecisionWeight
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly) float ShieldWeight = 0.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly) float ShieldOtherWeight= 0.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly) float FreezedUpWeight = 0.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly) float FleeWeight = 0.f;
 };
 
 /**

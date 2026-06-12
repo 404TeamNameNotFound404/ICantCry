@@ -178,6 +178,28 @@ void UCircularBulletBuffer::SetAt(const int32& Index, UBulletData* Data)
     }
 }
 
+TArray<UBulletData*> UCircularBulletBuffer::GetBulletsLeft()
+{
+    if (IsEmpty())
+    {
+        DebugHelper::LogMessage(20, FColor::White, "Empty Circular buffer");
+        return TArray<UBulletData*>();
+    }
+    
+    TArray<UBulletData*> Bullets;
+    const int32 Count = GetCount();
+    
+    for (int32 Index = 0; Index < Count; Index++)
+    {
+        const int32 ActualIndex = (Tail + Index) % Capacity;
+        if (Buffer[ActualIndex] == nullptr) continue;
+        Bullets.Add(Buffer[ActualIndex]);
+        DebugHelper::LogMessage(20, FColor::White, "Bullet left: " + Buffer[ActualIndex]->BulletName);
+    }
+    
+    return Bullets;
+}
+
 void UCircularBulletBuffer::Clear()
 {
     for (int32 i = 0; i < Capacity; ++i)

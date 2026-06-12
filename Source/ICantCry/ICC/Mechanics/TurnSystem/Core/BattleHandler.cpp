@@ -28,10 +28,7 @@ void ABattleHandler::BeginPlay()
 	}
 	
 	TurnBasedSystem = NewObject<UTurnBasedSystem>();
-	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), BattleInfoWidget);
-	BattleInfo = Cast<UBattleInfo>(Widget);
-	BattleInfo->AddToViewport();
-	TurnBasedSystem->Start2(GetWorld(), &SpawnManager->GetMemory());
+	TurnBasedSystem->Start2(GetWorld(), &Instance->CachedBattleMemory);
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	checkf(PlayerController, TEXT("PlayerController is null at ABattleHandler::BeginPlay"));
 
@@ -44,7 +41,7 @@ void ABattleHandler::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	TurnBasedSystem->Update(GetWorld(), &SpawnManager->GetMemory());
+	TurnBasedSystem->Update(GetWorld(), &Instance->CachedBattleMemory);
 
 	if (DebugHelper::IsGamepadPlugged())
 	{
@@ -63,11 +60,6 @@ UTurnBasedSystem *ABattleHandler::GetTurnBasedSystem() const
     return TurnBasedSystem;
 }
 
-UBattleInfo* ABattleHandler::GetBattleInfo() const
-{
-	checkf(BattleInfo, TEXT("Battle Info is invalid"))
-	return BattleInfo;
-}
 
 AEnemySpawnManager* ABattleHandler::GetEnemySpawnManager()
 {
@@ -142,6 +134,35 @@ void ABattleHandler::SimulateAura(AICC_Actor* Target ,const float& SpawnRate ,co
 	Aura->SetVariableFloat(FName("User.SpawnRate"), SpawnRate);
 }
 
+void ABattleHandler::SimulateAura(AICC_Actor* Target, const float& SpawnRate, const FLinearColor& Color,
+	const EBuffStatus& Status)
+{
+	if (!Target) return;
+	
+	if (ActiveAuras.Contains(Status) && ActiveAuras[Status])
+	{
+		ActiveAuras[Status]->DestroyComponent();
+	}
+	
+	const FVector& SpawnLocation = Target->GetActorLocation() + FVector{0,0,-50};
+	const FRotator& SpawnRotation = Target->GetActorRotation();
+	
+	UNiagaraComponent* NewAura = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), 
+		AuraPrefab, SpawnLocation, SpawnRotation, FVector{1.5f}, false);
+	
+	if (!NewAura)
+	{
+		DebugHelper::LogError("Aura can't be spawned is null");
+		return;
+	}
+	
+	NewAura->Activate(true);
+	NewAura->SetVariableLinearColor(FName("User.Color"), Color);
+	NewAura->SetVariableFloat(FName("User.SpawnRate"), SpawnRate);
+	
+	ActiveAuras.Add(Status, NewAura);
+}
+
 void ABattleHandler::IncreaseAura(const float& Value)
 {
 	if (!Aura) return;
@@ -158,10 +179,70 @@ void ABattleHandler::DecreaseAura(const float& Value)
 	Aura->SetVariableFloat(FName("User.SpawnRate"), Result);
 }
 
+void ABattleHandler::DeactivateAura(const EBuffStatus& Status)
+{
+	if (!ActiveAuras.Contains(Status)) return;
+	
+	if (ActiveAuras[Status])
+	{
+		ActiveAuras[Status]->Deactivate();
+	}
+	
+	ActiveAuras.Remove(Status);
+}
+
 void ABattleHandler::DeactivateAura()
 {
 	if (!Aura) return;
 	Aura->Deactivate();
+}
+
+void ABattleHandler::SimulateFreezedUp(AICC_Actor* Target, const FLinearColor& Color)
+{
+	if (!Target) return;
+	const FVector& SpawnLocation = Target->GetActorLocation() + FVector{0,0,-50};
+	const FRotator& SpawnRotation = Target->GetActorRotation();
+	
+	Freezed = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), FreezedUpPrefab, SpawnLocation, SpawnRotation,{2,2,2}, true);
+	Freezed->Activate();
+}
+
+void ABattleHandler::SimulateDebuffDef(AICC_Actor* Target)
+{
+	if (!Target) return;
+	const FVector& SpawnLocation = Target->GetActorLocation() + FVector{0,0,-50};
+	const FRotator& SpawnRotation = Target->GetActorRotation();
+	
+	DebuffDef = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DebuffDefPrefab, SpawnLocation, SpawnRotation,{2,2,2}, true);
+	DebuffDef->Activate();
+}
+
+void ABattleHandler::SimulateDebuffAtk(AICC_Actor* Target)
+{
+	if (!Target) return;
+	const FVector& SpawnLocation = Target->GetActorLocation() + FVector{0,0,-50};
+	const FRotator& SpawnRotation = Target->GetActorRotation();
+	
+	DebuffAtk = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DebuffAtkPrefab, SpawnLocation, SpawnRotation,{2,2,2}, true);
+	DebuffAtk->Activate();
+}
+
+void ABattleHandler::DeactivateDebuffAura(const bool& InDebuffAtk)
+{
+	if (InDebuffAtk)
+	{
+		DebuffAtk->Deactivate();
+	}
+	
+	else
+	{
+		DebuffDef->Deactivate();
+	}
+}
+
+UBulletData* ABattleHandler::GetIndifferenceData()
+{
+	return Indifference;
 }
 
 void ABattleHandler::UpdateMuzzleFlashPosition(const FVector& Location)

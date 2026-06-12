@@ -10,6 +10,7 @@
 #include "ICantCry/ICC/Actors/EmotionsData/EmotionsData.h"
 #include "ICantCry/ICC/Actors/NoteData/NoteData.h"
 #include "GameplayTagContainer.h"
+#include "ICantCry/ICC/Mechanics/TurnSystem/BattleMemory/FBattleMemory.h"
 #include "ICantCryGameInstance.generated.h"
 
 class AICC_Player;
@@ -58,7 +59,9 @@ public:
 
 	FRuntimeStats& GetRuntimeStats();
 
-
+	UPROPERTY()
+	bool bHealthInitialized = false;
+	
 	// Bestiary
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Bestiary")
     TArray<FString> CollectedNotes;
@@ -102,6 +105,11 @@ public:
 	void DebugUnlockSpecificMobContent(FString MobType);
 	//[DEBUG END]
 	
+	UDataTable* GetRecipes() const;
+	UDataTable* GetCasingsTable() const;
+	UDataTable* GetEssencesTable() const;
+	TMap<FString, UTexture2D*>& GetIconMap();
+	
 	
 	// --- LOGICA INVENTARIO TAG (per consegnare oggetti a npc o per eventi) ---
     UFUNCTION(BlueprintCallable, Category = "Inventory")
@@ -114,6 +122,9 @@ public:
     int32 GetItemCount(FGameplayTag ItemTag) const;
 
 
+	UPROPERTY() FName LastBattleSceneLoaded;
+	UPROPERTY() FBattleMemory CachedBattleMemory;
+	
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))
 	UPersistentData* PersistentData;
@@ -161,6 +172,17 @@ private:
 
 
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Data Tables", meta=(AllowPrivateAccess=true))
+	UDataTable* Recipes;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Data Tables", meta=(AllowPrivateAccess=true))
+	UDataTable* CasingsTable;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Data Tables", meta=(AllowPrivateAccess=true))
+	UDataTable* EssencesTable;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="ICCMisc", meta=(AllowPrivateAccess=true))
+	TMap<FString, UTexture2D*> IconPack;
 };
 
 

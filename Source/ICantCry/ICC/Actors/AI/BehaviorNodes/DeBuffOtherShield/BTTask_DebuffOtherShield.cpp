@@ -14,6 +14,7 @@ UBTTask_DebuffOtherShield::UBTTask_DebuffOtherShield()
 	NodeName = "DebuffOtherShield";
 	bNotifyTick = true;
 	bNotifyTaskFinished = true;
+	bCreateNodeInstance = true;
 }
 
 EBTNodeResult::Type UBTTask_DebuffOtherShield::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -35,6 +36,13 @@ EBTNodeResult::Type UBTTask_DebuffOtherShield::ExecuteTask(UBehaviorTreeComponen
 
 	if (Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().CantBuffOthers())
 	{
+		if (Current->GetMobType() == EMobType::MobCalm)
+		{
+			Blackboard->SetValueAsBool("IsShieldDebuffed?", true);
+			DebugHelper::AddMessageToLog("[BTTask - Debuff Other Shield]: " + Current->GetActorLabel() + " couldn't cast it's shield to other mfs so it's gonna buff it's shield back again");
+			return EBTNodeResult::Succeeded;
+		}
+		
 		Blackboard->SetValueAsBool("Rethinker", true);
 		DebugHelper::AddMessageToLog(Current->GetActorLabel() + " attempted to buff other shield but it's alone! , rethink the action");
 		return EBTNodeResult::Succeeded;
@@ -44,6 +52,13 @@ EBTNodeResult::Type UBTTask_DebuffOtherShield::ExecuteTask(UBehaviorTreeComponen
 	
 	if (!TargetToBuff) // rethink if target buff appears to be nullptr again 
 	{
+		if (Current->GetMobType() == EMobType::MobCalm)
+		{
+			Blackboard->SetValueAsBool("IsShieldDebuffed?", true);
+			DebugHelper::AddMessageToLog("[BTTask - Debuff Other Shield]: " + Current->GetActorLabel() + " couldn't cast it's shield to other mfs so it's gonna buff it's shield back again");
+			return EBTNodeResult::Succeeded;
+		}
+		
 		Blackboard->SetValueAsBool("Rethinker", true);
 		DebugHelper::AddMessageToLog("[Behavior Tree - DOS]: " + Current->GetActorLabel() + " attempted to buff other def but it didn't find a valid target (scrivetemelo se entra qua dentro)! , rethinking the action");
 		return EBTNodeResult::Succeeded;
@@ -53,7 +68,7 @@ EBTNodeResult::Type UBTTask_DebuffOtherShield::ExecuteTask(UBehaviorTreeComponen
 	// TargetToBuff->GetStatusTracker()->BuffWith(EBuffStatus::Shield);
 	TargetToBuff->GetStatusTracker()->InflictStatus(EAfflictedStatus::ShieldDebuff, TargetToBuff);
 
-	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Current->GetActorLabel() + " de-buffed " + TargetToBuff->GetActorLabel() + " shield"));
+
 	DebugHelper::AddMessageToLog("[Behavior Tree - DOS]: " + Current->GetActorLabel() + " de-buffed " + TargetToBuff->GetActorLabel() + " shield");
 	
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
@@ -123,7 +138,7 @@ void UBTTask_DebuffOtherShield::OnTaskFinished(UBehaviorTreeComponent& OwnerComp
 			Blackboard->SetValueAsInt("Id", Current->GetTreeId());
 		}
 
-		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
+		
 		UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 	}

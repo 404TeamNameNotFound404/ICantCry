@@ -14,8 +14,8 @@ void UInventoryManager::Initialize(UInventoryHUD* InHUD)
 
     Instance = Cast<UICantCryGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
     checkf(Instance, TEXT("Instance is null"))
-
-    Instance->SetInventory(Inventory);
+    
+   Instance->SetInventory(Inventory);
 
     if (LinkedHUD)
     {

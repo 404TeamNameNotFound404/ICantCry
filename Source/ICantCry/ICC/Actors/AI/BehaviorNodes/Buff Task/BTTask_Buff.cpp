@@ -31,11 +31,9 @@ EBTNodeResult::Type UBTTask_Buff::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	BlackBoard->SetValueAsBool("IsBuffed?", Current->GetIsIsBuffedAtk());
 	BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 	
-	Current->GetStatusTracker()->BuffFlow(EBuffStatus::AtkBuff);
+	//Current->GetStatusTracker()->BuffFlow(EBuffStatus::AtkBuff, Current);
 	Current->GetStatusTracker()->BuffWith(EBuffStatus::AtkBuff);
 	
-	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(
-		FText::FromString(Current->GetActorLabel() + " buffed it's atk"));
 
 	Target->GetBattleHUD()->DecisionDisplayer->Show();
 	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetActorLabel() + " buffs it's atk"));
@@ -103,8 +101,7 @@ void UBTTask_Buff::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* Node
 			BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 			BlackBoard->SetValueAsInt("Id", Current->GetTreeId());
 		}
-
-		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
+		
 		UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 	}

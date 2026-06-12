@@ -180,6 +180,9 @@ protected:
 
 	UPROPERTY()
 	int Bt_Id;
+	
+	UPROPERTY()
+	bool bFlee;
 
 	UPROPERTY()
 	bool bRethink = false;
@@ -243,8 +246,8 @@ public:
 
 	void StartDefenceMinigame();
 	virtual void Heal(const float& RestoredHealth);
-
-	static void DealDamage();
+	
+	void InflictDamage();
 
 	void SetIsBusy(const bool& Value);
 	bool IsBusy() const;
@@ -258,7 +261,8 @@ public:
 	
 	void EndTurn();
 	static bool MinigameEnded;
-	static FDamage Damage;
+	
+	UPROPERTY() FDamage RefDamage;
 
 	FEmotionStat& GetStats();
 
@@ -370,6 +374,11 @@ public:
 	int GetTreeId() const;
 	bool GetRethink() const;
 	void SetRethink(const bool& Value);
+	
+	bool IsFleeing() const;
+	void SetFleeing(const bool& Value);
+	
+	void Flee();
 	
 	UFUNCTION() void UpdateBestiaryUI();
 

@@ -30,7 +30,7 @@ protected:
 	UPROPERTY(meta = (BindWidget)) UBulletBottonItem* SadnessEV;
 	UPROPERTY(meta = (BindWidget)) UBulletBottonItem* JoyDV;
 	UPROPERTY(meta = (BindWidget)) UBulletBottonItem* JoyEV;
-	UPROPERTY(meta = (BindWidget)) UBulletBottonItem* NoneBullet;
+	UPROPERTY(meta = (BindWidget)) UBulletBottonItem* CalmDv;
 	UPROPERTY(meta = (BindWidget)) UBulletBottonItem* CalmEV;
 	UPROPERTY(meta = (BindWidget)) UBulletBottonItem* JealousyDV;
 	UPROPERTY(meta = (BindWidget)) UBulletBottonItem* JealousyEV;

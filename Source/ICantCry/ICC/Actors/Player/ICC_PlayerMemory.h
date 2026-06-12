@@ -23,6 +23,10 @@ public:
 	FVector LastPositionBeforeBattle;
 	FRotator LastOrientationBeforeBattle;
 	
+	UPROPERTY() bool bIsWorldCameraEnabled;
+	UPROPERTY() FVector LastWorldCameraPosition;
+	UPROPERTY() FRotator LastWorldCameraRotation;
+	
 	FPlayerMemory();
 };
 

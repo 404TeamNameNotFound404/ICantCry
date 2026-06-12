@@ -31,7 +31,6 @@ EBTNodeResult::Type UBTTask_EnvyBurned::ExecuteTask(UBehaviorTreeComponent& Owne
 	Blackboard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 	
 	AICC_Player* Target = Cast<AICC_Player>(Blackboard->GetValueAsObject("Target"));
-	Current->GetBattleHandler()->GetBattleInfo()->SetInfo(FText::FromString(Target->GetActorLabel() + " in EnvyBurned state!"));
 	DebugHelper::AddMessageToLog("[Behavior Tree - EnvyBurned]: " + Target->GetActorLabel() + " in EnvyBurned state!");
 	
 	Target->GetStatusTracker()->MalusFlow(EAfflictedStatus::Burn);
@@ -103,8 +102,7 @@ void UBTTask_EnvyBurned::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8
 			Blackboard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 			Blackboard->SetValueAsInt("Id", Current->GetTreeId());
 		}
-
-		Current->GetBattleHandler()->GetBattleInfo()->ClearInfo();
+		
 		UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 	}

@@ -1,8 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "InventoryHUD.h"
 #include "../Source/ICantCry/ICC/Actors/Player/ICC_Player.h"
-#include "../Source/ICantCry/ICC/Debug/DebugHelper.h"
-#include "ICantCry/ICC/UI/CasingWidget.h"
+#include "ICantCry/ICC/Input/Tags/ICC_InputTags.h"
 
 void UInventoryHUD::NativeConstruct()
 {   
@@ -34,6 +33,23 @@ void UInventoryHUD::NativeConstruct()
     }
 
     //StandardBulletDisplayer->Init(this);
+    
+    if (DebugHelper::IsGamepadPlugged())
+    {
+        CraftIcon->SetBrushFromTexture(GameInstance->GetIconMap()["OPad_X"]);
+    }
+    else
+    {
+        CraftIcon->SetBrushFromTexture(GameInstance->GetIconMap()["OKey_MouseClicked"]);
+    }
+    
+    FTimerHandle BindDelay;
+    GetWorld()->GetTimerManager().SetTimer(BindDelay, this, &UInventoryHUD::Bind, 0.4f, false);
+    
+    BulletSwitcher->SetFocus();
+    StandardBulletDisplayer->SetIsFocusable(true);
+    StandardBulletDisplayer->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+  
 }
 
 void UInventoryHUD::UpdateInventoryDisplay(const FInventory &Inventory)
@@ -122,11 +138,12 @@ void UInventoryHUD::MoveSelectionDown()
 
 FText UInventoryHUD::OnQuantityChanged()
 {
-    for (UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
-       const auto& Pair : Instance->GetInventory().CasingsStored)
+    UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+    
+    if ( const FBullet& Indifference = Instance->GetInventory().BulletsStored[EBulletType::Indifference];
+        Indifference.IsValid())
     {
-        const FString Txt = FString("x " + FString::FromInt(Pair.Value.GetQuantity()));
-        return FText(FText::FromString(Txt));
+        return FText::FromString("x " + FString::FromInt(Indifference.GetQuantity()));
     }
 
     return FText::FromString("x 0");
@@ -148,8 +165,8 @@ void UInventoryHUD::OnToggleSwitcher()
 {
     if (!BulletSwitcher) return; 
     
-    int32 Current = BulletSwitcher->GetActiveWidgetIndex(); 
-    int32 Next = (Current == 0) ? 1 : 0; 
+    const int32 Current = BulletSwitcher->GetActiveWidgetIndex(); 
+    const int32 Next = (Current == 0) ? 1 : 0; 
     BulletSwitcher->SetActiveWidgetIndex(Next);
 }
 
@@ -173,11 +190,8 @@ void UInventoryHUD::OnCraftPressed()
     
   
     FRecipe& CurrentRecipe = Instance->GetInventory().GetSelectedRecipe();
-    if (CurrentRecipe.Requirements == nullptr) // <-- QUESTO È IL CONTROLLO CHIAVE
+    if (CurrentRecipe.Requirements == nullptr) 
     {
-        DebugHelper::LogError("No recipe selected!");
-        
-        // Feedback opzionale
         if (CraftInfo)
         {
             CraftInfo->SetText(FText::FromString("Select recipe first"));
@@ -223,9 +237,6 @@ void UInventoryHUD::OnCraftReleased()
         CraftingProgressBar->SetPercent(0.0f);
     }
     
-    DebugHelper::LogWarning("Progress bar reset to 0");
-
-
 }
 
 void UInventoryHUD::UpdateProgressBar()
@@ -269,16 +280,11 @@ void UInventoryHUD::CompleteCrafting()
         return;
     }
     
-    DebugHelper::LogSuccess("Crafting completed! Crafting 1 bullet...");
-    
-    // 1. Crafta UN SOLO bullet
     CraftingTable->CraftSelectedBullet(GetWorld());
     Refresh();
     
-    // 2. Controlla se l'utente sta ancora tenendo premuto
     if (!bIsHolding)
     {
-        // Utente ha rilasciato, resetta tutto
         CurrentProgress = 0.0f;
         if (CraftingProgressBar)
         {
@@ -286,13 +292,9 @@ void UInventoryHUD::CompleteCrafting()
         }
         return;
     }
-    
-    // 3. Controlla se ci sono ancora risorse per craftare un altro bullet
+  
     if (!CraftingTable->ScanResources(GetWorld()))
     {
-        DebugHelper::LogWarning("No more resources available");
-        
-        // Nessuna risorsa, resetta tutto
         bIsHolding = false;
         CurrentProgress = 0.0f;
         if (CraftingProgressBar)
@@ -302,17 +304,12 @@ void UInventoryHUD::CompleteCrafting()
         return;
     }
     
-    // 4. Se l'utente tiene ancora premuto E ci sono risorse...
-    //    Ricomincia la progress bar da 0 per craftare il prossimo bullet
-    DebugHelper::LogWarning("User still holding - starting next bullet craft...");
-    
     CurrentProgress = 0.0f;
     if (CraftingProgressBar)
     {
         CraftingProgressBar->SetPercent(0.0f);
     }
     
-    // Ricomincia il timer per la prossima progress bar
     GetWorld()->GetTimerManager().ClearTimer(Timer);
     GetWorld()->GetTimerManager().SetTimer(
         Timer, 
@@ -329,6 +326,92 @@ UCraftingTable* UInventoryHUD::GetTable()
     return CraftingTable;
 }
 
+void UInventoryHUD::Bind()
+{
+    UICC_EnhancedInputCmp* Binder = Cast<UICantCryGameInstance>(GetGameInstance())->GetCurrentPlayer()->GetInputBinder();
+    UICC_InputDataAsset* Data = Cast<UICantCryGameInstance>(GetGameInstance())->GetCurrentPlayer()->GetInputDataAsset();
+    
+    Binder->BindNativeInputAction(Data, Icc_InputTags::InputTag_Interact, ETriggerEvent::Triggered, this, &UInventoryHUD::SimulateCraftClick);
+    Binder->BindNativeInputAction(Data, Icc_InputTags::InputTag_Interact, ETriggerEvent::Canceled, this, &UInventoryHUD::EndSimulateCraftClick);
+    Binder->BindNativeInputAction(Data, Icc_InputTags::InputTag_ScrollBulletsLeft, ETriggerEvent::Triggered, this, &UInventoryHUD::NavigateLeft);
+    Binder->BindNativeInputAction(Data, Icc_InputTags::InputTag_ScrollBulletsRight, ETriggerEvent::Triggered, this, &UInventoryHUD::NavigateRight);
+}
+
+void UInventoryHUD::SimulateCraftClick()
+{
+    OnCraftPressed();
+}
+
+void UInventoryHUD::EndSimulateCraftClick()
+{
+    OnCraftReleased();
+}
+
+void UInventoryHUD::NavigateThroughBullets(const int32& InDirection)
+{
+    if (StandardBulletDisplayer->GetBullet().IsEmpty()) return;
+
+    const int32 OriginalIndex = ScrollerIndex;
+    bool bFoundValidButton = false;
+	
+    for (int32 i = 0; i < StandardBulletDisplayer->GetBullet().Num(); ++i)
+    {
+        ScrollerIndex = (ScrollerIndex + InDirection + StandardBulletDisplayer->GetBullet().Num()) % StandardBulletDisplayer->GetBullet().Num();
+
+        if (const UBulletBottonItem* Target = StandardBulletDisplayer->GetBullet()[ScrollerIndex])
+        {
+            if (Target->GetIsEnabled() && Target->GetVisibility() == ESlateVisibility::Visible)
+            {
+                bFoundValidButton = true;
+                break; 
+            }
+        }
+    }
+	
+    if (bFoundValidButton)
+    {
+        if (UBulletBottonItem* Target = StandardBulletDisplayer->GetBullet()[ScrollerIndex])
+        {
+            Target->SetFocus();
+            Hightlight(Target);
+        }
+    }
+    else
+    {
+        ScrollerIndex = OriginalIndex;
+    }
+}
+
+void UInventoryHUD::NavigateLeft()
+{
+    NavigateThroughBullets(-1);
+    DebugHelper::LogMessage(5, FColor::Silver, "Im supposed to scroll bullet list up");
+}
+
+void UInventoryHUD::NavigateRight()
+{
+    NavigateThroughBullets(1);
+    DebugHelper::LogMessage(5, FColor::Silver, "Im supposed to scroll bullet list down");
+}
+
+void UInventoryHUD::Hightlight(UWidget* What)
+{
+    // if (!What || !OverviewFrame) return;
+	   //
+    // OverviewFrame->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+    // UCanvasPanelSlot* FrameSlot = Cast<UCanvasPanelSlot>(OverviewFrame->Slot);
+	   //
+    // if (const UCanvasPanelSlot* ButtonSlot = Cast<UCanvasPanelSlot>(What->Slot);
+    //     FrameSlot && ButtonSlot)
+    // {
+    //     FrameSlot->SetPosition(ButtonSlot->GetPosition());
+    //     FrameSlot->SetSize(ButtonSlot->GetSize());
+		  //
+    //     FrameSlot->SetAnchors(ButtonSlot->GetAnchors());
+    //     FrameSlot->SetAlignment(ButtonSlot->GetAlignment());
+    // }
+}
+
 void UInventoryHUD::RefreshEssence()
 {
     EssenceBox->ClearChildren();
@@ -336,7 +419,12 @@ void UInventoryHUD::RefreshEssence()
     for (const auto &Essence : GameInstance->GetInventory().EssencesStored)
     {
         UEssenceWidget *EssenceWidget = CreateWidget<UEssenceWidget>(GetWorld(), UEssenceWidgetClass);
-        checkf(EssenceWidget, TEXT("Essence widget is null"))
+   
+        if (!EssenceWidget)
+        {
+            DebugHelper::LogMessage(8, FColor::Red,"Essence widget is null");
+            return;
+        }
 
         EssenceBox->AddChild(EssenceWidget);
         const FEssence &E = Essence.Value;
@@ -348,7 +436,6 @@ void UInventoryHUD::Setup()
 {
     StandardBulletDisplayer->Init(this);
     StandardBulletDisplayer->Refresh();
-    DebugHelper::LogWarning("Setup InventoryHUD called");
 }
 
 

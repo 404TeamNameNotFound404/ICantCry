@@ -12,6 +12,11 @@ AEncounterHandler::AEncounterHandler() : MultiplierLocation(EPlayerLocation::Sch
 	PrimaryActorTick.bCanEverTick = true;
 }
 
+void AEncounterHandler::SetSafeZone(const bool& bInSafeZone)
+{
+	this->bIsSafeZone = bInSafeZone;
+}
+
 // Called when the game starts or when spawned
 void AEncounterHandler::BeginPlay()
 {
@@ -20,12 +25,13 @@ void AEncounterHandler::BeginPlay()
 	EncounterManager = NewObject<UEncounterManager>();
 	EncounterManager->Initialize(GetWorld());
 	EncounterManager->SetPlayerLocationMultiplier(MultiplierLocation);
+	bIsSafeZone = false;
 }
 
 void AEncounterHandler::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	EncounterManager->UpdateThreshold(GetWorld());
+	EncounterManager->SetPaused(bIsSafeZone);
 }
 
