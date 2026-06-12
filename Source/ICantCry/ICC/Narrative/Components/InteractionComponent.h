@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/WidgetComponent.h"
 #include "ICantCry/ICC/Input/Tags/ICC_InputTags.h"
 #include "InteractionComponent.generated.h"
 
@@ -117,7 +118,7 @@ public:
         meta = (EditCondition = "InteractableType == EInteractableType::ItemWithNote", EditConditionHides))
     FString BestiaryEntryID;
 
-    /** Bark — per tutti tranne NPC */
+    /** Bark ï¿½ per tutti tranne NPC */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction|Collectibles",
         meta = (EditCondition = "InteractableType != EInteractableType::NPC", EditConditionHides))
     UDialogueAsset* PostPickupBark;
@@ -169,7 +170,7 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Interaction")
 	void TriggerInteraction(AICC_Player* Player);
 
-    /** Funzione /** Function used by the Scanner to know if the object is still active or should be ignored */
+    /** Funzione  Function used by the Scanner to know if the object is still active or should be ignored **/
     UFUNCTION(BlueprintCallable, Category = "Interaction")
     bool CanInteract() const;
 

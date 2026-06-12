@@ -126,13 +126,44 @@ int32 UVictoryVisualizer::CalculateExp(const TArray<AICC_Actor*>& Queue)
 
 void UVictoryVisualizer::ReturnToWorld()
 {
-	// TODO LOAD THE SCENE AND Call 'RecreatePlayer' via UICantCryGameInstance
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+
+	if (Instance)
+	{
+		if (Instance->GetCurrentPlayer() && Instance->GetCurrentPlayer()->GetBattleHUD())
+		{
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->ExitBattle();
+		}
+		
+		Instance->SetCanRecreatePlayer(true);
+		
+		FName MapToLoad = Instance->GetLastMainMapName();
+		
+		if (MapToLoad.IsNone())
+		{
+			MapToLoad = FName("EncounterTestCraft");
+			DebugHelper::LogWarning("MapToLoad era vuota! Uso EncounterTest come fallback.");
+		}
+		
+		USceneLoader::LoadSceneByName(GetWorld(), MapToLoad, true);
+
+		DebugHelper::LogSuccess(FString::Printf(TEXT("ReturnToWorld: Tornando alla mappa %s"), *MapToLoad.ToString()));
+	}
+	else
+	{
+		DebugHelper::LogError("ReturnToWorld: GameInstance non trovato!");
+	}
 	
-	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->ExitBattle();
-	Instance->SetCanRecreatePlayer(true);
-	USceneLoader::LoadSceneByName(GetWorld(), "EncounterTestCraft", true);
-	DebugHelper::LogSuccess("ReturnToWorld");
 	DebugHelper::SaveLogToFile();
 	DebugHelper::ClearAllLogs();
+	
+	// // TODO LOAD THE SCENE AND Call 'RecreatePlayer' via UICantCryGameInstance
+	// UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	//
+	// Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->ExitBattle();
+	// Instance->SetCanRecreatePlayer(true);
+	// USceneLoader::LoadSceneByName(GetWorld(), "EncounterTestCraft", true);
+	// DebugHelper::LogSuccess("ReturnToWorld");
+	// DebugHelper::SaveLogToFile();
+	// DebugHelper::ClearAllLogs();
 }
