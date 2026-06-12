@@ -3,11 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ICantCry/ICC/Actors/ICC_Actor.h"
-#include "ICantCry/ICC/Actors/AI/Mob.h"
 #include "ICantCry/ICC/Actors/Bullet/BulletData.h"
 #include "ICantCry/ICC/Actors/Bullet/Bullet.h"
 #include "FBattleMemory.generated.h"
+
+class AICC_Actor;
+class AMob;
 
 USTRUCT(BlueprintType)
 struct FBattleMemory
@@ -32,6 +33,8 @@ struct FBattleMemory
 	UPROPERTY()
 	TArray<FRotator> Orientations;
 
+	UPROPERTY() bool bBattleRetried = false;
+	
 	FBattleMemory();
 
 	void Register(TSubclassOf<AMob> EmotionClass, const FVector& Location, const FRotator& Orientation);

@@ -10,6 +10,7 @@
 #include "ICantCry/ICC/Actors/EmotionsData/EmotionsData.h"
 #include "ICantCry/ICC/Actors/NoteData/NoteData.h"
 #include "GameplayTagContainer.h"
+#include "ICantCry/ICC/Mechanics/TurnSystem/BattleMemory/FBattleMemory.h"
 #include "ICantCryGameInstance.generated.h"
 
 class AICC_Player;
@@ -121,6 +122,9 @@ public:
     int32 GetItemCount(FGameplayTag ItemTag) const;
 
 
+	UPROPERTY() FName LastBattleSceneLoaded;
+	UPROPERTY() FBattleMemory CachedBattleMemory;
+	
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))
 	UPersistentData* PersistentData;
