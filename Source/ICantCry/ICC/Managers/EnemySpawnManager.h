@@ -36,6 +36,8 @@ public:
 	void ResetBattle(AMob* Emotion);
 
 	FBattleMemory& GetMemory() { return Memory; }
+	
+	TArray<AMob*> SpawnFixedEnemies();
 
 protected:
 	// Called when the game starts or when spawned

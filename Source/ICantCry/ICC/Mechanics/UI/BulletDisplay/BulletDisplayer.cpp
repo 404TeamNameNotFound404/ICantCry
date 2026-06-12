@@ -241,5 +241,5 @@ void UBulletDisplayer::InstantiateBullet(TArray<FBullet> InstantiateBullets)
 	const auto Turn = Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().
 	                            Queue;
 
-	SpawnManager->GetMemory().Load(Turn, Instance->GetInventory().BulletsStored);
+	Instance->CachedBattleMemory.Load(Turn, Instance->GetInventory().BulletsStored);
 }

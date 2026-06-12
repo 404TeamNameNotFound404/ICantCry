@@ -9,10 +9,12 @@
 #include "ICantCry/ICC/Inventory/Inventory.h"
 #include "ICantCry/ICC/Actors/EmotionsData/EmotionsData.h"
 #include "ICantCry/ICC/Actors/NoteData/NoteData.h"
+#include "ICantCry/ICC/Mechanics/TurnSystem/BattleMemory/FBattleMemory.h"
 #include "ICantCryGameInstance.generated.h"
 
 class AICC_Player;
 class UBestiaryUI;
+
 
 /**
  * DontDestroyOnLoad like class
@@ -103,6 +105,9 @@ public:
 	UDataTable* GetCasingsTable() const;
 	UDataTable* GetEssencesTable() const;
 	TMap<FString, UTexture2D*>& GetIconMap();
+	
+	UPROPERTY() FName LastBattleSceneLoaded;
+	UPROPERTY() FBattleMemory CachedBattleMemory;
 	
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))

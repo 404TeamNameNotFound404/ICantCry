@@ -89,12 +89,30 @@ void UTurnBasedSystem::Start2(UWorld* World, FBattleMemory* Memory)
 	FTimerHandle DelayHandle;
 	World->GetTimerManager().SetTimer(DelayHandle, [this, World]()
 	{
-		EnemySpawnManager->SpawnRandomEnemy();
-		Turn.PopulateQueue(World);
-		StaticQueue = Turn.Queue;
-		EnemySpawnManager->GetMemory().LastStoredQueue = StaticQueue;
-		TryGetCurrentPlayer()->GetBattleHUD()->SpawnVisualizer();
-		TryGetCurrentPlayer()->GetBattleHUD()->SpawnGameOverVisualizer();
+	   if (Instance->CachedBattleMemory.bBattleRetried)
+	   {
+		  TArray<AMob*> SpelledMobs = EnemySpawnManager->SpawnFixedEnemies();
+      
+		  Turn.Queue.Empty();
+		  Turn.Queue.Add(Instance->GetCurrentPlayer());
+	   	
+		  for (const auto M : SpelledMobs)
+		  {
+			 Turn.Queue.Add(Cast<AICC_Actor>(M));
+		  }
+      
+		  Instance->CachedBattleMemory.bBattleRetried = false;
+	   }
+	   else
+	   {
+		  EnemySpawnManager->SpawnRandomEnemy();
+		  Turn.PopulateQueue(World);
+	   }
+   
+	   StaticQueue = Turn.Queue;
+	   Instance->CachedBattleMemory.LastStoredQueue = StaticQueue;
+	   TryGetCurrentPlayer()->GetBattleHUD()->SpawnVisualizer();
+	   TryGetCurrentPlayer()->GetBattleHUD()->SpawnGameOverVisualizer();
 	}, 0.5f, false);
 	
 	FTimerHandle DelayHudHandle;
@@ -339,7 +357,7 @@ void UTurnBasedSystem::Flow()
 		if (!bVictory)
 		{
 			TryGetCurrentPlayer()->GetBattleHUD()->DisplayVictoryVisualizer();
-			TryGetCurrentPlayer()->GetBattleHUD()->GetVictoryVisualizer()->AfterBattle(EnemySpawnManager->GetMemory().LastStoredQueue);
+			TryGetCurrentPlayer()->GetBattleHUD()->GetVictoryVisualizer()->AfterBattle(Instance->CachedBattleMemory.LastStoredQueue);
 			bVictory = true;
 			
 			SetBattlePhase(EBattlePhase::Finished);
@@ -384,7 +402,7 @@ void UTurnBasedSystem::ExitBattle()
 	bInit = false;
 	bVictory = false;
 	Turn.Queue.Empty();
-	EnemySpawnManager->GetMemory().Clear();
+	Instance->CachedBattleMemory.Clear();
 	BattleTurnCounter = 0;
 	
 	Instance->GetCurrentPlayer()->GetStatusTracker()->Reset();
