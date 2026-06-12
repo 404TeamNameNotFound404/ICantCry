@@ -9,6 +9,7 @@
 #include "ICantCry/ICC/Inventory/Inventory.h"
 #include "ICantCry/ICC/Actors/EmotionsData/EmotionsData.h"
 #include "ICantCry/ICC/Actors/NoteData/NoteData.h"
+#include "GameplayTagContainer.h"
 #include "ICantCryGameInstance.generated.h"
 
 class AICC_Player;
@@ -53,7 +54,6 @@ public:
 
 	bool CanRecreatePlayer() const;
 	void SetCanRecreatePlayer(const bool& Value);
-	
 	FPlayerMemory& GetPlayerRuntimeData();
 
 	FRuntimeStats& GetRuntimeStats();
@@ -68,6 +68,11 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Bestiary")  
     TSet<EEmotionType> UnlockedEmotions;
 
+	//For Narrative Spawn
+	void SetLastMainMapName(FName MapName); 
+
+	UFUNCTION(BlueprintCallable, Category = "Battle")
+    FName GetLastMainMapName() const;
 
 	/**
      * Reference to the active Bestiary UI
@@ -104,6 +109,18 @@ public:
 	UDataTable* GetEssencesTable() const;
 	TMap<FString, UTexture2D*>& GetIconMap();
 	
+	
+	// --- LOGICA INVENTARIO TAG (per consegnare oggetti a npc o per eventi) ---
+    UFUNCTION(BlueprintCallable, Category = "Inventory")
+    void AddToInventory(FGameplayTag ItemTag, int32 Amount);
+
+    UFUNCTION(BlueprintCallable, Category = "Inventory")
+    bool RemoveFromInventory(FGameplayTag ItemTag, int32 Amount);
+
+    UFUNCTION(BlueprintPure, Category = "Inventory")
+    int32 GetItemCount(FGameplayTag ItemTag) const;
+
+
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DontDestroyOnLoad", meta=(AllowPrivateAccess=true))
 	UPersistentData* PersistentData;
@@ -139,6 +156,17 @@ private:
 
 	UPROPERTY()
 	bool bCanRecreatePlayer = false;
+
+	// Variable to save the name of the source map
+	UPROPERTY()
+	FName LastMainMapName;
+
+
+	// Il "magazzino" degli oggetti fisici
+    UPROPERTY()
+    TMap<FGameplayTag, int32> InventoryShelf;
+
+
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Data Tables", meta=(AllowPrivateAccess=true))
 	UDataTable* Recipes;

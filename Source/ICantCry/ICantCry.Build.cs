@@ -19,7 +19,7 @@ public class ICantCry : ModuleRules
 		
 		
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" , "GameplayTags", "UMG", "AIModule", "NavigationSystem", "GameplayTasks", 
-			"Niagara", "NiagaraEditor", "LevelSequence", "Slate", "SlateCore", "GameplayTags"});
+			"Niagara", "NiagaraEditor", "LevelSequence", "Slate", "SlateCore", "GameplayTags",  "MovieSceneTracks", "MovieScene"});
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

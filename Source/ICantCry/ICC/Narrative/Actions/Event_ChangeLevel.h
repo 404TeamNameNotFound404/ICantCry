@@ -12,7 +12,9 @@ class AICC_Player;
 class USceneLoader;
 
 /**
- * 
+ * CLASS: UEvent_ChangeLevel
+ * DESCRIPTION: Manages level transitions, allowing the player to teleport to specific maps 
+ * or save the current world state for return trips (e.g., entering a battle arena).
  */
 UCLASS(Blueprintable, BlueprintType)
 class ICANTCRY_API UEvent_ChangeLevel : public UGameplayEvent
@@ -20,31 +22,21 @@ class ICANTCRY_API UEvent_ChangeLevel : public UGameplayEvent
 	GENERATED_BODY()
 	
 public:
-	// // Ora selezioni il livello da una lista di Tag (es: Livelli.MappaCitta)
-    // UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level Transition")
-    // FGameplayTag LevelTag;
-
-    // // Ora selezioni lo spawn da una lista (es: Spawn.PortaSud)
-    // UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level Transition")
-    // FGameplayTag PlayerStartTag;
-
-	// virtual void ExecuteEvent_Implementation(AICC_Player* Player, UObject* Context) override;
-
-
-
-    // Se spuntato, il player apparirà sul PlayerStart con il tag scelto.
-    // Se NON spuntato, verrà usata la posizione salvata (come dopo una battaglia).
+	/** If enabled, the player will spawn at a designated PlayerStart actor. If disabled, 
+     * the system will attempt to restore the player's last saved location. 
+     */
     UPROPERTY(EditAnywhere, Category = "Level Transition")
     bool bUsePlayerStart = true;
 
-    // Seleziona la mappa di destinazione
+    /** The unique GameplayTag representing the destination map (e.g., Maps.City). */
     UPROPERTY(EditAnywhere, Category = "Level Transition")
     FGameplayTag LevelTag;
 
-    // Seleziona lo spawn point (Visibile solo se bUsePlayerStart è attivo)
+    /** The specific tag of the PlayerStart where the character should appear. */
     UPROPERTY(EditAnywhere, Category = "Level Transition", meta = (EditCondition = "bUsePlayerStart"))
     FGameplayTag PlayerStartTag;
 
+    /** Overridden execution logic for map loading and state saving. */
     virtual void ExecuteEvent_Implementation(AICC_Player* Player, UObject* Context) override;
 	
 };

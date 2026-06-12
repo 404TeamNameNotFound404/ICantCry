@@ -5,11 +5,12 @@
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 
 
-// Lasciamo l'implementazione base vuota. 
-// Essendo un BlueprintNativeEvent, questa funzione verrà sovrascritta nei Blueprint 
-// o nelle classi C++ figlie come Event_GiveRewards.
+// leaving the base implementation empty
+// since this is a blueprintnativeevent, this function will be overridden in blueprints
+// or in child c++ classes like event_giverewards
 void UGameplayEvent::ExecuteEvent_Implementation(AICC_Player* Player, UObject* Context)
 {
-	// Logica base opzionale (vuota)
+	// optional base logic goes here, but it's intentionally left empty
+	// derived classes and blueprints will provide the actual implementation
 }
 

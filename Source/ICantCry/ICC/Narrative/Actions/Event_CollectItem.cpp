@@ -7,12 +7,9 @@
 
 void UEvent_CollectItem::ExecuteEvent_Implementation(AICC_Player* Player, UObject* Context)
 {
-	// Il 'Context' in questo caso è l'oggetto che ha l'InteractionComponent
-	ABasePickup* PickupItem = Cast<ABasePickup>(Context);
-
-	if (Player && PickupItem)
+	// cast context to basepickup to trigger inventory/quest logic
+	if (auto PickupItem = Cast<ABasePickup>(Context))
 	{
-		// Chiamiamo la funzione Collect della classe BasePickup
 		PickupItem->Collect(Player);
 	}
 }

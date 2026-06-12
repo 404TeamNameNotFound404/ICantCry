@@ -344,4 +344,42 @@ TMap<FString, UTexture2D*>& UICantCryGameInstance::GetIconMap()
 }
 
 
+void UICantCryGameInstance::SetLastMainMapName(FName MapName)
+{ 
+    LastMainMapName = MapName; 
+}
+
+FName UICantCryGameInstance:: GetLastMainMapName() const
+{ 
+    return LastMainMapName; 
+} 
+
+
+void UICantCryGameInstance::AddToInventory(FGameplayTag ItemTag, int32 Amount)
+{
+    if (ItemTag.IsValid() && Amount > 0)
+    {
+        InventoryShelf.FindOrAdd(ItemTag) += Amount;
+    }
+}
+
+bool UICantCryGameInstance::RemoveFromInventory(FGameplayTag ItemTag, int32 Amount)
+{
+    if (GetItemCount(ItemTag) >= Amount)
+    {
+        InventoryShelf[ItemTag] -= Amount;
+        return true;
+    }
+    return false;
+}
+
+int32 UICantCryGameInstance::GetItemCount(FGameplayTag ItemTag) const
+{
+    return InventoryShelf.Contains(ItemTag) ? InventoryShelf[ItemTag] : 0;
+}
+
+
+
+
+
 

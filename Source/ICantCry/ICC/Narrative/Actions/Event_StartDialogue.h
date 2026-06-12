@@ -11,8 +11,8 @@ class UDialogueAsset;
 
 
 /**
- * CLASSE: UEvent_StartDialogue
- * DESCRIZIONE: Crea e visualizza il Widget del dialogo a schermo.
+ * CLASS: UEvent_StartDialogue
+ * DESCRIPTION: Spawns the dialogue widget and handles player input mode transition.
  */
 UCLASS(DisplayName = "Event: Start Dialogue")
 class ICANTCRY_API UEvent_StartDialogue : public UGameplayEvent

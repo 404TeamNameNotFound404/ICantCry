@@ -41,11 +41,6 @@ public:
 	virtual void NativeConstruct() override;
 
 	virtual void NativeDestruct() override;
-	
-	/**
- * refresh the ui with the new level of the XpBar
- */
-	UFUNCTION() void UpdateExpBar();
 
 public: 
 
@@ -87,108 +82,70 @@ protected:
 	UPROPERTY(meta = (BindWidget))  UTextBlock* DefenceStatDescriptionTxt;
 	UPROPERTY(meta = (BindWidget))  UTextBlock* SpeedStatDescriptionTxt;
 
-
-	// Data Assets
+	/** data asset containing the player's current stats */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) UPlayerStats* Stats;
 
 	UPROPERTY() UICantCryGameInstance* Instance;
 	
 	// UI
+	/** widget class for stat buttons, used if we need to create them dynamically */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
     TSubclassOf<class UStatsButtonWidget> StatsButton;
 
+	/** widget class for quest entries in the scroll boxes */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Narrative", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class UQuestEntryWidget> QuestEntryClass;
 
+	/** widget class for individual objective rows inside quest details */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Quest", meta = (AllowPrivateAccess = "true"))
     TSubclassOf<UUserWidget> ObjectiveRowClass;
 
-
+	/** called when the quest manager system updates, refreshes quest list and details */
 	UFUNCTION() void OnQuestSystemUpdated();
     
-
+	/** tag used to identify main quests in the quest type filtering */
 	UPROPERTY(EditAnywhere, Category = "Quest System")
-    FGameplayTag MainTag; // Imposta a Quest.Type.Main
+    FGameplayTag MainTag;
 
+	/** tag used to identify side quests in the quest type filtering */
     UPROPERTY(EditAnywhere, Category = "Quest System")
-    FGameplayTag SideTag; // Imposta a Quest.Type.Side
+    FGameplayTag SideTag;
 
+	/** tag of the currently selected quest, used to preserve selection during updates */
 	UPROPERTY(EditAnywhere, Category = "Quest System")
 	FGameplayTag CurrentSelectedQuestTag;
 
 
 private:
-
-	/**
-	 * refresh the ui with the new data
-	 */
+	/** refreshes all stat values from the player stats asset */
 	UFUNCTION() void UpdateStats();
 
-	/**
-	 * refresh the ui with the new characterLvl
-	 */
+	/** updates the character level display text */
 	UFUNCTION() void UpdateCharacterLevel();
 
-	/**
-	 * refresh the quest part, of some quest has done or not
-	 */
-	
+	/** rebuilds the quest list in both main and side scroll boxes */
 	UFUNCTION(BlueprintCallable, Category = "Quest") void UpdateQuests();
 
-	
+	/** updates the experience bar fill percentage and text */
+	UFUNCTION() void UpdateExpBar();
 
-
-
-
-	
-
-
-	// Button Event
-
-	/**
-	 *  displays the objective texts and the description texts of the selected mission
-	 */
+	/** placeholder for when a quest entry is selected, currently not implemented */
 	UFUNCTION() void OnQuestSelected();
 
-
-	/**
-    * helper function to manage button selection and description
-    */
+	/** helper function to handle stat button selection and description visibility */
     UFUNCTION() void HandleStatButtonClick(UStatsButtonWidget* ButtonToSelect, UTextBlock* DescriptionToShow);
 
-	/**
-	 *  displays the lv text and the description text of the selected Stat
-	 */
+	/** handlers for individual stat button clicks */
 	UFUNCTION() void OnHealthStatsClicked();
-
-	/**
-	 *  displays the lv text and the description text of the selected Stat
-	 */
 	UFUNCTION() void OnAttackStatsClicked(); 
-
-	/**
-	 *  displays the lv text and the description text of the selected Stat
-	 */
 	UFUNCTION() void OnDefenceStatsClicked(); 
-
-	/**
-	 *  displays the lv text and the description text of the selected Stat
-	 */
 	UFUNCTION() void OnSpeedStatsClicked(); 
 
-
-
-	/**
-	 *  Hide all description stast txt
-	 */
+	/** hides all stat description text blocks */
     UFUNCTION() void HideAllStatDescriptions();
     
-    /**
-	 * show the selected stat description txt
-	 */
+    /** shows the selected stat description text block */
     UFUNCTION() void ShowStatDescription(UTextBlock* DescriptionToShow);
-
-
 
 
 

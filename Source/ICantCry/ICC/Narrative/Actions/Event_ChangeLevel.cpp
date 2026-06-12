@@ -7,71 +7,37 @@
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 
-// void UEvent_ChangeLevel::ExecuteEvent_Implementation(AICC_Player* Player, UObject* Context)
-// {
-//     if (!Player || !LevelTag.IsValid()) return;
-
-//     // 1. Estraiamo il nome del livello dal Tag (es: "Livelli.Mappa_Citta" -> "Mappa_Citta")
-//     FString MapName = LevelTag.GetTagName().ToString();
-//     MapName.Split(TEXT("."), nullptr, &MapName, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
-
-//     // 2. Estraiamo il tag dello spawn point (es: "Spawn.PuntoA" -> "PuntoA")
-//     FString SpawnPoint = "";
-//     if (PlayerStartTag.IsValid())
-//     {
-//         PlayerStartTag.GetTagName().ToString().Split(TEXT("."), nullptr, &SpawnPoint, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
-//     }
-
-//     // 3. Eseguiamo il caricamento tramite il SceneLoader centralizzato
-//     USceneLoader::LoadSceneWithTag(Player, FName(*MapName), SpawnPoint, true);
-// }
 
 void UEvent_ChangeLevel::ExecuteEvent_Implementation(AICC_Player* Player, UObject* Context)
 {
-    if (!Player || !LevelTag.IsValid()) 
-    {
-        DebugHelper::LogError("Event_ChangeLevel: Player null o LevelTag non valido!");
-        return;
-    }
-
-    // 1. Recupero il GameInstance per poter salvare la posizione
-    UICantCryGameInstance* GI = Cast<UICantCryGameInstance>(Player->GetGameInstance());
-
-    // Estrazione pulita del nome mappa
-    FString MapName = LevelTag.GetTagName().ToString();
-    MapName.Split(TEXT("."), nullptr, &MapName, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
+   if (!Player || !LevelTag.IsValid()) return;
+    auto GI = Cast<UICantCryGameInstance>(Player->GetGameInstance());
 
     if (bUsePlayerStart)
     {
-        if (!PlayerStartTag.IsValid())
-        {
-            DebugHelper::LogWarning("ATTENZIONE: bUsePlayerStart è attivo ma non hai inserito un PlayerStartTag! Il player spawnerà in un punto casuale.");
-            USceneLoader::LoadSceneWithTag(Player, FName(*MapName), "", false);
-        }
-        else
+        // parse map and spawn strings from gameplay tags for scene loader
+        FString MapName = LevelTag.GetTagName().ToString();
+        MapName.Split(TEXT("."), nullptr, &MapName, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
+
+        if (PlayerStartTag.IsValid())
         {
             FString SpawnPoint;
             PlayerStartTag.GetTagName().ToString().Split(TEXT("."), nullptr, &SpawnPoint, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
-            
-            // Usiamo il tag e disattiviamo la ricreazione per non sovrascrivere la posizione
             USceneLoader::LoadSceneWithTag(Player, FName(*MapName), SpawnPoint, false);
         }
     }
     else
     {
-        // --- MODIFICA QUI: MODALITÀ BATTAGLIA/NPC ---
-        // TODO RIVEDERE QUESTA PARTE
-        
         if (GI)
         {
-            // CORREZIONE: Passiamo il puntatore al Player e 'true' per confermare il salvataggio
-            GI->SavePlayerTransformBegin(Player, true); 
+            // sanitize map name and store transform to return here after battle/event
+            FString CleanMapName = GetWorld()->GetMapName();
+            CleanMapName.RemoveFromStart(GetWorld()->StreamingLevelsPrefix);
 
-            // Questa riga invece era già corretta perché accetta Player, Location e Rotation separati
+            GI->SetLastMainMapName(FName(*CleanMapName));
+            GI->SavePlayerTransformBegin(Player, true); 
             GI->StoreLastPlayerTransform(Player, Player->GetActorLocation(), Player->GetActorRotation());
         }
-
-        DebugHelper::LogSuccess("Event_ChangeLevel: Uso posizione di default (RecreatePlayer)");
-        USceneLoader::LoadSceneByName(Player, FName(*MapName), false);
+        UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), TSoftObjectPtr<UWorld>(FSoftObjectPath(LevelTag.GetTagName().ToString())));
     }
 }

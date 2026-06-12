@@ -26,6 +26,11 @@
 #include "ICantCry/ICC/Input/ICC_PlayerController.h"
 #include "ICC_Player.generated.h"
 
+class UDialogueAsset;
+class UDialogueWidget;
+class UBarkWidget;
+class UWidgetInteractionComponent;
+
 UCLASS()
 class ICANTCRY_API AICC_Player : public AICC_Actor
 {
@@ -47,6 +52,15 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual int GetSpeed() const override;
+
+	// INPUT MODE
+
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void SetInputModeToGameOnly();
+
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void SetInputModeToGameAndUI();
+
 
 	/**
 	 * READ BELOW BEFORE USE!
@@ -134,6 +148,37 @@ public:
 
 	UFUNCTION(BlueprintCallable,  Category = "Level System")
 	float GetCurrentExpPercentage()  const;
+
+
+	//Call from the Interaction Component when collecting an item/note
+	void OpenBestiaryOnEntryAndListenForClose(const FString& EntryID, UDialogueAsset* BarkToPlay);
+
+	//Function called for Objects without a note (Quest Item)
+	void PlayBarkImmediately(UDialogueAsset* BarkToPlay);
+
+
+	//SCANNER INTERACTION
+
+	/** Maximum radius in which the object is detected (show circle) */
+	UPROPERTY(EditAnywhere, Category = "Interaction|Scanning")
+	float DetectionRadius = 800.0f;
+
+	/** Distance where the E key appears to be pressed */
+	UPROPERTY(EditAnywhere, Category = "Interaction|Scanning")
+	float InteractableRadius = 250.0f;
+
+	/** The interactable object currently in our sights */
+	UPROPERTY()
+	class UInteractionComponent* CurrentInteractableTarget;
+
+	/** Timer per evitare che l'interfaccia "lampeggi" quando ci passiamo la visuale velocemente sopra */
+	float LookTimer = 0.0f;
+
+	/** Funzione chiamata ogni frame per trovare l'oggetto davanti a noi */
+	UInteractionComponent* ScanForInteractables();
+
+	UICC_InputDataAsset* GetInputDataAsset() const;
+
 
 	UICC_GamepadBinder* GetBinder() const;
 	USpringArmComponent* GetCameraBoom() const;
@@ -270,6 +315,9 @@ private:
 	void OpenBestiary();
     void CloseBestiary();
 
+	
+	void SpawnBark(UDialogueAsset* BarkToPlay);
+
 	UPROPERTY() 
     int32 BestiaryCounter;
 
@@ -280,4 +328,27 @@ private:
     TSubclassOf<UBestiaryUI> BestiaryUIClass;
 	
 	UPROPERTY() UICC_EnhancedInputCmp* LastChecked;
+
+	// BARKS
+
+	/**Save the dialogue to be played WHEN you close the Bestiary menu */
+	UPROPERTY()
+	UDialogueAsset* PendingBark;
+
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class UDialogueWidget> DialogueWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class UBarkWidget> BarkWidgetClass;
+
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	UWidgetInteractionComponent* WidgetInteractionComp;
+
+	
+
+	FKey GetInteractKey() const;
+
+	float CurrentInteractableDistance = 0.0f;
 };

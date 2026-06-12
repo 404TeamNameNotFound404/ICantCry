@@ -25,6 +25,7 @@ void UCharacterUI::NativeConstruct()
     {
         if (UQuestManagerSystem* QM = GI->GetSubsystem<UQuestManagerSystem>())
         {
+            // 1. Ti iscrivi per i futuri aggiornamenti
             QM->OnSystemUpdate.AddDynamic(this, &UCharacterUI::OnQuestSystemUpdated);
             UpdateQuests(); 
         }

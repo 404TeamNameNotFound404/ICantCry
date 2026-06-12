@@ -14,9 +14,9 @@ class AICC_Player;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnQuestSystemUpdate);
 
 /**
- * CLASSE: UQuestManagerSystem
- * DESCRIZIONE: Gestisce l'accettazione e il progresso delle missioni. 
- * Comunica con la CharacterUI tramite delegati.
+ * CLASS: UQuestManagerSystem
+ * DESCRIPTION: Global subsystem that manages quest activation, objective tracking, and completion.
+ * It acts as the "brain" for all narrative progression and communicates with the UI via delegates.
  */
 
 USTRUCT(BlueprintType)
@@ -24,10 +24,11 @@ struct FQuestProgress
 {
     GENERATED_BODY()
 
+    /** The data definition of the quest (Title, Description, Objectives). */
     UPROPERTY(BlueprintReadOnly)
     TObjectPtr<UQuestDefinition> QuestDef;
 
-    // Traccia il progresso di ogni obiettivo tramite il suo Tag
+    /** Current progress for each objective, mapped by its GameplayTag. */
     UPROPERTY(BlueprintReadOnly)
     TMap<FGameplayTag, int32> ObjectiveProgress;
 
@@ -77,6 +78,10 @@ public:
 
     // Getter per la UI
     const TArray<FQuestProgress>& GetActiveQuests() const { return ActiveQuests; }
+
+    //Per permettere alla UI di sapere quanti oggetti sono già stati consegnati.
+   UFUNCTION(BlueprintPure, Category = "Quest")
+    int32 GetObjectiveProgress(FGameplayTag QuestTag, FGameplayTag ObjectiveTag) const;
 
 protected:
     UPROPERTY()

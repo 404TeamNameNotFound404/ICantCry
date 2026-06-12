@@ -10,17 +10,16 @@
 void UEvent_GiveRewards::ExecuteEvent_Implementation(AICC_Player* Player, UObject* Context)
 {
 	if (!Player) return;
-
-	UPlayerStats* Stats = Player->GetStats();
+	auto Stats = Player->GetStats();
 	if (!Stats) return;
 
-	// Applichiamo l'esperienza usando la tua nuova struttura RuntimeStats
+    // upd experience in runtimestats container
 	if (ExperienceToAdd > 0.0f)
 	{
 		Stats->RuntimeStats.Experience += ExperienceToAdd;
 	}
 
-	// Applichiamo la cura
+    // apply heal and clamp to max capacity
 	if (HealthToRestore > 0.0f)
 	{
 		Player->GetRuntimeStats().CurrentHealth = FMath::Clamp(Player->GetRuntimeStats().CurrentHealth + HealthToRestore, 0.0f, Stats->MaxHealth);

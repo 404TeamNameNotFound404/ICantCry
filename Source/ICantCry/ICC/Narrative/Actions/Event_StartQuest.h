@@ -8,8 +8,8 @@
 #include "Event_StartQuest.generated.h"
 
 /**
- * CLASSE: UEvent_StartQuest
- * DESCRIZIONE: Un evento che aggiunge una missione specifica al diario del giocatore.
+ * CLASS: UEvent_StartQuest
+ * DESCRIPTION: Registers a new quest into the player's active quest list.
  */
 UCLASS(DisplayName = "Event: Start Quest")
 class ICANTCRY_API UEvent_StartQuest : public UGameplayEvent
@@ -18,7 +18,7 @@ class ICANTCRY_API UEvent_StartQuest : public UGameplayEvent
 
 
 public:
-	// La missione che questo evento deve far iniziare
+	// The mission this event is meant to begin
 	UPROPERTY(EditAnywhere, Category = "Quest")
 	TObjectPtr<UQuestDefinition> QuestToStart;
 

@@ -7,8 +7,8 @@
 #include "Event_GiveRewards.generated.h"
 
 /**
- * CLASSE: UEvent_GiveRewards
- * DESCRIZIONE: Azione concreta per dare XP o curare il giocatore.
+ * CLASS: UEvent_GiveRewards
+ * DESCRIPTION: Grants specific player rewards like health or experience points.
  */
 UCLASS(DisplayName = "Event: Give Rewards")
 class ICANTCRY_API UEvent_GiveRewards : public UGameplayEvent

@@ -9,8 +9,10 @@
 
 
 class AICC_Player;
+
 /**
- * 
+ * CLASS: UEvent_CompleteQuest
+ * DESCRIPTION: Directly triggers the completion of a specific quest via the QuestManager.
  */
 UCLASS()
 class ICANTCRY_API UEvent_CompleteQuest : public UGameplayEvent
@@ -19,11 +21,11 @@ class ICANTCRY_API UEvent_CompleteQuest : public UGameplayEvent
 
 
 public:
-    // La missione che vogliamo completare
+    /** tag of the quest to be finalized. */
     UPROPERTY(EditAnywhere, Category = "Quest")
     FGameplayTag QuestToComplete;
 
-    // Sovrascriviamo l'esecuzione dell'evento
+   
     virtual void ExecuteEvent_Implementation(AICC_Player* Player, UObject* Context) override;
 
 	
