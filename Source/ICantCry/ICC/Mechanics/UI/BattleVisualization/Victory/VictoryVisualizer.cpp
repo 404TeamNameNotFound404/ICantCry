@@ -123,12 +123,53 @@ int32 UVictoryVisualizer::CalculateExp(const TArray<AICC_Actor*>& Queue)
 
 void UVictoryVisualizer::ReturnToWorld()
 {
-	// TODO LOAD THE SCENE AND Call 'RecreatePlayer' via UICantCryGameInstance
-	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
-	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->ExitBattle();
-	Instance->SetCanRecreatePlayer(true);
-	USceneLoader::LoadSceneByName(GetWorld(), "EncounterTest", true);
-	DebugHelper::LogSuccess("ReturnToWorld");
-	DebugHelper::SaveLogToFile();
-	DebugHelper::ClearAllLogs();
+	// // TODO LOAD THE SCENE AND Call 'RecreatePlayer' via UICantCryGameInstance
+	// UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	// Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->ExitBattle();
+	// Instance->SetCanRecreatePlayer(true);
+	// USceneLoader::LoadSceneByName(GetWorld(), "EncounterTest", true);
+	// DebugHelper::LogSuccess("ReturnToWorld");
+	// DebugHelper::SaveLogToFile();
+	// DebugHelper::ClearAllLogs();
+
+	// 1. Recuperiamo il GameInstance
+    UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+    
+    if (Instance)
+    {
+        // 2. Pulizia della logica di battaglia
+        if (Instance->GetCurrentPlayer() && Instance->GetCurrentPlayer()->GetBattleHUD())
+        {
+            Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->ExitBattle();
+        }
+
+        // 3. Attiviamo l'interruttore per il GameMode: "Riposiziona il player invece di usare i PlayerStart"
+        Instance->SetCanRecreatePlayer(true);
+
+        // 4. RECUPERO DINAMICO DELLA MAPPA
+        // Usiamo la funzione Getter che abbiamo aggiunto nel GameInstance
+        FName MapToLoad = Instance->GetLastMainMapName();
+
+        // Controllo di sicurezza: se per qualche motivo il nome è vuoto (es. primo avvio),
+        // usiamo "EncounterTest" come ruota di scorta.
+        if (MapToLoad.IsNone())
+        {
+            MapToLoad = FName("EncounterTest");
+            DebugHelper::LogWarning("MapToLoad era vuota! Uso EncounterTest come fallback.");
+        }
+
+        // 5. CARICAMENTO SCENA
+        // Passiamo MapToLoad (dinamico) e TRUE (per confermare il riposizionamento)
+        USceneLoader::LoadSceneByName(GetWorld(), MapToLoad, true);
+        
+        DebugHelper::LogSuccess(FString::Printf(TEXT("ReturnToWorld: Tornando alla mappa %s"), *MapToLoad.ToString()));
+    }
+    else
+    {
+        DebugHelper::LogError("ReturnToWorld: GameInstance non trovato!");
+    }
+
+    // Log e pulizia finale
+    DebugHelper::SaveLogToFile();
+    DebugHelper::ClearAllLogs();
 }

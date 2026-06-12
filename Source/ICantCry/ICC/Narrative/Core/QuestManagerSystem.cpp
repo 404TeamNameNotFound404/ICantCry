@@ -8,11 +8,13 @@
 
 void UQuestManagerSystem::AcceptQuest(UQuestDefinition* Quest)
 {
+	// ignore if quest is invalid, already active, or already completed
+	// prevents double-accepting or restarting finished quests
     if (!Quest || IsQuestActive(Quest->QuestID) || IsQuestCompleted(Quest->QuestID)) return;
 
     ActiveQuests.Add(FQuestProgress(Quest));
     
-    // Notifica la UI di aggiornarsi
+    // tell the ui to refresh so the new quest appears in the journal
     OnSystemUpdate.Broadcast();
 }
 
@@ -21,16 +23,19 @@ void UQuestManagerSystem::UpdateObjectiveProgress(FGameplayTag QuestTag, FGamepl
     int32 Index = FindActiveQuestIndex(QuestTag);
     if (Index != INDEX_NONE)
     {
+		// find or add initializes to 0 if the objective hasn't been tracked yet
+		// this is important because some objectives might start at 0 implicitly
         ActiveQuests[Index].ObjectiveProgress.FindOrAdd(ObjectiveTag) += Amount;
 
-        // Se gli obiettivi sono finiti e NON serve l'NPC, chiudiamo subito
+        // if objectives are done and the quest doesn't require npc turn-in, complete it immediately
+		// this covers kill quests, collection quests, etc where you don't need to talk to anyone
         if (AreObjectivesComplete(ActiveQuests[Index]) && !ActiveQuests[Index].QuestDef->bRequiresNPCTurnIn)
         {
             CompleteQuest(Index);
         }
         else
         {
-            // Altrimenti resta lì, ma la UI deve sapere che è cambiato qualcosa
+            // otherwise just update the ui so it shows new progress numbers
             OnSystemUpdate.Broadcast();
         }
     }
@@ -43,7 +48,8 @@ bool UQuestManagerSystem::AreObjectivesComplete(const FQuestProgress& Progress) 
     
     for (const FQuestObjective& Obj : Progress.QuestDef->Objectives)
     {
-        // FindRef è perfetto perché se il tag non esiste nella mappa restituisce 0
+        // findref returns 0 if the tag doesn't exist in the map, which is exactly what we want
+		// objectives with no progress are treated as 0, so they fail the >= check automatically
         int32 CurrentValue = Progress.ObjectiveProgress.FindRef(Obj.ObjectiveID);
         if (CurrentValue < Obj.RequiredCount) return false;
     }
@@ -55,7 +61,7 @@ bool UQuestManagerSystem::AreObjectivesCompleteByTag(FGameplayTag QuestTag) cons
     int32 Index = FindActiveQuestIndex(QuestTag);
     if (Index != INDEX_NONE)
     {
-        // Chiama la funzione sopra passando i dati della missione trovata
+        // call the function above with the found quest data
         return AreObjectivesComplete(ActiveQuests[Index]);
     }
     return false;
@@ -68,82 +74,60 @@ bool UQuestManagerSystem::IsQuestActive(FGameplayTag QuestTag) const
 
 bool UQuestManagerSystem::IsQuestCompleted(FGameplayTag QuestTag) const
 {
+	// has tagexact ensures we match exactly, not just parent tags
+	// quest ids should be unique so this is safe
     return CompletedQuestsTags.HasTagExact(QuestTag);
 }
 
 void UQuestManagerSystem::CompleteQuest(int32 Index)
 {
-//    FQuestProgress CompletedQuest = ActiveQuests[Index];
-    
-//     // 1. Recuperiamo il Player e facciamo il cast alla tua classe specifica
-//     AICC_Player* PlayerCharacter = Cast<AICC_Player>(GetWorld()->GetFirstPlayerController()->GetPawn());
-//     // 1. Aggiungi ai completati
-//     if (CompletedQuest.QuestDef)
-//     {
-//         CompletedQuestsTags.AddTag(CompletedQuest.QuestDef->QuestID);
-//     }
-
-//    // 2. Eseguiamo le ricompense passando i DUE argomenti richiesti
-//    for (UGameplayEvent* Reward : CompletedQuest.QuestDef->OnCompleteRewards)
-//     {
-//         if (Reward && PlayerCharacter) 
-//         {
-//             // Ora passiamo i DUE argomenti: il Player e la Quest come contesto
-//             Reward->ExecuteEvent(PlayerCharacter, CompletedQuest.QuestDef);
-//         }
-//     }
-
-//     // 3. Rimuovi dalle attive
-//     ActiveQuests.RemoveAt(Index);
-
-//     // 4. Update UI
-//     OnSystemUpdate.Broadcast();
-    
-//     UE_LOG(LogTemp, Warning, TEXT("Missione Completata: %s"), *CompletedQuest.QuestDef->Title.ToString());
-
-
-    // 0. Controllo sicurezza Indice: Fondamentale per evitare crash
+    // safety check: index must be valid to avoid crashes
+	// this can happen if something calls completequest with an index that was already removed
     if (!ActiveQuests.IsValidIndex(Index))
     {
-        UE_LOG(LogTemp, Error, TEXT("SYSTEM ERROR: Tentativo di completare missione con Indice non valido: %d"), Index);
+        UE_LOG(LogTemp, Error, TEXT("system error: tried to complete quest with invalid index: %d"), Index);
         return;
     }
 
     FQuestProgress CompletedQuest = ActiveQuests[Index];
     
-    // Controllo che il Definition sia valido
+    // make sure the definition is valid
+	// if this happens, something corrupted the active quests array
     if (!CompletedQuest.QuestDef) 
     {
-        UE_LOG(LogTemp, Error, TEXT("SYSTEM ERROR: La missione all'indice %d non ha un QuestDef valido!"), Index);
+        UE_LOG(LogTemp, Error, TEXT("system error: quest at index %d has no valid questdef!"), Index);
         return;
     }
 
-    // 1. Recuperiamo il Player
+    // grab the player for reward delivery
+	// we need the player to execute gameplay events that affect the character
     AICC_Player* PlayerCharacter = Cast<AICC_Player>(GetWorld()->GetFirstPlayerController()->GetPawn());
 
-    // 2. Aggiungi ai completati (Tag)
-    // Usiamo il QuestID univoco del Data Asset
+    // add to completed tags using the unique quest id from the data asset
+	// this prevents the quest from being accepted again
     CompletedQuestsTags.AddTag(CompletedQuest.QuestDef->QuestID);
 
-    // 3. Eseguiamo le ricompense
+    // execute all rewards
+	// rewards can be anything: give items, unlock abilities, change world state, etc
     for (UGameplayEvent* Reward : CompletedQuest.QuestDef->OnCompleteRewards)
     {
         if (Reward && PlayerCharacter) 
         {
-            // Passiamo il Player (bersaglio) e la Quest (contesto)
+            // pass the player (target) and the quest (context)
+			// the quest context is useful for rewards that need to know which quest just completed
             Reward->ExecuteEvent(PlayerCharacter, CompletedQuest.QuestDef);
         }
     }
 
-    // 4. Rimuovi dalle attive
-    // Facciamo questo PRIMA del broadcast così la UI leggerà l'array già aggiornato
+    // remove from active quests
+    // do this BEFORE the broadcast so the ui reads the updated array
+	// if we broadcast first, the ui would show the quest for one more frame
     ActiveQuests.RemoveAt(Index);
 
-    // 5. Update UI
-    // Questo è il comando che "spegne" la riga nella tua CharacterUI
+    // tell ui to refresh (this removes the quest line from character ui)
     OnSystemUpdate.Broadcast();
     
-    UE_LOG(LogTemp, Warning, TEXT("=== SYSTEM: Missione '%s' (ID: %s) Rimossa dalle attive e completata! ==="), 
+    UE_LOG(LogTemp, Warning, TEXT("=== system: quest '%s' (id: %s) removed from active and completed! ==="), 
         *CompletedQuest.QuestDef->Title.ToString(),
         *CompletedQuest.QuestDef->QuestID.ToString());
 }
@@ -151,12 +135,15 @@ void UQuestManagerSystem::CompleteQuest(int32 Index)
 
 void UQuestManagerSystem::CheckQuestCompletion(int32 QuestIndex)
 {
+	// this is called when we suspect a quest might be complete
+	// usually after updating an objective
     FQuestProgress& Progress = ActiveQuests[QuestIndex];
     bool bAllFinished = true;
 
-    // Cicla tutti gli obiettivi definiti nel Data Asset
+    // loop through all objectives defined in the data asset
     for (const FQuestObjective& Obj : Progress.QuestDef->Objectives)
     {
+		// find or add to be safe, though progress should already exist for objectives we track
         int32 CurrentValue = Progress.ObjectiveProgress.FindOrAdd(Obj.ObjectiveID);
         if (CurrentValue < Obj.RequiredCount)
         {
@@ -174,6 +161,8 @@ void UQuestManagerSystem::CheckQuestCompletion(int32 QuestIndex)
 
 int32 UQuestManagerSystem::FindActiveQuestIndex(FGameplayTag QuestTag) const
 {
+	// linear search because active quests array is small (usually < 20)
+	// if we had hundreds of active quests we'd need a map, but that's overkill here
     for (int32 i = 0; i < ActiveQuests.Num(); ++i)
     {
         if (ActiveQuests[i].QuestDef && ActiveQuests[i].QuestDef->QuestID.MatchesTag(QuestTag))
@@ -187,19 +176,33 @@ int32 UQuestManagerSystem::FindActiveQuestIndex(FGameplayTag QuestTag) const
 
 bool UQuestManagerSystem::TryCompleteQuest(FGameplayTag QuestTag)
 {
+	// this is called by npc interaction when player tries to turn in a quest
     int32 Index = FindActiveQuestIndex(QuestTag);
     
     if (Index != INDEX_NONE)
     {
-        // Verifichiamo se gli obiettivi sono effettivamente tutti completi
+        // verify that objectives are actually all complete
+		// prevents cheating or npc giving reward when objectives aren't done
         if (AreObjectivesComplete(ActiveQuests[Index]))
         {
-            // Tutto okay! Chiamiamo la funzione di chiusura che rimuove la quest e dà i premi
+            // all good! call the completion function that removes the quest and gives rewards
             CompleteQuest(Index);
             return true;
         }
     }
 
-    UE_LOG(LogTemp, Warning, TEXT("Tentativo di completare %s fallito: Obiettivi non pronti o quest non attiva."), *QuestTag.ToString());
+    UE_LOG(LogTemp, Warning, TEXT("attempt to complete %s failed: objectives not ready or quest not active."), *QuestTag.ToString());
     return false;
+}
+
+int32 UQuestManagerSystem::GetObjectiveProgress(FGameplayTag QuestTag, FGameplayTag ObjectiveTag) const
+{
+	// used by ui to display progress bars or counters
+    int32 Index = FindActiveQuestIndex(QuestTag);
+    if (Index != INDEX_NONE)
+    {
+        const int32* Progress = ActiveQuests[Index].ObjectiveProgress.Find(ObjectiveTag);
+        return Progress ? *Progress : 0;
+    }
+    return 0;
 }

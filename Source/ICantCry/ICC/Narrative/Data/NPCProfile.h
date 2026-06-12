@@ -8,8 +8,9 @@
 #include "NPCProfile.generated.h"
 
 /**
- * CLASSE: UNPCProfile
- * DESCRIZIONE: Contiene i dati identificativi di un NPC.
+ * CLASS: UNPCProfile
+ * DESCRIPTION: contains identifying data for an npc, used by dialogue assets to display name and portraits
+ * this allows multiple dialogue assets to share the same npc identity without duplicating data
  */
 UCLASS(BlueprintType)
 class ICANTCRY_API UNPCProfile : public UPrimaryDataAsset
@@ -17,17 +18,13 @@ class ICANTCRY_API UNPCProfile : public UPrimaryDataAsset
 	GENERATED_BODY()
 
 public:
-	// Nome del personaggio che apparirà nei dialoghi
-	// Nome del personaggio visibile nella UI
+	/** display name shown in dialogue ui for this npc */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Identity")
 	FText NPCName;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "NPC")
-    FText CharacterName;
-
-	// Mappa delle emozioni (Tag) e delle relative immagini (Texture)
-	// Esempio: "Emozione.Felice" -> Texture_Paolo_Happy
-	// Associazione tra Tag emozione e Texture (es: "Emozione.Triste" -> T_Paolo_Sad)
+	/** map of emotion tags to portrait textures
+	    example: "Emotion.Happy" -> T_NPCNAME_Happy
+	    the dialogue line's emotion tag determines which portrait is shown */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visuals")
 	TMap<FGameplayTag, TSoftObjectPtr<UTexture2D>> Portraits;
 };

@@ -9,13 +9,13 @@ void UEvent_StartQuest::ExecuteEvent_Implementation(AICC_Player* Player, UObject
 {
 	if (!Player) return;
 
-    // IMPORTANTE: Usa GetGameInstance() perché ora è un GameInstanceSubsystem
+    // fetch manager through gi subsystem and inject quest def
     UQuestManagerSystem* QM = Player->GetGameInstance()->GetSubsystem<UQuestManagerSystem>();
     
     if (QM && QuestToStart)
     {
         // Chiamiamo AcceptQuest definita nel tuo QuestManagerSystem.h
         QM->AcceptQuest(QuestToStart);
-        UE_LOG(LogTemp, Warning, TEXT("Quest %s avviata correttamente!"), *QuestToStart->Title.ToString());
+        UE_LOG(LogTemp, Warning, TEXT("Quest %s started successfully!"), *QuestToStart->Title.ToString());
     }
 }

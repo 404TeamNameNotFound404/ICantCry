@@ -10,10 +10,10 @@
 class AICC_Player;
 
 /**
- * CLASSE: UGameplayEvent
- * DESCRIZIONE: Classe base astratta per ogni azione narrativa.
- * Consente ai designer di creare eventi personalizzati (es. "Apri Porta", "Avvia Cutscene")
- * che possono essere inseriti dentro Quest o Dialoghi come Data Assets.
+ * CLASS: UGameplayEvent
+ * DESCRIPTION: abstract base class for all narrative actions
+ * allows designers to create custom events (like "open door", "start cutscene")
+ * that can be placed inside quests or dialogues as data assets
  */
 UCLASS(Abstract, Blueprintable, EditInlineNew, DefaultToInstanced)
 class ICANTCRY_API UGameplayEvent : public UObject
@@ -22,9 +22,9 @@ class ICANTCRY_API UGameplayEvent : public UObject
 
 	public:
 	/**
-	 * Funzione che esegue la logica dell'evento.
-	 * @param Player: Il giocatore che scatena o riceve l'evento.
-	 * @param Context: L'oggetto che ha causato l'evento (es. l'NPC o un Trigger).
+	 * executes the event's logic
+	 * @param Player: the player who triggers or receives the event
+	 * @param Context: the object that caused the event (eg the npc or a trigger)
 	 */
 	UFUNCTION(BlueprintNativeEvent, Category = "Narrative")
 	void ExecuteEvent(AICC_Player* Player, UObject* Context);

@@ -8,9 +8,9 @@ void UEvent_DropItem::ExecuteEvent_Implementation(AICC_Player* Player, UObject* 
 	AActor* NPC = Cast<AActor>(Context);
 	if (!NPC || !ItemClass) return;
 
-	// Calcoliamo una posizione davanti all'NPC
+	// offset spawn loc by 100 units fwd to avoid collision with npc
 	FVector SpawnLoc = NPC->GetActorLocation() + (NPC->GetActorForwardVector() * 100.0f);
 	
-	// Spawniamo l'oggetto nel mondo
+	// Spawn the object into the world
 	NPC->GetWorld()->SpawnActor<AActor>(ItemClass, SpawnLoc, FRotator::ZeroRotator);
 }
