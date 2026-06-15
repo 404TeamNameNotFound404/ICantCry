@@ -2,6 +2,7 @@
 
 
 #include "BasePickup.h"
+#include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "Kismet/GameplayStatics.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 #include "ICantCry/ICC/Narrative/Core/QuestManagerSystem.h"
