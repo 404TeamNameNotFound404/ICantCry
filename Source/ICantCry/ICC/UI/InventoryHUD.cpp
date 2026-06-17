@@ -131,7 +131,7 @@ void UInventoryHUD::MoveSelectionDown()
 {
     if (DisplayedBullets.Num() > 0)
     {
-        int32 NewIndex = (CurrentSelectedIndex + 1) % DisplayedBullets.Num();
+        const int32 NewIndex = (CurrentSelectedIndex + 1) % DisplayedBullets.Num();
         SelectBullet(NewIndex);
     }
 }
@@ -140,7 +140,12 @@ FText UInventoryHUD::OnQuantityChanged()
 {
     UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
     
-    if ( const FBullet& Indifference = Instance->GetInventory().BulletsStored[EBulletType::Indifference];
+    if (Instance->GetInventory().BulletsStored.IsEmpty())
+    {
+        return FText::FromString("x 0");
+    }
+    
+    if (const FBullet& Indifference = Instance->GetInventory().BulletsStored[EBulletType::Indifference];
         Indifference.IsValid())
     {
         return FText::FromString("x " + FString::FromInt(Indifference.GetQuantity()));

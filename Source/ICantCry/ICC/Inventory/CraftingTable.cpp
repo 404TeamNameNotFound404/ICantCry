@@ -194,8 +194,7 @@ void UCraftingTable::Craft()
     }
     
     FRecipe& SelectedRecipe = Inventory.GetSelectedRecipe();
-    
-    // LOG: Inizio craft
+ 
     UE_LOG(LogTemp, Warning, TEXT("--- CRAFT START ---"));
     
     if (SelectedRecipe.ResultBullet.GetBulletData())
@@ -210,7 +209,6 @@ void UCraftingTable::Craft()
         return;
     }
     
-    // 1. Consuma essences
     UE_LOG(LogTemp, Warning, TEXT("Essences:"));
     
     for (const FEssence& RequiredEssence : SelectedRecipe.RequiredEssences)
@@ -238,7 +236,7 @@ void UCraftingTable::Craft()
         }
     }
     
-    // 2. Consuma casings
+    
     UE_LOG(LogTemp, Warning, TEXT("Casings:"));
     
     int32 CasingsNeeded = SelectedRecipe.Requirements->CasingQuantity;
@@ -292,8 +290,7 @@ void UCraftingTable::Craft()
         UE_LOG(LogTemp, Error, TEXT("No casings of required type found"));
         return;
     }
-    
-    // 3. Aggiungi bullet
+  
     FBullet ResultBullet = SelectedRecipe.ResultBullet;
     
     if (ResultBullet.GetBulletData())
@@ -368,8 +365,9 @@ void UCraftingTable::Craft(UWorld* World)
         if (Casing.GetType() != RequiredType)
             continue;
         
+        const auto Before =  Instance->GetInventory().BulletsStored[EBulletType::Indifference].GetQuantity();
         
-        if ( const int32 Before = Casing.GetQuantity(); Before >= CasingsNeeded)
+        if ( /*const int32 Before = Casing.GetQuantity();*/ Before >= CasingsNeeded)
         {
             const int32 After = Before - CasingsNeeded;
             Casing.SetQuantity(After);

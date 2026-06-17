@@ -25,6 +25,9 @@ void UDefenceMinigame::NativeConstruct()
 	Icon->SetBrushFromTexture(InputIcon);
 	const FVector2D TextureSize = FVector2D(InputIcon->GetSurfaceWidth(), InputIcon->GetSurfaceHeight());
 	Icon->SetDesiredSizeOverride(TextureSize);
+	
+	Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	Instance->GetRuntimeStats().MinigameModifier = 1.0f;
 }
 
 EMinigameThreshold UDefenceMinigame::CheckBar()
@@ -58,9 +61,7 @@ EMinigameThreshold UDefenceMinigame::CheckBar()
 void UDefenceMinigame::HandleScore()
 {
 	const EMinigameThreshold Result = CheckBar();
-	Instance = Cast<UICantCryGameInstance>(GetGameInstance());
-	checkf(Instance, TEXT("Instance not found UDefenceMinigame::HandleScore()"));
-
+	
 	switch (Result)
 	{
 	case EMinigameThreshold::Bad:
