@@ -680,15 +680,7 @@ void UStatusTracker::BuffWith(const EBuffStatus& BuffStatus)
 	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
 	bAtkBuffRevert = false;
 	bDefBuffRevert = false;
-	// BuffFlow(BuffStatus, Target);
-	
-	// if (bAtkBuffRevert || bDefBuffRevert)
-	// {
-	// 	bIsOwnerAlreadyBuffed = false;
-	// 	DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + " just cancel the opposite debuff so no buff");
-	// 	return; 
-	// }
-	
+
 	if (BuffFlow(BuffStatus, Target))
 	{
 		bIsOwnerAlreadyBuffed = false;
@@ -705,6 +697,7 @@ void UStatusTracker::BuffWith(const EBuffStatus& BuffStatus)
 	BuffCounters.Add(BuffStatus, 0);
 	CurrentBuffedStatus = BuffStatus;
 	bIsOwnerAlreadyBuffed = true;
+	DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetActorLabel() + " added " + GetBuffName(BuffStatus) + " and it's counter " + FString::FromInt(BuffCounters[BuffStatus]));
 
 	switch (BuffStatus)
 	{
@@ -901,7 +894,6 @@ void UStatusTracker::UpdateBuffStatus()
 {
 	if (!bIsOwnerAlreadyBuffed || !bCanBuff)
 	{
-		DebugHelper::AddMessageToLog("[Status Tracker]: No buff status found for " + GetOwner()->GetActorLabel());
 		return;
 	}
 
@@ -920,7 +912,7 @@ void UStatusTracker::UpdateBuffStatus()
 		};
 		
 		const FString BuffName = StaticEnum<EBuffStatus>()->GetNameStringByValue(S);
-
+		
 		DebugHelper::AddMessageToLog(
 			"[Status Tracker]: " + Target->GetActorLabel() +
 			" " + BuffName + " is at turn " + FString::FromInt(C)
@@ -928,10 +920,7 @@ void UStatusTracker::UpdateBuffStatus()
 		
 		C++;
 		
-		// DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetActorLabel() + 
-		// 	" " + GetBuffName(S) + " is at turn " + FString::FromInt(C));
-		
-		if (C >= 3)
+		if (C >= 4) // 4 - 0 1 2 3
 		{
 			ExpireBuff(S);
 			BuffToRemove.Add(S);
@@ -1547,7 +1536,7 @@ void UStatusTracker::BuffShield()
 
 void UStatusTracker::ExpireBuff(const EBuffStatus& ExpiredTarget)
 {
-	const AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
 	
 	switch (ExpiredTarget)
 	{
@@ -1561,7 +1550,8 @@ void UStatusTracker::ExpireBuff(const EBuffStatus& ExpiredTarget)
 			
 			bIsOwnerAlreadyBuffed = false;
 			bCanDebuff = true;
-			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura(ExpiredTarget);
+			Target->ActiveAuras[ExpiredTarget]->Deactivate();
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura(Target, ExpiredTarget);
 		}
 		if (Target->IsA(AMob::StaticClass()))
 		{
@@ -1572,8 +1562,8 @@ void UStatusTracker::ExpireBuff(const EBuffStatus& ExpiredTarget)
 			PerkData.bBuffAtk = false;
 			bIsOwnerAlreadyBuffed = false;
 			bCanBuff = true;
-			bBuffedTwice = false;
-			Emotion->GetBattleHandler()->DeactivateAura(ExpiredTarget);
+			Target->ActiveAuras[ExpiredTarget]->Deactivate();
+			Emotion->GetBattleHandler()->DeactivateAura(Target, ExpiredTarget);
 		}
 		break;
 	case DefBuff:
@@ -1584,7 +1574,8 @@ void UStatusTracker::ExpireBuff(const EBuffStatus& ExpiredTarget)
 			DebugHelper::AddMessageToLog("[Status Tracker]: Buff ended def returns to " + FString::SanitizeFloat(Instance->GetRuntimeStats().DefencePower));
 			bIsOwnerAlreadyBuffed = false;
 			bCanDebuff = true;
-			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura(ExpiredTarget);
+			Target->ActiveAuras[ExpiredTarget]->Deactivate();
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura(Target, ExpiredTarget);
 		}
 		if (Target->IsA(AMob::StaticClass()))
 		{
@@ -1595,8 +1586,7 @@ void UStatusTracker::ExpireBuff(const EBuffStatus& ExpiredTarget)
 			bIsOwnerAlreadyBuffed = false;
 			PerkData.bBuffDef = false;
 			bCanBuff = true;
-			bBuffedTwice = false;
-			Emotion->GetBattleHandler()->DeactivateAura(ExpiredTarget);
+			Emotion->GetBattleHandler()->DeactivateAura(Target, ExpiredTarget);
 		}
 		break;
 	case LowHealth:

@@ -107,6 +107,7 @@ void UNoteHighwayMinigame::Simulate(const ESpawnableHighwayBtn& Target)
 	else 
 	{
 		DebugHelper::LogError("Spam press / Missed completely!");
+		TargetNote->CachedSelf->SetColorAndOpacity(FLinearColor::Red);
 		//TODO ADD MISS LABEL
 	}
 }

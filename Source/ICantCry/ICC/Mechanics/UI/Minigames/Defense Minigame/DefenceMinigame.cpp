@@ -32,13 +32,13 @@ void UDefenceMinigame::NativeConstruct()
 
 EMinigameThreshold UDefenceMinigame::CheckBar()
 {
-	const float DistanceToFirst = FVector2D::Distance(Slider->GetRenderTransform().Translation,
-	                                                  WorseScore->GetRenderTransform().Translation);
-	const float DistanceToSecond = FVector2D::Distance(Slider->GetRenderTransform().Translation,
-	                                                   MediumScore->GetRenderTransform().Translation);
+	const float DistanceToFirst = FVector2D::Distance(Slider->GetRenderTransform().Translation.GetAbs(),
+	                                                 	WorseScore->GetRenderTransform().Translation.GetAbs());
+	const float DistanceToSecond = FVector2D::Distance(Slider->GetRenderTransform().Translation.GetAbs(),
+	                                                   MediumScore->GetRenderTransform().Translation.GetAbs());
 	const float DistanceToParry = FVector2D::Distance(Slider->GetRenderTransform().Translation,
 	                                                  PerfectScore->GetRenderTransform().Translation);
-
+	
 	if (DistanceToParry >= PerfectThreshold)
 	{
 		DebugHelper::LogMessage(3, FColor::FromHex("FFAB5B"), "Perfect threshold hit");
@@ -91,6 +91,23 @@ void UDefenceMinigame::HandleScore()
 	}
 }
 
+FString UDefenceMinigame::GetThresholdName(const EMinigameThreshold& T) const
+{
+	switch (T)
+	{
+	case Bad:
+		return "Bad";
+	case Good:
+		return "Good";
+	case Perfect:
+		return "Perfect";
+	case Miss:
+		return "Miss";
+	default:
+		return "You suck!";
+	}
+}
+
 
 void UDefenceMinigame::MoveSlider(const FVector2D& Position)
 {
@@ -101,6 +118,8 @@ void UDefenceMinigame::MoveSlider(const FVector2D& Position)
 		return;
 	}
 	
+	auto Bar = CheckBar();
+	
 	FVector2D CurrentPosition = Slider->GetRenderTransform().Translation;
 	CurrentPosition.Y = 0;
 	FVector2D DeltaMove = Position * Speed * GetWorld()->GetDeltaSeconds();
@@ -108,7 +127,7 @@ void UDefenceMinigame::MoveSlider(const FVector2D& Position)
 	NewPosition.Y = 0;
 	const FVector2D LeftBarrierPosition = LeftSeparator->GetRenderTransform().Translation;
 	
-	if (const float Distance = FVector2D::Distance(LeftBarrierPosition , CurrentPosition); Distance >= DistanceThreshold)
+	if (const float Distance = FVector2D::Distance(LeftBarrierPosition , CurrentPosition); Distance >= EndThreshold)
 	{
 		Instance = Cast<UICantCryGameInstance>(GetGameInstance());
 		checkf(Instance, TEXT("Instance not found UDefenceMinigame::HandleScore()"));
