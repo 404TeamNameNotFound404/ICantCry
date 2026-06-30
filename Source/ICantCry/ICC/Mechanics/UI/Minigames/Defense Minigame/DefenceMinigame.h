@@ -44,25 +44,17 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Minigame", meta = (AllowPrivateAccess = "true"))
 	float Speed = 1.f;
+	
+	float EndThreshold = 660.0f; 
 
-	UPROPERTY()
-	float DistanceThreshold = 660.0f;
-
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Minigame", meta=(AllowPrivateAccess = "true"))
 	float BadThreshold = 600;
 
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Minigame", meta=(AllowPrivateAccess = "true"))
 	float GoodThreshold = 620;
 
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Minigame", meta=(AllowPrivateAccess = "true"))
 	float PerfectThreshold = 640;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Minigame", meta = (AllowPrivateAccess = "true"))
-	FVector2D BadDefence;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Minigame", meta = (AllowPrivateAccess = "true"))
-	FVector2D GoodDefence;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Minigame", meta = (AllowPrivateAccess = "true"))
-	FVector2D PerfectParry;
 
 	UPROPERTY()
 	UICantCryGameInstance* Instance = nullptr;
@@ -75,4 +67,6 @@ private:
 	UImage* PerfectScore;
 	
 	virtual void HandleScore() override;
+	
+	FString GetThresholdName(const EMinigameThreshold& T) const;
 };

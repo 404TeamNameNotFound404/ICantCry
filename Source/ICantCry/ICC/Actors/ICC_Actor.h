@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "NiagaraComponent.h"
 #include "GameFramework/Character.h"
 #include "ICantCry/ICC/Actors/StatusTracker/StatusTracker.h"
 #include "ICC_Actor.generated.h"
@@ -33,6 +34,13 @@ public:
 	bool IsAshamed() const;
 
 	virtual int GetSpeed() const;
+	
+	UPROPERTY() 
+	TMap<TEnumAsByte<EBuffStatus>, UNiagaraComponent*> ActiveAuras;
+	
+	UPROPERTY() UNiagaraComponent* FreezedComponent;
+	UPROPERTY() UNiagaraComponent* DebuffDefComponent;
+	UPROPERTY() UNiagaraComponent* DebuffAtkComponent;
 
 protected:
 	UPROPERTY()

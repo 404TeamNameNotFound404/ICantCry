@@ -68,10 +68,10 @@ private:
 	UPROPERTY()
 	int MovementDirection = 1;
 
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Minigame Data", meta=(AllowPrivateAccess="true"))
 	float BorderLeft = 0.0f;
 
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Minigame Data", meta=(AllowPrivateAccess="true"))
 	float BorderRight = 950.0f;
 
 	UPROPERTY()
