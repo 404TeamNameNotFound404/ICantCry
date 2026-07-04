@@ -51,6 +51,7 @@ void UBulletDisplayer::Setup()
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
 
 	BulletGrid->ClearChildren();
+	BulletGridScrollBox->ClearChildren();
 	Bullets.Empty();
 
 	if (Instance->GetInventory().BulletsStored.IsEmpty())
@@ -75,18 +76,20 @@ void UBulletDisplayer::Setup()
 		
 		//Item->SetPadding(FMargin(2, 2));
 
-		UGridSlot* BulletSlot = Cast<UGridSlot>(BulletGrid->AddChildToGrid(Item, Row, Column));
+		// UGridSlot* BulletSlot = Cast<UGridSlot>(BulletGrid->AddChildToGrid(Item, Row, Column));
+		//
+		// if (!BulletSlot)
+		// {
+		// 	continue;
+		// }
+		//
+		// BulletSlot->SetRow(Row);
+		// BulletSlot->SetColumn(Column);
+		// BulletSlot->SetPadding(FMargin(5.f));
+		// BulletSlot->SetHorizontalAlignment(HAlign_Fill);
+		// BulletSlot->SetVerticalAlignment(VAlign_Fill);
 		
-		if (!BulletSlot)
-		{
-			continue;
-		}
-		
-		BulletSlot->SetRow(Row);
-		BulletSlot->SetColumn(Column);
-		BulletSlot->SetPadding(FMargin(5.f));
-		BulletSlot->SetHorizontalAlignment(HAlign_Fill);
-		BulletSlot->SetVerticalAlignment(VAlign_Fill);
+		BulletGridScrollBox->AddChild(Item);
 
 		//BulletGrid->AddChild(Item);
 		Bullets.Add(Item);
@@ -102,6 +105,7 @@ void UBulletDisplayer::Setup()
 void UBulletDisplayer::Refresh()
 {
 	Bullets.Empty();
+	BulletGridScrollBox->ClearChildren();
 	BulletGrid->ClearChildren();
 
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetGameInstance());
@@ -117,17 +121,19 @@ void UBulletDisplayer::Refresh()
 		Item->Setup(B, B.GetQuantity());
 		Item->SetPadding(FMargin(2, 2));
 	
-		UGridSlot* BulletSlot = Cast<UGridSlot>(BulletGrid->AddChild(Item));
-		if (!BulletSlot)
-		{
-			continue;
-		}
-	
-		const int32 Row = Index / BulletSlotPadding;
-		const int32 Column = Index % BulletSlotPadding;
-	
-		BulletSlot->SetRow(Row);
-		BulletSlot->SetColumn(Column);
+		// UGridSlot* BulletSlot = Cast<UGridSlot>(BulletGrid->AddChild(Item));
+		// if (!BulletSlot)
+		// {
+		// 	continue;
+		// }
+		//
+		// const int32 Row = Index / BulletSlotPadding;
+		// const int32 Column = Index % BulletSlotPadding;
+		//
+		// BulletSlot->SetRow(Row);
+		// BulletSlot->SetColumn(Column);
+		
+		BulletGridScrollBox->AddChild(Item);
 	
 		//BulletGrid->AddChild(Item);
 		Bullets.Add(Item);

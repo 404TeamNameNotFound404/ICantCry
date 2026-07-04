@@ -6,7 +6,7 @@
 #include "BulletSelector.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/GridPanel.h"
-#include "Components/HorizontalBox.h"
+#include "Components/ScrollBox.h"
 #include "BulletDisplayer.generated.h"
 
 /**
@@ -23,6 +23,9 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UGridPanel* BulletGrid;
 
+	UPROPERTY(meta = (BindWidget))
+	UScrollBox* BulletGridScrollBox;
+	
 	UPROPERTY(meta = (BindWidget))
 	UButton* ConfirmGamepadBtn;
 	
