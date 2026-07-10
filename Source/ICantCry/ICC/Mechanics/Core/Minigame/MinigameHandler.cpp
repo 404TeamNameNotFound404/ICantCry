@@ -106,9 +106,43 @@ void AMinigameHandler::StartMinigame(UBulletData* BulletData, const bool& Enable
 			}
 		case Anger:
 			{
-				CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["Anger"]);
-				CastedWidget = Cast<UAngerAtkMinigame>(CurrentMinigameDisplayed);
-				break;
+				// CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["Anger"]);
+				// CastedWidget = Cast<UAngerAtkMinigame>(CurrentMinigameDisplayed);
+				// break;
+				
+				switch (BulletData->Type)
+				{
+				case AngerDv:
+					{
+						DebugHelper::LogMessage(5, FColor::Red, "Minigame anger on Anger DV");
+						CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["Anger"]);
+						CastedWidget = Cast<UAngerAtkMinigame>(CurrentMinigameDisplayed);
+					}	break;
+				case FearDv:
+					{
+						DebugHelper::LogMessage(5, FColor::Red, "Minigame anger on Fear DV");
+						CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["Anger 2"]);
+						CastedWidget = Cast<UAngerAtkMinigame>(CurrentMinigameDisplayed);
+					}	break;
+					
+				default:
+				case Indifference:
+				case AngerEv:
+				case FearEV:
+				case Disgust:
+				case SadnessDv:
+				case JoyDv:
+				case JoyEv:
+				case Anxiety:
+				case CalmDv:
+				case CalmEV:
+				case JealousyDv:
+				case JealousyEv:
+				case SadnessEv:
+				case Shame:
+				case DisgustEv:
+					break;
+				}
 			}
 		case GuitarHero:
 			{
@@ -117,27 +151,35 @@ void AMinigameHandler::StartMinigame(UBulletData* BulletData, const bool& Enable
 				default:
 				case Indifference:
 				case AngerDv:
+					break;
+					
 				case Shame:
-					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["GuitarHero 4"]);
-					CastedWidget = Cast<UNoteHighwayMinigame>(CurrentMinigameDisplayed);
-
+					{
+						CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["GuitarHero 4"]);
+						CastedWidget = Cast<UNoteHighwayMinigame>(CurrentMinigameDisplayed);
+					}break;
 				
 				case FearDv:
+					break;
+					
 				case Disgust:
-					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["GuitarHero 2"]);
-					CastedWidget = Cast<UNoteHighwayMinigame>(CurrentMinigameDisplayed);
-					break;
+					{
+						CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["GuitarHero 2"]);
+						CastedWidget = Cast<UNoteHighwayMinigame>(CurrentMinigameDisplayed);
+					}break;
 				case Anxiety:
-					DebugHelper::LogMessage(10, FColor::White, "Guitar hero spawned");
-					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["GuitarHero 1"]);
-					CastedWidget = Cast<UNoteHighwayMinigame>(CurrentMinigameDisplayed);
-					break;
+					{
+						DebugHelper::LogMessage(10, FColor::White, "Guitar hero spawned");
+						CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["GuitarHero 1"]);
+						CastedWidget = Cast<UNoteHighwayMinigame>(CurrentMinigameDisplayed);
+					} break;
 				case SadnessDv:
 					break;
 				case JoyDv:
-					CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["GuitarHero 3"]);
-					CastedWidget = Cast<UNoteHighwayMinigame>(CurrentMinigameDisplayed);
-					break;
+					{
+						CurrentMinigameDisplayed = CreateWidget<UUserWidget>(Controller, MinigameClasses["GuitarHero 3"]);
+						CastedWidget = Cast<UNoteHighwayMinigame>(CurrentMinigameDisplayed);
+					}break;
 					
 				case JoyEv:
 				case CalmEV:
