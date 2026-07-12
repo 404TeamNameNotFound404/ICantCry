@@ -215,7 +215,7 @@ void UICC_GamepadBinder::Input_GamepadMinigameGuitarHero_B(const FInputActionVal
 
 void UICC_GamepadBinder::Input_GamepadMinigameCurling(const FInputActionValue& InputActionValue)
 {
-	if (!DebugHelper::IsGamepadPlugged()) return;
+	//if (!DebugHelper::IsGamepadPlugged()) return;
 	
 	if (!Player || !Player->GetBattleHUD()) return;
 	if (!Player->bIsInFight) return;
@@ -224,11 +224,13 @@ void UICC_GamepadBinder::Input_GamepadMinigameCurling(const FInputActionValue& I
 	
 	if (!Player->GetCurrentMinigameDisplayed())
 	{
+		DebugHelper::LogMessage(8, FColor::White, "Curling minigame not displayed in binder");
 		return;
 	}
 	
 	if (Player->GetBattleHUD()->GetCurrentBulletData()->MinigameTemplate == EMinigameType::Curling)
 	{
+		DebugHelper::LogMessage(8, FColor::White, "Curling minigame detected in binder");
 		Player->GetCurrentMinigameDisplayed()->SetScrollValue(InputActionValue.Get<float>());
 		bCurlingPressed = true;
 	}

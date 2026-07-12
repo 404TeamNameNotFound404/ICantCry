@@ -299,6 +299,7 @@ void UBattleHUD::PushBackIndifferenceAsCasing(const int32& CasingQuantity, const
 	   TargetCasing)
 	{
 		FCasing Casing = *TargetCasing;
+		if (!Casing.IsValid()) return;
 		Casing.SetQuantity(CasingQuantity + GameInstance->GetInventory().CasingsStored["Base"].GetQuantity());
 		Casing.SetType(CasingType);
 		GameInstance->GetInventory().CasingsStored.Add(Casing.GetName(), Casing);
