@@ -187,8 +187,8 @@ void UICC_GamepadBinder::Input_GamepadMinigameRelease(const FInputActionValue& I
 		GetWorld()->GetTimerManager().SetTimer(Handle, [&]
 		{
 			bDecreaseScrollValueMinigame = true;
-			DebugHelper::LogMessage(15, FColor::White, "Minigame released!");
-		}, 0.25f, false);
+			DebugHelper::LogMessage(15, FColor::White, "Anger Minigame released!");
+		}, 0.09f, false);
 	}
 	
 }

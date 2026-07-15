@@ -43,4 +43,6 @@ struct FRuntimeStats
 
 	UPROPERTY()
 	FDamage Stats;
+	
+	void Reset(const float& InHealth);
 };

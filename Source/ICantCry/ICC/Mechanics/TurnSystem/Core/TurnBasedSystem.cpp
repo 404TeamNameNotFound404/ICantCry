@@ -102,6 +102,7 @@ void UTurnBasedSystem::Start2(UWorld* World, FBattleMemory* Memory)
 		  }
       
 		  Instance->CachedBattleMemory.bBattleRetried = false;
+	   	Reload();
 	   }
 	   else
 	   {
@@ -424,7 +425,8 @@ void UTurnBasedSystem::Reload()
 	bIsAiTurn = false;
 	Instance->GetCurrentPlayer()->GetStatusTracker()->Reset();
 	Instance->GetRuntimeStats().ApModifier = 1;
-	Instance->GetPlayerStats()->RuntimeStats = Instance->GetRuntimeStats();
+	CurrentPlayer->GetRuntimeStats().Reset(Instance->GetPlayerStats()->MaxHealth);
+	Instance->GetRuntimeStats().CurrentHealth = CurrentPlayer->GetRuntimeStats().CurrentHealth;
 	Instance->GetCurrentPlayer()->GetBattleHUD()->SetBulletSetupFinished(false);
 	Turn.CurrentTurn = 0;
 	BattleTurnCounter = 0;
