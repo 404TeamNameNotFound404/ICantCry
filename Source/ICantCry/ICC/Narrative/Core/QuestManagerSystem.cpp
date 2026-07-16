@@ -3,6 +3,7 @@
 
 #include "QuestManagerSystem.h"
 // #include "ICantCry/ICC/Narrative/Core/QuestManagerSystem.h"
+#include "Kismet/GameplayStatics.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 
 
@@ -81,8 +82,59 @@ bool UQuestManagerSystem::IsQuestCompleted(FGameplayTag QuestTag) const
 
 void UQuestManagerSystem::CompleteQuest(int32 Index)
 {
-    // safety check: index must be valid to avoid crashes
-	// this can happen if something calls completequest with an index that was already removed
+ //   // safety check: index must be valid to avoid crashes
+	//// this can happen if something calls completequest with an index that was already removed
+ //   if (!ActiveQuests.IsValidIndex(Index))
+ //   {
+ //       UE_LOG(LogTemp, Error, TEXT("system error: tried to complete quest with invalid index: %d"), Index);
+ //       return;
+ //   }
+
+ //   FQuestProgress CompletedQuest = ActiveQuests[Index];
+ //   
+ //   // make sure the definition is valid
+	//// if this happens, something corrupted the active quests array
+ //   if (!CompletedQuest.QuestDef) 
+ //   {
+ //       UE_LOG(LogTemp, Error, TEXT("system error: quest at index %d has no valid questdef!"), Index);
+ //       return;
+ //   }
+
+ //   // grab the player for reward delivery
+	//// we need the player to execute gameplay events that affect the character
+ //   AICC_Player* PlayerCharacter = Cast<AICC_Player>(GetWorld()->GetFirstPlayerController()->GetPawn());
+
+ //   // add to completed tags using the unique quest id from the data asset
+	//// this prevents the quest from being accepted again
+ //   CompletedQuestsTags.AddTag(CompletedQuest.QuestDef->QuestID);
+
+ //   // execute all rewards
+	//// rewards can be anything: give items, unlock abilities, change world state, etc
+ //   for (UGameplayEvent* Reward : CompletedQuest.QuestDef->OnCompleteRewards)
+ //   {
+ //       if (Reward && PlayerCharacter) 
+ //       {
+ //           // pass the player (target) and the quest (context)
+	//		// the quest context is useful for rewards that need to know which quest just completed
+ //           Reward->ExecuteEvent(PlayerCharacter, CompletedQuest.QuestDef);
+ //       }
+ //   }
+
+ //   // remove from active quests
+ //   // do this BEFORE the broadcast so the ui reads the updated array
+	//// if we broadcast first, the ui would show the quest for one more frame
+ //   ActiveQuests.RemoveAt(Index);
+
+ //   // tell ui to refresh (this removes the quest line from character ui)
+ //   OnSystemUpdate.Broadcast();
+ //   
+ //   UE_LOG(LogTemp, Warning, TEXT("=== system: quest '%s' (id: %s) removed from active and completed! ==="), 
+ //       *CompletedQuest.QuestDef->Title.ToString(),
+ //       *CompletedQuest.QuestDef->QuestID.ToString());
+
+
+
+    // Controllo di sicurezza: l'indice deve essere valido per evitare crash.
     if (!ActiveQuests.IsValidIndex(Index))
     {
         UE_LOG(LogTemp, Error, TEXT("system error: tried to complete quest with invalid index: %d"), Index);
@@ -90,44 +142,66 @@ void UQuestManagerSystem::CompleteQuest(int32 Index)
     }
 
     FQuestProgress CompletedQuest = ActiveQuests[Index];
-    
-    // make sure the definition is valid
-	// if this happens, something corrupted the active quests array
-    if (!CompletedQuest.QuestDef) 
+
+    // La definizione deve essere valida, altrimenti l'array è corrotto.
+    if (!CompletedQuest.QuestDef)
     {
         UE_LOG(LogTemp, Error, TEXT("system error: quest at index %d has no valid questdef!"), Index);
         return;
     }
 
-    // grab the player for reward delivery
-	// we need the player to execute gameplay events that affect the character
-    AICC_Player* PlayerCharacter = Cast<AICC_Player>(GetWorld()->GetFirstPlayerController()->GetPawn());
+    // --- INIZIO PARTE MODIFICATA ---
 
-    // add to completed tags using the unique quest id from the data asset
-	// this prevents the quest from being accepted again
-    CompletedQuestsTags.AddTag(CompletedQuest.QuestDef->QuestID);
-
-    // execute all rewards
-	// rewards can be anything: give items, unlock abilities, change world state, etc
-    for (UGameplayEvent* Reward : CompletedQuest.QuestDef->OnCompleteRewards)
+    // Risoluzione robusta del player per i reward: proviamo il primo player controller,
+    // poi il fallback via GameplayStatics. Così i reward non vengono saltati se la
+    // risoluzione diretta torna null.
+    AICC_Player* PlayerCharacter = nullptr;
+    if (APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr)
     {
-        if (Reward && PlayerCharacter) 
-        {
-            // pass the player (target) and the quest (context)
-			// the quest context is useful for rewards that need to know which quest just completed
-            Reward->ExecuteEvent(PlayerCharacter, CompletedQuest.QuestDef);
-        }
+        PlayerCharacter = Cast<AICC_Player>(PC->GetPawn());
+    }
+    if (!PlayerCharacter)
+    {
+        PlayerCharacter = Cast<AICC_Player>(UGameplayStatics::GetPlayerPawn(this, 0));
     }
 
-    // remove from active quests
-    // do this BEFORE the broadcast so the ui reads the updated array
-	// if we broadcast first, the ui would show the quest for one more frame
+    // Marca la quest come completata (usando il QuestID unico) per impedirne il ri-accept.
+    CompletedQuestsTags.AddTag(CompletedQuest.QuestDef->QuestID);
+
+    // Log diagnostico: quante reward ci sono e se il player è stato risolto.
+    const int32 RewardCount = CompletedQuest.QuestDef->OnCompleteRewards.Num();
+    UE_LOG(LogTemp, Log, TEXT("CompleteQuest: eseguo %d reward per '%s' (Player=%s)"),
+        RewardCount, *CompletedQuest.QuestDef->QuestID.ToString(),
+        PlayerCharacter ? *PlayerCharacter->GetName() : TEXT("NULL"));
+
+    if (!PlayerCharacter)
+    {
+        UE_LOG(LogTemp, Error, TEXT("CompleteQuest: player non risolto, i reward verranno saltati."));
+    }
+
+    // Esegue tutte le reward (dare oggetti, exp, cambiare stato del mondo, ecc.).
+    for (UGameplayEvent* Reward : CompletedQuest.QuestDef->OnCompleteRewards)
+    {
+        if (!Reward)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("CompleteQuest: entry NULLA in OnCompleteRewards."));
+            continue;
+        }
+        if (!PlayerCharacter) break;
+
+        // Passiamo il player (target) e la quest (context).
+        Reward->ExecuteEvent(PlayerCharacter, CompletedQuest.QuestDef);
+    }
+
+    // --- FINE PARTE MODIFICATA ---
+
+    // Rimuove dalla lista attive PRIMA del broadcast, così la UI legge l'array aggiornato.
     ActiveQuests.RemoveAt(Index);
 
-    // tell ui to refresh (this removes the quest line from character ui)
+    // Aggiorna la UI (rimuove la riga della quest).
     OnSystemUpdate.Broadcast();
-    
-    UE_LOG(LogTemp, Warning, TEXT("=== system: quest '%s' (id: %s) removed from active and completed! ==="), 
+
+    UE_LOG(LogTemp, Warning, TEXT("=== system: quest '%s' (id: %s) removed from active and completed! ==="),
         *CompletedQuest.QuestDef->Title.ToString(),
         *CompletedQuest.QuestDef->QuestID.ToString());
 }
@@ -205,4 +279,21 @@ int32 UQuestManagerSystem::GetObjectiveProgress(FGameplayTag QuestTag, FGameplay
         return Progress ? *Progress : 0;
     }
     return 0;
+}
+
+
+bool UQuestManagerSystem::ForceCompleteQuest(FGameplayTag QuestTag)
+{
+    int32 Index = FindActiveQuestIndex(QuestTag);
+    if (Index != INDEX_NONE)
+    {
+        // CompleteQuest non controlla gli obiettivi: dà i reward e rimuove la quest.
+        CompleteQuest(Index);
+        return true;
+    }
+
+    UE_LOG(LogTemp, Warning,
+        TEXT("ForceCompleteQuest: '%s' non è attiva, impossibile forzarla (nessuna QuestDef/reward disponibili)."),
+        *QuestTag.ToString());
+    return false;
 }

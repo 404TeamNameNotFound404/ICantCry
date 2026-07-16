@@ -71,6 +71,11 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Quest")
     int32 FindActiveQuestIndex(FGameplayTag QuestTag) const;
 
+    /** Completes the quest, bypassing the objective check (still grants rewards and removes it).
+ *  Works only if the quest is ACTIVE. */
+    UFUNCTION(BlueprintCallable, Category = "Quest")
+    bool ForceCompleteQuest(FGameplayTag QuestTag);
+
     // --- EVENTI ---
     
     UPROPERTY(BlueprintAssignable, Category = "Quest")
