@@ -25,6 +25,10 @@ public:
     UPROPERTY(EditAnywhere, Category = "Quest")
     FGameplayTag QuestToComplete;
 
+
+    /** If true, completes the quest even if the objectives are not met */
+    UPROPERTY(EditAnywhere, Category = "Quest")
+    bool bForceComplete = false;
    
     virtual void ExecuteEvent_Implementation(AICC_Player* Player, UObject* Context) override;
 

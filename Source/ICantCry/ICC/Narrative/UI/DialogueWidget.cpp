@@ -9,11 +9,13 @@
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
 #include "Components/VerticalBox.h"
+#include "Kismet/GameplayStatics.h"
 #include "ICantCry/ICC/Narrative/Data/DialogueAsset.h"
 #include "ICantCry/ICC/Narrative/GameplayEvent.h"
 #include "ICantCry/ICC/Narrative/UI/DialogueChoiceButton.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "ICantCry/ICC/Narrative/Core/QuestManagerSystem.h"
+#include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 
 
 void UDialogueWidget::NativeConstruct() 
@@ -42,6 +44,12 @@ void UDialogueWidget::NativeConstruct()
         FInputModeUIOnly Mode; 
         Mode.SetWidgetToFocus(TakeWidget()); 
         PC->SetInputMode(Mode); 
+    }
+
+    // stop player while dialogue is open
+    if (AICC_Player* Player = Cast<AICC_Player>(GetOwningPlayerPawn()))
+    {
+        Player->SetDialogueMovementLock(true);
     }
 }
 
@@ -362,33 +370,135 @@ void UDialogueWidget::OnDeclineClicked()
         FInputModeGameOnly Mode; 
         PC->SetInputMode(Mode); 
     }
+
+    if (AICC_Player* Player = Cast<AICC_Player>(GetOwningPlayerPawn()))
+    {
+        Player->SetDialogueMovementLock(false);
+    }
+
     RemoveFromParent();
 }
 
 void UDialogueWidget::EndDialogue() 
 {
+
+    // ORIGINALE 
     // trigger any events that should happen when the dialogue finishes normally
     // this is where quests are started or other narrative events happen
-    if (CurrentDialogue)
+    //if (CurrentDialogue)
+    //{
+    //    if (AICC_Player* Player = Cast<AICC_Player>(GetOwningPlayerPawn()))
+    //    {
+    //        for (UGameplayEvent* Event : CurrentDialogue->OnDialogueEnded)
+    //        {
+    //            if (Event) Event->ExecuteEvent(Player, CurrentDialogue);
+    //        }
+    //    }
+    //}
+    //
+    //// restore game input mode and close the widget
+    //APlayerController* PC = GetOwningPlayer();
+    //if (PC) 
+    //{ 
+    //    PC->bShowMouseCursor = false; 
+    //    FInputModeGameOnly Mode; 
+    //    PC->SetInputMode(Mode); 
+    //}
+
+    //if (AICC_Player* Player = Cast<AICC_Player>(GetOwningPlayerPawn()))
+    //{
+    //    Player->SetDialogueMovementLock(false);
+    //}
+
+    //RemoveFromParent();
+
+    // FINE ORIGINALE 
+
+
+    // INIZIO MODIFICA 1
+    //AICC_Player* Player = Cast<AICC_Player>(GetOwningPlayerPawn());
+    //if (!Player)
+    //{
+    //    if (APlayerController* OwningPC = GetOwningPlayer())
+    //        Player = Cast<AICC_Player>(OwningPC->GetPawn());
+    //}
+    //if (!Player)
+    //    Player = Cast<AICC_Player>(UGameplayStatics::GetPlayerPawn(this, 0));
+
+    //if (CurrentDialogue)
+    //{
+    //    const int32 EventCount = CurrentDialogue->OnDialogueEnded.Num();
+    //    UE_LOG(LogTemp, Log, TEXT("EndDialogue: run %d OnDialogueEnded event(s). (Player=%s)"),
+    //        EventCount, Player ? *Player->GetName() : TEXT("NULL"));
+
+    //    for (UGameplayEvent* Event : CurrentDialogue->OnDialogueEnded)
+    //    {
+    //        if (!Event)
+    //        {
+    //            UE_LOG(LogTemp, Warning, TEXT("EndDialogue: NULL entry in OnDialogueEnded (check the array in the DialogueAsset)."));
+    //            continue;
+    //        }
+    //        Event->ExecuteEvent(Player, CurrentDialogue);
+    //    }
+    //}
+
+    //// un
+    //if (Player) Player->SetDialogueMovementLock(false);
+
+    //if (APlayerController* PC = GetOwningPlayer())
+    //{
+    //    PC->bShowMouseCursor = false;
+    //    FInputModeGameOnly Mode;
+    //    PC->SetInputMode(Mode);
+    //}
+    //RemoveFromParent();
+
+    // FINE MODIFICA 1
+
+
+    // INIZIO MODIFICA 2
+
+    AICC_Player* Player = Cast<AICC_Player>(GetOwningPlayerPawn());
+    if (!Player)
     {
-        if (AICC_Player* Player = Cast<AICC_Player>(GetOwningPlayerPawn()))
-        {
-            for (UGameplayEvent* Event : CurrentDialogue->OnDialogueEnded)
-            {
-                if (Event) Event->ExecuteEvent(Player, CurrentDialogue);
-            }
-        }
+        if (APlayerController* OwningPC = GetOwningPlayer())
+            Player = Cast<AICC_Player>(OwningPC->GetPawn());
     }
-    
-    // restore game input mode and close the widget
-    APlayerController* PC = GetOwningPlayer();
-    if (PC) 
-    { 
-        PC->bShowMouseCursor = false; 
-        FInputModeGameOnly Mode; 
-        PC->SetInputMode(Mode); 
+    if (!Player)
+        Player = Cast<AICC_Player>(UGameplayStatics::GetPlayerPawn(this, 0));
+
+    // Salviamo il dialogo PRIMA della pulizia, così possiamo eseguire gli eventi per ultimi.
+    UDialogueAsset* FinishedDialogue = CurrentDialogue;
+
+    // Pulizia PRIMA, eventi DOPO: se un evento apre un nuovo dialogo/bark, sarà quel widget
+    // (nel suo NativeConstruct) a impostare cursore e input mode per ultimo. Così il mouse resta visibile.
+    if (Player) Player->SetDialogueMovementLock(false);
+
+    if (APlayerController* PC = GetOwningPlayer())
+    {
+        PC->bShowMouseCursor = false;
+        FInputModeGameOnly Mode;
+        PC->SetInputMode(Mode);
     }
     RemoveFromParent();
+
+    // Eventi di fine dialogo (start quest, give rewards, start dialogue...).
+    if (FinishedDialogue)
+    {
+        const int32 EventCount = FinishedDialogue->OnDialogueEnded.Num();
+        UE_LOG(LogTemp, Log, TEXT("EndDialogue: eseguo %d evento/i OnDialogueEnded (Player=%s)"),
+            EventCount, Player ? *Player->GetName() : TEXT("NULL"));
+
+        for (UGameplayEvent* Event : FinishedDialogue->OnDialogueEnded)
+        {
+            if (!Event)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("EndDialogue: entry NULLA in OnDialogueEnded."));
+                continue;
+            }
+            Event->ExecuteEvent(Player, FinishedDialogue);
+        }
+    }
 }
 
 

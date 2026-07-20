@@ -8,7 +8,8 @@
 
 class UDialogueWidget;
 class UDialogueAsset;
-
+class UBarkWidget;
+class AICC_Player;
 
 /**
  * CLASS: UEvent_StartDialogue
@@ -21,8 +22,11 @@ class ICANTCRY_API UEvent_StartDialogue : public UGameplayEvent
 
 public:
 	// La classe Blueprint del Widget da spawnare
+	/*UPROPERTY(EditAnywhere, Category = "Config")
+	TSubclassOf<UDialogueWidget> WidgetClass;*/
+
 	UPROPERTY(EditAnywhere, Category = "Config")
-	TSubclassOf<UDialogueWidget> WidgetClass;
+	TSubclassOf<UUserWidget> WidgetClass;
 
 	// Il Data Asset del dialogo da leggere
 	UPROPERTY(EditAnywhere, Category = "Config")

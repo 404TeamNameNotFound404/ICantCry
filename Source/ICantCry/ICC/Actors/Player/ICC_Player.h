@@ -58,6 +58,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void SetInputModeToGameOnly();
 
+	UFUNCTION(BlueprintCallable, Category = "Narrative")
+	void SetDialogueMovementLock(bool bLock);
+
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void SetInputModeToGameAndUI();
 
@@ -83,6 +86,9 @@ public:
  */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Battle System", Blueprintable)
 	bool bIsInFight = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Narrative", meta = (AllowPrivateAccess = "true"))
+	bool bIsInDialogue = false;
 
 	bool IsAlive() const;
 
@@ -156,6 +162,9 @@ public:
 	//Function called for Objects without a note (Quest Item)
 	void PlayBarkImmediately(UDialogueAsset* BarkToPlay);
 
+	/** Opens the classic Dialogue UI (WBP_Dialogue) with the provided dialogue. If a menu is open,
+ *  it queues the dialogue and launches it when the menu closes, just as PlayBarkImmediately does for barks. */
+	void PlayDialogueUIImmediately(UDialogueAsset* DialogueToPlay);
 
 	//SCANNER INTERACTION
 
@@ -351,4 +360,12 @@ private:
 	FKey GetInteractKey() const;
 
 	float CurrentInteractableDistance = 0.0f;
+
+	/** Opens the classic Dialogue UI (WBP_Dialogue) with the provided dialogue. If a menu is open,
+ *  it queues the dialogue and launches it when the menu closes, just as PlayBarkImmediately does for barks. */
+	void SpawnDialogueUI(UDialogueAsset* DialogueToPlay);
+
+	/** Pending dialogue to be opened upon closing a menu (equivalent to PendingBark for the Dialogue UI). */
+	UPROPERTY()
+	UDialogueAsset* PendingDialogueUI;
 };

@@ -392,7 +392,7 @@ bool AICC_Player::IsPickedUp() const
 
 void AICC_Player::Input_Move(const FInputActionValue& InputActionValue)
 {
-	if (bIsInFight) // if player is in fight don't move freely
+	if (bIsInFight || bIsInDialogue) // if player is in fight don't move freely
 	{
 		return;
 	}
@@ -423,7 +423,7 @@ void AICC_Player::Input_Move(const FInputActionValue& InputActionValue)
 
 void AICC_Player::Input_Run(const FInputActionValue& InputActionValue)
 {
-	if (bIsInFight)
+	if (bIsInFight || bIsInDialogue)
 	{
 		return;
 	}
@@ -757,6 +757,12 @@ void AICC_Player::CloseBestiary()
 		PendingBark = nullptr;
 	}
 
+	if (PendingDialogueUI)
+	{
+		SpawnDialogueUI(PendingDialogueUI);
+		PendingDialogueUI = nullptr;
+	}
+
 }
 
 void AICC_Player::Input_ToggleBestiary(const FInputActionValue& InputActionValue)
@@ -1027,4 +1033,69 @@ FKey AICC_Player::GetInteractKey() const
 		}
 	}
 	return EKeys::E;
+}
+
+
+void AICC_Player::SetDialogueMovementLock(bool bLock)
+{
+	bIsInDialogue = bLock;
+
+	if (UCharacterMovementComponent* Move = GetCharacterMovement())
+	{
+		if (bLock)
+		{
+			// Azzera la velocità così il personaggio non "scivola" mentre parla l'NPC.
+			Move->StopMovementImmediately();
+			Move->DisableMovement();
+		}
+		else
+		{
+			Move->SetMovementMode(MOVE_Walking);
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SetDialogueMovementLock: CharacterMovement nullo su %s"), *GetName());
+	}
+
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		if (bLock)
+		{
+			PC->FlushPressedKeys(); // libera i tasti tenuti (es. W) per evitare il "latch"
+		}
+		PC->SetIgnoreMoveInput(bLock);
+	}
+}
+
+
+void AICC_Player::PlayDialogueUIImmediately(UDialogueAsset* DialogueToPlay)
+{
+	if (!DialogueToPlay) return;
+
+	const bool bIsAnyMenuOpen = (BestiaryUI && BestiaryUI->IsOpen()) || (InGameMenu && InGameMenu->IsOpen());
+	if (bIsAnyMenuOpen)
+	{
+		// Menu aperto: rimandiamo l'apertura alla chiusura del menu.
+		PendingDialogueUI = DialogueToPlay;
+		DebugHelper::LogMessage(3, FColor::Yellow, "Menu aperto: DialogueUI messa in coda.");
+		return;
+	}
+
+	SpawnDialogueUI(DialogueToPlay);
+}
+
+void AICC_Player::SpawnDialogueUI(UDialogueAsset* DialogueToPlay)
+{
+	if (!DialogueToPlay || !DialogueWidgetClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SpawnDialogueUI: DialogueToPlay o DialogueWidgetClass non impostati."));
+		return;
+	}
+
+	if (UDialogueWidget* Dlg = CreateWidget<UDialogueWidget>(GetWorld(), DialogueWidgetClass))
+	{
+		Dlg->AddToViewport();
+		Dlg->StartDialogue(DialogueToPlay);
+	}
 }
