@@ -11,6 +11,7 @@ class UDialogueAsset;
 class UButton;
 class UTextBlock;
 class UImage;
+class AICC_Player;
 
 
 /**

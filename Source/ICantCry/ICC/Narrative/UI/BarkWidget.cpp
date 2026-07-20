@@ -28,6 +28,11 @@ void UBarkWidget::NativeConstruct()
         PC->FlushPressedKeys();       // libera i tasti tenuti premuti (es. W) -> niente "latch"
         PC->SetIgnoreMoveInput(true); // blocca il movimento del pawn finché il bark è aperto
     }
+
+    if (AICC_Player* Player = Cast<AICC_Player>(GetOwningPlayerPawn()))
+    {
+        Player->SetDialogueMovementLock(true);
+    }
 }
 
 void UBarkWidget::StartBark(UDialogueAsset* NewBark)
@@ -126,6 +131,11 @@ void UBarkWidget::EndBark()
         PC->SetIgnoreMoveInput(false); // riabilita il movimento
         PC->bShowMouseCursor = false;
         PC->SetInputMode(FInputModeGameOnly());
+    }
+
+    if (AICC_Player* Player = Cast<AICC_Player>(GetOwningPlayerPawn()))
+    {
+        Player->SetDialogueMovementLock(false);
     }
 
     RemoveFromParent();

@@ -33,8 +33,13 @@ enum class EInteractableType : uint8
     Inspectable  UMETA(DisplayName = "Inspectable :Stays in world, plays Bark, advances Quest if set")
 };
 
-
-
+/** Type of feedback displayed after collecting/inspecting an object (non-NPC). */
+UENUM(BlueprintType)
+enum class EPostPickupFeedback : uint8
+{
+    Bark        UMETA(DisplayName = "Bark (quick dialogue)"),
+    DialogueUI  UMETA(DisplayName = "Dialogue UI (The NPC explains the item or talks about something.)")
+};
 
 USTRUCT(BlueprintType)
 struct FQuestDialogueChain
@@ -118,10 +123,21 @@ public:
         meta = (EditCondition = "InteractableType == EInteractableType::ItemWithNote", EditConditionHides))
     FString BestiaryEntryID;
 
-    /** Bark � per tutti tranne NPC */
+
+    /** Sceglie se il feedback post-raccolta è un Bark rapido o la Dialogue UI classica. */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction|Collectibles",
+        meta = (EditCondition = "InteractableType != EInteractableType::NPC", EditConditionHides))
+    EPostPickupFeedback PostPickupFeedbackType = EPostPickupFeedback::Bark;
+
+    /** Bark per tutti tranne NPC (usato quando PostPickupFeedbackType == Bark)*/
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction|Collectibles",
         meta = (EditCondition = "InteractableType != EInteractableType::NPC", EditConditionHides))
     UDialogueAsset* PostPickupBark;
+
+    /** Dialogo classico (NPC che spiega l'oggetto), usato quando PostPickupFeedbackType == DialogueUI. */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction|Collectibles",
+        meta = (EditCondition = "InteractableType != EInteractableType::NPC && PostPickupFeedbackType == EPostPickupFeedback::DialogueUI", EditConditionHides))
+    TObjectPtr<UDialogueAsset> PostPickupDialogue;
 
 
     // --- QUEST UPDATES (Visible only if it is a Quest Item without a note) ---
@@ -138,7 +154,19 @@ public:
         meta = (EditCondition = "InteractableType == EInteractableType::Inspectable", EditConditionHides))
     int32 ProgressAmount = 1;
 
-     
+    /** Se true, l'Inspectable resta ri-interagibile: prima ispezione = avanza quest + feedback principale,
+ *  ispezioni successive = FinalDefaultBark (senza riavanzare la quest).
+ *  Se false, è one-shot: usa il FinalDefaultBark come fallback quando non c'è quest da aggiornare. */
+    UPROPERTY(EditAnywhere, Category = "Interaction|Quest Update",
+        meta = (EditCondition = "InteractableType == EInteractableType::Inspectable", EditConditionHides))
+    bool bRepeatable = false;
+
+    /** Bark di default per gli Inspectable (analogo al FinalDefaultDialogue degli NPC, ma sempre in versione Bark). */
+    UPROPERTY(EditAnywhere, Category = "Interaction|Quest Update",
+        meta = (EditCondition = "InteractableType == EInteractableType::Inspectable", EditConditionHides))
+    TObjectPtr<UDialogueAsset> FinalDefaultBark;
+
+
     // ----DIALOGUE CONFIGURATION -----
 
 	/** 
@@ -222,5 +250,9 @@ private:
 
     ECurrentWidgetType CurrentWidget = ECurrentWidgetType::None;
 
-   
+    /** Riproduce il feedback principale post-raccolta: bark o DialogueUI in base a PostPickupFeedbackType. */
+    void PlayPrimaryFeedback(AICC_Player* Player);
+
+    /** Traccia se un Inspectable ripetibile ha già dato l'avanzamento quest la prima volta. */
+    bool bInspectableUsed = false;
 };

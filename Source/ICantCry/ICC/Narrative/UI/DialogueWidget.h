@@ -19,6 +19,7 @@ class UVerticalBox;
 class UImage;
 class UButton;
 class UTextBlock;
+class AICC_Player;
 
 
 /**

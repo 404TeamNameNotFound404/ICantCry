@@ -400,40 +400,113 @@ void UInteractionComponent::TriggerInteraction(AICC_Player* Player)
 
 void UInteractionComponent::HandleCollectibleCollection(AICC_Player* Player)
 {
+    //if (!Player) return;
+
+    //bAlreadyRead = true;
+    //HideAllInteractionUI();
+
+    //// Controlliamo se questo Actor è un "Raccoglibile" (BasePickup)
+    //ABasePickup* PickupOwner = Cast<ABasePickup>(GetOwner());
+
+    //switch (InteractableType)
+    //{
+    //case EInteractableType::Item:
+    //    // Sparisce + Bark subito. La quest avanza in BasePickup::Collect (tag del pickup).
+    //    Player->PlayBarkImmediately(PostPickupBark);
+    //    if (PickupOwner) PickupOwner->Collect(Player);
+    //    else if (AActor* Owner = GetOwner()) Owner->Destroy();
+    //    break;
+
+    //case EInteractableType::ItemWithNote:
+    //    // Sparisce + apre Bestiario sulla entry; il Bark parte alla CHIUSURA del Bestiario.
+    //    Player->OpenBestiaryOnEntryAndListenForClose(BestiaryEntryID, PostPickupBark);
+    //    if (PickupOwner) PickupOwner->Collect(Player);
+    //    else if (AActor* Owner = GetOwner()) Owner->Destroy();
+    //    break;
+
+    //case EInteractableType::Inspectable:
+    //    // Resta nel mondo + Bark subito + avanza quest (tag del componente).
+    //    Player->PlayBarkImmediately(PostPickupBark);
+    //    if (UQuestManagerSystem* QM = Player->GetGameInstance()->GetSubsystem<UQuestManagerSystem>())
+    //    {
+    //        if (QuestTagToUpdate.IsValid() && ObjectiveTagToUpdate.IsValid())
+    //            QM->UpdateObjectiveProgress(QuestTagToUpdate, ObjectiveTagToUpdate, ProgressAmount);
+    //    }
+    //    Deactivate();
+    //    break;
+
+    //default:
+    //    break;
+    //}
+
+
     if (!Player) return;
 
-    bAlreadyRead = true;
     HideAllInteractionUI();
 
-    // Controlliamo se questo Actor è un "Raccoglibile" (BasePickup)
     ABasePickup* PickupOwner = Cast<ABasePickup>(GetOwner());
+    UQuestManagerSystem* QM = Player->GetGameInstance()->GetSubsystem<UQuestManagerSystem>();
 
     switch (InteractableType)
     {
     case EInteractableType::Item:
-        // Sparisce + Bark subito. La quest avanza in BasePickup::Collect (tag del pickup).
-        Player->PlayBarkImmediately(PostPickupBark);
+        // Sparisce + feedback subito. La quest avanza in BasePickup::Collect (tag del pickup).
+        bAlreadyRead = true;
+        PlayPrimaryFeedback(Player);
         if (PickupOwner) PickupOwner->Collect(Player);
         else if (AActor* Owner = GetOwner()) Owner->Destroy();
         break;
 
     case EInteractableType::ItemWithNote:
         // Sparisce + apre Bestiario sulla entry; il Bark parte alla CHIUSURA del Bestiario.
+        bAlreadyRead = true;
         Player->OpenBestiaryOnEntryAndListenForClose(BestiaryEntryID, PostPickupBark);
         if (PickupOwner) PickupOwner->Collect(Player);
         else if (AActor* Owner = GetOwner()) Owner->Destroy();
         break;
 
     case EInteractableType::Inspectable:
-        // Resta nel mondo + Bark subito + avanza quest (tag del componente).
-        Player->PlayBarkImmediately(PostPickupBark);
-        if (UQuestManagerSystem* QM = Player->GetGameInstance()->GetSubsystem<UQuestManagerSystem>())
+    {
+        const bool bHasQuestToUpdate = QuestTagToUpdate.IsValid() && ObjectiveTagToUpdate.IsValid();
+
+        if (bRepeatable)
         {
-            if (QuestTagToUpdate.IsValid() && ObjectiveTagToUpdate.IsValid())
-                QM->UpdateObjectiveProgress(QuestTagToUpdate, ObjectiveTagToUpdate, ProgressAmount);
+            if (!bInspectableUsed)
+            {
+                // Prima ispezione: avanza la quest (se impostata) + feedback principale.
+                if (bHasQuestToUpdate && QM)
+                    QM->UpdateObjectiveProgress(QuestTagToUpdate, ObjectiveTagToUpdate, ProgressAmount);
+
+                PlayPrimaryFeedback(Player);
+                bInspectableUsed = true;
+            }
+            else
+            {
+                // Ispezioni successive: solo bark di default, nessun avanzamento quest.
+                Player->PlayBarkImmediately(FinalDefaultBark);
+            }
+            // Ripetibile: NON disabilitiamo (bAlreadyRead resta false, niente Deactivate).
         }
-        Deactivate();
+        else
+        {
+            // One-shot classico.
+            if (bHasQuestToUpdate && QM)
+            {
+                QM->UpdateObjectiveProgress(QuestTagToUpdate, ObjectiveTagToUpdate, ProgressAmount);
+                PlayPrimaryFeedback(Player);
+            }
+            else
+            {
+                // Nessuna quest da aggiornare: fallback sul bark di default (o sul feedback principale se assente).
+                if (FinalDefaultBark) Player->PlayBarkImmediately(FinalDefaultBark);
+                else PlayPrimaryFeedback(Player);
+            }
+
+            bAlreadyRead = true;
+            Deactivate();
+        }
         break;
+    }
 
     default:
         break;
@@ -441,5 +514,19 @@ void UInteractionComponent::HandleCollectibleCollection(AICC_Player* Player)
     
 }
 
+
+void UInteractionComponent::PlayPrimaryFeedback(AICC_Player* Player)
+{
+    if (!Player) return;
+
+    if (PostPickupFeedbackType == EPostPickupFeedback::DialogueUI)
+    {
+        Player->PlayDialogueUIImmediately(PostPickupDialogue);
+    }
+    else
+    {
+        Player->PlayBarkImmediately(PostPickupBark);
+    }
+}
 
 
