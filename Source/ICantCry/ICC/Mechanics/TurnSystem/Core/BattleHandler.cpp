@@ -139,28 +139,29 @@ void ABattleHandler::SimulateAura(AICC_Actor* Target, const float& SpawnRate, co
 {
 	if (!Target) return;
 	
-	if (ActiveAuras.Contains(Status) && ActiveAuras[Status])
+	if (Target->ActiveAuras.Contains(Status) && Target->ActiveAuras[Status])
 	{
-		ActiveAuras[Status]->DestroyComponent();
+		Target->ActiveAuras[Status]->DestroyComponent();
 	}
-	
+    
 	const FVector& SpawnLocation = Target->GetActorLocation() + FVector{0,0,-50};
 	const FRotator& SpawnRotation = Target->GetActorRotation();
-	
+    
 	UNiagaraComponent* NewAura = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), 
-		AuraPrefab, SpawnLocation, SpawnRotation, FVector{1.5f}, false);
+	   AuraPrefab, SpawnLocation, SpawnRotation, FVector{1.5f}, false);
+    
+	if (!NewAura) return;
 	
-	if (!NewAura)
-	{
-		DebugHelper::LogError("Aura can't be spawned is null");
-		return;
-	}
-	
+	NewAura->AttachToComponent(Target->GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
+    
 	NewAura->Activate(true);
 	NewAura->SetVariableLinearColor(FName("User.Color"), Color);
 	NewAura->SetVariableFloat(FName("User.SpawnRate"), SpawnRate);
 	
-	ActiveAuras.Add(Status, NewAura);
+	Target->ActiveAuras.Add(Status, NewAura);
+	
+	DebugHelper::LogMessage(10, FColor::Green, 
+		Target->GetActorLabel() + " has aura attached");
 }
 
 void ABattleHandler::IncreaseAura(const float& Value)
@@ -195,6 +196,20 @@ void ABattleHandler::DeactivateAura()
 {
 	if (!Aura) return;
 	Aura->Deactivate();
+}
+
+void ABattleHandler::DeactivateAura(AICC_Actor* Target, const EBuffStatus& Status)
+{
+	auto AuraMap = Target->ActiveAuras;
+	if (!Target) return;
+	if (AuraMap.IsEmpty()) return;
+	
+	if (AuraMap.Contains(Status))
+	{
+		AuraMap[Status]->Deactivate();
+	}
+	
+	AuraMap.Remove(Status);
 }
 
 void ABattleHandler::SimulateFreezedUp(AICC_Actor* Target, const FLinearColor& Color)

@@ -38,6 +38,7 @@ public:
 	void DecreaseAura(const float& Value);
 	void DeactivateAura(const EBuffStatus& Status);
 	void DeactivateAura();
+	void DeactivateAura(AICC_Actor* Target, const EBuffStatus& Status);
 	void SimulateFreezedUp(AICC_Actor* Target, const FLinearColor& Color);
 	void SimulateDebuffDef(AICC_Actor* Target);
 	void SimulateDebuffAtk(AICC_Actor* Target);

@@ -270,7 +270,7 @@ void AICC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_MinigameGuitarHero_A, ETriggerEvent::Started, PadBinder, &UICC_GamepadBinder::Input_GamepadMinigameGuitarHero_A);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_MinigameGuitarHero_B, ETriggerEvent::Started, PadBinder, &UICC_GamepadBinder::Input_GamepadMinigameGuitarHero_B);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_MinigameCurling, ETriggerEvent::Started, PadBinder, &UICC_GamepadBinder::Input_GamepadMinigameCurling);
-	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_MinigameCurling, ETriggerEvent::Completed, PadBinder, &UICC_GamepadBinder::Input_GamepadMinigameCurlingRelease);
+	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_MinigameCurling, ETriggerEvent::Completed | ETriggerEvent::None, PadBinder, &UICC_GamepadBinder::Input_GamepadMinigameCurlingRelease);
 	LastChecked->BindNativeInputAction(InputDataAsset, Icc_InputTags::InputTag_Bestiary, ETriggerEvent::Started, this, &ThisClass::Input_ToggleBestiary);
 }
 

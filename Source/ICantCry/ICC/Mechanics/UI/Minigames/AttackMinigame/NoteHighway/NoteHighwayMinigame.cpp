@@ -42,37 +42,6 @@ EMinigameThreshold UNoteHighwayMinigame::CheckBar()
 
 void UNoteHighwayMinigame::Simulate(const ESpawnableHighwayBtn& Target)
 {
-	// const UCanvasPanelSlot* SliderSlot = Cast<UCanvasPanelSlot>(Slider->Slot);
-	// if (!SliderSlot) return;
-	// const float SliderX = Slider->GetTickSpaceGeometry().GetAbsolutePosition().X;
-	//
-	// for (FHighwayNote& Note : NotesData)
-	// {
-	// 	if (Note.bHit || Note.Row != Target)
-	// 		continue;
-	//
-	// 	const float NoteX = Note.CachedSelf->GetTickSpaceGeometry().GetAbsolutePosition().X;
-	// 	
-	// 	if (const float Distance = FMath::Abs(SliderX - NoteX);
-	// 		Distance <= HitTolerance)
-	// 	{
-	// 		Note.bHit = true;
-	//
-	// 		const FString IconName = GetNoteName(Target);
-	// 		const FString Prefix = DebugHelper::IsGamepadPlugged() ? TEXT("OPad_") : TEXT("OKey_");
-	// 		const FName FinalMapKey = FName(*(Prefix + IconName));
-	//
-	// 		if (UTexture2D** FoundTexture = Icons.Find(FinalMapKey))
-	// 		{
-	// 			Score = FMath::Min(Score + 0.25f, 1.5f);
-	// 			Note.CachedSelf->SetBrushFromTexture(*FoundTexture);
-	// 		}
-	//
-	// 		DebugHelper::LogSuccess("Note hit!");
-	// 		break;
-	// 	}
-	// }
-	
 	FHighwayNote* TargetNote = FindClosestNote(Target);
     
 	if (!TargetNote) return;
@@ -107,6 +76,7 @@ void UNoteHighwayMinigame::Simulate(const ESpawnableHighwayBtn& Target)
 	else 
 	{
 		DebugHelper::LogError("Spam press / Missed completely!");
+		TargetNote->CachedSelf->SetColorAndOpacity(FLinearColor::Red);
 		//TODO ADD MISS LABEL
 	}
 }
@@ -252,29 +222,6 @@ void UNoteHighwayMinigame::Reset()
 
 FHighwayNote* UNoteHighwayMinigame::FindClosestNote(const ESpawnableHighwayBtn& Type)
 {
-	// FHighwayNote* ClosestNote = nullptr;
-	// float MinDistance = FLT_MAX;
-	//
-	// const float SliderX = Slider->GetRenderTransform().Translation.X;
-	//
-	// for (FHighwayNote& Note : NotesData)
-	// {
-	// 	if (Note.bHit)
-	// 		continue;
-	//
-	// 	if (Note.Row != Type)
-	// 		continue;
-	// 	
-	//
-	// 	if (const float Distance = FMath::Abs(SliderX - Note.X); Distance < MinDistance)
-	// 	{
-	// 		MinDistance = Distance;
-	// 		ClosestNote = &Note;
-	// 	}
-	// }
-	//
-	// return ClosestNote;
-	
 	FHighwayNote* ClosestNote = nullptr;
 	float MinDistance = FLT_MAX;
 

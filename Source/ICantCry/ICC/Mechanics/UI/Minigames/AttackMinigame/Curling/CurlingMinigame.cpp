@@ -30,17 +30,21 @@ void UCurlingMinigame::MoveSlider(const FVector2D& Position)
 {
 	float Percentage = Slider->GetPercent();
 	
+	MinigameResult = CheckBar();
+	const bool PrintInputPressed = Instance->GetCurrentPlayer()->GetBinder()->GetIsCurlingPressed();
+	DebugHelper::LogMessage(4, FColor::White, "Bpressed: " + FString(PrintInputPressed ? "True" : "False"));
+	
 	if (const bool InputPressed = Instance->GetCurrentPlayer()->GetBinder()->GetIsCurlingPressed();
 		InputPressed)
 	{
 		bPressed = true;
+		DebugHelper::LogMessage(4, FColor::Blue, "Im pressing input");
 		
-		if ( !Instance->GetCurrentPlayer()->GetBinder()->GetDecreaseMinigameScrollValue())
+		if (!Instance->GetCurrentPlayer()->GetBinder()->GetDecreaseMinigameScrollValue())
 		{
 			Percentage += ScrollValue * GetWorld()->GetDeltaSeconds() * SliderSpeed;
 			Percentage = FMath::Clamp(Percentage, 0.f, 1.f);
 			Slider->SetPercent(Percentage);
-			MinigameResult = CheckBar();
 		}
 	}
 	else
@@ -105,27 +109,6 @@ void UCurlingMinigame::HandleScore()
 
 EMinigameThreshold UCurlingMinigame::CheckBar()
 {
-	// const float P = Slider->GetPercent();
-	//
-	// if (P >= PerfectScoreRange && P <= PerfectScoreRangeMax) 
-	// {
-	// 	return EMinigameThreshold::Perfect;
-	// }
-	//
-	// else if (P >= GoodScoreRange && P <= GoodScoreRangeMax)
-	// {
-	// 	return EMinigameThreshold::Good;
-	// }
-	//
-	// else if (P >= BadScoreRange && P <= BadScoreRangeMax)
-	// {
-	// 	return EMinigameThreshold::Bad;
-	// }
-	//
-	// DebugHelper::LogMessage(6, FColor::White, "Bar y pos " + FString::SanitizeFloat(Slider->GetPercent()));
-	//
-	// return EMinigameThreshold::Miss;
-	
 	const float P = Slider->GetPercent();
 	
 	const float NotBadBottomPct = 1.0f - GetImagePercentOnBar(NotBadFrontierBottom);
@@ -183,19 +166,18 @@ void UCurlingMinigame::Process()
 
 	const FGeometry& BallGeometry   = Ball->GetCachedGeometry();
 	const FGeometry& TargetGeometry = TargetWidget->GetCachedGeometry();
-	const FVector2D BallAbsolute   = BallGeometry.GetAbsolutePosition();
-	const FVector2D TargetAbsolute = TargetGeometry.GetAbsolutePosition();
 	
-	const FVector2D DeltaAbsolute = TargetAbsolute - BallAbsolute;
+	const FVector2D LocalOffset = BallGeometry.AbsoluteToLocal(TargetGeometry.GetAbsolutePosition());
 	
 	const FVector2D CurrentTranslation = Ball->GetRenderTransform().Translation;
-	const FVector2D TargetTranslation  = CurrentTranslation + DeltaAbsolute;
+	const FVector2D TargetTranslation  = CurrentTranslation + LocalOffset;
 
+	
 	const FVector2D NewTranslation = FMath::Vector2DInterpTo(
-		CurrentTranslation,
-		TargetTranslation,
-		GetWorld()->GetDeltaSeconds(),
-		BallSpeed
+	   CurrentTranslation,
+	   TargetTranslation,
+	   GetWorld()->GetDeltaSeconds(),
+	   BallSpeed
 	);
 	
 	if (FVector2D::Distance(NewTranslation, TargetTranslation) < 1.0f)
