@@ -319,6 +319,8 @@ void AMinigameHandler::EndMinigame()
 		
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->Fire(Instance->GetCurrentPlayer()->GetBattleHUD()->GetSelectedActor()->GetActorLocation(), 
 			Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentBulletData()->DisplayColor);
+		
+		Instance->GetCurrentPlayer()->GetAnimationDealer()->SetShooting(true);
 	}
 	
 	if (Player->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->GetIsAITurn())
