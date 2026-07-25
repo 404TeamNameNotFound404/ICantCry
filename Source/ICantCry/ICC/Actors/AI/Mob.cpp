@@ -32,6 +32,7 @@ AMob::AMob()
 	HealthBarComponent->SetEnableGravity(false);
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 	AIControllerClass = AICC_AIController::StaticClass();
+	AnimationDealer = CreateDefaultSubobject<UIccEmotionAnimDealer>(TEXT("AnimationDealer"));
 }
 
 // Called when the game starts or when spawned
@@ -464,6 +465,11 @@ bool AMob::IsLowHealth() const
 {
 	constexpr float Threshold = 0.2f;
 	return Stats.Health <= GetData()->MaxHealth * Threshold;
+}
+
+UIccEmotionAnimDealer* AMob::GetAnimationDealer()
+{
+	return AnimationDealer;
 }
 
 FString AMob::GetNoteKeyForMobType() const
