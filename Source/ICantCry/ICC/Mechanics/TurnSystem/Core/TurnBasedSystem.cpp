@@ -403,6 +403,7 @@ void UTurnBasedSystem::ExitBattle()
 	bInit = false;
 	bVictory = false;
 	Turn.Queue.Empty();
+	Instance->CachedBattleMemory.ResetEmotionsStats();
 	Instance->CachedBattleMemory.Clear();
 	BattleTurnCounter = 0;
 	
@@ -423,6 +424,7 @@ void UTurnBasedSystem::Reload()
 	bVictory = false;
 	bIsPlayerTurn = false;
 	bIsAiTurn = false;
+	Instance->CachedBattleMemory.ResetEmotionsStats();
 	Instance->GetCurrentPlayer()->GetStatusTracker()->Reset();
 	Instance->GetRuntimeStats().ApModifier = 1;
 	CurrentPlayer->GetRuntimeStats().Reset(Instance->GetPlayerStats()->MaxHealth);

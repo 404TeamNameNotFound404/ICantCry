@@ -41,6 +41,8 @@ void AMob::BeginPlay()
 	Super::BeginPlay();
 	bIsReady = true;
 	Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	
+	GetCharacterMovement()->MaxWalkSpeed = LocomotionSpeed;
 
 	for (TActorIterator<AMinigameHandler> It(GetWorld()); It; ++It)
 	{

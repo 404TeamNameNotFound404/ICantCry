@@ -65,6 +65,9 @@ protected:
 	UPROPERTY()
 	UIccEmotionAnimDealer* AnimationDealer;
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay", meta = (AllowPrivateAccess = "true"))
+	float LocomotionSpeed = 600.f;
+	
 	//----------------
 
 	UPROPERTY()
