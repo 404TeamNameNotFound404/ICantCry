@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "ICCRoomHandler.h"
 
+#include "Components/LightComponent.h"
+#include "Components/SlateWrapperTypes.h"
 #include "ICantCry/ICC/Debug/DebugHelper.h"
 
 // Sets default values
@@ -30,7 +32,7 @@ void AICCRoomHandler::SetRoomVisible(AActor* Room, const bool& bVisible)
 	Room->SetActorTickEnabled(bVisible);
 	
 	TArray<AActor*> AttachedChildren;
-	Room->GetAttachedActors(AttachedChildren);
+	Room->GetAttachedActors(AttachedChildren, true, true);
 	
 	const FString DisplayedRoom = "Room " + Room->GetActorLabel() + (bVisible ? " Hidden" : " Showed");
 	
@@ -87,7 +89,7 @@ bool AICCRoomHandler::HideAll()
 		Room->SetActorTickEnabled(false);
 		
 		TArray<AActor*> AttachedChildren;
-		Room->GetAttachedActors(AttachedChildren);
+		Room->GetAttachedActors(AttachedChildren, true, true);
 		
 		for (AActor* Child : AttachedChildren)
 		{
