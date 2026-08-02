@@ -41,5 +41,7 @@ struct FBattleMemory
 	void Load(const TArray<AICC_Actor*>& Queue, const TMap<TEnumAsByte<EBulletType>, FBullet>& Bullets);
 	void Clear();
 	
+	void ResetEmotionsStats();
+	
 };
 

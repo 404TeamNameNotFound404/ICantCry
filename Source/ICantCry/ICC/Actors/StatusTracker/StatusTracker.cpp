@@ -1512,6 +1512,7 @@ void UStatusTracker::BuffShield()
 void UStatusTracker::ExpireBuff(const EBuffStatus& ExpiredTarget)
 {
 	AICC_Actor* Target = Cast<AICC_Actor>(GetOwner());
+	if (!Target) return;
 	
 	switch (ExpiredTarget)
 	{
@@ -1525,8 +1526,17 @@ void UStatusTracker::ExpireBuff(const EBuffStatus& ExpiredTarget)
 			
 			bIsOwnerAlreadyBuffed = false;
 			bCanDebuff = true;
-			Player->ActiveAuras[ExpiredTarget]->Deactivate();
-			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura(Target, ExpiredTarget);
+			if (Player->ActiveAuras.Contains(ExpiredTarget) && Player->ActiveAuras[ExpiredTarget])
+			{
+				Player->ActiveAuras[ExpiredTarget]->Deactivate();
+			}
+			
+			if (Instance && Instance->GetCurrentPlayer() && Instance->GetCurrentPlayer()->GetBattleHUD() && Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler())
+			{
+				Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura(Target, ExpiredTarget);
+			}
+			// Player->ActiveAuras[ExpiredTarget]->Deactivate();
+			// Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura(Target, ExpiredTarget);
 		}
 		if (Target->IsA(AMob::StaticClass()))
 		{
@@ -1537,8 +1547,17 @@ void UStatusTracker::ExpireBuff(const EBuffStatus& ExpiredTarget)
 			PerkData.bBuffAtk = false;
 			bIsOwnerAlreadyBuffed = false;
 			bCanBuff = true;
-			Target->ActiveAuras[ExpiredTarget]->Deactivate();
-			Emotion->GetBattleHandler()->DeactivateAura(Target, ExpiredTarget);
+			if (Emotion->ActiveAuras.Contains(ExpiredTarget) && Emotion->ActiveAuras[ExpiredTarget])
+			{
+				Emotion->ActiveAuras[ExpiredTarget]->Deactivate();
+			}
+
+			if (Emotion->GetBattleHandler())
+			{
+				Emotion->GetBattleHandler()->DeactivateAura(Target, ExpiredTarget);
+			}
+			// Target->ActiveAuras[ExpiredTarget]->Deactivate();
+			// Emotion->GetBattleHandler()->DeactivateAura(Target, ExpiredTarget);
 		}
 		break;
 	case DefBuff:

@@ -24,6 +24,7 @@
 #include "ICantCry/ICC/Mechanics/Core/Data/PlayerStats.h"
 #include "ICantCry/ICC/Input/ICC_EnhancedInputCmp.h"
 #include "ICantCry/ICC/Input/ICC_PlayerController.h"
+#include "ICantCry/ICC/Actors/AnimationInstances/Player/IccAnimationDealer.h"
 #include "ICC_Player.generated.h"
 
 class UDialogueAsset;
@@ -43,6 +44,9 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
+	UPROPERTY()
+	UIccAnimationDealer* AnimationDealer;
 
 public:
 	// Called every frame
@@ -196,6 +200,7 @@ public:
 	
 	UICC_InputDataAsset* GetInputDataAsset();
 	UICC_EnhancedInputCmp* GetInputBinder();
+	UIccAnimationDealer* GetAnimationDealer();
 	
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Movement")

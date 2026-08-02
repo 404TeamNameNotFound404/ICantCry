@@ -27,8 +27,6 @@ void ACameraHallway::BeginPlay()
 	{
 		Travelers.Add(*It);
 	}
-	
-	Rooms = {"LivingRoom", "Hallway", "MaxRoom", "Bedroom", "Office"};
 }
 
 void ACameraHallway::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -43,15 +41,12 @@ void ACameraHallway::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AA
 	if (bSnap)
 	{
 		Snap();
-		RenderSeen(RoomTag);
+		ToggleRoom(RoomId);
 	}
 	else
 	{
 		DebugHelper::LogSuccess("Player overlapped");
-
-		// Mark that the player has overlapped
-		//bPlayerOverlapped = true;
-
+		
 		Counter = Player->GetWorldCameraCounter();
 	
 		if (Player->GetWorldCamera() && Player && Counter == 0)
@@ -143,46 +138,33 @@ void ACameraHallway::Snap()
 		}
 		
 		Player->SetWorldCameraCounter(0);
-		RenderSeen(RoomTag);
 	}
 }
 
-void ACameraHallway::ToggleRoom(const FName& Room, const bool& bRenderRoom)
+void ACameraHallway::ToggleRoom(const FName& RoomTag)
 {
-	TArray<AActor*> SpawnedRooms;
-	UGameplayStatics::GetAllActorsWithTag(GetWorld(), Room,  SpawnedRooms);
+	if (!RoomHandler) return;
 	
-	for (AActor* R : SpawnedRooms)
+	AActor* TargetRoom = nullptr;
+	
+	for (AActor* Room : RoomHandler->GetRooms())
 	{
-		if (!R)
-		{
-			DebugHelper::LogError("Room is invalid");
-			continue;
-		}
+		if (!Room) continue;
 		
-		R->SetActorHiddenInGame(!bRenderRoom);
-		R->SetActorEnableCollision(bRenderRoom);
-		R->SetActorTickEnabled(bRenderRoom); // I dont think we'll need this but Im gonna keep it for now
-		
-		DebugHelper::LogMessage(6, FColor::Cyan, FString(RoomTag.ToString() + FString(bRenderRoom ? "Hidden" : "Shown")));
-	}
-}
-
-void ACameraHallway::RenderSeen(const FName& TargetToHide)
-{
-	for (FName& Room : Rooms)
-	{
-		if (Room == TargetToHide)
+		if (Room->ActorHasTag(RoomTag))
 		{
-			ToggleRoom(Room, true);
-		}
-		else
-		{
-			ToggleRoom(Room, false);
+			TargetRoom = Room;
+			DebugHelper::LogMessage(5, FColor::White, "Found Target Room" + 
+				TargetRoom->GetActorLabel());
+			break;
 		}
 	}
+	
+	if (TargetRoom)
+	{
+		RoomHandler->OnRoomChanged.Broadcast(TargetRoom);
+	}
 }
-
 
 // Called every frame
 void ACameraHallway::Tick(float DeltaTime)

@@ -9,6 +9,7 @@
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Mechanics/Views/CameraTraveler.h"
 #include "ICantCry/ICC/Mechanics/Views/PlayerTeleportObj.h"
+#include "ICantCry/ICC/Mechanics/Views/ICCRoomHandler.h"
 #include "CameraHallway.generated.h"
 
 UCLASS()
@@ -23,6 +24,12 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Traveler", meta=(AllowPrivateAccess="true"))
+	TObjectPtr<AICCRoomHandler> RoomHandler;
+	
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Traveler", meta=(AllowPrivateAccess="true"))
+	bool bEnableFade = true;
 
 public:
 	// Called every frame
@@ -89,13 +96,9 @@ private:
 	float CameraBlendSpeed = 0.5f;
 	
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))
-	FName RoomTag;
+	FName RoomId;
 
 	void Snap();
 	
-	UPROPERTY() TArray<FName> Rooms;
-	
-	void ToggleRoom(const FName& Room, const bool& bRenderRoom);
-	void RenderSeen(const FName& TargetToHide);
-	
+	void ToggleRoom(const FName& RoomTag);
 };

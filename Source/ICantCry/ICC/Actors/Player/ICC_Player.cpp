@@ -55,12 +55,13 @@ AICC_Player::AICC_Player()
 	Camera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	Camera->bUsePawnControlRotation = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 190.0f, 0.0f);
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 400.0f, 0.0f); // 190 y
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.0f;
 
 	MinigameHandler = nullptr;
 
 	PadBinder = CreateDefaultSubobject<UICC_GamepadBinder>(TEXT("GamepadBinder"));
+	AnimationDealer = CreateDefaultSubobject<UIccAnimationDealer>(TEXT("AnimationDealer"));
 	
 	WidgetInteractionComp = CreateDefaultSubobject<UWidgetInteractionComponent>(TEXT("WidgetInteractionComp"));
 	if (WidgetInteractionComp)
@@ -234,6 +235,8 @@ void AICC_Player::Tick(float DeltaTime)
 		CurrentInteractableDistance = Distance;
 
 	}
+	
+	AnimationDealer->SetInFight(bIsInFight);
 
 	// // Aggiorna sempre la posizione precedente
 	// PreviousLocation = CurrentLocation;
@@ -904,6 +907,11 @@ UICC_InputDataAsset* AICC_Player::GetInputDataAsset()
 UICC_EnhancedInputCmp* AICC_Player::GetInputBinder()
 {
 	return LastChecked;
+}
+
+UIccAnimationDealer* AICC_Player::GetAnimationDealer()
+{
+	return AnimationDealer;
 }
 
 void AICC_Player::Input_ChallengeReleaseInteraction(const FInputActionValue& InputActionValue)

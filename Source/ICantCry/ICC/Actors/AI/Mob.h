@@ -18,6 +18,7 @@
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "ICantCry/ICC/Actors/AI/Emotions/EmotionStats/FEmotionStat.h"
 #include "ICantCry/ICC/Actors/AI/MobType.h"
+#include "ICantCry/ICC/Actors/AnimationInstances/Emotion/IccEmotionAnimDealer.h"
 #include "Mob.generated.h"
 
 class ABattleHandler;
@@ -61,7 +62,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
 	TEnumAsByte<EMobType> Type;
 	
-
+	UPROPERTY()
+	UIccEmotionAnimDealer* AnimationDealer;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay", meta = (AllowPrivateAccess = "true"))
+	float LocomotionSpeed = 600.f;
+	
 	//----------------
 
 	UPROPERTY()
@@ -397,6 +403,8 @@ public:
 	 * @return true if low health
 	 */
 	bool IsLowHealth() const;
+	
+	UIccEmotionAnimDealer* GetAnimationDealer();
 
 private:
 
