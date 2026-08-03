@@ -27,6 +27,12 @@ void ABattleHandler::BeginPlay()
 		break;
 	}
 	
+	for (TActorIterator<AIccBattleDebugger> It(GetWorld()); It; ++It)
+	{
+		Debugger = *It;
+		break;
+	}
+	
 	TurnBasedSystem = NewObject<UTurnBasedSystem>();
 	TurnBasedSystem->Start2(GetWorld(), &Instance->CachedBattleMemory);
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
@@ -259,6 +265,14 @@ UBulletData* ABattleHandler::GetIndifferenceData()
 {
 	return Indifference;
 }
+
+void ABattleHandler::InitDebugger()
+{
+	if (!IsValid(Debugger)) return;
+	
+	Debugger->FillInitialInfo();
+}
+
 
 void ABattleHandler::UpdateMuzzleFlashPosition(const FVector& Location)
 {

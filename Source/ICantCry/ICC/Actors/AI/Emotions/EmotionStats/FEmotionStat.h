@@ -20,6 +20,12 @@ struct FEmotionStat
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly ,Category="Stats")
 	float DefPower = 1.f;
 
+	UPROPERTY()
+	int32 DbgDamageDealt;
+	
+	UPROPERTY()
+	int32 DbgDamageTaken;
+	
 	FEmotionStat();
 };
 

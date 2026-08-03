@@ -198,8 +198,17 @@ public:
 	 * @return true if owner has a buff
 	 */
 	bool IsBuffed() const;
+	
+	bool IsDebuffed() const;
 
 	bool CanDebuff() const;
+	
+	int GetBuffCounter() const;
+	int GetDebuffCounter() const;
+	
+	FString DbgGetCurrentBuffName() const;
+	FString DbgGetCurrentDebuffName() const;
+	FString DbgGetCurrentMalusName() const;
 
 	/**
 	 * Assign Status to afflict
@@ -337,6 +346,21 @@ private:
 	
 	UPROPERTY()
 	bool bDefDebuffRevert = false;
+	
+	UPROPERTY()
+	int DebugBuffCounter;
+	
+	UPROPERTY()
+	int DebugDebuffCounter;
+	
+	UPROPERTY()
+	FString DebugBuffName;
+	
+	UPROPERTY()
+	FString DebugDebuffName;
+	
+	UPROPERTY()
+	FString DebugMalusName;
 	
 	void InflictFreeze(AICC_Actor* Target);
 	void InflictBurn(AICC_Actor* Target);

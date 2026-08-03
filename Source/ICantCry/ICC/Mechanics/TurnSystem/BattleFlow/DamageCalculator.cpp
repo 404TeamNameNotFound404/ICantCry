@@ -21,11 +21,6 @@ FDamage::FDamage(UBulletData* BData, UPlayerStats* PStats, UEnemyTactics* AITact
 
 int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 {
-	// checkf(PlayerStats, TEXT("PlayerStats is null"));
-	// checkf(AIMoves, TEXT("AIMoves is null"));
-	// checkf(EnemyData, TEXT("E data is null"))
-	// checkf(AIMoves, TEXT("Moves null"))
-
 	if (!PlayerStats || !AIMoves || !EnemyData || !AIMoves)
 	{
 		return 0;
@@ -54,7 +49,8 @@ int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 		
 		const float Result = (((BulletData->Power / (2 - RuntimeStats.MinigameModifier)) * (RuntimeStats.AttackPower / EnemyData->RuntimeStats.DefPower))) * (RuntimeStats.ApModifier * Coefficient/*BulletData->WeaknessModifier*/);
 		const int RoundedResult = FMath::RoundToInt(Result);
-
+		Cast<AICC_Player>(Self)->GetRuntimeStats().DbgDamageDealt = RoundedResult;
+		
 		DebugHelper::AddMessageToLog("[DamageMath]: Doing math under requests of " + Self->GetActorLabel());
 		DebugHelper::AddMessageToLog("[DamageMath]: Data gathered for dmg math:\nBullet Pwr : " + FString::SanitizeFloat(BulletData->Power) +"\nMinigame Modifier " + FString::SanitizeFloat(RuntimeStats.MinigameModifier)
 			+ "\nPlayer Atk: " + FString::SanitizeFloat(RuntimeStats.AttackPower) + "\nTarget Def : " + FString::SanitizeFloat(EnemyData->RuntimeStats.DefPower) +
@@ -81,6 +77,7 @@ int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 		
 		const float AIDamageResult = ((((AIMoves->MovePower / (2 - AIMoves->MinigamePower)) * (EnemyData->RuntimeStats.AtkPower / RuntimeStats.DefencePower))) * AIMoves->ActionPointsModifier * AIMoves->WeaknessModifier) * RuntimeStats.MinigameModifier;
 		const int RoundedResult = FMath::RoundToInt(AIDamageResult);
+		Cast<AMob>(Self)->GetStats().DbgDamageDealt = RoundedResult;
 		
 		DebugHelper::LogMessage(3, FColor::FromHex("433878"), "Damage dealt -> " + FString::SanitizeFloat(RoundedResult));
 

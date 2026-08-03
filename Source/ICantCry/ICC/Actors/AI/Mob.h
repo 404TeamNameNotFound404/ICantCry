@@ -193,6 +193,12 @@ protected:
 	UPROPERTY()
 	bool bRethink = false;
 	
+	UPROPERTY()
+	FString CurrentDecision;
+	
+	UPROPERTY()
+	FString CurrentDecisionTable;
+	
 	//------
 
 	static bool bStopTree;
@@ -306,6 +312,11 @@ public:
 	 * @return valid health-bar
 	 */
 	UMobHealthBar* GetHealthBar() const;
+	
+	FString GetCurrentDecision() const;
+	void SetCurrentDecision(const FString& InCurrentDecision);
+	FString GetCurrentDecisionTable() const;
+	void SetCurrentDecisionTable(const FString& InCurrentDecisionTable);
 
 
 	bool IsEAnger() const;

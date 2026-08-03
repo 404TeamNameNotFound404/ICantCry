@@ -528,6 +528,27 @@ UMobHealthBar* AMob::GetHealthBar() const
 	return Bar;
 }
 
+FString AMob::GetCurrentDecision() const
+{
+	return CurrentDecision;
+}
+
+void AMob::SetCurrentDecision(const FString& InCurrentDecision)
+{
+	CurrentDecision = InCurrentDecision;
+}
+
+FString AMob::GetCurrentDecisionTable() const
+{
+	return CurrentDecisionTable;
+}
+
+void AMob::SetCurrentDecisionTable(const FString& InCurrentDecisionTable)
+{
+	CurrentDecisionTable = InCurrentDecisionTable;
+}
+
+
 bool AMob::IsEAnger() const
 {
 	return bEAnger;

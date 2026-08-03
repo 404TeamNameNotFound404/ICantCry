@@ -120,6 +120,7 @@ void UTurnBasedSystem::Start2(UWorld* World, FBattleMemory* Memory)
 	World->GetTimerManager().SetTimer(DelayHudHandle, [this]()
 	{
 		CurrentPlayer->GetBattleHUD()->ShowHUD();
+		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->InitDebugger();
 	}, 5.f, false);
 	
 	DebugHelper::ClearAllLogs();

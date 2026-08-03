@@ -38,10 +38,6 @@ void FStatusPriority::SetNextPriorityFromBuff(const EBuffStatus& BuffStatus)
 		SetNextBuffProcessPriority(2);
 		NextBuffSource = EPrioritySource::Source_BuffDef;
 		break;
-	// case Shield:
-	// 	SetNextBuffProcessPriority(4);
-	// 	NextBuffSource = EPrioritySource::Source_Shield;
-	// 	break;
 	case LowHealth:
 		SetNextBuffProcessPriority(3);
 		NextBuffSource = EPrioritySource::Source_LowHealth;
@@ -58,21 +54,6 @@ void FStatusPriority::SetNextPriorityFromDebuff(const EDebuffStatus& Status)
 	DebugHelper::AddMessageToLog("[Status Tracker]: Set next priority from debuff for Current Emotion turn");
 	switch (Status)
 	{
-	// case Freezed:
-	// 	NextBuffSource = EPrioritySource::Source_FreezedUp;
-	// 	break;
-	// case Burn:
-	// 	SetNextPriority(4);
-	// 	NextBuffSource = EPrioritySource::Source_EnvyBurned;
-	// 	break;
-	// case EAShame:
-	// 	SetNextPriority(4);
-	// 	NextBuffSource = EPrioritySource::Source_Ashamed;
-	// 	break;
-	// case ShieldDebuff:
-	// 	SetNextPriority(4);
-	// 	NextBuffSource = EPrioritySource::Source_Shield;
-	// 	break;
 	case DebuffAtk:
 		SetNextPriority(1);
 		NextBuffSource = EPrioritySource::Source_DebuffAtk;
@@ -81,10 +62,6 @@ void FStatusPriority::SetNextPriorityFromDebuff(const EDebuffStatus& Status)
 		SetNextPriority(2);
 		NextBuffSource = EPrioritySource::Source_DebuffDef;
 		break;
-	// case CriticHealth:
-	// 	SetNextPriority(3);
-	// 	NextBuffSource = EPrioritySource::Source_LowHealth;
-	// 	break;
 	default:
 	case NoDebuff:
 		SetNextPriority(0);
@@ -504,9 +481,39 @@ bool UStatusTracker::IsBuffed() const
 	return bIsOwnerAlreadyBuffed;
 }
 
+bool UStatusTracker::IsDebuffed() const
+{
+	return bIsOwnerDebuffed;
+}
+
 bool UStatusTracker::CanDebuff() const
 {
 	return bCanDebuff;
+}
+
+int UStatusTracker::GetBuffCounter() const
+{
+	return DebugBuffCounter;
+}
+
+int UStatusTracker::GetDebuffCounter() const
+{
+	return DebugDebuffCounter;
+}
+
+FString UStatusTracker::DbgGetCurrentBuffName() const
+{
+	return DebugBuffName;
+}
+
+FString UStatusTracker::DbgGetCurrentDebuffName() const
+{
+	return DebugDebuffName;
+}
+
+FString UStatusTracker::DbgGetCurrentMalusName() const
+{
+	return DebugMalusName;
 }
 
 
@@ -529,18 +536,22 @@ void UStatusTracker::InflictStatus(const EAfflictedStatus& Status, AICC_Actor* T
 	{
 	case Freezed:
 		InflictFreeze(Target);
+		DebugMalusName = "Freezed";
 		break;
 	case Burn:
 		Priority.SetBuffCurrentPriority(4);
 		InflictBurn(Target);
+		DebugMalusName = "Burned";
 		break;
 	case EAShame:
 		Priority.SetBuffCurrentPriority(4);
 		InflictAShamed(Target);
+		DebugMalusName = "Ashamed";
 		break;
 	case ShieldDebuff:
 		Priority.SetBuffCurrentPriority(4);
 		BuffShield();
+		DebugMalusName = "Shield";
 		break;
 	case CriticHealth:
 		Priority.SetBuffCurrentPriority(3);
@@ -669,7 +680,7 @@ void UStatusTracker::BuffWith(const EBuffStatus& BuffStatus)
 	CurrentBuffedStatus = BuffStatus;
 	bIsOwnerAlreadyBuffed = true;
 	DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetActorLabel() + " added " + GetBuffName(BuffStatus) + " and it's counter " + FString::FromInt(BuffCounters[BuffStatus]));
-
+	
 	switch (BuffStatus)
 	{
 	case AtkBuff:
@@ -835,6 +846,8 @@ void UStatusTracker::UpdateDebuffStatus()
 		int32& Counter = Pair.Value;
 		
 		Counter++;
+		DebugDebuffCounter = Counter;
+		DebugDebuffName = GetDebuffName(Status);
 		
 		DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetActorLabel() + " has " + 
 			GetDebuffName(Status) + " at turn " + FString::FromInt(Counter));
@@ -875,6 +888,9 @@ void UStatusTracker::UpdateBuffStatus()
 	{
 		EBuffStatus S = B.Key; // Actual Status
 		int32& C = B.Value; // Counter
+		
+		DebugBuffCounter = C;
+		DebugBuffName = GetBuffName(S);
 		
 		if (S == EBuffStatus::NoBuff)
 		{

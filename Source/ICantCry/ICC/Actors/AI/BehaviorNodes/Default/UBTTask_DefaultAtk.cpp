@@ -179,6 +179,11 @@ void UUBTTask_DefaultAtk::StartAttackMinigame(AMob* Current, AICC_Player* Target
 	// Controller->MoveToActor(Target);
 	//Controller->MoveTo(Request);
 	
+	// const float DistanceToTarget = FVector::DistSquared2D(Target->GetActorLocation(), Current->GetActorLocation());
+	//
+	// UCharacterMovementComponent* MovementComponent = Current->GetCharacterMovement();
+	// MovementComponent->MaxWalkSpeed = DistanceToTarget / Target->GetMinigameHandler()->
+	
 	EPathFollowingRequestResult::Type Result = Controller->MoveTo(Request);
 
 	if (Result == EPathFollowingRequestResult::Failed)
