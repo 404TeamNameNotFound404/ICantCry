@@ -567,9 +567,19 @@ void UBattleHUD::OnPassPressed()
 		BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
 	bTargetSelection = false;
 	
-	GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateStatus();
-	GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateBuffStatus();
-	GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateDebuffStatus();
+	// GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateStatus();
+	// GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateBuffStatus();
+	// GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateDebuffStatus();
+	
+	for (const AICC_Actor* A : BattleHandler->GetTurnBasedSystem()->GetTurn().Queue)
+	{
+		if (!A) continue;
+		
+		A->GetStatusTracker()->UpdateStatus();
+		A->GetStatusTracker()->UpdateBuffStatus();
+		A->GetStatusTracker()->UpdateDebuffStatus();
+	}
+	
 	Displayer->SetVisibility(ESlateVisibility::Hidden);
 	OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
 	BulletName->SetVisibility(ESlateVisibility::Hidden);

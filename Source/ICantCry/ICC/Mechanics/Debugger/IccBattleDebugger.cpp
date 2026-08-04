@@ -120,7 +120,6 @@ void AIccBattleDebugger::DisplayDebuggerData()
 			if (A && A->GetName() == DecisionData.TargetName)
 			{
 				DecisionData.RefreshInfo(A);
-				break;
 			}
 		}
 	}
