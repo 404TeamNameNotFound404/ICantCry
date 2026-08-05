@@ -28,13 +28,13 @@ EBTNodeResult::Type UBTTask_Heal::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	
 	if (Current->GetStats().Health >= Current->GetData()->MaxHealth)
 	{
-		DebugHelper::AddMessageToLog("[Behavior Tree - Heal]: " + Current->GetActorLabel() + " Health is full ftw!");
+		DebugHelper::AddMessageToLog("[Behavior Tree - Heal]: " + Current->GetEmotionName() + " Health is full ftw!");
 		return EBTNodeResult::Succeeded;
 	}
 	
-	DebugHelper::AddMessageToLog("[Behavior Tree - Heal]: " + Current->GetActorLabel() + " uses Heal");
+	DebugHelper::AddMessageToLog("[Behavior Tree - Heal]: " + Current->GetEmotionName() + " uses Heal");
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
-	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetActorLabel() + " uses heal"));
+	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetEmotionName() + " uses heal"));
 	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
 	FDecisionMaker DecisionMaker;
 	DecisionMaker.DecisionMap.Add(EDecision::HealItSelf, 0.70f); // from 0.0 to 0.7 heal itself 70%
@@ -56,7 +56,7 @@ void UBTTask_Heal::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 	checkf(Current, TEXT("Current Mob is invalid heal TickTask"));
 
 	Current->Heal(Current->GetTactics()->HealingPoint); // Can be edited via editor on the EnemyTactics data asset
-	DebugHelper::AddMessageToLog("[Behavior Tree - Heal]: " + Current->GetActorLabel() + " Healed ItSelf");
+	DebugHelper::AddMessageToLog("[Behavior Tree - Heal]: " + Current->GetEmotionName() + " Healed ItSelf");
 	Timer = 0.0f;
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();

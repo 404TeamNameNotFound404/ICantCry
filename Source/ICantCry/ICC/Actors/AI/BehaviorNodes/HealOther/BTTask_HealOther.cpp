@@ -39,7 +39,7 @@ EBTNodeResult::Type UBTTask_HealOther::ExecuteTask(UBehaviorTreeComponent& Owner
 
 	if (Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().CantBuffOthers())
 	{
-		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " this mf can't heal other if it's alone so i'm attacking the main mf instead");
+		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetEmotionName() + " this mf can't heal other if it's alone so i'm attacking the main mf instead");
 		
 		UUBTTask_DefaultAtk::GetInstance()->StartAttackMinigame(Current, Target, Controller);
 		
@@ -49,24 +49,24 @@ EBTNodeResult::Type UBTTask_HealOther::ExecuteTask(UBehaviorTreeComponent& Owner
 	AMob* TargetToBuff = Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().GetMobInQueue(Current);
 	if (!TargetToBuff) 
 	{
-		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " this mf can't heal other if the mf is invalid, so let's attack the main mf instead");
+		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetEmotionName() + " this mf can't heal other if the mf is invalid, so let's attack the main mf instead");
 		UUBTTask_DefaultAtk::GetInstance()->StartAttackMinigame(Current, Target, Controller);
 		return EBTNodeResult::Succeeded;
 	}
 
 	if (TargetToBuff->GetStats().Health >= TargetToBuff->GetData()->MaxHealth)
 	{
-		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " this mf can't heal other if it's full life.. Show no mercy to the main mf");
+		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetEmotionName() + " this mf can't heal other if it's full life.. Show no mercy to the main mf");
 		UUBTTask_DefaultAtk::GetInstance()->StartAttackMinigame(Current, Target, Controller);
 		return EBTNodeResult::InProgress;
 	}
 
-	DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " this mf can heal other so here's the cure king!");
+	DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetEmotionName() + " this mf can heal other so here's the cure king!");
 	Blackboard->SetValueAsBool("IsHealingOther?", true);
 	TargetToBuff->Heal(TargetToBuff->GetStats().Health * 0.20f);
-	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetActorLabel() + " heals " + TargetToBuff->GetActorLabel()));
+	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetEmotionName() + " heals " + TargetToBuff->GetActorLabel()));
 	Target->GetBattleHUD()->DecisionDisplayer->Show();
-	DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " heals " + TargetToBuff->GetActorLabel());
+	DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetEmotionName() + " heals " + TargetToBuff->GetActorLabel());
 	
 	return EBTNodeResult::InProgress;
 }
@@ -91,8 +91,8 @@ void UBTTask_HealOther::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 
 	if (Current != Current->GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
-		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
-		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
+		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetEmotionName() + "'s turn yet (buff task)");
+		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: It's not " + Current->GetEmotionName() + "'s turn yet (buff task)");
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}

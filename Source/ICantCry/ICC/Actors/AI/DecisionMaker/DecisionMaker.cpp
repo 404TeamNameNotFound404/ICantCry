@@ -13,9 +13,10 @@ FDecisionMaker::FDecisionMaker()
 
 void FDecisionMaker::Setup(AMob* Current)
 {
-	 DecisionMap.Empty();
-
-    if (!Current || !Current->GetDecisionTable())
+	DecisionMap.Empty();
+	CachedCurrent = Current;
+    
+	if (!Current || !Current->GetDecisionTable())
         return;
 	
     //FDecisionWeight CurrentWeights;
@@ -39,36 +40,43 @@ void FDecisionMaker::Setup(AMob* Current)
     	Current->GetStatusTracker()->GetPerkData().bAshamed = false;
 	    CurrentWeights = Current->GetDecisionTable()->LowHealth;
     	DebugHelper::AddMessageToLog("[Decision Maker]: Decision table used: Low health");
+    	Current->SetCurrentDecisionTable("Low Health");
     }
     else if (Current->GetStatusTracker()->GetPerkData().bEnvyBurned)
     {
 	    CurrentWeights = Current->GetDecisionTable()->EnvyBurned;
     	DebugHelper::AddMessageToLog("[Decision Maker]: Decision table used: Envy burned");
+    	Current->SetCurrentDecisionTable("Envy Burned");
     }
 	else if (Current->GetStatusTracker()->GetPerkData().bBuffDef)
 	{
 		CurrentWeights = Current->GetDecisionTable()->BuffDef;
 		DebugHelper::AddMessageToLog("[Decision Maker]: Decision table used: Buff Def");
+		Current->SetCurrentDecisionTable("Buff Def");
 	}
 	else if (Current->GetStatusTracker()->GetPerkData().bDebuffDef)
 	{
 		CurrentWeights = Current->GetDecisionTable()->DebuffDef;
 		DebugHelper::AddMessageToLog("[Decision Maker]: Decision table used: Debuff Def");
+		Current->SetCurrentDecisionTable("Debuff Def");
 	}
 	else if (Current->GetStatusTracker()->GetPerkData().bShieldDebuff)
 	{
 		CurrentWeights = Current->GetDecisionTable()->DebuffShield;
 		DebugHelper::AddMessageToLog("[Decision Maker]: Decision table used: Shield");
+		Current->SetCurrentDecisionTable("Shield");
 	}
 	else if (Current->GetStatusTracker()->GetPerkData().bAshamed)
 	{
 		CurrentWeights = Current->GetDecisionTable()->Ashamed;
 		DebugHelper::AddMessageToLog("[Decision Maker]: Decision table used: Ashamed");
+		Current->SetCurrentDecisionTable("Ashamed");
 	}
     else
     {
 	    CurrentWeights = Current->GetDecisionTable()->Idle;
     	DebugHelper::AddMessageToLog("[Decision Maker]: Decision table used: Idle");
+    	Current->SetCurrentDecisionTable("Default");
     }
 	
 	UStatusTracker* StatusTracker = Current->GetStatusTracker();
@@ -251,6 +259,7 @@ EDecision FDecisionMaker::Thought()
 		{
 			LastDecision = Entry.Key;
 			DebugHelper::AddMessageToLog("[Decision Maker]: Decision picked: " + GetDecisionString(Entry.Key));
+			CachedCurrent->SetCurrentDecision(GetDecisionString(Entry.Key));
 			return Entry.Key;
 		}
 	}

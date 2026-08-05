@@ -26,7 +26,7 @@ void FTurn::PopulateQueue(UWorld* World)
 		}
 		
 		Queue.Add(*It);
-		DebugHelper::AddMessageToLog("[Turn]: " + It->GetActorLabel() + " joined the fun");
+		DebugHelper::AddMessageToLog("[Turn]: " + It->GetName() + " joined the fun");
 	}
 
 	
@@ -44,7 +44,7 @@ void FTurn::RejoinQueue(const TArray<AMob*>& Emotions)
 		}
 	
 		Queue.Emplace(AsActor);
-		DebugHelper::AddMessageToLog("[Turn]: " + Mob->GetActorLabel() + " rejoined the fun");
+		DebugHelper::AddMessageToLog("[Turn]: " + Mob->GetEmotionName() + " rejoined the fun");
 	}
 	
 }
@@ -65,7 +65,7 @@ void FTurn::RejoinQueue(const TArray<AMob*>& Emotions, AICC_Player* Player)
 		Queue.Add(AsActor);
 
 		DebugHelper::AddMessageToLog(
-			"[Turn]: " + Mob->GetActorLabel() + " rejoined the fun"
+			"[Turn]: " + Mob->GetEmotionName() + " rejoined the fun"
 		);
 	}
 }

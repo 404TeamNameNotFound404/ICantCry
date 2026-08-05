@@ -996,6 +996,11 @@ UICC_InputDataAsset* AICC_Player::GetInputDataAsset() const
 	return InputDataAsset;
 }
 
+FString AICC_Player::GetCharacterName() const
+{
+	return CharacterName;
+}
+
 
 void AICC_Player::SetInputModeToGameOnly()
 {
