@@ -192,6 +192,7 @@ public:
 
 	UICC_InputDataAsset* GetInputDataAsset() const;
 
+	FString GetCharacterName() const;
 
 	UICC_GamepadBinder* GetBinder() const;
 	USpringArmComponent* GetCameraBoom() const;
@@ -295,7 +296,9 @@ private:
 
 	UPROPERTY()
 	int32 StepCounter = 0;
-
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Data", meta=(AllowPrivateAccess = "true")) 
+	FString CharacterName;
 
 	/**
  * Close the crafting / inventory counter

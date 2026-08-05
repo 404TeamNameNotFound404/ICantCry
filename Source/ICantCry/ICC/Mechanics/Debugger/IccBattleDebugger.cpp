@@ -120,6 +120,7 @@ void AIccBattleDebugger::DisplayDebuggerData()
 			if (A && A->GetName() == DecisionData.TargetName)
 			{
 				DecisionData.RefreshInfo(A);
+				break;
 			}
 		}
 	}
@@ -316,15 +317,15 @@ void AIccBattleDebugger::DisplayTrackers()
 				ImGui::Separator();
 				ImGui::Text("Attack Power: ");
 				ImGui::SameLine();
-				ImGui::TextColored(Grey, "%1.f", Data.AttackPower);
+				ImGui::TextColored(Grey, "%.1f", Data.AttackPower);
 				ImGui::Separator();
 				ImGui::Text("Defence Power: ");
 				ImGui::SameLine();
-				ImGui::TextColored(Grey, "%1.f", Data.DefencePower);
+				ImGui::TextColored(Grey, "%.1f", Data.DefencePower);
 				ImGui::Separator();
 				ImGui::Text("Damage Dealt: ");
 				ImGui::SameLine();
-				ImGui::TextColored(Yellow, "%1.f", Data.DamageDealt);
+				ImGui::TextColored(Yellow, "%.1f", Data.DamageDealt);
 			}
 
 			ImGui::EndTable();

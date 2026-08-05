@@ -147,7 +147,7 @@ void UUBTTask_DefaultAtk::OnThinkComplete(UBehaviorTreeComponent* OwnerComp, AIC
 	
 	if (CurrentMob->IsAshamed() && Decision == EDecision::None)
 	{
-		DebugHelper::AddMessageToLog("[Behavior Tree]: " + CurrentMob->GetActorLabel() + " under ashamed state, can't attack so skip its turn");
+		DebugHelper::AddMessageToLog("[Behavior Tree]: " + CurrentMob->GetEmotionName() + " under ashamed state, can't attack so skip its turn");
 		FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
 		return;
 	}
@@ -196,7 +196,7 @@ void UUBTTask_DefaultAtk::StartAttackMinigame(AMob* Current, AICC_Player* Target
 	}
 
 
-	DebugHelper::AddMessageToLog("[Behavior Tree]: " + Current->GetActorLabel() + " is attacking");
+	DebugHelper::AddMessageToLog("[Behavior Tree]: " + Current->GetEmotionName() + " is attacking");
 
 	Current->GetAIMemory().AttackLocation = Current->GetActorLocation();
 	Target->GetBattleHUD()->DecisionDisplayer->Hide();
@@ -215,8 +215,8 @@ void UUBTTask_DefaultAtk::ProcessDecision(EDecision Dec, AMob* Current, UBlackbo
 
 	if (Current != Target->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
-		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not the " + Current->GetActorLabel() + " turn yet");
-		DebugHelper::AddMessageToLog("[Behavior Tree]: It's not the " + Current->GetActorLabel() + " turn yet");
+		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not the " + Current->GetEmotionName() + " turn yet");
+		DebugHelper::AddMessageToLog("[Behavior Tree]: It's not the " + Current->GetEmotionName() + " turn yet");
 		FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
 		return;
 	}

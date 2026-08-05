@@ -39,12 +39,12 @@ EBTNodeResult::Type UBTTask_FreezedUp::ExecuteTask(UBehaviorTreeComponent& Owner
 
 	//TODO Implement Player->Freeze();
 	
-	DebugHelper::AddMessageToLog("[Behavior Tree - FreezedUp]: " + Current->GetActorLabel() + " freezed " + Target->GetActorLabel());
+	DebugHelper::AddMessageToLog("[Behavior Tree - FreezedUp]: " + Current->GetEmotionName() + " freezed " + Target->GetCharacterName());
 
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 
 	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
-	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetActorLabel() + " freezed " + Target->GetActorLabel()));
+	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetEmotionName() + " freezed " + Target->GetActorLabel()));
 	
 	return EBTNodeResult::InProgress;
 }
@@ -69,8 +69,8 @@ void UBTTask_FreezedUp::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 
 	if (Current != Current->GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
-		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
-		DebugHelper::AddMessageToLog("[Behavior Tree - FreezedUp]: It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
+		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetEmotionName() + "'s turn yet (buff task)");
+		DebugHelper::AddMessageToLog("[Behavior Tree - FreezedUp]: It's not " + Current->GetEmotionName() + "'s turn yet (buff task)");
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}

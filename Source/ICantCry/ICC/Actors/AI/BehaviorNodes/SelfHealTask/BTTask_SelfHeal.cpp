@@ -37,7 +37,7 @@ EBTNodeResult::Type UBTTask_SelfHeal::ExecuteTask(UBehaviorTreeComponent& OwnerC
 
 	if (Current->GetStats().Health >= Current->GetData()->MaxHealth)
 	{
-		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetActorLabel() + " casted heal on itself but heal is full ... rethinking");
+		DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetEmotionName() + " casted heal on itself but heal is full ... rethinking");
 		Blackboard->SetValueAsBool("Rethinker", true);
 		return EBTNodeResult::Succeeded;
 	}
@@ -46,9 +46,9 @@ EBTNodeResult::Type UBTTask_SelfHeal::ExecuteTask(UBehaviorTreeComponent& OwnerC
 	
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(Current->GetWorld()->GetGameInstance());
 	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
-	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetActorLabel() + " uses Heal"));
+	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetEmotionName() + " uses Heal"));
 	
-	DebugHelper::AddMessageToLog("[Behavior Tree - Healing]: "+ Current->GetActorLabel() + " use Heal");
+	DebugHelper::AddMessageToLog("[Behavior Tree - Healing]: "+ Current->GetEmotionName() + " use Heal");
 	
 	return EBTNodeResult::InProgress;
 }
@@ -73,8 +73,8 @@ void UBTTask_SelfHeal::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMe
 
 	if (Current != Current->GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
-		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
-		DebugHelper::AddMessageToLog("[Behavior Tree - Healing]: It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
+		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetEmotionName() + "'s turn yet (buff task)");
+		DebugHelper::AddMessageToLog("[Behavior Tree - Healing]: It's not " + Current->GetEmotionName() + "'s turn yet (buff task)");
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}

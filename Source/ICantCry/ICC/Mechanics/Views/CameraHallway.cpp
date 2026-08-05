@@ -155,7 +155,7 @@ void ACameraHallway::ToggleRoom(const FName& RoomTag)
 		{
 			TargetRoom = Room;
 			DebugHelper::LogMessage(5, FColor::White, "Found Target Room" + 
-				TargetRoom->GetActorLabel());
+				TargetRoom->GetName());
 			break;
 		}
 	}

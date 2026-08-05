@@ -52,15 +52,15 @@ void FBattleMemory::ResetEmotionsStats()
 	{
 		if (Actor->IsA(AICC_Player::StaticClass())) continue;
 		
-		const AMob* Emotion = Cast<AMob>(Actor);
+		AMob* Emotion = Cast<AMob>(Actor);
 		if (!Emotion) continue;
 		
-		Emotion->GetData()->RuntimeStats.AtkPower = Emotion->GetAIMemory().InitialAttackPower;
-		Emotion->GetData()->RuntimeStats.DefPower = Emotion->GetAIMemory().InitialDefencePower;
+		Emotion->GetStats().AtkPower = Emotion->GetAIMemory().InitialAttackPower;
+		Emotion->GetStats().DefPower = Emotion->GetAIMemory().InitialDefencePower;
 		
-		DebugHelper::AddMessageToLog("[Battle Memory]: " + Emotion->GetActorLabel() + 
-			" resets it's atk power to " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.AtkPower) + 
-			" and def: " + FString::SanitizeFloat(Emotion->GetData()->RuntimeStats.DefPower));
+		DebugHelper::AddMessageToLog("[Battle Memory]: " + Emotion->GetEmotionName() + 
+			" resets it's atk power to " + FString::SanitizeFloat(Emotion->GetStats().AtkPower) + 
+			" and def: " + FString::SanitizeFloat(Emotion->GetStats().DefPower));
 	}
 }
 

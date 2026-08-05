@@ -145,7 +145,7 @@ void UBTRethinker::OnThinkComplete(UBehaviorTreeComponent* OwnerComp, AICC_AICon
 	
 	if (Current->IsAshamed())
 	{
-		DebugHelper::AddMessageToLog("[Behavior Tree - Rethinker]: " + Current->GetActorLabel() + " under ashamed state, can't attack so skip its turn");
+		DebugHelper::AddMessageToLog("[Behavior Tree - Rethinker]: " + Current->GetEmotionName() + " under ashamed state, can't attack so skip its turn");
 		FinishTask(OwnerComp, EBTNodeResult::Succeeded);
 		return;
 	}
@@ -171,7 +171,7 @@ void UBTRethinker::StartAttackMinigame(AMob* CurrentMob, AICC_Player* Target, AI
 
 	Controller->MoveToActor(Target);
 	
-	DebugHelper::AddMessageToLog("[Behavior Tree - Rethinker]: " + Current->GetActorLabel() + " is attacking");
+	DebugHelper::AddMessageToLog("[Behavior Tree - Rethinker]: " + Current->GetEmotionName() + " is attacking");
 
 	CurrentMob->GetAIMemory().AttackLocation = CurrentMob->GetActorLocation();
 	Target->GetBattleHUD()->DecisionDisplayer->Hide();
@@ -208,9 +208,9 @@ void UBTRethinker::ProcessDecision(EDecision Dec, AMob* CurrentMob, UBlackboardC
 
 	if (Current != Target->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
-		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not the " + Current->GetActorLabel() + " turn yet");
+		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not the " + Current->GetEmotionName() + " turn yet");
 		DebugHelper::AddMessageToLog(
-			"[Behavior Tree - Rethinker]: It's not the " + Current->GetActorLabel() + " turn yet");
+			"[Behavior Tree - Rethinker]: It's not the " + Current->GetEmotionName() + " turn yet");
 		FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
 		return;
 	}

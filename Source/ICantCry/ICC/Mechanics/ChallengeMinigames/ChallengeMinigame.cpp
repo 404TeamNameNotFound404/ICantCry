@@ -136,8 +136,8 @@ void AChallengeMinigame::InitSlots()
 			Paper->SetCurrentSlot(Slot);
 			PaperMap.Add(Slot, Paper);
 
-			DebugHelper::LogMessage(8, FColor::FromHex("434E78"), Paper->GetActorLabel() + " id is " + FString::FromInt(Paper->GetId()));
-			DebugHelper::LogMessage(8, FColor::FromHex("434E78"), Slot->GetActorLabel() + " id is " + FString::FromInt(Slot->GetId()));
+			DebugHelper::LogMessage(8, FColor::FromHex("434E78"), Paper->GetName() + " id is " + FString::FromInt(Paper->GetId()));
+			DebugHelper::LogMessage(8, FColor::FromHex("434E78"), Slot->GetName() + " id is " + FString::FromInt(Slot->GetId()));
 		}
 	}
 	
@@ -157,7 +157,7 @@ void AChallengeMinigame::Resolve()
 		if (!PaperPtr || !*PaperPtr)
 		{
 			bSolutionFound = false;
-			DebugHelper::LogError("No paper in slot " + Slot->GetActorLabel());
+			DebugHelper::LogError("No paper in slot " + Slot->GetName());
 			continue;
 		}
 
@@ -165,7 +165,7 @@ void AChallengeMinigame::Resolve()
 
 		if (Paper->GetId() == Slot->GetId())
 		{
-			DebugHelper::LogSuccess(Slot->GetActorLabel() + " correctly occupied by paper " + FString::FromInt(Paper->GetId()));
+			DebugHelper::LogSuccess(Slot->GetName() + " correctly occupied by paper " + FString::FromInt(Paper->GetId()));
 		}
 		else
 		{

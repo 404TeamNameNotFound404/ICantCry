@@ -167,7 +167,7 @@ void ABattleHandler::SimulateAura(AICC_Actor* Target, const float& SpawnRate, co
 	Target->ActiveAuras.Add(Status, NewAura);
 	
 	DebugHelper::LogMessage(10, FColor::Green, 
-		Target->GetActorLabel() + " has aura attached");
+		Target->GetName() + " has aura attached");
 }
 
 void ABattleHandler::IncreaseAura(const float& Value)

@@ -237,7 +237,7 @@ void UBattleHUD::ProcessExp(AMob* DeathEmotion)
 	
 	GameInstance->GetRuntimeStats().Experience += DeathEmotion->GetData()->ExpGiven;
 	
-	DebugHelper::AddMessageToLog("[BattleHud]: " + DeathEmotion->GetActorLabel() +" is death so processing exp.. "
+	DebugHelper::AddMessageToLog("[BattleHud]: " + DeathEmotion->GetEmotionName() +" is death so processing exp.. "
 		"Exp given " + FString::SanitizeFloat(DeathEmotion->GetData()->ExpGiven) + " so player exp is: " +
 		FString::SanitizeFloat(GameInstance->GetRuntimeStats().Experience));
 	
@@ -328,7 +328,7 @@ void UBattleHUD::OnShootPressed()
 	{
 		DebugHelper::LogError("Player can't attack , is in ashamed state!");
 		DebugHelper::AddMessageToLog(
-			"[BattleHUD]: " + GameInstance->GetCurrentPlayer()->GetActorLabel() +
+			"[BattleHUD]: " + GameInstance->GetCurrentPlayer()->GetCharacterName() +
 			" can't attack because it's under ashamed state!");
 		
 		Shoot->SetIsEnabled(false);
@@ -646,14 +646,15 @@ void UBattleHUD::ScrollTargetSelection(float ScrollValue)
 	SelectedActor = Queue[CurrentEnemyIndex];
 
 	if (!SelectedActor) { return; }
+	if (SelectedActor->IsA(AICC_Player::StaticClass())) return;
 
 
 	DebugHelper::LogSuccess(FString::FromInt(CurrentEnemyIndex));
 	// TargetNameText->SetText(FText::FromString(SelectedActor->GetActorLabel()));
 	// TargetText->SetText(FText::FromString(FString(TEXT("Target: ")) + SelectedActor->GetActorLabel()));
 
-	TargetNameText->SetText(FText::FromString(SelectedActor->GetActorLabel()));
-	TargetText->SetText(FText::FromString(FString(TEXT("Target: ")) + SelectedActor->GetActorLabel()));
+	TargetNameText->SetText(FText::FromString(Cast<AMob>(SelectedActor)->GetEmotionName() /*SelectedActor->GetActorLabel()*/));
+	TargetText->SetText(FText::FromString(FString(TEXT("Target: ")) + Cast<AMob>(SelectedActor)->GetEmotionName() /*SelectedActor->GetActorLabel()*/));
 	
 	if (!bBulletSetupFinished)
 	{
@@ -665,8 +666,8 @@ void UBattleHUD::ScrollTargetSelection(float ScrollValue)
 	TargetNameText_3->SetText(FText::FromString(CurrentBulletData->Effect)); // atk or def
 	TargetNameText_3->SetAutoWrapText(true);
 
-	DebugHelper::LogMessage(10, FColor::Orange, "Target Selected: " + SelectedActor->GetActorLabel());
-	DebugHelper::AddMessageToLog("[BattleHUD]: Target Selected: " + SelectedActor->GetActorLabel());
+	DebugHelper::LogMessage(10, FColor::Orange, "Target Selected: " + SelectedActor->GetName());
+	DebugHelper::AddMessageToLog("[BattleHUD]: Target Selected: " + SelectedActor->GetName());
 	OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
 	BulletName->SetVisibility(ESlateVisibility::Hidden);
 	Quantity->SetVisibility(ESlateVisibility::Hidden);
@@ -1039,14 +1040,14 @@ void UBattleHUD::PrepareToEngage()
 	
 	FDamage DummyDamage(CurrentBulletData, GameInstance->GetPlayerStats(),
 	                    Cast<AMob>(SelectedActorTarget)->GetTactics(),
-	                    Cast<AMob>(SelectedActorTarget)->GetData(), GameInstance->GetCurrentPlayer() ,GameInstance);
+	                    Cast<AMob>(SelectedActorTarget)->GetData(), Cast<AMob>(SelectedActorTarget)->GetStats() ,GameInstance->GetCurrentPlayer() ,GameInstance);
 
 	GameInstance->GetRuntimeStats().Stats = DummyDamage;
 
 	GameInstance->SetDamageData(&GameInstance->GetRuntimeStats().Stats);
-	DebugHelper::LogMessage(3, FColor::White, "Targeting " + SelectedEnemy->GetActorLabel());
+	DebugHelper::LogMessage(3, FColor::White, "Targeting " + SelectedEnemy->GetEmotionName());
 	DebugHelper::AddMessageToLog(
-		"[BattleHUD]: Targeting " + SelectedEnemy->GetActorLabel() + " using " + CurrentBulletData->BulletName);
+		"[BattleHUD]: Targeting " + SelectedEnemy->GetEmotionName() + " using " + CurrentBulletData->BulletName);
 	checkf(MinigameHandler, TEXT("Minigame handler is null at UBattleHUD::Engage"));
 	MinigameHandler->StartMinigame(CurrentBulletData,true);
 	EngageBtn->SetVisibility(ESlateVisibility::Hidden);
@@ -1631,7 +1632,7 @@ FText UBattleHUD::UpdateTargetSelectionInfos()
 
 		if (AMob* Mob = Cast<AMob>(Queue[CheckIndex]); !Mob || Mob->IsAlive())
 		{
-			return FText::FromString("Target: " + Queue[CheckIndex]->GetActorLabel());
+			return FText::FromString("Target: " + Queue[CheckIndex]->GetName());
 		}
 	}
 
@@ -1652,7 +1653,7 @@ FText UBattleHUD::UpdateEnemyName()
 
 		if (AMob* Mob = Cast<AMob>(Queue[CheckIndex]); !Mob || Mob->IsAlive())
 		{
-			return FText::FromString(Queue[CheckIndex]->GetActorLabel());
+			return FText::FromString(Queue[CheckIndex]->GetName());
 		}
 	}
 

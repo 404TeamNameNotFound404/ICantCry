@@ -9,14 +9,14 @@
 void FIccBattleDebuggerData::RefreshInfo(AICC_Actor* Target)
 {
 	if (!Target) return;
-		
-	TargetName = Target->GetName();
-		
+	
 	if (AICC_Player* P = Cast<AICC_Player>(Target))
 	{
+		TargetName = P->GetCharacterName();
 		Health = P->GetRuntimeStats().CurrentHealth;
 	} else if (AMob* E = Cast<AMob>(Target))
 	{
+		TargetName = E->GetEmotionName();
 		Health = E->GetStats().Health;
 	}
 		
@@ -37,7 +37,8 @@ void FIccDebuggerDecisionData::RefreshInfo(AICC_Actor* Target)
 	const AMob* Emotion = Cast<AMob>(Target);
 	if (!Emotion) return;
 	
-	TargetName = Emotion->GetName();
+	TargetName = Emotion->GetEmotionName();
+	
 	DecisionPicked = Emotion->GetCurrentDecision();
 	DecisionTable = Emotion->GetCurrentDecisionTable();
 }
@@ -46,20 +47,21 @@ void FIccDebuggerTrackingData::RefreshInfo(AICC_Actor* Target)
 {
 	if (!Target) return;
 	
-	TargetName = Target->GetName();
 	CurrentBuff = Target->GetStatusTracker()->DbgGetCurrentBuffName();
 	CurrentDebuff = Target->GetStatusTracker()->DbgGetCurrentDebuffName();
 	
 	if (AICC_Player* P = Cast<AICC_Player>(Target))
 	{
-		AttackPower = P->GetRuntimeStats().AttackPower;
-		DefencePower = P->GetRuntimeStats().DefencePower;
+		TargetName = P->GetCharacterName();
+		AttackPower = static_cast<float>(P->GetRuntimeStats().AttackPower); 
+		DefencePower = static_cast<float>(P->GetRuntimeStats().DefencePower);
 		DamageDealt = P->GetRuntimeStats().DbgDamageDealt;
 		
 	} else if (AMob* E = Cast<AMob>(Target))
 	{
+		TargetName = E->GetEmotionName();
 		AttackPower = E->GetStats().AtkPower;
-		DefencePower = E->GetStats().DefPower;
+		DefencePower =  E->GetStats().DefPower;
 		DamageDealt = E->GetStats().DbgDamageDealt;
 	}
 }

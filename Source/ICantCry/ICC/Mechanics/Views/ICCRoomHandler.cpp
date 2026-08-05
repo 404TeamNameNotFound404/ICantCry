@@ -34,7 +34,7 @@ void AICCRoomHandler::SetRoomVisible(AActor* Room, const bool& bVisible)
 	TArray<AActor*> AttachedChildren;
 	Room->GetAttachedActors(AttachedChildren, true, true);
 	
-	const FString DisplayedRoom = "Room " + Room->GetActorLabel() + (bVisible ? " Hidden" : " Showed");
+	const FString DisplayedRoom = "Room " + Room->GetName() + (bVisible ? " Hidden" : " Showed");
 	
 	for (AActor* Child : AttachedChildren)
 	{
@@ -44,7 +44,7 @@ void AICCRoomHandler::SetRoomVisible(AActor* Room, const bool& bVisible)
 		Child->SetActorTickEnabled(bVisible);
 	}
 	
-	DebugHelper::LogMessage(6, FColor::White, DisplayedRoom + "  by the people");
+	// DebugHelper::LogMessage(6, FColor::White, DisplayedRoom + "  by the people");
 }
 
 TArray<TObjectPtr<AActor>> AICCRoomHandler::GetRooms()

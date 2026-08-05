@@ -76,7 +76,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Behaviors", meta = (AllowPrivateAccess = "true"))
 	UBehaviorTree* Tree;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Battle", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Battle", meta = (AllowPrivateAccess = "true"))
 	FEmotionStat Stats;
 
 	/**
@@ -199,6 +199,9 @@ protected:
 	UPROPERTY()
 	FString CurrentDecisionTable;
 	
+	UPROPERTY()
+	FString EmotionName;
+	
 	//------
 
 	static bool bStopTree;
@@ -242,6 +245,9 @@ public:
 	UBehaviorTree* GetBehaviorTree() const;
 
 	FEmotionMemory GetAIMemory() const;
+	
+	FString GetEmotionName() const;
+	void SetEmotionName(const FString& NewName);
 
 	/**
 	 * Highlights the silhouette during AI turn
