@@ -113,16 +113,7 @@ void UUUBTTask_Retreat::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8*
     
     Current->GetBattleHandler()->GetTurnBasedSystem()->EndTurn();
     Current->GetBattleHandler()->GetTurnBasedSystem()->StartNextTurn();
-    // Current->GetStatusTracker()->UpdateStatus();
-    // Current->GetStatusTracker()->UpdateBuffStatus();
-    // Current->GetStatusTracker()->UpdateDebuffStatus();
-    
-    for (const auto& Queue = Current->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().Queue;
-        AICC_Actor* A : Queue)
-    {
-        if (!A) continue;
-        A->GetStatusTracker()->UpdateStatus();
-        A->GetStatusTracker()->UpdateBuffStatus();
-        A->GetStatusTracker()->UpdateDebuffStatus();
-    }
+    Current->GetStatusTracker()->UpdateStatus();
+    Current->GetStatusTracker()->UpdateBuffStatus();
+    Current->GetStatusTracker()->UpdateDebuffStatus();
 }
