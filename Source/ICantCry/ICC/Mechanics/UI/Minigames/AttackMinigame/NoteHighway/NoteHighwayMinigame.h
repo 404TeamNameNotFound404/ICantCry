@@ -90,6 +90,7 @@ protected:
 	UPROPERTY(meta=(BindWidget)) UCanvasPanel* ARow3;
 	
 	UPROPERTY(meta=(BindWidget)) UImage* EndBorder;
+	UPROPERTY(meta=(BindWidget)) UImage* FeedbackImg;
 	
 	
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Minigames",  meta = (AllowPrivateAccess = "true"))
@@ -107,7 +108,7 @@ protected:
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Minigames", meta = (AllowPrivateAccess = "true"))
 	float SliderSpeed = 180.f;
 	
-	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Minigames", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY()
 	float EndThreshold = 692.0f;
 	
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Minigames", meta = (AllowPrivateAccess = "true"))
@@ -115,8 +116,22 @@ protected:
 	
 	UPROPERTY() float Score = 0.5f;
 	
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Minigame", meta = (AllowPrivateAcess = "true"))
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Minigames", meta = (AllowPrivateAcess = "true"))
 	float StartTime = 0.f;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Minigames", meta=(AllowPrivateAccess = "true"))
+	UTexture2D* NiceFeedback;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Minigames", meta=(AllowPrivateAccess = "true"))
+	UTexture2D* MissFeedback;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Minigames", meta=(AllowPrivateAccess = "true"))
+	float FeedbackXOffset = 10.f;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Minigames", meta=(AllowPrivateAccess = "true"))
+	float FeedbackYOffset = 40.f;
+	
+	FTimerHandle FeedbackTimer;
 	
 	UTexture2D* LoadProperTexture(FHighwaySpawnable& Spawnable);
 	
@@ -125,9 +140,10 @@ protected:
 	
 	void Reset();
 	
-	void UpdateNotePosition(const float& Delta);
-	
 	FHighwayNote* FindClosestNote(const ESpawnableHighwayBtn& Type);
+	
+	void DisplayFeedback(const bool& bIsNice);
+	void HideFeedback();
 	
 	FString GetNoteName(const ESpawnableHighwayBtn& Btn) const;
 	
