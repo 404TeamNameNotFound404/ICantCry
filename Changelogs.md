@@ -34,10 +34,12 @@
 1. Il room toggler che fa falso contatto se si corre  
 
 # Bugs Intermedi
-Nessuno
+- Nessuno
 
 # Bugs Minori
+1. Nel curling minigame manca ancora il posizionamento della palla in maniera speculare se si tocca con la barra la parte alta degli scaglioni
 
-1. Lo scroll alcune volte non si aggiorna bene e ha bisogno di un altro ciclo di scroll per aggiornarsi correttamente
-2. Joy impiega qualche microsecondo tra fine minigame e attacco per ritornare in posizione 
+2. Lo scroll alcune volte non si aggiorna bene e ha bisogno di un altro ciclo di scroll per aggiornarsi correttamente
+
+3. Joy impiega qualche microsecondo tra fine minigame e attacco per ritornare in posizione 
 
