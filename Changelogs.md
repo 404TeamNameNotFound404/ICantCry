@@ -2,6 +2,8 @@
 
 # 10/08/26 
 1. Fix del highway minigame (guitar hero) delle note che vengono registrate come missing quando lo slider non è manco partito.
+   (se notate che fa un hit in ritardo o prima , dovete andare a tunare la variabile **Hit Tolerance** con un valore compreso tra 20 e non piu di 60-70)
+   
 2. Fix del button smashing. Se si preme spazio si riempie se si rilascia si svuota, i valori di velocita di riempimento e svuotamento si possono tunare dentro la blueprint stessa. 
 3. Fix Del curling, il minigame ora va , registra correttamente gli scaglioni e la palla si muove e si ferma dove dovrebbe tranne che per la parte destra.
 4. Fix del player che non la smette piu di camminare, anche qua se si premeva shift e si rilasciava la speed non veniva aggiornata.
