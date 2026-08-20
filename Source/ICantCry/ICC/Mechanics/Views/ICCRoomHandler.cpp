@@ -34,7 +34,7 @@ void AICCRoomHandler::SetRoomVisible(AActor* Room, const bool& bVisible)
 	TArray<AActor*> AttachedChildren;
 	Room->GetAttachedActors(AttachedChildren, true, true);
 	
-	const FString DisplayedRoom = "Room " + Room->GetName() + (bVisible ? " Hidden" : " Showed");
+	const FString DisplayedRoom = "Room " + Room->GetName() + (bVisible ? " Shown" : " Hidden");
 	
 	for (AActor* Child : AttachedChildren)
 	{
@@ -43,8 +43,6 @@ void AICCRoomHandler::SetRoomVisible(AActor* Room, const bool& bVisible)
 		Child->SetActorEnableCollision(bVisible);
 		Child->SetActorTickEnabled(bVisible);
 	}
-	
-	// DebugHelper::LogMessage(6, FColor::White, DisplayedRoom + "  by the people");
 }
 
 TArray<TObjectPtr<AActor>> AICCRoomHandler::GetRooms()
@@ -64,6 +62,8 @@ void AICCRoomHandler::HideOthers(AActor* Other)
 {
 	for (AActor* Room : Rooms)
 	{
+		if (!Room) continue;
+		
 		if (Room == Other)
 		{
 			SetRoomVisible(Room, true);

@@ -637,15 +637,25 @@ void UBattleHUD::ScrollTargetSelection(float ScrollValue)
 	SelectedActor = Queue[CurrentEnemyIndex];
 
 	if (!SelectedActor) { return; }
-	if (SelectedActor->IsA(AICC_Player::StaticClass())) return;
+	if (SelectedActor->IsA(AICC_Player::StaticClass()) && !IsShootingEv()) return;
 
+	UpdateTargetDisplay(SelectedActor);
 
 	DebugHelper::LogSuccess(FString::FromInt(CurrentEnemyIndex));
-	// TargetNameText->SetText(FText::FromString(SelectedActor->GetActorLabel()));
-	// TargetText->SetText(FText::FromString(FString(TEXT("Target: ")) + SelectedActor->GetActorLabel()));
 
-	TargetNameText->SetText(FText::FromString(Cast<AMob>(SelectedActor)->GetEmotionName() /*SelectedActor->GetActorLabel()*/));
-	TargetText->SetText(FText::FromString(FString(TEXT("Target: ")) + Cast<AMob>(SelectedActor)->GetEmotionName() /*SelectedActor->GetActorLabel()*/));
+	
+	if (SelectedActor->IsA(AICC_Player::StaticClass()))
+	{
+		TargetNameText->SetText(FText::FromString(Cast<AICC_Player>(SelectedActor)->GetCharacterName()));
+		TargetText->SetText(FText::FromString(FString(TEXT("Target: ")) 
+			+ Cast<AICC_Player>(SelectedActor)->GetCharacterName()));
+	}
+	else
+	{
+		TargetNameText->SetText(FText::FromString(Cast<AMob>(SelectedActor)->GetEmotionName()));
+		TargetText->SetText(FText::FromString(FString(TEXT("Target: ")) 
+			+ Cast<AMob>(SelectedActor)->GetEmotionName()));
+	}
 	
 	if (!bBulletSetupFinished)
 	{
@@ -1026,10 +1036,10 @@ void UBattleHUD::PrepareToEngage()
 {
 	bIsEvFirst = false;
 	AMob* SelectedEnemy = Cast<AMob>(BattleHandler->GetTurnBasedSystem()->GetTurn().Queue[CurrentEnemyIndex]);
-	checkf(SelectedEnemy, TEXT("SelectedEnemy is null at UBattleHUD::Engage"));
+	
 	SelectedActorTarget = SelectedEnemy;
 	
-	FDamage DummyDamage(CurrentBulletData, GameInstance->GetPlayerStats(),
+	const FDamage DummyDamage(CurrentBulletData, GameInstance->GetPlayerStats(),
 	                    Cast<AMob>(SelectedActorTarget)->GetTactics(),
 	                    Cast<AMob>(SelectedActorTarget)->GetData(), Cast<AMob>(SelectedActorTarget)->GetStats() ,GameInstance->GetCurrentPlayer() ,GameInstance);
 
@@ -1039,7 +1049,7 @@ void UBattleHUD::PrepareToEngage()
 	DebugHelper::LogMessage(3, FColor::White, "Targeting " + SelectedEnemy->GetEmotionName());
 	DebugHelper::AddMessageToLog(
 		"[BattleHUD]: Targeting " + SelectedEnemy->GetEmotionName() + " using " + CurrentBulletData->BulletName);
-	checkf(MinigameHandler, TEXT("Minigame handler is null at UBattleHUD::Engage"));
+	
 	MinigameHandler->StartMinigame(CurrentBulletData,true);
 	EngageBtn->SetVisibility(ESlateVisibility::Hidden);
 	BackBtn->SetVisibility(ESlateVisibility::Hidden);
@@ -1134,6 +1144,48 @@ void UBattleHUD::PrepareToEngageEv(const EDebuffStatus& StatusToDebuff)
 	RefreshPistolMagazine();
 	UpdateAp();
 	EnableButtonsAfterShooting();
+}
+
+bool UBattleHUD::IsShootingEv() const
+{
+	if (!GetCurrentBulletData()) return false;
+	
+	EBulletType Type = GetCurrentBulletData()->Type;
+	
+	if (Type == EBulletType::JoyEv ||
+				Type == EBulletType::AngerEv ||
+				Type == EBulletType::JealousyEv ||
+				Type == EBulletType::SadnessEv ||
+				Type == EBulletType::CalmEV ||
+				Type == EBulletType::FearEV)
+	{
+		return true;
+	}
+	
+	return false;
+}
+
+void UBattleHUD::UpdateTargetDisplay(AICC_Actor* Target)
+{
+	if (!Target)
+	{
+		return;
+	}
+
+	if (const AICC_Player* PlayerTarget = Cast<AICC_Player>(Target))
+	{
+		const FString Name = PlayerTarget->GetCharacterName();
+
+		TargetNameText->SetText(FText::FromString(Name));
+		TargetText->SetText(FText::FromString(TEXT("Target: ") + Name));
+	}
+	else if (const AMob* MobTarget = Cast<AMob>(Target))
+	{
+		const FString Name = MobTarget->GetEmotionName();
+
+		TargetNameText->SetText(FText::FromString(Name));
+		TargetText->SetText(FText::FromString(TEXT("Target: ") + Name));
+	}
 }
 
 void UBattleHUD::MoveFocusOn(const float& Value)

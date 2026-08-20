@@ -31,17 +31,34 @@ void ACameraHallway::BeginPlay()
 
 void ACameraHallway::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!Player || OtherActor != Player || bPlayerOverlapped)
+	if (!OtherActor)
+		return;
+
+	if (!Player)
 	{
 		Player = Cast<UICantCryGameInstance>(GetGameInstance())->GetCurrentPlayer();
 	}
+
+	if (OtherActor != Player)return;
+	if (bPlayerOverlapped || bTransitioning) return;
 	
 	bPlayerOverlapped = true;
 	
 	if (bSnap)
 	{
+		bTransitioning = true;
 		Snap();
 		ToggleRoom(RoomId);
+
+		GetWorldTimerManager().SetTimer(
+			TransitionTimerHandle,
+			[this]()
+			{
+				bTransitioning = false;
+			},
+			0.18f,
+			false
+		);
 	}
 	else
 	{
@@ -90,7 +107,16 @@ void ACameraHallway::Snap()
 {
 	if (!Player || !Player->GetWorldCamera()) return;
 	
-	Counter = Player->GetWorldCameraCounter();
+	if (bRememberCounter)
+	{
+		Counter = CachedCounter;
+	}
+	else
+	{
+		Counter = Player->GetWorldCameraCounter();
+	}
+	
+	// Counter = Player->GetWorldCameraCounter();
 	AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
 	
 	if (Counter == 0)
@@ -111,10 +137,27 @@ void ACameraHallway::Snap()
 
 		if (bPlayerMustTeleport && InEntry.IsValid())
 		{
-			Player->SetActorLocationAndRotation(InEntry->GetActorLocation(), InEntry->GetActorRotation());
+			const FVector TargetLocation = InEntry->GetActorLocation();
+			const FRotator TargetRotation = InEntry->GetActorRotation();
+
+			Player->SetActorLocationAndRotation(
+				TargetLocation,
+				TargetRotation,
+				false,
+				nullptr,
+				ETeleportType::TeleportPhysics
+			);
+			
+			//Player->SetActorLocationAndRotation(InEntry->GetActorLocation(), InEntry->GetActorRotation());
 		}
 		
 		Player->SetWorldCameraCounter(1);
+		
+		if (bRememberCounter)
+		{
+			CachedCounter = 1;
+		}
+	
 	}
 	
 	else if (Counter == 1)
@@ -138,28 +181,32 @@ void ACameraHallway::Snap()
 		}
 		
 		Player->SetWorldCameraCounter(0);
+		
+		
+		if (bRememberCounter)
+		{
+			CachedCounter = 0;
+		}
 	}
 }
 
 void ACameraHallway::ToggleRoom(const FName& RoomTag)
 {
 	if (!RoomHandler) return;
-	
+
 	AActor* TargetRoom = nullptr;
-	
+
 	for (AActor* Room : RoomHandler->GetRooms())
 	{
 		if (!Room) continue;
-		
+
 		if (Room->ActorHasTag(RoomTag))
 		{
 			TargetRoom = Room;
-			DebugHelper::LogMessage(5, FColor::White, "Found Target Room" + 
-				TargetRoom->GetName());
 			break;
 		}
 	}
-	
+
 	if (TargetRoom)
 	{
 		RoomHandler->OnRoomChanged.Broadcast(TargetRoom);

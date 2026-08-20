@@ -31,7 +31,24 @@ void UIccAnimationDealer::TickComponent(float DeltaTime, ELevelTick TickType,
 	const float CurrentSpeed = Velocity.Size();
 	const float MaxSpeed = MoveCmp->GetMaxSpeed();
 	
-	const float TargetBlending = (MaxSpeed > 0.0f) ? FMath::Clamp(CurrentSpeed / MaxSpeed, 0.0f, 1.0f) : 0.0f;
+	float TargetBlending = 0.0f;
+
+	if (MaxSpeed > 0.0f)
+	{
+		if (Owner->IsSprinting())
+		{
+			TargetBlending = 1.0f;
+		}
+		else
+		{
+			TargetBlending = FMath::Clamp(
+				CurrentSpeed / MaxSpeed,
+				0.0f,
+				0.5f
+			);
+		}
+	}
+	
 	constexpr float InterpSpeed = 10.0f;
 	
 	AnimationInstance->LocomotionBlending = FMath::FInterpTo(

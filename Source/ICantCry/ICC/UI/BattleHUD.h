@@ -392,6 +392,9 @@ private:
 	void PrepareToEngageEv(const EBuffStatus& BuffToReceive);
 	void PrepareToEngageEv(const EAfflictedStatus& StatusToInflict);
 	void PrepareToEngageEv(const EDebuffStatus& StatusToDebuff);
+	
+	bool IsShootingEv() const;
+	void UpdateTargetDisplay(AICC_Actor* Target);
 
 	/**
 	 *-----------------------------

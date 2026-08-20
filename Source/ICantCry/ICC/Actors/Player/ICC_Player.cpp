@@ -77,7 +77,7 @@ AICC_Player::AICC_Player()
 void AICC_Player::BeginPlay()
 {
 	Super::BeginPlay();
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = CurrentMaxSpeed;
 	OldSpeed = GetCharacterMovement()->MaxWalkSpeed;
 	
 	InGameMenu = CreateWidget<UInGameMenu>(GetWorld(), InGameMenuClass);
@@ -144,13 +144,16 @@ void AICC_Player::BeginPlay()
 // Called every frame
 void AICC_Player::Tick(float DeltaTime)
 {
+
+	Super::Tick(DeltaTime);
+
 	if (!IsAlive())
 	{
 		return;
 	}
-
-	Super::Tick(DeltaTime);
-
+	
+	GetCharacterMovement()->MaxWalkSpeed = CurrentMaxSpeed;
+	
 	// Step counting system 
 	const FVector CurrentLocation = GetActorLocation();
 	const float CurrentSpeed = GetVelocity().Size();
@@ -400,23 +403,18 @@ void AICC_Player::Input_Move(const FInputActionValue& InputActionValue)
 		return;
 	}
 	
-	
-
 	const FVector2D MovementVector = InputActionValue.Get<FVector2D>();
-
-	const float DeadZone = 0.2f;
-
-	if (Controller && MovementVector.Size() > DeadZone) // Controller && (MovementVector.SizeSquared() > 0.0f)
+	CurrentMaxSpeed = WalkSpeed;
+	
+	if (constexpr float DeadZone = 0.2f;
+		Controller && MovementVector.Size() > DeadZone) // Controller && (MovementVector.SizeSquared() > 0.0f)
 	{
-		// Trova la direzione Forward basata sulla rotazione della telecamera (Control Rotation)
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0.f, Rotation.Yaw, 0.f);
-
-		// Calcola i vettori di direzione corretti nello spazio del mondo
+		
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-		// Applica l'input direttamente senza passare dal Tick
+		
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
 	}
@@ -432,11 +430,7 @@ void AICC_Player::Input_Run(const FInputActionValue& InputActionValue)
 	}
 	
 	const bool Pressed = InputActionValue.Get<bool>();
-	
-	if (Pressed)
-	{
-		GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
-	}
+	CurrentMaxSpeed = RunSpeed;
 }
 
 void AICC_Player::Input_Minigame(const FInputActionValue& InputActionValue)

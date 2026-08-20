@@ -91,12 +91,24 @@ private:
 	
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))
 	bool bEnableWorldCameraOnExit;
+
+	/**
+	 * Remember the counter without resetting it to avoid specific issues 
+	 */
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly,  Category = "Traveler" ,meta=(AllowPrivateAccess = "true"))
+	bool bRememberCounter = false;
 	
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))
 	float CameraBlendSpeed = 0.5f;
 	
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Traveler", meta = (AllowPrivateAccess = "true"))
 	FName RoomId;
+	
+	UPROPERTY() int32 CachedCounter;
+	
+	UPROPERTY() bool bTransitioning = false; // For room toggling
+	
+	FTimerHandle TransitionTimerHandle;
 
 	void Snap();
 	
