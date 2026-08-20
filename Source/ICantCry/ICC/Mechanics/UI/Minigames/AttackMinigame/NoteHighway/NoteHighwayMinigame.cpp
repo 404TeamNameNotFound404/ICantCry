@@ -64,7 +64,7 @@ void UNoteHighwayMinigame::Simulate(const ESpawnableHighwayBtn& Target)
 	if (Distance <= PerfectWindow)
 	{
 		TargetNote->bHit = true;
-		Score = FMath::Min(Score + 0.25f, 1.5f);
+		Score = FMath::Min(Score + 0.20f, 1.5f);
         
 		const FString IconKey = DebugHelper::IsGamepadPlugged() ? TEXT("OPad_") : TEXT("OKey_");
 		if (UTexture2D** FoundTexture = Icons.Find(FName(*(IconKey + GetNoteName(Target)))))
@@ -78,7 +78,7 @@ void UNoteHighwayMinigame::Simulate(const ESpawnableHighwayBtn& Target)
 	else if (NoteX > SliderX && Distance <= EarlyPenalizeWindow)
 	{
 		TargetNote->bHit = true; 
-		Score = FMath::Max(Score - 0.15f, 0.0f); 
+		//Score = FMath::Max(Score - 0.15f, 0.0f); 
 		TargetNote->CachedSelf->SetColorAndOpacity(FLinearColor::Red);
        
 		DebugHelper::LogWarning("Hit too early!");
@@ -87,7 +87,7 @@ void UNoteHighwayMinigame::Simulate(const ESpawnableHighwayBtn& Target)
 	else 
 	{
 		TargetNote->bHit = true; 
-		Score = FMath::Max(Score - 0.25f, 0.0f);
+		//Score = FMath::Max(Score - 0.25f, 0.0f);
 		TargetNote->CachedSelf->SetColorAndOpacity(FLinearColor::Red);
        
 		DebugHelper::LogError("Spam press / Missed completely!");
