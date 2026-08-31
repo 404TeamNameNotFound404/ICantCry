@@ -130,7 +130,7 @@ void UAttackMinigame::HandleScore()
 
 		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
-		Instance->GetPlayerStats()->RuntimeStats.ApModifier = 0;
+		Instance->GetPlayerStats()->RuntimeStats.ApModifier = 1;
 		break;
 	case EMinigameThreshold::Good:
 		DebugHelper::LogWarning("Good minigame score!");
@@ -147,7 +147,7 @@ void UAttackMinigame::HandleScore()
 		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
 
-		Instance->GetPlayerStats()->RuntimeStats.ApModifier = 0;
+		Instance->GetPlayerStats()->RuntimeStats.ApModifier = 1;
 		break;
 	case EMinigameThreshold::Perfect:
 		DebugHelper::LogSuccess("Perfect minigame score!");
@@ -163,7 +163,7 @@ void UAttackMinigame::HandleScore()
 
 		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
-		Instance->GetPlayerStats()->RuntimeStats.ApModifier = 0;
+		Instance->GetPlayerStats()->RuntimeStats.ApModifier = 1;
 		break;
 	}
 }

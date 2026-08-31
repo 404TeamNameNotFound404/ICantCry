@@ -84,6 +84,7 @@ void UAngerAtkMinigame::HandleScore()
 			Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 			Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
+			Instance->GetPlayerStats()->RuntimeStats.ApModifier = 1;
 		}break;
 	case Good:
 		{
@@ -91,6 +92,7 @@ void UAngerAtkMinigame::HandleScore()
 			Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 			Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
+			Instance->GetPlayerStats()->RuntimeStats.ApModifier = 1;
 		}break;
 	case Perfect:
 		{
@@ -98,6 +100,7 @@ void UAngerAtkMinigame::HandleScore()
 			Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 			Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
+			Instance->GetPlayerStats()->RuntimeStats.ApModifier = 1;
 		
 			DebugHelper::LogMessage(9, FColor::Black, "Perfect anger minigame score");
 		}break;

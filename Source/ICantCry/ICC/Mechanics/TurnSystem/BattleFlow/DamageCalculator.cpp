@@ -89,11 +89,12 @@ int FDamage::CalculateDamage(const bool& IsPlayerAttacking)
 		
 		AMob* Emotion = Cast<AMob>(Self);
 		
-		const float AIDamageResult = ((((AIMoves->MovePower / (2 - AIMoves->MinigamePower)) * (EmotionStats.AtkPower / RuntimeStats.DefencePower))) * AIMoves->ActionPointsModifier * AIMoves->WeaknessModifier) * RuntimeStats.MinigameModifier;
+		const float AIDamageResult = ((((Emotion->GetTactics()->MovePower / (2 - Emotion->GetTactics()->MinigamePower)) * (Emotion->GetStats().AtkPower / RuntimeStats.DefencePower))) * Emotion->GetTactics()->ActionPointsModifier * Emotion->GetTactics()->WeaknessModifier) * RuntimeStats.MinigameModifier;
 		const int RoundedResult = FMath::RoundToInt(AIDamageResult);
 		Emotion->GetStats().DbgDamageDealt = RoundedResult;
 		
-		DebugHelper::LogMessage(3, FColor::FromHex("433878"), "Damage dealt -> " + FString::SanitizeFloat(RoundedResult));
+		DebugHelper::LogMessage(3, FColor::FromHex("433878"), "Damage dealt -> " + FString::SanitizeFloat(RoundedResult) 
+			+ " by " + Emotion->GetEmotionName());
 
 		DebugHelper::AddMessageToLog("[DamageMath]: Doing math under requests of " + Emotion->GetEmotionName());
 		DebugHelper::AddMessageToLog("[DamageMath]: AI To Player Formula is -> ( " +FString::SanitizeFloat(AIMoves->MovePower)  + ") / (2 - " + FString::SanitizeFloat(AIMoves->MinigamePower) +
