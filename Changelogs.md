@@ -32,11 +32,27 @@
 3. Sistemato a livello di display testuale nel computer di battaglia i vari target aggiustando il player perche prima compariva solo le emozioni ora a seconda del target si aggiorna correttamente
 
 
+# 20/08/26
+1. Fix del crash in retry - ho provato una decina di volte e è andato tutto liscio quindi molto probabilmente si puo chiudere.
+2. Aggiunte le collisioni alle parti vuote in MaxHouse, la blueprint si chiama *'BP_BlankCollision'* che trovate in **'/Content/ICC/BluePrints/Actors/Utils'** e puo essere usata come collisione vuota su tutte le mappe che hanno voragini , potete cambiare estensione della box collision come volete.
+
+-- mi sono preso qualche giorno di riposo --
+
+# 31/08/26
+1. Ho rivisto i valori di ap modifiers e mi ero accorto che avevo fatto un blind copy-paste con i valori tutti a 0 ovviamente
+   ha sminchiato il sistema di ap, dovrebbe adesso funzionare correttamente
+2. Seguendo il punto 1 ho fatto un altra tab sul debugger (vi ricordo che dovete premere C e poi Ctr + C per avere il focus e cambiare tabs e poi ripremere da capo la stessa combinazione per ridare il focus a unreal) chiamata Ap flows che mostra in tempo reale current Ap e ap modifiers
+3. Fixato anche anger e in generale qualsiasi buff atk di ogni emozione , adesso prende correttamente il parametro buffato. 
+
+> **_NOTA:_**: **non seguite troppo fedelmente i log perche vengono chiamati in update e spesso potrebbero anche stampare cose non loro , usate il debugger come source of truth che quello non mente**
+
+
 # Bugs Gravi
-1. Il room toggler che fa falso contatto se si corre  
+1. ~~Il room toggler che fa falso contatto se si corre~~ -corretto da voi tunando la walk speed e max speed-
+2. Se il retry button sostanzialmente funziona solo a me è un problema e rischia di rompere tutto
 
 # Bugs Intermedi
-- Nessuno
+1. durante la selezione di EV il target nel display rimane enemy corrente e questo mi da fastidio oltre a essere molto 'misleading' pero il target rimangono corretti.
 
 # Bugs Minori
 1. Nel curling minigame manca ancora il posizionamento della palla in maniera speculare se si tocca con la barra la parte alta degli scaglioni

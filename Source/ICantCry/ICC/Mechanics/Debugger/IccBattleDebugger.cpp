@@ -6,6 +6,7 @@
 #include "imgui.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
+#include "ICantCry/ICC/UI/BattleHUD.h"
 
 // Sets default values
 AIccBattleDebugger::AIccBattleDebugger()
@@ -79,6 +80,12 @@ void AIccBattleDebugger::BeginPlay()
 	Super::BeginPlay();
 
 	GameInstance = Cast<UICantCryGameInstance>(GetGameInstance());
+	
+	GetWorld()->GetTimerManager().SetTimerForNextTick([&]
+	{
+		RefHud = GameInstance->GetCurrentPlayer()->GetBattleHUD();
+	});
+	
 	bDisplay = false;
 }
 
@@ -129,6 +136,7 @@ void AIccBattleDebugger::DisplayDebuggerData()
 		DisplayStats();
 		DisplayDecisionTables();
 		DisplayTrackers();
+		DisplayApFlows();
 
 		ImGui::EndTabBar();
 	}
@@ -330,6 +338,28 @@ void AIccBattleDebugger::DisplayTrackers()
 			ImGui::EndTable();
 		}
 
+		ImGui::EndTabItem();
+	}
+}
+
+void AIccBattleDebugger::DisplayApFlows()
+{
+	if (ImGui::BeginTabItem("Ap System"))
+	{
+		ImGui::Text("Ap Flows");
+		ImGui::Separator();
+		
+		ImGui::TextColored(Grey, "Current Ap: ");
+		ImGui::SameLine();
+		ImGui::TextColored(Green, "%d", RefHud->GetAPBar()->GetCurrentAP());
+		
+		ImGui::Dummy({0, 2});
+		
+		ImGui::TextColored(Grey,"Ap Modifier: ");
+		ImGui::SameLine();
+		ImGui::TextColored(Yellow, "%.f", GameInstance->GetRuntimeStats().ApModifier);
+		
+		
 		ImGui::EndTabItem();
 	}
 }

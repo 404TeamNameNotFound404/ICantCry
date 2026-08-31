@@ -50,6 +50,7 @@ void FBattleMemory::ResetEmotionsStats()
 	
 	for (AICC_Actor* Actor : LastStoredQueue)
 	{
+		if (!IsValid(Actor)) continue;
 		if (Actor->IsA(AICC_Player::StaticClass())) continue;
 		
 		AMob* Emotion = Cast<AMob>(Actor);

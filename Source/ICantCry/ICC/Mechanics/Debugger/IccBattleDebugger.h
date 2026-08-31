@@ -8,6 +8,7 @@
 #include "IccBattleDebugger.generated.h"
 
 class UICantCryGameInstance;
+class UBattleHUD;
 
 UCLASS(Blueprintable)
 class ICANTCRY_API AIccBattleDebugger : public AActor
@@ -34,6 +35,7 @@ public:
 private:
 	
 	UPROPERTY() UICantCryGameInstance* GameInstance;
+	UPROPERTY() UBattleHUD* RefHud;
 	
 	UPROPERTY() TArray<FIccBattleDebuggerData> Infos;
 	UPROPERTY() TArray<FIccDebuggerDecisionData> Decisions;
@@ -45,4 +47,5 @@ private:
 	void DisplayStats();
 	void DisplayDecisionTables();
 	void DisplayTrackers();
+	void DisplayApFlows();
 };

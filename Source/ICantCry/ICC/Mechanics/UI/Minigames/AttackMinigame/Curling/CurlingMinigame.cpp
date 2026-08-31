@@ -68,7 +68,7 @@ void UCurlingMinigame::HandleScore()
 			Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 			DebugHelper::LogMessage(9, FColor::Black, "Miss curling minigame score");
-			Instance->GetPlayerStats()->RuntimeStats.ApModifier = 0;
+			Instance->GetPlayerStats()->RuntimeStats.ApModifier = 1;
 		}
 		break;
 	case Bad:
@@ -79,7 +79,7 @@ void UCurlingMinigame::HandleScore()
 			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 			
 			DebugHelper::LogMessage(9, FColor::Black, "Not Bad curling minigame score");
-			Instance->GetPlayerStats()->RuntimeStats.ApModifier = 0;
+			Instance->GetPlayerStats()->RuntimeStats.ApModifier = 1;
 			break;
 		}
 	case Good:
@@ -90,7 +90,7 @@ void UCurlingMinigame::HandleScore()
 			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 			
 			DebugHelper::LogMessage(9, FColor::Black, "Good curling minigame score");
-			Instance->GetPlayerStats()->RuntimeStats.ApModifier = 0;
+			Instance->GetPlayerStats()->RuntimeStats.ApModifier = 1;
 			break;
 		}
 		
@@ -101,7 +101,7 @@ void UCurlingMinigame::HandleScore()
 			Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 			DebugHelper::LogMessage(9, FColor::Black, "Perfect curling minigame score");
-			Instance->GetPlayerStats()->RuntimeStats.ApModifier = 0;
+			Instance->GetPlayerStats()->RuntimeStats.ApModifier = 1;
 			break;
 		}
 	}
