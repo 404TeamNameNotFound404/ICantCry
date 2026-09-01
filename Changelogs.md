@@ -47,6 +47,11 @@
 > **_NOTA:_**: **non seguite troppo fedelmente i log perche vengono chiamati in update e spesso potrebbero anche stampare cose non loro , usate il debugger come source of truth che quello non mente**
 
 
+# 1/09/26
+1. Fix del crash di buff atk , ho controllato buff def e quello funziona perche avevo messo il nuovo controllo ma mi ero scordato a metterlo nel buff atk. 
+2. Fix del animazione run che si avvia anche da fermo premendo shift 
+
+
 # Bugs Gravi
 1. ~~Il room toggler che fa falso contatto se si corre~~ -corretto da voi tunando la walk speed e max speed-
 2. Se il retry button sostanzialmente funziona solo a me è un problema e rischia di rompere tutto

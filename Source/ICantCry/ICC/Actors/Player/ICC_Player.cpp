@@ -649,7 +649,7 @@ int32 AICC_Player::GetStepCounter() const
 
 bool AICC_Player::IsSprinting() const
 {
-    return GetCharacterMovement()->MaxWalkSpeed == RunSpeed;
+    return GetCharacterMovement()->MaxWalkSpeed == RunSpeed && GetVelocity().SizeSquared2D() > 0.0f;
 }
 
 void AICC_Player::ResetStepCounter()
