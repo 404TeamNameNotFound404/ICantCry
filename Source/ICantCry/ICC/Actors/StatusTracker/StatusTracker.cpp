@@ -1587,7 +1587,7 @@ void UStatusTracker::ExpireBuff(const EBuffStatus& ExpiredTarget)
 			DebugHelper::AddMessageToLog("[Status Tracker]: Buff ended def returns to " + FString::SanitizeFloat(Instance->GetRuntimeStats().DefencePower));
 			bIsOwnerAlreadyBuffed = false;
 			bCanDebuff = true;
-			Target->ActiveAuras[ExpiredTarget]->Deactivate();
+			Player->GetBattleHUD()->GetBattleHandler()->DeactivateAura(Player, ExpiredTarget);
 			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura(Target, ExpiredTarget);
 		}
 		if (Target->IsA(AMob::StaticClass()))
