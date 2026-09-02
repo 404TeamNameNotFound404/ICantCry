@@ -52,6 +52,19 @@
 2. Fix del animazione run che si avvia anche da fermo premendo shift 
 
 
+# 2/09/26
+Aggiunti i seguenti parametri al AngerAtkMinigame:
+- **SmashRate**: sarebbe l'impulso con cui smasha e scende subito da non confondere con decreaseSpeed che è la velocita di decremento. 
+- **IncreaseSpeed**: nome abbastanza esplicativo. 
+
+Questa implementata in data odierna consideratela una falsa alpha perche di base il funzionamento è un button smasher ma va tunato da voi pero se c'è qualcosa che non va scrivetemelo in board. 
+Vi spiego come funzionano i settaggi:
+
+- *IncreaseSpeed* deve essere un valore che mediamente **deve** oscillare tra 0.5 e **mai** sopra il **2.0**
+- *DecreaseSpeed* deve essere un valore molto inferiore al Increase perche se mettete li stessi valori o mettete un valore piu alto di IncreaseSpeed si annullano a vicenda quindi il range ideale sarebbe tra ** 0.1 e non oltre 1.1 **
+- *SmashRate* questo è piu particolare , è impulso dello smash , questo è un valore che non deve superare **categoricamente 1.0**
+
+
 # Bugs Gravi
 1. ~~Il room toggler che fa falso contatto se si corre~~ -corretto da voi tunando la walk speed e max speed-
 2. Se il retry button sostanzialmente funziona solo a me è un problema e rischia di rompere tutto
