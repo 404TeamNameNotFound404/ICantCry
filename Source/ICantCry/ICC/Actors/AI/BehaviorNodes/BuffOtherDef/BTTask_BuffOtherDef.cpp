@@ -35,20 +35,20 @@ EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& Ow
 	{
 		if (Current->GetMobType() == EMobType::MobFear)
 		{
-			DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: this mf " + Current->GetActorLabel() + " is a forever alone so its gonna buff it's def");
+			DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: this mf " + Current->GetEmotionName() + " is a forever alone so its gonna buff it's def");
 			BlackBoard->SetValueAsBool("IsDefenceBuffed?", true);
 			return EBTNodeResult::Succeeded;
 		}
 		
 		else if (Current->GetMobType() == EMobType::MobCalm)
 		{
-			DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: this mf " + Current->GetActorLabel() + " is a forever alone so its gonna buff it's def");
+			DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: this mf " + Current->GetEmotionName() + " is a forever alone so its gonna buff it's def");
 			BlackBoard->SetValueAsBool("IsDefenceBuffed?", true);
 			return EBTNodeResult::Succeeded;
 		}
 		
 		BlackBoard->SetValueAsBool("Rethinker", true);
-		DebugHelper::AddMessageToLog(Current->GetActorLabel() + " attempted to buff other def but it's alone! , rethink the action");
+		DebugHelper::AddMessageToLog(Current->GetEmotionName() + " attempted to buff other def but it's alone! , rethink the action");
 		return EBTNodeResult::Succeeded;
 	}
 
@@ -58,20 +58,20 @@ EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& Ow
 	{
 		if (Current->GetMobType() == EMobType::MobFear)
 		{
-			DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: this mf " + Current->GetActorLabel() + " is a forever alone so its gonna buff it's def");
+			DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: this mf " + Current->GetEmotionName() + " is a forever alone so its gonna buff it's def");
 			BlackBoard->SetValueAsBool("IsDefenceBuffed?", true);
 			return EBTNodeResult::Succeeded;
 		}
 		
 		else if (Current->GetMobType() == EMobType::MobCalm)
 		{
-			DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: this mf " + Current->GetActorLabel() + " is a forever alone so its gonna buff it's def");
+			DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: this mf " + Current->GetEmotionName() + " is a forever alone so its gonna buff it's def");
 			BlackBoard->SetValueAsBool("IsDefenceBuffed?", true);
 			return EBTNodeResult::Succeeded;
 		}
 		
 		BlackBoard->SetValueAsBool("Rethinker", true);
-		DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: " + Current->GetActorLabel() + " attempted to buff other def but it didn't find a valid target (scrivetemelo se entra qua dentro)! , rethinking the action");
+		DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: " + Current->GetEmotionName() + " attempted to buff other def but it didn't find a valid target (scrivetemelo se entra qua dentro)! , rethinking the action");
 		return EBTNodeResult::Succeeded;
 	}
 	
@@ -79,12 +79,12 @@ EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& Ow
 	TargetToBuff->GetStatusTracker()->BuffWith(EBuffStatus::DefBuff);
 	
 
-	DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: " + Current->GetActorLabel() + " buffed " + TargetToBuff->GetActorLabel() + " def");
+	DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: " + Current->GetEmotionName() + " buffed " + TargetToBuff->GetActorLabel() + " def");
 
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 
 	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
-	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetActorLabel() + " buffs " + TargetToBuff->GetActorLabel() + " def"));
+	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetEmotionName() + " buffs " + TargetToBuff->GetActorLabel() + " def"));
 	
 	return EBTNodeResult::InProgress;
 }
@@ -109,8 +109,8 @@ void UBTTask_BuffOtherDef::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* No
 
 	if (Current != Current->GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
-		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetActorLabel() + "'s turn yet (buff def task)");
-		DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: It's not " + Current->GetActorLabel() + "'s turn yet (buff def task)");
+		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetEmotionName() + "'s turn yet (buff def task)");
+		DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: It's not " + Current->GetEmotionName() + "'s turn yet (buff def task)");
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}

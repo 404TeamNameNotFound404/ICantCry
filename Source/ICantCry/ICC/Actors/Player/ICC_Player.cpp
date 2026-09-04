@@ -55,12 +55,13 @@ AICC_Player::AICC_Player()
 	Camera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	Camera->bUsePawnControlRotation = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 190.0f, 0.0f);
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 400.0f, 0.0f); // 190 y
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.0f;
 
 	MinigameHandler = nullptr;
 
 	PadBinder = CreateDefaultSubobject<UICC_GamepadBinder>(TEXT("GamepadBinder"));
+	AnimationDealer = CreateDefaultSubobject<UIccAnimationDealer>(TEXT("AnimationDealer"));
 	
 	WidgetInteractionComp = CreateDefaultSubobject<UWidgetInteractionComponent>(TEXT("WidgetInteractionComp"));
 	if (WidgetInteractionComp)
@@ -76,7 +77,7 @@ AICC_Player::AICC_Player()
 void AICC_Player::BeginPlay()
 {
 	Super::BeginPlay();
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = CurrentMaxSpeed;
 	OldSpeed = GetCharacterMovement()->MaxWalkSpeed;
 	
 	InGameMenu = CreateWidget<UInGameMenu>(GetWorld(), InGameMenuClass);
@@ -143,13 +144,16 @@ void AICC_Player::BeginPlay()
 // Called every frame
 void AICC_Player::Tick(float DeltaTime)
 {
+
+	Super::Tick(DeltaTime);
+
 	if (!IsAlive())
 	{
 		return;
 	}
-
-	Super::Tick(DeltaTime);
-
+	
+	GetCharacterMovement()->MaxWalkSpeed = CurrentMaxSpeed;
+	
 	// Step counting system 
 	const FVector CurrentLocation = GetActorLocation();
 	const float CurrentSpeed = GetVelocity().Size();
@@ -234,6 +238,8 @@ void AICC_Player::Tick(float DeltaTime)
 		CurrentInteractableDistance = Distance;
 
 	}
+	
+	AnimationDealer->SetInFight(bIsInFight);
 
 	// // Aggiorna sempre la posizione precedente
 	// PreviousLocation = CurrentLocation;
@@ -397,23 +403,18 @@ void AICC_Player::Input_Move(const FInputActionValue& InputActionValue)
 		return;
 	}
 	
-	
-
 	const FVector2D MovementVector = InputActionValue.Get<FVector2D>();
-
-	const float DeadZone = 0.2f;
-
-	if (Controller && MovementVector.Size() > DeadZone) // Controller && (MovementVector.SizeSquared() > 0.0f)
+	CurrentMaxSpeed = WalkSpeed;
+	
+	if (constexpr float DeadZone = 0.2f;
+		Controller && MovementVector.Size() > DeadZone) // Controller && (MovementVector.SizeSquared() > 0.0f)
 	{
-		// Trova la direzione Forward basata sulla rotazione della telecamera (Control Rotation)
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0.f, Rotation.Yaw, 0.f);
-
-		// Calcola i vettori di direzione corretti nello spazio del mondo
+		
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-		// Applica l'input direttamente senza passare dal Tick
+		
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
 	}
@@ -429,11 +430,7 @@ void AICC_Player::Input_Run(const FInputActionValue& InputActionValue)
 	}
 	
 	const bool Pressed = InputActionValue.Get<bool>();
-	
-	if (Pressed)
-	{
-		GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
-	}
+	CurrentMaxSpeed = RunSpeed;
 }
 
 void AICC_Player::Input_Minigame(const FInputActionValue& InputActionValue)
@@ -652,7 +649,7 @@ int32 AICC_Player::GetStepCounter() const
 
 bool AICC_Player::IsSprinting() const
 {
-    return GetCharacterMovement()->MaxWalkSpeed == RunSpeed;
+    return GetCharacterMovement()->MaxWalkSpeed == RunSpeed && GetVelocity().SizeSquared2D() > 0.0f;
 }
 
 void AICC_Player::ResetStepCounter()
@@ -906,6 +903,11 @@ UICC_EnhancedInputCmp* AICC_Player::GetInputBinder()
 	return LastChecked;
 }
 
+UIccAnimationDealer* AICC_Player::GetAnimationDealer()
+{
+	return AnimationDealer;
+}
+
 void AICC_Player::Input_ChallengeReleaseInteraction(const FInputActionValue& InputActionValue)
 {
 	if (AChallengeMinigame::Singleton)
@@ -986,6 +988,11 @@ void AICC_Player::SpawnBark(UDialogueAsset* BarkToPlay)
 UICC_InputDataAsset* AICC_Player::GetInputDataAsset() const
 {
 	return InputDataAsset;
+}
+
+FString AICC_Player::GetCharacterName() const
+{
+	return CharacterName;
 }
 
 

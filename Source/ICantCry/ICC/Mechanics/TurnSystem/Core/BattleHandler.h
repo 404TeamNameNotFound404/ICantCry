@@ -5,6 +5,7 @@
 #include "ICantCry/ICC/Input/ICC_PlayerController.h"
 #include "ICantCry/ICC/Mechanics/UI/BattleNotifiers/BattleInfo.h"
 #include "ICantCry/ICC/Managers/EnemySpawnManager.h"
+#include "ICantCry/ICC/Mechanics/Debugger/IccBattleDebugger.h"
 #include "BattleHandler.generated.h"
 
 UCLASS(Blueprintable)
@@ -45,10 +46,15 @@ public:
 	void DeactivateDebuffAura(const bool& InDebuffAtk);
 	
 	UBulletData* GetIndifferenceData();
+	
+	void InitDebugger();
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UTurnBasedSystem* TurnBasedSystem;
+	
+	UPROPERTY()
+	AIccBattleDebugger* Debugger;
 
 	/**
 	 * Shoot VFX

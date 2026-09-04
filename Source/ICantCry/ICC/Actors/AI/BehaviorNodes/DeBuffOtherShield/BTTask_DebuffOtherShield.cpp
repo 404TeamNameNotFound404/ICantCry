@@ -39,12 +39,12 @@ EBTNodeResult::Type UBTTask_DebuffOtherShield::ExecuteTask(UBehaviorTreeComponen
 		if (Current->GetMobType() == EMobType::MobCalm)
 		{
 			Blackboard->SetValueAsBool("IsShieldDebuffed?", true);
-			DebugHelper::AddMessageToLog("[BTTask - Debuff Other Shield]: " + Current->GetActorLabel() + " couldn't cast it's shield to other mfs so it's gonna buff it's shield back again");
+			DebugHelper::AddMessageToLog("[BTTask - Debuff Other Shield]: " + Current->GetEmotionName() + " couldn't cast it's shield to other mfs so it's gonna buff it's shield back again");
 			return EBTNodeResult::Succeeded;
 		}
 		
 		Blackboard->SetValueAsBool("Rethinker", true);
-		DebugHelper::AddMessageToLog(Current->GetActorLabel() + " attempted to buff other shield but it's alone! , rethink the action");
+		DebugHelper::AddMessageToLog(Current->GetEmotionName() + " attempted to buff other shield but it's alone! , rethink the action");
 		return EBTNodeResult::Succeeded;
 	}
 	
@@ -55,12 +55,12 @@ EBTNodeResult::Type UBTTask_DebuffOtherShield::ExecuteTask(UBehaviorTreeComponen
 		if (Current->GetMobType() == EMobType::MobCalm)
 		{
 			Blackboard->SetValueAsBool("IsShieldDebuffed?", true);
-			DebugHelper::AddMessageToLog("[BTTask - Debuff Other Shield]: " + Current->GetActorLabel() + " couldn't cast it's shield to other mfs so it's gonna buff it's shield back again");
+			DebugHelper::AddMessageToLog("[BTTask - Debuff Other Shield]: " + Current->GetEmotionName() + " couldn't cast it's shield to other mfs so it's gonna buff it's shield back again");
 			return EBTNodeResult::Succeeded;
 		}
 		
 		Blackboard->SetValueAsBool("Rethinker", true);
-		DebugHelper::AddMessageToLog("[Behavior Tree - DOS]: " + Current->GetActorLabel() + " attempted to buff other def but it didn't find a valid target (scrivetemelo se entra qua dentro)! , rethinking the action");
+		DebugHelper::AddMessageToLog("[Behavior Tree - DOS]: " + Current->GetEmotionName() + " attempted to buff other def but it didn't find a valid target (scrivetemelo se entra qua dentro)! , rethinking the action");
 		return EBTNodeResult::Succeeded;
 	}
 
@@ -69,12 +69,12 @@ EBTNodeResult::Type UBTTask_DebuffOtherShield::ExecuteTask(UBehaviorTreeComponen
 	TargetToBuff->GetStatusTracker()->InflictStatus(EAfflictedStatus::ShieldDebuff, TargetToBuff);
 
 
-	DebugHelper::AddMessageToLog("[Behavior Tree - DOS]: " + Current->GetActorLabel() + " de-buffed " + TargetToBuff->GetActorLabel() + " shield");
+	DebugHelper::AddMessageToLog("[Behavior Tree - DOS]: " + Current->GetEmotionName() + " de-buffed " + TargetToBuff->GetEmotionName() + " shield");
 	
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 
 	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
-	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetActorLabel() + " de-buffed " + TargetToBuff->GetActorLabel() + " shield"));
+	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetEmotionName() + " de-buffed " + TargetToBuff->GetActorLabel() + " shield"));
 	
 	return EBTNodeResult::InProgress;
 }
@@ -99,8 +99,8 @@ void UBTTask_DebuffOtherShield::TickTask(UBehaviorTreeComponent& OwnerComp, uint
 
 	if (Current != Current->GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
-		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
-		DebugHelper::AddMessageToLog("[Behavior Tree - DOS]: It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
+		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetEmotionName() + "'s turn yet (buff task)");
+		DebugHelper::AddMessageToLog("[Behavior Tree - DOS]: It's not " + Current->GetEmotionName() + "'s turn yet (buff task)");
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}

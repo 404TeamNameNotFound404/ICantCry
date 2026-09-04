@@ -75,6 +75,9 @@ private:
 	bool CanRepeat(const EDecision& Decision);
 	
 	UPROPERTY()
+	AMob* CachedCurrent;
+	
+	UPROPERTY()
 	FDecisionWeight CurrentWeights;
 
 };

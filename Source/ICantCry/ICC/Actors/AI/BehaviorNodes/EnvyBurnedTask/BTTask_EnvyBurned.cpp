@@ -31,7 +31,7 @@ EBTNodeResult::Type UBTTask_EnvyBurned::ExecuteTask(UBehaviorTreeComponent& Owne
 	Blackboard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 	
 	AICC_Player* Target = Cast<AICC_Player>(Blackboard->GetValueAsObject("Target"));
-	DebugHelper::AddMessageToLog("[Behavior Tree - EnvyBurned]: " + Target->GetActorLabel() + " in EnvyBurned state!");
+	DebugHelper::AddMessageToLog("[Behavior Tree - EnvyBurned]: " + Target->GetCharacterName() + " in EnvyBurned state!");
 	
 	Target->GetStatusTracker()->MalusFlow(EAfflictedStatus::Burn);
 	Target->GetStatusTracker()->InflictStatus(EAfflictedStatus::Burn, Target);
@@ -39,7 +39,7 @@ EBTNodeResult::Type UBTTask_EnvyBurned::ExecuteTask(UBehaviorTreeComponent& Owne
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 
 	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
-	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Target->GetActorLabel() + " in EnvyBurned state!"));
+	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Target->GetCharacterName() + " in EnvyBurned state!"));
 	
 	return EBTNodeResult::InProgress;
 }
@@ -64,8 +64,8 @@ void UBTTask_EnvyBurned::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Node
 
 	if (Current != Current->GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
-		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
-		DebugHelper::AddMessageToLog("[Behavior Tree - EnvyBurned]: It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
+		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetEmotionName() + "'s turn yet (buff task)");
+		DebugHelper::AddMessageToLog("[Behavior Tree - EnvyBurned]: It's not " + Current->GetEmotionName() + "'s turn yet (buff task)");
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}

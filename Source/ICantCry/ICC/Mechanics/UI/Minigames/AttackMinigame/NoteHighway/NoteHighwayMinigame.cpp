@@ -43,42 +43,57 @@ EMinigameThreshold UNoteHighwayMinigame::CheckBar()
 void UNoteHighwayMinigame::Simulate(const ESpawnableHighwayBtn& Target)
 {
 	FHighwayNote* TargetNote = FindClosestNote(Target);
-    
-	if (!TargetNote) return;
-
-	const float SliderX = Slider->GetTickSpaceGeometry().GetAbsolutePosition().X;
-	const float NoteX = TargetNote->CachedSelf->GetTickSpaceGeometry().GetAbsolutePosition().X;
-	const float Distance = FMath::Abs(SliderX - NoteX);
 	
+	if (!TargetNote) 
+	{
+		DebugHelper::LogWarning("Pressed with no note in range.");
+		return;
+	}
+	
+	const FGeometry& SliderGeo = Slider->GetTickSpaceGeometry();
+	const float SliderX = SliderGeo.GetAbsolutePosition().X + (SliderGeo.GetAbsoluteSize().X * 0.5f);
+
+	const FGeometry& NoteGeo = TargetNote->CachedSelf->GetTickSpaceGeometry();
+	const float NoteX = NoteGeo.GetAbsolutePosition().X + (NoteGeo.GetAbsoluteSize().X * 0.5f);
+
+	const float Distance = FMath::Abs(SliderX - NoteX);
+    
 	const float PerfectWindow = HitTolerance; 
 	const float EarlyPenalizeWindow = HitTolerance * 2.5f; 
-	
+    
 	if (Distance <= PerfectWindow)
 	{
 		TargetNote->bHit = true;
-		Score = FMath::Min(Score + 0.25f, 1.5f);
+		Score = FMath::Min(Score + 0.20f, 1.5f);
         
-		if (UTexture2D** FoundTexture = Icons.Find(FName(*(DebugHelper::IsGamepadPlugged() ? TEXT("OPad_") : TEXT("OKey_") + GetNoteName(Target)))))
+		const FString IconKey = DebugHelper::IsGamepadPlugged() ? TEXT("OPad_") : TEXT("OKey_");
+		if (UTexture2D** FoundTexture = Icons.Find(FName(*(IconKey + GetNoteName(Target)))))
 		{
 			TargetNote->CachedSelf->SetBrushFromTexture(*FoundTexture);
 		}
+       
 		DebugHelper::LogSuccess("Note hit perfectly!");
+		DisplayFeedback(true);
 	}
-	
 	else if (NoteX > SliderX && Distance <= EarlyPenalizeWindow)
 	{
 		TargetNote->bHit = true; 
-		Score = FMath::Max(Score - 0.15f, 0.0f); 
-		//TODO ADD MISS LABEL
+		//Score = FMath::Max(Score - 0.15f, 0.0f); 
 		TargetNote->CachedSelf->SetColorAndOpacity(FLinearColor::Red);
+       
 		DebugHelper::LogWarning("Hit too early!");
+		DisplayFeedback(false);
 	}
 	else 
 	{
-		DebugHelper::LogError("Spam press / Missed completely!");
+		TargetNote->bHit = true; 
+		//Score = FMath::Max(Score - 0.25f, 0.0f);
 		TargetNote->CachedSelf->SetColorAndOpacity(FLinearColor::Red);
-		//TODO ADD MISS LABEL
+       
+		DebugHelper::LogError("Spam press / Missed completely!");
+		DisplayFeedback(false);
 	}
+	
 }
 
 void UNoteHighwayMinigame::NativeConstruct()
@@ -96,6 +111,7 @@ void UNoteHighwayMinigame::NativeConstruct()
 	}
 	
 	DebugHelper::LogMessage(8, FColor::White, "Notes " + FString::FromInt( Notes.Num()));
+	HideFeedback();
 }
 
 void UNoteHighwayMinigame::HandleScore()
@@ -109,7 +125,7 @@ void UNoteHighwayMinigame::HandleScore()
 	Instance->GetCurrentPlayer()->GetBattleHUD()->ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 	Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
-	Instance->GetPlayerStats()->RuntimeStats.ApModifier = 0;
+	Instance->GetPlayerStats()->RuntimeStats.ApModifier = 1;
 }
 
 void UNoteHighwayMinigame::Flow()
@@ -224,25 +240,67 @@ FHighwayNote* UNoteHighwayMinigame::FindClosestNote(const ESpawnableHighwayBtn& 
 {
 	FHighwayNote* ClosestNote = nullptr;
 	float MinDistance = FLT_MAX;
+	
+	const FGeometry& SliderGeo = Slider->GetTickSpaceGeometry();
+	const float SliderCenterX = SliderGeo.GetAbsolutePosition().X + (SliderGeo.GetAbsoluteSize().X * 0.5f);
 
-	const float SliderX = Slider->GetTickSpaceGeometry().GetAbsolutePosition().X;
+	const float MaxSearchDistance = HitTolerance * 3.5f;
 
 	for (FHighwayNote& Note : NotesData)
 	{
-		if (Note.bHit || Note.Row != Type || !Note.CachedSelf)
-			continue;
-
-		const float NoteX = Note.CachedSelf->GetTickSpaceGeometry().GetAbsolutePosition().X;
+		if (Note.bHit || Note.Row != Type || !Note.CachedSelf) continue;
 		
-		if (const float Distance = FMath::Abs(SliderX - NoteX); Distance < MinDistance)
+		const FGeometry& NoteGeo = Note.CachedSelf->GetTickSpaceGeometry();
+		const float NoteCenterX = NoteGeo.GetAbsolutePosition().X + (NoteGeo.GetAbsoluteSize().X * 0.5f);
+		
+		if (const float Distance = FMath::Abs(SliderCenterX - NoteCenterX);
+			Distance <= MaxSearchDistance && Distance < MinDistance)
 		{
 			MinDistance = Distance;
 			ClosestNote = &Note;
 		}
 	}
-
+	
 	return ClosestNote;
 }
+
+void UNoteHighwayMinigame::DisplayFeedback(const bool& bIsNice)
+{
+	
+	if (UTexture2D* TargetTexture = bIsNice ? NiceFeedback : MissFeedback;
+		TargetTexture)
+	{
+		FeedbackImg->SetBrushFromTexture(TargetTexture);
+	}
+	
+	if (UCanvasPanelSlot* FeedbackSlot = Cast<UCanvasPanelSlot>(FeedbackImg->Slot))
+	{
+		if (const UWidget* ParentWidget = FeedbackImg->GetParent())
+		{
+			FeedbackSlot->SetAnchors(FAnchors(0.0f, 0.0f));
+			FeedbackSlot->SetAlignment(FVector2D(0.5f, 0.5f));
+
+			const FGeometry& ParentGeo = ParentWidget->GetTickSpaceGeometry();
+			const FGeometry& SliderGeo = Slider->GetTickSpaceGeometry();
+       
+			const float SliderAbsoluteCenterX = SliderGeo.GetAbsolutePosition().X + (SliderGeo.GetAbsoluteSize().X * 0.5f);
+			const FVector2D LocalPos = ParentGeo.AbsoluteToLocal(FVector2D(SliderAbsoluteCenterX, 0.0f));
+       
+			const float SliderPosY = Slider->GetRenderTransform().Translation.Y;
+			
+			FeedbackSlot->SetPosition(FVector2D(LocalPos.X + FeedbackXOffset, SliderPosY - FeedbackYOffset));
+		}
+	}
+	
+	FeedbackImg->SetVisibility(ESlateVisibility::HitTestInvisible);
+	GetWorld()->GetTimerManager().SetTimer(FeedbackTimer, this, &UNoteHighwayMinigame::HideFeedback, 0.4f, false);
+}
+
+void UNoteHighwayMinigame::HideFeedback()
+{
+	FeedbackImg->SetVisibility(ESlateVisibility::Hidden);
+}
+
 
 FString UNoteHighwayMinigame::GetNoteName(const ESpawnableHighwayBtn& Btn) const
 {

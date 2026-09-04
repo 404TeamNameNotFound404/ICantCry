@@ -120,6 +120,7 @@ void UTurnBasedSystem::Start2(UWorld* World, FBattleMemory* Memory)
 	World->GetTimerManager().SetTimer(DelayHudHandle, [this]()
 	{
 		CurrentPlayer->GetBattleHUD()->ShowHUD();
+		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->InitDebugger();
 	}, 5.f, false);
 	
 	DebugHelper::ClearAllLogs();
@@ -188,8 +189,8 @@ void UTurnBasedSystem::Update(UWorld* World, FBattleMemory* Memory)
 			bAIPlayTurn = true; 
 			AMob* Mob = Cast<AMob>(Turn.Queue[Turn.CurrentTurn]);
 			checkf(Mob, TEXT("Mob invalid at UTurnBasedSystem::Update"))
-			DebugHelper::LogWarning(Mob->GetActorLabel() + " Turn");
-			DebugHelper::AddMessageToLog("[Turn System]: Turn " + FString::FromInt(BattleTurnCounter) + " - " + Mob->GetActorLabel() + " Turn");
+			DebugHelper::LogWarning(Mob->GetEmotionName() + " Turn");
+			DebugHelper::AddMessageToLog("[Turn System]: Turn " + FString::FromInt(BattleTurnCounter) + " - " + Mob->GetEmotionName() + " Turn");
 			AICC_AIController* AIController = Cast<AICC_AIController>(Mob->GetController());
 			CurrentPlayer->GetBattleHUD()->SetCurrentPlayingEmotion(Mob);
 			
@@ -246,7 +247,7 @@ void UTurnBasedSystem::StartNextTurn()
 			CurrentMob = Mob;
 			bIsAiTurn = true;
 			bIsPlayerTurn = false;
-			DebugHelper::AddMessageToLog("[Turn System]: Turn " + FString::FromInt(BattleTurnCounter) + " - " + Mob->GetActorLabel() + "'s turn");
+			DebugHelper::AddMessageToLog("[Turn System]: Turn " + FString::FromInt(BattleTurnCounter) + " - " + Mob->GetEmotionName() + "'s turn");
 		}
 		//otherwise is player playing
 		else
@@ -335,7 +336,7 @@ void UTurnBasedSystem::Flow()
 			Instance->GetCurrentPlayer()->GetBattleHUD()->GetAPBar()->IncreaseAP(1);
 			Instance->GetCurrentPlayer()->GetBattleHUD()->IncreaseAP(1);
 			DebugHelper::LogWarning("Mob removed from queue due to death.");
-			DebugHelper::AddMessageToLog("[Turn System]: " + Mob->GetActorLabel() + " died RIP.");
+			DebugHelper::AddMessageToLog("[Turn System]: " + Mob->GetEmotionName() + " died RIP.");
 			Instance->GetCurrentPlayer()->GetBattleHUD()->ProcessExp(Mob);
 		}
 		
@@ -403,6 +404,7 @@ void UTurnBasedSystem::ExitBattle()
 	bInit = false;
 	bVictory = false;
 	Turn.Queue.Empty();
+	Instance->CachedBattleMemory.ResetEmotionsStats();
 	Instance->CachedBattleMemory.Clear();
 	BattleTurnCounter = 0;
 	
@@ -423,6 +425,7 @@ void UTurnBasedSystem::Reload()
 	bVictory = false;
 	bIsPlayerTurn = false;
 	bIsAiTurn = false;
+	Instance->CachedBattleMemory.ResetEmotionsStats();
 	Instance->GetCurrentPlayer()->GetStatusTracker()->Reset();
 	Instance->GetRuntimeStats().ApModifier = 1;
 	CurrentPlayer->GetRuntimeStats().Reset(Instance->GetPlayerStats()->MaxHealth);

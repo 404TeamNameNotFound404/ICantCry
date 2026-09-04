@@ -33,12 +33,12 @@ void AWorldCamera::BeginPlay()
 	for (TActorIterator<ACameraWaypoint> It(GetWorld()); It; ++It)
 	{
 		Waypoints.Add(*It);
-		DebugHelper::LogMessage(3, FColor::White, "Added: " + It->GetActorLabel());
+		DebugHelper::LogMessage(3, FColor::White, "Added: " + It->GetName());
 	}
 
 	// attempt to sort the array alphabetically
 	Waypoints.Sort([](const ACameraWaypoint& A, const ACameraWaypoint& B) {
-	return A.GetActorLabel() < B.GetActorLabel();});
+	return A.GetName() < B.GetName();});
 
 	
 	if (Waypoints.IsEmpty()) return;
@@ -180,7 +180,7 @@ void AWorldCamera::SnapToFixedWaypoint(ACameraWaypoint* Waypoint)
 	{
 		SetActorLocation(CurrentWaypoint->GetActorLocation() + CurrentWaypoint->GetOffset());
 		SetActorRotation(CurrentWaypoint->GetActorRotation());
-		DebugHelper::LogError("Moving to " + CurrentWaypoint->GetActorLabel());
+		DebugHelper::LogError("Moving to " + CurrentWaypoint->GetName());
 	}
 }
 

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
 #include "ICantCry/ICC/Actors/Bullet/BulletData.h"
+#include "ICantCry/ICC/Actors/EmotionsData/EmotionsData.h"
 #include "ICantCry/ICC/Mechanics/Core/Data/EnemyTactics.h"
 #include "ICantCry/ICC/Mechanics/Core/Data/EnemyDatas.h"
 #include "DamageCalculator.generated.h"
@@ -29,6 +30,9 @@ struct FDamage
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
 	UEnemyDatas* EnemyData = nullptr;
+	
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
+	FEmotionStat EmotionStats;
 
 	UPROPERTY()
 	UICantCryGameInstance* Instance;
@@ -47,6 +51,7 @@ struct FDamage
 	 * @param GI GameInstance
 	 */
 	FDamage(UBulletData* BData, UPlayerStats* PStats, UEnemyTactics* AITactics, UEnemyDatas* EData, AICC_Actor* SelfPtr ,UICantCryGameInstance* GI = nullptr);
+	FDamage(UBulletData* BData, UPlayerStats* PStats, UEnemyTactics* AITactics, UEnemyDatas* EData ,const FEmotionStat& EStats, AICC_Actor* SelfPtr, UICantCryGameInstance* GI = nullptr);
 	int CalculateDamage(const bool& IsPlayerAttacking);
 	
 	

@@ -39,11 +39,11 @@ EBTNodeResult::Type UBTTask_DebuffDef::ExecuteTask(UBehaviorTreeComponent& Owner
 	
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 
-	DebugHelper::AddMessageToLog("[Behavior Tree - Debuff Def]: " + Current->GetActorLabel() + " de-buffed " + Target->GetActorLabel() + " def");
+	DebugHelper::AddMessageToLog("[Behavior Tree - Debuff Def]: " + Current->GetEmotionName() + " de-buffed " + Target->GetActorLabel() + " def");
 	DebugHelper::AddMessageToLog("[Behavior Tree - Debuff Def]: Target def is now -> " + FString::SanitizeFloat(Instance->GetRuntimeStats().DefencePower));
 
 	Target->GetBattleHUD()->DecisionDisplayer->Show();
-	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetActorLabel() + "De-buffed " + Target->GetActorLabel() + " def"));
+	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetEmotionName() + "De-buffed " + Target->GetActorLabel() + " def"));
 	
 	return EBTNodeResult::InProgress;
 }
@@ -68,8 +68,8 @@ void UBTTask_DebuffDef::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 
 	if (Current != Current->GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion())
 	{
-		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
-		DebugHelper::AddMessageToLog("[Behavior Tree - Debuff Def]: It's not " + Current->GetActorLabel() + "'s turn yet (buff task)");
+		DebugHelper::LogMessage(7, FColor::FromHex("C68EFD"), "It's not " + Current->GetEmotionName() + "'s turn yet (buff task)");
+		DebugHelper::AddMessageToLog("[Behavior Tree - Debuff Def]: It's not " + Current->GetEmotionName() + "'s turn yet (buff task)");
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}

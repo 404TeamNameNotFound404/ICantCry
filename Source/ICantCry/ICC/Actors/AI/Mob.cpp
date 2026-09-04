@@ -32,6 +32,7 @@ AMob::AMob()
 	HealthBarComponent->SetEnableGravity(false);
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 	AIControllerClass = AICC_AIController::StaticClass();
+	AnimationDealer = CreateDefaultSubobject<UIccEmotionAnimDealer>(TEXT("AnimationDealer"));
 }
 
 // Called when the game starts or when spawned
@@ -40,6 +41,8 @@ void AMob::BeginPlay()
 	Super::BeginPlay();
 	bIsReady = true;
 	Instance = Cast<UICantCryGameInstance>(GetGameInstance());
+	
+	GetCharacterMovement()->MaxWalkSpeed = LocomotionSpeed;
 
 	for (TActorIterator<AMinigameHandler> It(GetWorld()); It; ++It)
 	{
@@ -63,8 +66,10 @@ void AMob::BeginPlay()
 	Handler = MinigameHandler;
 	Memory.DefaultBattleLocation = GetActorLocation();
 	Memory.DefaultBattleOrientation = GetActorRotation();
-	Memory.InitialAttackPower = GetData()->RuntimeStats.AtkPower;
-	Memory.InitialDefencePower = GetData()->RuntimeStats.DefPower;
+	// Memory.InitialAttackPower = GetData()->RuntimeStats.AtkPower;
+	// Memory.InitialDefencePower = GetData()->RuntimeStats.DefPower;
+	Memory.InitialAttackPower = Stats.AtkPower;
+	Memory.InitialDefencePower = Stats.DefPower;
 
 	DebugHelper::AddMessageToLog("[AMob]: Memory registered InitialAttackPower as: " + FString::SanitizeFloat(Memory.InitialAttackPower));
 	DebugHelper::AddMessageToLog("[AMob]: Memory registered InitialDefPower as: " + FString::SanitizeFloat(Memory.InitialDefencePower));
@@ -74,7 +79,7 @@ void AMob::BeginPlay()
 	Stats.Health = GetData()->MaxHealth;
 	Stats.bAlive = true;
 	
-	RefDamage = FDamage(nullptr,Instance->GetPlayerStats(), Moves, EnemyData, this, Instance);
+	RefDamage = FDamage(nullptr,Instance->GetPlayerStats(), Moves, EnemyData, Stats ,this, Instance);
 }
 
 // Called every frame
@@ -121,6 +126,16 @@ UBehaviorTree* AMob::GetBehaviorTree() const
 FEmotionMemory AMob::GetAIMemory() const
 {
 	return Memory;
+}
+
+FString AMob::GetEmotionName() const
+{
+	return EmotionName;
+}
+
+void AMob::SetEmotionName(const FString& NewName)
+{
+	EmotionName = NewName;
 }
 
 void AMob::HighlightsSilhouette()
@@ -466,6 +481,11 @@ bool AMob::IsLowHealth() const
 	return Stats.Health <= GetData()->MaxHealth * Threshold;
 }
 
+UIccEmotionAnimDealer* AMob::GetAnimationDealer()
+{
+	return AnimationDealer;
+}
+
 FString AMob::GetNoteKeyForMobType() const
 {
     switch (Type)
@@ -519,6 +539,27 @@ UMobHealthBar* AMob::GetHealthBar() const
 	checkf(Bar, TEXT("Bar is invalid in AMob::GetHealthBar"));
 	return Bar;
 }
+
+FString AMob::GetCurrentDecision() const
+{
+	return CurrentDecision;
+}
+
+void AMob::SetCurrentDecision(const FString& InCurrentDecision)
+{
+	CurrentDecision = InCurrentDecision;
+}
+
+FString AMob::GetCurrentDecisionTable() const
+{
+	return CurrentDecisionTable;
+}
+
+void AMob::SetCurrentDecisionTable(const FString& InCurrentDecisionTable)
+{
+	CurrentDecisionTable = InCurrentDecisionTable;
+}
+
 
 bool AMob::IsEAnger() const
 {

@@ -25,6 +25,7 @@ public:
 protected:
 	virtual void NativeConstruct() override;
 	virtual void HandleScore() override;
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 	
 	UPROPERTY(meta=(BindWidget))
 	UProgressBar* Slider;
@@ -51,11 +52,19 @@ protected:
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Minigame", meta = (AllowPrivateAccess = "true"))
 	float SliderSpeed = 1.8f;
 	
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Minigame", meta = (AllowPrivateAccess = "true"))
+	float IncreaseSpeed = 1.f;
+	
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Minigame")
 	float DecreaseSpeed = 0.8f;
 	
 	UPROPERTY()
 	float TimerLeft = 0.0f;
+	
+	UPROPERTY() FTimerHandle Smash;
+	
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Minigame", meta = (AllowPrivateAccess = "true"))
+	float SmashRate = 1.f;
 	
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Minigame", meta = (AllowPrivateAccess = "true"))
 	float TimeToDie = 3.0f;

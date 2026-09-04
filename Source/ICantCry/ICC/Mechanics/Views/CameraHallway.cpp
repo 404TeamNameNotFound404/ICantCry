@@ -27,31 +27,43 @@ void ACameraHallway::BeginPlay()
 	{
 		Travelers.Add(*It);
 	}
-	
-	Rooms = {"LivingRoom", "Hallway", "MaxRoom", "Bedroom", "Office"};
 }
 
 void ACameraHallway::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!Player || OtherActor != Player || bPlayerOverlapped)
+	if (!OtherActor)
+		return;
+
+	if (!Player)
 	{
 		Player = Cast<UICantCryGameInstance>(GetGameInstance())->GetCurrentPlayer();
 	}
+
+	if (OtherActor != Player)return;
+	if (bPlayerOverlapped || bTransitioning) return;
 	
 	bPlayerOverlapped = true;
 	
 	if (bSnap)
 	{
+		bTransitioning = true;
 		Snap();
-		RenderSeen(RoomTag);
+		ToggleRoom(RoomId);
+
+		GetWorldTimerManager().SetTimer(
+			TransitionTimerHandle,
+			[this]()
+			{
+				bTransitioning = false;
+			},
+			0.18f,
+			false
+		);
 	}
 	else
 	{
 		DebugHelper::LogSuccess("Player overlapped");
-
-		// Mark that the player has overlapped
-		//bPlayerOverlapped = true;
-
+		
 		Counter = Player->GetWorldCameraCounter();
 	
 		if (Player->GetWorldCamera() && Player && Counter == 0)
@@ -95,7 +107,16 @@ void ACameraHallway::Snap()
 {
 	if (!Player || !Player->GetWorldCamera()) return;
 	
-	Counter = Player->GetWorldCameraCounter();
+	if (bRememberCounter)
+	{
+		Counter = CachedCounter;
+	}
+	else
+	{
+		Counter = Player->GetWorldCameraCounter();
+	}
+	
+	// Counter = Player->GetWorldCameraCounter();
 	AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
 	
 	if (Counter == 0)
@@ -116,10 +137,27 @@ void ACameraHallway::Snap()
 
 		if (bPlayerMustTeleport && InEntry.IsValid())
 		{
-			Player->SetActorLocationAndRotation(InEntry->GetActorLocation(), InEntry->GetActorRotation());
+			const FVector TargetLocation = InEntry->GetActorLocation();
+			const FRotator TargetRotation = InEntry->GetActorRotation();
+
+			Player->SetActorLocationAndRotation(
+				TargetLocation,
+				TargetRotation,
+				false,
+				nullptr,
+				ETeleportType::TeleportPhysics
+			);
+			
+			//Player->SetActorLocationAndRotation(InEntry->GetActorLocation(), InEntry->GetActorRotation());
 		}
 		
 		Player->SetWorldCameraCounter(1);
+		
+		if (bRememberCounter)
+		{
+			CachedCounter = 1;
+		}
+	
 	}
 	
 	else if (Counter == 1)
@@ -143,46 +181,37 @@ void ACameraHallway::Snap()
 		}
 		
 		Player->SetWorldCameraCounter(0);
-		RenderSeen(RoomTag);
-	}
-}
-
-void ACameraHallway::ToggleRoom(const FName& Room, const bool& bRenderRoom)
-{
-	TArray<AActor*> SpawnedRooms;
-	UGameplayStatics::GetAllActorsWithTag(GetWorld(), Room,  SpawnedRooms);
-	
-	for (AActor* R : SpawnedRooms)
-	{
-		if (!R)
-		{
-			DebugHelper::LogError("Room is invalid");
-			continue;
-		}
 		
-		R->SetActorHiddenInGame(!bRenderRoom);
-		R->SetActorEnableCollision(bRenderRoom);
-		R->SetActorTickEnabled(bRenderRoom); // I dont think we'll need this but Im gonna keep it for now
 		
-		DebugHelper::LogMessage(6, FColor::Cyan, FString(RoomTag.ToString() + FString(bRenderRoom ? "Hidden" : "Shown")));
+		if (bRememberCounter)
+		{
+			CachedCounter = 0;
+		}
 	}
 }
 
-void ACameraHallway::RenderSeen(const FName& TargetToHide)
+void ACameraHallway::ToggleRoom(const FName& RoomTag)
 {
-	for (FName& Room : Rooms)
+	if (!RoomHandler) return;
+
+	AActor* TargetRoom = nullptr;
+
+	for (AActor* Room : RoomHandler->GetRooms())
 	{
-		if (Room == TargetToHide)
+		if (!Room) continue;
+
+		if (Room->ActorHasTag(RoomTag))
 		{
-			ToggleRoom(Room, true);
-		}
-		else
-		{
-			ToggleRoom(Room, false);
+			TargetRoom = Room;
+			break;
 		}
 	}
-}
 
+	if (TargetRoom)
+	{
+		RoomHandler->OnRoomChanged.Broadcast(TargetRoom);
+	}
+}
 
 // Called every frame
 void ACameraHallway::Tick(float DeltaTime)

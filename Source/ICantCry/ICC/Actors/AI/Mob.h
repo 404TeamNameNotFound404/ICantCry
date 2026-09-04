@@ -18,6 +18,7 @@
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 #include "ICantCry/ICC/Actors/AI/Emotions/EmotionStats/FEmotionStat.h"
 #include "ICantCry/ICC/Actors/AI/MobType.h"
+#include "ICantCry/ICC/Actors/AnimationInstances/Emotion/IccEmotionAnimDealer.h"
 #include "Mob.generated.h"
 
 class ABattleHandler;
@@ -61,7 +62,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
 	TEnumAsByte<EMobType> Type;
 	
-
+	UPROPERTY()
+	UIccEmotionAnimDealer* AnimationDealer;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay", meta = (AllowPrivateAccess = "true"))
+	float LocomotionSpeed = 600.f;
+	
 	//----------------
 
 	UPROPERTY()
@@ -70,7 +76,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Behaviors", meta = (AllowPrivateAccess = "true"))
 	UBehaviorTree* Tree;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Battle", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Battle", meta = (AllowPrivateAccess = "true"))
 	FEmotionStat Stats;
 
 	/**
@@ -187,6 +193,15 @@ protected:
 	UPROPERTY()
 	bool bRethink = false;
 	
+	UPROPERTY()
+	FString CurrentDecision;
+	
+	UPROPERTY()
+	FString CurrentDecisionTable;
+	
+	UPROPERTY()
+	FString EmotionName;
+	
 	//------
 
 	static bool bStopTree;
@@ -230,6 +245,9 @@ public:
 	UBehaviorTree* GetBehaviorTree() const;
 
 	FEmotionMemory GetAIMemory() const;
+	
+	FString GetEmotionName() const;
+	void SetEmotionName(const FString& NewName);
 
 	/**
 	 * Highlights the silhouette during AI turn
@@ -300,6 +318,11 @@ public:
 	 * @return valid health-bar
 	 */
 	UMobHealthBar* GetHealthBar() const;
+	
+	FString GetCurrentDecision() const;
+	void SetCurrentDecision(const FString& InCurrentDecision);
+	FString GetCurrentDecisionTable() const;
+	void SetCurrentDecisionTable(const FString& InCurrentDecisionTable);
 
 
 	bool IsEAnger() const;
@@ -397,6 +420,8 @@ public:
 	 * @return true if low health
 	 */
 	bool IsLowHealth() const;
+	
+	UIccEmotionAnimDealer* GetAnimationDealer();
 
 private:
 

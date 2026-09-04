@@ -55,7 +55,7 @@ void UEvent_StartDialogue::ExecuteEvent_Implementation(AICC_Player* Player, UObj
     }
     else
     {
-        UE_LOG(LogTemp, Warning, TEXT("Event_StartDialogue: WidgetClass non è né UDialogueWidget né UBarkWidget."));
+        UE_LOG(LogTemp, Warning, TEXT("Event_StartDialogue: WidgetClass non Ã¨ nÃ¨ UDialogueWidget nÃ¨ UBarkWidget."));
         NewWidget->RemoveFromParent();
         return;
     }

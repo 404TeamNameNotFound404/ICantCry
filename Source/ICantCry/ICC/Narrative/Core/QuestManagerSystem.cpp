@@ -143,7 +143,7 @@ void UQuestManagerSystem::CompleteQuest(int32 Index)
 
     FQuestProgress CompletedQuest = ActiveQuests[Index];
 
-    // La definizione deve essere valida, altrimenti l'array è corrotto.
+    // La definizione deve essere valida, altrimenti l'array ï¿½ corrotto.
     if (!CompletedQuest.QuestDef)
     {
         UE_LOG(LogTemp, Error, TEXT("system error: quest at index %d has no valid questdef!"), Index);
@@ -153,7 +153,7 @@ void UQuestManagerSystem::CompleteQuest(int32 Index)
     // --- INIZIO PARTE MODIFICATA ---
 
     // Risoluzione robusta del player per i reward: proviamo il primo player controller,
-    // poi il fallback via GameplayStatics. Così i reward non vengono saltati se la
+    // poi il fallback via GameplayStatics. Cosï¿½ i reward non vengono saltati se la
     // risoluzione diretta torna null.
     AICC_Player* PlayerCharacter = nullptr;
     if (APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr)
@@ -168,7 +168,7 @@ void UQuestManagerSystem::CompleteQuest(int32 Index)
     // Marca la quest come completata (usando il QuestID unico) per impedirne il ri-accept.
     CompletedQuestsTags.AddTag(CompletedQuest.QuestDef->QuestID);
 
-    // Log diagnostico: quante reward ci sono e se il player è stato risolto.
+    // Log diagnostico: quante reward ci sono e se il player ï¿½ stato risolto.
     const int32 RewardCount = CompletedQuest.QuestDef->OnCompleteRewards.Num();
     UE_LOG(LogTemp, Log, TEXT("CompleteQuest: eseguo %d reward per '%s' (Player=%s)"),
         RewardCount, *CompletedQuest.QuestDef->QuestID.ToString(),
@@ -195,7 +195,7 @@ void UQuestManagerSystem::CompleteQuest(int32 Index)
 
     // --- FINE PARTE MODIFICATA ---
 
-    // Rimuove dalla lista attive PRIMA del broadcast, così la UI legge l'array aggiornato.
+    // Rimuove dalla lista attive PRIMA del broadcast, cosï¿½ la UI legge l'array aggiornato.
     ActiveQuests.RemoveAt(Index);
 
     // Aggiorna la UI (rimuove la riga della quest).
@@ -287,13 +287,13 @@ bool UQuestManagerSystem::ForceCompleteQuest(FGameplayTag QuestTag)
     int32 Index = FindActiveQuestIndex(QuestTag);
     if (Index != INDEX_NONE)
     {
-        // CompleteQuest non controlla gli obiettivi: dà i reward e rimuove la quest.
+        // CompleteQuest non controlla gli obiettivi: dï¿½ i reward e rimuove la quest.
         CompleteQuest(Index);
         return true;
     }
 
     UE_LOG(LogTemp, Warning,
-        TEXT("ForceCompleteQuest: '%s' non è attiva, impossibile forzarla (nessuna QuestDef/reward disponibili)."),
+        TEXT("ForceCompleteQuest: '%s' non Ã¨ attiva, impossibile forzarla (nessuna QuestDef/reward disponibili)."),
         *QuestTag.ToString());
     return false;
 }

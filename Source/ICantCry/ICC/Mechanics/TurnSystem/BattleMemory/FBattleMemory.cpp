@@ -3,6 +3,7 @@
 #include "FBattleMemory.h"
 #include "ICantCry/ICC/Actors/ICC_Actor.h"
 #include "ICantCry/ICC/Actors/AI/Mob.h"
+#include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 
 FBattleMemory::FBattleMemory()
 {
@@ -41,5 +42,26 @@ void FBattleMemory::Clear()
 	EmotionsSpawnedClasses.Empty();
 	Locations.Empty();
 	Orientations.Empty();
+}
+
+void FBattleMemory::ResetEmotionsStats()
+{
+	if (LastStoredQueue.IsEmpty()) return;
+	
+	for (AICC_Actor* Actor : LastStoredQueue)
+	{
+		if (!IsValid(Actor)) continue;
+		if (Actor->IsA(AICC_Player::StaticClass())) continue;
+		
+		AMob* Emotion = Cast<AMob>(Actor);
+		if (!Emotion) continue;
+		
+		Emotion->GetStats().AtkPower = Emotion->GetAIMemory().InitialAttackPower;
+		Emotion->GetStats().DefPower = Emotion->GetAIMemory().InitialDefencePower;
+		
+		DebugHelper::AddMessageToLog("[Battle Memory]: " + Emotion->GetEmotionName() + 
+			" resets it's atk power to " + FString::SanitizeFloat(Emotion->GetStats().AtkPower) + 
+			" and def: " + FString::SanitizeFloat(Emotion->GetStats().DefPower));
+	}
 }
 

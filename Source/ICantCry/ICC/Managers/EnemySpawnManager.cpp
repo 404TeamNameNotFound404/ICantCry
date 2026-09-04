@@ -190,6 +190,8 @@ void AEnemySpawnManager::Spawn()
 
 	Algo::RandomShuffle(ValidSpawnPoints);
 
+	TMap<TSubclassOf<AMob>, int32> SpawnedCounts;
+	
 	for (int32 i = 0; i < Aleatory; ++i)
 	{
 		AESpawner* SpawnPoint = ValidSpawnPoints[i];
@@ -203,13 +205,32 @@ void AEnemySpawnManager::Spawn()
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
+		int32& CurrentCount = SpawnedCounts.FindOrAdd(SelectedEnemyClass, 0);
+		TCHAR Letter = 'A' + (CurrentCount % 26); 
+		CurrentCount++;
+			
+		FString BaseName = "Emotion Zero";
+			
+		if (const AMob* DefaultMob = SelectedEnemyClass->GetDefaultObject<AMob>();
+			DefaultMob && DefaultMob->GetData())
+		{
+			BaseName = DefaultMob->GetData()->EnemyName.ToString();
+		}
+			
+		const FString DynamicName = FString::Printf(TEXT("%s %c"), *BaseName, Letter);
+		
 		AMob* Enemy = GetWorld()->SpawnActor<AMob>(SelectedEnemyClass, SpawnLocation, SpawnRotation, SpawnParams);
 		Instance->CachedBattleMemory.Register(SelectedEnemyClass, SpawnLocation, SpawnRotation);
 		Instance->CachedBattleMemory.EmotionsSpawned.Add(Enemy);
 
 		if (Enemy)
 		{
-			//AAIController* AIController = Cast<AAIController>(Enemy->GetController());
+			Enemy->SetEmotionName(DynamicName);
+			
+#if WITH_EDITOR
+			Enemy->SetActorLabel(DynamicName);
+#endif
+			
 			AICC_AIController* AIController = Cast<AICC_AIController>(Enemy->GetController());
 
 			if (!AIController)
