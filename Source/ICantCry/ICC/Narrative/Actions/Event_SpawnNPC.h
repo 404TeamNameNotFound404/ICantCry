@@ -3,16 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ICantCry/ICC/Narrative/GameplayEvent.h"
 #include "Event_SpawnNPC.generated.h"
 
-class GameplayEvent;
+
 class UCinematicManager;
 class AICC_Player;
 
 /**
- * UGameplayEvents are Data Assets (and therefore don't live in the level), so I can't directly pass them a reference to a point on the map. 
-   The solution is to use a Destination Tag.
-   In the level, I'll place an invisible actor (e.g., a Target Point), assign it a Tag (e.g., "BlacksmithSpawnPoint"), and the event will move the NPC to that exact point, retriggering it.
+ * CLASS: UEvent_SpawnNPC
+ * DESCRIPTION: Shows an NPC that already exists in the level, moving it to a destination
+ * point behind a black screen. UGameplayEvents are Data Assets and do not live in the level,
+ * so they cannot hold a direct reference to a spot on the map: the destination is addressed
+ * by Tag instead. Place an invisible actor (e.g. a Target Point) in the level, give it a Tag
+ * (e.g. "BlacksmithSpawnPoint"), and the event will move the NPC exactly there.
  */
 UCLASS(DisplayName = "Event: Show Existing NPC")
 class ICANTCRY_API UEvent_SpawnNPC : public UGameplayEvent
@@ -21,19 +25,22 @@ class ICANTCRY_API UEvent_SpawnNPC : public UGameplayEvent
 	
 public:
 
-    /** Il Tag dell'NPC che vogliamo far comparire */
+    /** Actor Tag of the NPC we want to bring into view */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Config")
     FName TargetNPCActorTag;
 
-    /** Il Tag di un attore nel livello (es. TargetPoint) dove l'NPC apparirà */
+    /** Tag of an actor in the level (e.g. a Target Point) where the NPC will appear */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Config")
     FName DestinationPointTag;
 
+    /** Duration in seconds of the fade to black and of the fade back in */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Config")
     float FadeDuration = 1.0f;
 
+    /** Seconds of fully black screen before the view opens up again */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Config")
     float BlackScreenHoldTime = 1.0f;
 
+    /** Runs the event: finds the CinematicManager and moves the tagged NPC to the destination point */
     virtual void ExecuteEvent_Implementation(AICC_Player* Player, UObject* Context) override;
 };

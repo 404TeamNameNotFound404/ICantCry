@@ -202,6 +202,10 @@ public:
 	UICC_InputDataAsset* GetInputDataAsset();
 	UICC_EnhancedInputCmp* GetInputBinder();
 	UIccAnimationDealer* GetAnimationDealer();
+
+	/** Returns the interactable component currently in the player's view (null if none) */
+	UInteractionComponent* GetCurrentInteractableTarget() const { return CurrentInteractableTarget; }
+
 	
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Movement")
@@ -378,4 +382,6 @@ private:
 	/** Pending dialogue to be opened upon closing a menu (equivalent to PendingBark for the Dialogue UI). */
 	UPROPERTY()
 	UDialogueAsset* PendingDialogueUI;
+
+
 };
