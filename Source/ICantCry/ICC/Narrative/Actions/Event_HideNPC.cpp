@@ -4,21 +4,28 @@
 #include "Event_HideNPC.h"
 #include "Engine/World.h"
 
-#include "ICantCry/ICC/Narrative/GameplayEvent.h"
 #include "ICantCry/ICC/Narrative/Core/CinematicManager.h"
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 
 void UEvent_HideNPC::ExecuteEvent_Implementation(AICC_Player* Player, UObject* Context)
 {
 
-    if (!Context || !Context->GetWorld()) return;
+    UWorld* World = Player ? Player->GetWorld() : (Context ? Context->GetWorld() : nullptr);
 
-    
-    UCinematicManager* CinematicSubsystem = Context->GetWorld()->GetSubsystem<UCinematicManager>();
-    if (CinematicSubsystem)
+    if (!World)
     {
-        CinematicSubsystem->FadeAndHideNPC(TargetNPCActorTag, FadeDuration, BlackScreenHoldTime);
+        UE_LOG(LogTemp, Error, TEXT("Event_HideNPC: World null ( Player & Context are not valid). No hide NPC ."));
+        return;
     }
+
+    UCinematicManager* CinematicSubsystem = World->GetSubsystem<UCinematicManager>();
+    if (!CinematicSubsystem)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Event_HideNPC: CinematicManager not found in the World."));
+        return;
+    }
+
+    CinematicSubsystem->FadeAndHideNPC(TargetNPCActorTag, FadeDuration, BlackScreenHoldTime);
 
 
 }

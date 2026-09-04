@@ -54,7 +54,12 @@ void UBarkWidget::DisplayNextLine()
     // Se il typewriter è in corso, completa la riga subito (skip)
     if (GetWorld()->GetTimerManager().IsTimerActive(TypewriterTimerHandle))
     {
-        FinishLineInstantly();
+        // Phantom double-click guard: only skip the line if it actually started typing.
+        // At index 0 this is a duplicate call in the same frame as the new line, so we ignore it.
+        if (CurrentCharacterIndex > 0)
+        {
+            FinishLineInstantly();
+        }
         return;
     }
 
@@ -126,13 +131,41 @@ void UBarkWidget::EndBark()
 {
     GetWorld()->GetTimerManager().ClearTimer(TypewriterTimerHandle);
 
+    //if (APlayerController* PC = GetOwningPlayer())
+    //{
+    //    PC->SetIgnoreMoveInput(false); // riabilita il movimento
+    //    PC->bShowMouseCursor = false;
+    //    PC->SetInputMode(FInputModeGameOnly());
+    //}
+
+    //if (AICC_Player* Player = Cast<AICC_Player>(GetOwningPlayerPawn()))
+    //{
+    //    Player->SetDialogueMovementLock(false);
+    //}
+
+    //RemoveFromParent();
+
+    if (CurrentBark)
+    {
+       
+        AICC_Player* Player = Cast<AICC_Player>(GetOwningPlayerPawn());
+        for (UGameplayEvent* Event : CurrentBark->OnDialogueEnded)
+        {
+            if (Event)
+            {
+                Event->ExecuteEvent(Player, this);
+            }
+        }
+    }
+
     if (APlayerController* PC = GetOwningPlayer())
     {
-        PC->SetIgnoreMoveInput(false); // riabilita il movimento
+        PC->SetIgnoreMoveInput(false); // give movement back to the pawn
         PC->bShowMouseCursor = false;
         PC->SetInputMode(FInputModeGameOnly());
     }
 
+    // Mirror of NativeConstruct: without this the player stays locked after the bark closes.
     if (AICC_Player* Player = Cast<AICC_Player>(GetOwningPlayerPawn()))
     {
         Player->SetDialogueMovementLock(false);

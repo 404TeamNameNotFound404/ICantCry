@@ -73,148 +73,7 @@ void UDialogueWidget::StartDialogue(UDialogueAsset* NewDialogue)
 
 void UDialogueWidget::DisplayNextLine() 
 {
-    //// if the typewriter effect is still running, instantly show the full line and stop the timer
-    //// this gives the player a way to skip the animation if they click again
-    //if (GetWorld()->GetTimerManager().IsTimerActive(TypewriterTimerHandle))
-    //{
-    //    FinishLineInstantly();
-    //    return;
-    //}
-
-    //// if the dialogue was somehow invalid, close the widget
-    //if (!CurrentDialogue) 
-    //{
-    //    EndDialogue();
-    //    return;
-    //}
-
-    //// check if we still have lines to display
-    //if (CurrentDialogue->Lines.IsValidIndex(CurrentLineIndex)) 
-    //{
-    //    const FDialogueLine& CurrentLine = CurrentDialogue->Lines[CurrentLineIndex];
-
-    //    // execute any gameplay events attached to this line before showing the text
-    //    // events like preparedelivery will set up the delivery ui state by updating the quest tags in this widget
-    //    /*for (UGameplayEvent* Event : CurrentLine.Events)
-    //    {
-    //        if (Event)
-    //        {
-    //            Event->ExecuteEvent(nullptr, this);
-    //        }
-    //    }*/
-
-    //    AICC_Player* Player = Cast<AICC_Player>(GetOwningPlayerPawn());
-    //    for (UGameplayEvent* Event : CurrentLine.Events)
-    //    {
-    //        if (Event)
-    //        {
-    //            Event->ExecuteEvent(Player, this); 
-    //        }
-    //    }
-
-    //    // check if this line activated a delivery that isn't complete yet
-    //    // if a delivery is in progress, the next button should stay hidden
-    //    UICantCryGameInstance* GI = Cast<UICantCryGameInstance>(GetGameInstance());
-    //    UQuestManagerSystem* QM = GI ? GI->GetSubsystem<UQuestManagerSystem>() : nullptr;
-    //    
-    //    bool bIsDeliveryActive = false;
-    //    if (QM && CurrentQuestTag.IsValid())
-    //    {
-    //        int32 Progress = QM->GetObjectiveProgress(CurrentQuestTag, CurrentObjectiveTag);
-    //        if (Progress < CurrentAmountRequired)
-    //        {
-    //            bIsDeliveryActive = true;
-    //        }
-    //    }
-
-    //    // update next button visibility based on delivery state
-    //    if (BtnNext) 
-    //    {
-    //        BtnNext->SetVisibility(bIsDeliveryActive ? ESlateVisibility::Collapsed : ESlateVisibility::Visible);
-    //    }
-
-    //    // apply the dialogue style again in case it changed
-    //    ApplyDialogueStyle();
-
-    //    // store the full text for typewriter effect and reset character index
-    //    FullTextCurrentLine = CurrentLine.Text.ToString();
-    //    CurrentCharacterIndex = 0;
-
-    //    // update npc name and portrait based on the current line's emotion tag
-    //    if (CurrentDialogue->NPCProfile)
-    //    {
-    //        if (TextNPCName) TextNPCName->SetText(CurrentDialogue->NPCProfile->NPCName);
-
-    //        if (NPCFaceImage)
-    //        {
-    //            FGameplayTag TargetTag = CurrentLine.EmotionTag;
-    //            if (CurrentDialogue->NPCProfile->Portraits.Contains(TargetTag))
-    //            {
-    //                UTexture2D* LoadedTexture = CurrentDialogue->NPCProfile->Portraits[TargetTag].LoadSynchronous();
-    //                NPCFaceImage->SetBrushFromTexture(LoadedTexture);
-    //            }
-    //            else if (CurrentDialogue->NPCProfile->Portraits.Num() > 0)
-    //            {
-    //                // if the specific emotion tag isn't found, fall back to the first available portrait
-    //                TArray<FGameplayTag> OutKeys;
-    //                CurrentDialogue->NPCProfile->Portraits.GetKeys(OutKeys);
-    //                UTexture2D* DefaultTexture = CurrentDialogue->NPCProfile->Portraits[OutKeys[0]].LoadSynchronous();
-    //                NPCFaceImage->SetBrushFromTexture(DefaultTexture);
-    //            }
-    //        }
-    //    }
-
-    //    // display the text either with typewriter effect or instantly
-    //    if (CurrentDialogue->bUseTypewriterEffect && TextDialogueContent)
-    //    {
-    //        TextDialogueContent->SetText(FText::GetEmpty());
-    //        float Speed = FMath::Max(0.01f, CurrentDialogue->TypewriterSpeed);
-    //        GetWorld()->GetTimerManager().SetTimer(TypewriterTimerHandle, this, &UDialogueWidget::OnTypewriterTick, Speed, true);
-    //    }
-    //    else if (TextDialogueContent)
-    //    {
-    //        TextDialogueContent->SetText(CurrentLine.Text);
-    //    }
-
-    //    // move to the next line for the next call
-    //    CurrentLineIndex++;
-    //} 
-    //else 
-    //{
-    //    // no more lines, handle end of dialogue based on quest state and dialogue settings
-    //    
-    //    // if this dialogue is marked to never show quest buttons, just close it
-    //    if (CurrentDialogue->bNeverShowQuestButtons)
-    //    {
-    //        EndDialogue();
-    //        return;
-    //    }
-    //    
-    //    // if the dialogue has branches, show the choice buttons
-    //    if (CurrentDialogue->bUseBranches && CurrentDialogue->Branches.Num() > 0)
-    //    {
-    //        if (BtnNext) BtnNext->SetVisibility(ESlateVisibility::Collapsed);
-    //        ShowBranches();
-    //    }
-    //    // otherwise if this is an optional quest, show accept and decline buttons
-    //    else if (bIsOptionalQuest) 
-    //    {
-    //        if (BtnNext) BtnNext->SetVisibility(ESlateVisibility::Collapsed);
-    //        if (BtnAccept) 
-    //        { 
-    //            BtnAccept->SetVisibility(ESlateVisibility::Visible); 
-    //            BtnAccept->SetFocus();
-    //        }
-    //        if (BtnDecline) BtnDecline->SetVisibility(ESlateVisibility::Visible);
-    //    }
-    //    // if none of the above, just end the dialogue normally
-    //    else 
-    //    {
-    //        EndDialogue();
-    //    }
-    //}
-
-    // Se il timer è attivo, significa che stiamo ancora digitando
+   
     if (GetWorld()->GetTimerManager().IsTimerActive(TypewriterTimerHandle))
     {
         // PROTEZIONE DOPPIO CLIC FANTASMA:
@@ -227,21 +86,21 @@ void UDialogueWidget::DisplayNextLine()
         return;
     }
 
-    // Dialogo invalido? Chiudi
+    
     if (!CurrentDialogue)
     {
         EndDialogue();
         return;
     }
 
-    // Se ci sono ancora linee
+    
     if (CurrentDialogue->Lines.IsValidIndex(CurrentLineIndex))
     {
         const FDialogueLine& CurrentLine = CurrentDialogue->Lines[CurrentLineIndex];
 
-        // --- PULIZIA FORZATA DELLO STATO MACCHINA DA SCRIVERE ---
+        
         GetWorld()->GetTimerManager().ClearTimer(TypewriterTimerHandle);
-        CurrentCharacterIndex = 0; // Viene resettato a 0 qui prima di avviare il timer
+        CurrentCharacterIndex = 0; 
         if (TextDialogueContent)
             TextDialogueContent->SetText(FText::GetEmpty());
 
@@ -382,82 +241,6 @@ void UDialogueWidget::OnDeclineClicked()
 void UDialogueWidget::EndDialogue() 
 {
 
-    // ORIGINALE 
-    // trigger any events that should happen when the dialogue finishes normally
-    // this is where quests are started or other narrative events happen
-    //if (CurrentDialogue)
-    //{
-    //    if (AICC_Player* Player = Cast<AICC_Player>(GetOwningPlayerPawn()))
-    //    {
-    //        for (UGameplayEvent* Event : CurrentDialogue->OnDialogueEnded)
-    //        {
-    //            if (Event) Event->ExecuteEvent(Player, CurrentDialogue);
-    //        }
-    //    }
-    //}
-    //
-    //// restore game input mode and close the widget
-    //APlayerController* PC = GetOwningPlayer();
-    //if (PC) 
-    //{ 
-    //    PC->bShowMouseCursor = false; 
-    //    FInputModeGameOnly Mode; 
-    //    PC->SetInputMode(Mode); 
-    //}
-
-    //if (AICC_Player* Player = Cast<AICC_Player>(GetOwningPlayerPawn()))
-    //{
-    //    Player->SetDialogueMovementLock(false);
-    //}
-
-    //RemoveFromParent();
-
-    // FINE ORIGINALE 
-
-
-    // INIZIO MODIFICA 1
-    //AICC_Player* Player = Cast<AICC_Player>(GetOwningPlayerPawn());
-    //if (!Player)
-    //{
-    //    if (APlayerController* OwningPC = GetOwningPlayer())
-    //        Player = Cast<AICC_Player>(OwningPC->GetPawn());
-    //}
-    //if (!Player)
-    //    Player = Cast<AICC_Player>(UGameplayStatics::GetPlayerPawn(this, 0));
-
-    //if (CurrentDialogue)
-    //{
-    //    const int32 EventCount = CurrentDialogue->OnDialogueEnded.Num();
-    //    UE_LOG(LogTemp, Log, TEXT("EndDialogue: run %d OnDialogueEnded event(s). (Player=%s)"),
-    //        EventCount, Player ? *Player->GetName() : TEXT("NULL"));
-
-    //    for (UGameplayEvent* Event : CurrentDialogue->OnDialogueEnded)
-    //    {
-    //        if (!Event)
-    //        {
-    //            UE_LOG(LogTemp, Warning, TEXT("EndDialogue: NULL entry in OnDialogueEnded (check the array in the DialogueAsset)."));
-    //            continue;
-    //        }
-    //        Event->ExecuteEvent(Player, CurrentDialogue);
-    //    }
-    //}
-
-    //// un
-    //if (Player) Player->SetDialogueMovementLock(false);
-
-    //if (APlayerController* PC = GetOwningPlayer())
-    //{
-    //    PC->bShowMouseCursor = false;
-    //    FInputModeGameOnly Mode;
-    //    PC->SetInputMode(Mode);
-    //}
-    //RemoveFromParent();
-
-    // FINE MODIFICA 1
-
-
-    // INIZIO MODIFICA 2
-
     AICC_Player* Player = Cast<AICC_Player>(GetOwningPlayerPawn());
     if (!Player)
     {
@@ -467,11 +250,10 @@ void UDialogueWidget::EndDialogue()
     if (!Player)
         Player = Cast<AICC_Player>(UGameplayStatics::GetPlayerPawn(this, 0));
 
-    // Salviamo il dialogo PRIMA della pulizia, così possiamo eseguire gli eventi per ultimi.
+
     UDialogueAsset* FinishedDialogue = CurrentDialogue;
 
-    // Pulizia PRIMA, eventi DOPO: se un evento apre un nuovo dialogo/bark, sarà quel widget
-    // (nel suo NativeConstruct) a impostare cursore e input mode per ultimo. Così il mouse resta visibile.
+   
     if (Player) Player->SetDialogueMovementLock(false);
 
     if (APlayerController* PC = GetOwningPlayer())
@@ -482,7 +264,7 @@ void UDialogueWidget::EndDialogue()
     }
     RemoveFromParent();
 
-    // Eventi di fine dialogo (start quest, give rewards, start dialogue...).
+   
     if (FinishedDialogue)
     {
         const int32 EventCount = FinishedDialogue->OnDialogueEnded.Num();
@@ -496,7 +278,8 @@ void UDialogueWidget::EndDialogue()
                 UE_LOG(LogTemp, Warning, TEXT("EndDialogue: entry NULLA in OnDialogueEnded."));
                 continue;
             }
-            Event->ExecuteEvent(Player, FinishedDialogue);
+            //Event->ExecuteEvent(Player, FinishedDialogue);
+            Event->ExecuteEvent(Player, this);
         }
     }
 }
@@ -638,14 +421,10 @@ void UDialogueWidget::OnDeliverClicked()
     if (GI && QM && GI->RemoveFromInventory(CurrentRequiredItemTag, 1))
     {
         QM->UpdateObjectiveProgress(CurrentQuestTag, CurrentObjectiveTag, 1);
-        UpdateDeliveryUI();
 
-        // if we've reached the required amount, wait briefly then advance to the next line
-        // the short delay lets the player see the progress turn green before the dialogue continues
-        if (QM->GetObjectiveProgress(CurrentQuestTag, CurrentObjectiveTag) >= CurrentAmountRequired)
-        {
-            FTimerHandle NextLineTimer;
-            GetWorld()->GetTimerManager().SetTimer(NextLineTimer, this, &UDialogueWidget::DisplayNextLine, 1.0f, false);
-        }
+        // Once the delivery is complete UpdateDeliveryUI already shows BtnNext, so the player
+        // advances with a click. No timer here: a delayed DisplayNextLine would race with that
+        // click and skip a line.
+        UpdateDeliveryUI();
     }
 }
