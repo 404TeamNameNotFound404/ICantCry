@@ -44,7 +44,7 @@ void UEvent_StartDialogue::ExecuteEvent_Implementation(AICC_Player* Player, UObj
 
     NewWidget->AddToViewport();
 
-    // Scegliamo il metodo giusto in base al tipo reale del widget scelto dal designer.
+    // Sceglia il metodo giusto in base al tipo reale del widget scelto dal designer.
     if (UDialogueWidget* AsDialogue = Cast<UDialogueWidget>(NewWidget))
     {
         AsDialogue->StartDialogue(DialogueToPlay);
