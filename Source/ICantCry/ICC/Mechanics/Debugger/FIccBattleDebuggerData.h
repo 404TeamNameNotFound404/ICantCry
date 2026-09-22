@@ -19,9 +19,11 @@ struct FIccBattleDebuggerData
 	UPROPERTY() FString TargetName;
 	UPROPERTY() float Health;
 	UPROPERTY() bool bIsBuffed;
+	UPROPERTY() bool bIsDefBuffed;
 	UPROPERTY() bool bIsDebuffed;
 	UPROPERTY() bool bIsAfflicted;
 	UPROPERTY() int32 BuffCounter = -1;
+	UPROPERTY() FString BuffCounterLabel;
 	UPROPERTY() int32 DebuffCounter = -1;
 	UPROPERTY() int32 StatusCounter = -1;
 	UPROPERTY() FString CurrentBuff;

@@ -423,6 +423,11 @@ void UBattleHUD::OnShootPressed()
 	bIsEvFirst = false;
 	BackBtn->SetVisibility(ESlateVisibility::Visible);
 	//FSlateApplication::Get().ClearAllUserFocus();
+	
+	GetWorld()->GetTimerManager().SetTimerForNextTick([&]
+	{
+		RefreshStatusBuffs();
+	});
 }
 
 void UBattleHUD::OnFocusPressed()
@@ -447,9 +452,13 @@ void UBattleHUD::OnFocusPressed()
 	 * TODO Reorder bullets in magazine allowing player to change slot idx ( show confirm button and bullet magazine hud ) change only the bullets in magazine , NO ADD
 	 */
 	
+	GetWorld()->GetTimerManager().SetTimerForNextTick([&]
+	{
+		RefreshStatusBuffs();
+	});
+	
+	GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdateDefBuffStatus();
 	BattleHandler->GetTurnBasedSystem()->EndTurn();
-	GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateStatus();
-	GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateBuffStatus();
 	FTimerHandle StartNextHandle;
 
 	GetWorld()->GetTimerManager().SetTimer(StartNextHandle, [this]()
@@ -532,6 +541,11 @@ void UBattleHUD::OnReloadPressed()
 	CanvasMiniGames->SetFocus();
 	CanvasAmmoSelection->SetFocus();
 	
+	GetWorld()->GetTimerManager().SetTimerForNextTick([&]
+	{
+		RefreshStatusBuffs();
+	});
+	
 	//FSlateApplication::Get().ClearAllUserFocus();
 }
 
@@ -542,11 +556,11 @@ void UBattleHUD::OnPassPressed()
 		DebugHelper::LogError("You can't pass it's not player turn");
 		return;
 	}
+	
 	CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Hidden);
 	Displayer->SetVisibility(ESlateVisibility::Hidden);
 	CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
-	// IncreaseAP(1);
-	// Bar->IncreaseAP(1);
+	
 	DebugHelper::LogSuccess("Player passed the turn");
 	DebugHelper::AddMessageToLog("[BattleHUD]: Player passed the turn");
 	BattleHandler->GetTurnBasedSystem()->EndTurn();
@@ -567,9 +581,9 @@ void UBattleHUD::OnPassPressed()
 		BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
 	bTargetSelection = false;
 	
-	GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateStatus();
-	GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateBuffStatus();
-	GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateDebuffStatus();
+	GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdateStatus();
+	GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdateDefBuffStatus();
+	//RefreshStatusBuffs();
 
 	Displayer->SetVisibility(ESlateVisibility::Hidden);
 	OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
@@ -1188,6 +1202,13 @@ void UBattleHUD::UpdateTargetDisplay(AICC_Actor* Target)
 	}
 }
 
+void UBattleHUD::RefreshStatusBuffs()
+{
+	GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdateAtkBuffStatus();
+	GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdateDebuffStatus();
+	DebugHelper::LogMessage(20, FColor::Blue, "Updated Buffs/Debuffs");
+}
+
 void UBattleHUD::MoveFocusOn(const float& Value)
 {
 	if (!DebugHelper::IsGamepadPlugged())
@@ -1458,7 +1479,8 @@ void UBattleHUD::Engage()
 	case AngerEv:
 		{
 			bIsEvFirst = true;
-			PersistentInstance->GetCurrentPlayer()->GetStatusTracker()->BuffWith(EBuffStatus::AtkBuff);
+			//PersistentInstance->GetCurrentPlayer()->GetStatusTracker()->BuffWith(EBuffStatus::AtkBuff);
+			PersistentInstance->GetCurrentPlayer()->GetStatusTracker()->BuffPlayerAtk();
 			EngageBtn->SetVisibility(ESlateVisibility::Hidden);
 			CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
 			GetBulletDisplayer()->RemoveBullet();
@@ -1475,7 +1497,16 @@ void UBattleHUD::Engage()
 		}
 	case FearEV:
 		{
-			PrepareToEngageEv(EBuffStatus::DefBuff);
+			//PrepareToEngageEv(EBuffStatus::DefBuff);
+			bIsEvFirst = true;
+			PersistentInstance->GetCurrentPlayer()->GetStatusTracker()->BuffPlayerDef();
+			EngageBtn->SetVisibility(ESlateVisibility::Hidden);
+			CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
+			GetBulletDisplayer()->RemoveBullet();
+			RefreshPistolMagazine();
+			Displayer->Refresh();
+			UpdateAp();
+			EnableButtonsAfterShooting();
 			break;
 		}
 	case Disgust:

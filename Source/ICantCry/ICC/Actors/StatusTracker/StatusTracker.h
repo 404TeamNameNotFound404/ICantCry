@@ -199,16 +199,24 @@ public:
 	 */
 	bool IsBuffed() const;
 	
+	bool IsPlayerAtkBuffed() const;
+	bool IsPlayerDefBuffed() const;
+	
 	bool IsDebuffed() const;
 
 	bool CanDebuff() const;
 	
-	int GetBuffCounter() const;
-	int GetDebuffCounter() const;
+	int32 GetBuffCounter() const;
+	int32 GetDebuffCounter() const;
+	int32 GetPlayerAtkDgbCounter() const;
+	int32 GetDefBuffCounter() const;
+	
 	
 	FString DbgGetCurrentBuffName() const;
 	FString DbgGetCurrentDebuffName() const;
 	FString DbgGetCurrentMalusName() const;
+	FString DbgGetCurrentAtkBuffName() const;
+	FString DbgGetCurrentDefBuffName() const;
 
 	/**
 	 * Assign Status to afflict
@@ -231,6 +239,9 @@ public:
 	 * @param BuffStatus Buff
 	 */
 	void BuffWith(const EBuffStatus& BuffStatus);
+	
+	void BuffPlayerAtk();
+	void BuffPlayerDef();
 
 	
 	/*----------DO NOT WRITE ANYTHING IN THIS SPACE -------------*/
@@ -249,6 +260,8 @@ public:
 	 * activated the buff
 	 */
 	void UpdateBuffStatus();
+	void UpdateAtkBuffStatus();
+	void UpdateDefBuffStatus();
 
 	/*-------------------- PLAYER CHECKS --------------------**/
 	/*----------DO NOT WRITE ANYTHING IN THIS SPACE -------------*/
@@ -306,11 +319,24 @@ private:
 	int32 DebuffCounter = 0;
 	
 	UPROPERTY()
+	int32 BuffAtkCounter = 0;
+	
+	UPROPERTY()
+	int32 BuffDefCounter = 0;
+	
+	UPROPERTY()
 	int32 BuffStatusCounter = 0;
 
+	// LEGACY
 	UPROPERTY()
 	bool bCanBuff = true;
-
+	
+	UPROPERTY()
+	bool bIsBuffedAtk = false;
+	
+	UPROPERTY()
+	bool bIsDefBuffed = false;
+	
 	UPROPERTY()
 	bool bCanDebuff = true;
 
@@ -348,16 +374,25 @@ private:
 	bool bDefDebuffRevert = false;
 	
 	UPROPERTY()
-	int DebugBuffCounter;
+	int32 DebugBuffCounter;
 	
 	UPROPERTY()
-	int DebugDebuffCounter;
+	int32 DebugDebuffCounter;
+	
+	UPROPERTY()
+	int32 DebugAtkBuffCounter; 
 	
 	UPROPERTY()
 	FString DebugBuffName;
 	
 	UPROPERTY()
 	FString DebugDebuffName;
+	
+	UPROPERTY()
+	FString DebugBuffAtkName = "None";
+	
+	UPROPERTY()
+	FString DebugBuffDefName = "None";
 	
 	UPROPERTY()
 	FString DebugMalusName;

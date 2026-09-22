@@ -395,6 +395,8 @@ private:
 	
 	bool IsShootingEv() const;
 	void UpdateTargetDisplay(AICC_Actor* Target);
+	
+	void RefreshStatusBuffs();
 
 	/**
 	 *-----------------------------

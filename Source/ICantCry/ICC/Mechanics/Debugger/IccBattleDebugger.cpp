@@ -37,18 +37,22 @@ void AIccBattleDebugger::FillInitialInfo()
 		FIccBattleDebuggerData Data;
 		Data.TargetName = A->GetName();
 		Data.bIsAfflicted = A->GetStatusTracker()->IsAfflicted();
-		Data.bIsBuffed = A->GetStatusTracker()->IsBuffed();
+		
 		Data.bIsDebuffed = A->GetStatusTracker()->IsDebuffed();
 		Data.DebuffCounter = A->GetStatusTracker()->GetDebuffCounter();
-		Data.BuffCounter = A->GetStatusTracker()->GetBuffCounter();
 
 		if (AICC_Player* P = Cast<AICC_Player>(A))
 		{
 			Data.Health = P->GetRuntimeStats().CurrentHealth;
+			Data.bIsBuffed = A->GetStatusTracker()->IsPlayerAtkBuffed();
+			Data.bIsDefBuffed = A->GetStatusTracker()->IsPlayerDefBuffed();
+			Data.BuffCounterLabel = FString("Atk Counter: " + FString::FromInt(P->GetStatusTracker()->GetPlayerAtkDgbCounter()) +
+			"-" + "Def Counter: " + FString::FromInt(P->GetStatusTracker()->GetDefBuffCounter()));
 		}
 		else if (AMob* E = Cast<AMob>(A))
 		{
 			Data.Health = E->GetStats().Health;
+			Data.BuffCounter = A->GetStatusTracker()->GetBuffCounter();
 		}
 
 		if (!A->IsA(AICC_Player::StaticClass()))
@@ -57,6 +61,7 @@ void AIccBattleDebugger::FillInitialInfo()
 			Decision.TargetName = A->GetName();
 			Decision.DecisionPicked = "None";
 			Decision.DecisionTable = "None";
+			Data.bIsBuffed = A->GetStatusTracker()->IsBuffed();
 
 			Decisions.Add(Decision);
 		}
@@ -179,6 +184,10 @@ void AIccBattleDebugger::DisplayStats()
 				ImGui::SameLine();
 				ImGui::TextColored(Data.bIsBuffed ? Red : Grey, "%s", Data.bIsBuffed ? "true" : "false");
 				ImGui::Separator();
+				ImGui::Text("VeylDefBuf: ");
+				ImGui::SameLine();
+				ImGui::TextColored(Data.bIsDefBuffed ? Red: Grey, "%s", Data.bIsDefBuffed ? "true" : "false");
+				ImGui::Separator();
 				ImGui::Text("IsDebuffed?");
 				ImGui::SameLine();
 				ImGui::TextColored(Data.bIsDebuffed ? Red : Grey, "%s", Data.bIsDebuffed ? "true" : "false");
@@ -188,6 +197,8 @@ void AIccBattleDebugger::DisplayStats()
 				ImGui::TextColored(Data.bIsAfflicted ? Green : Grey, "%s", Data.bIsAfflicted ? "true" : "false");
 				ImGui::Separator();
 				ImGui::Text("Buff Counter: %d", Data.BuffCounter);
+				ImGui::Separator();
+				ImGui::Text("%s", TCHAR_TO_UTF8(*Data.BuffCounterLabel));
 				ImGui::Separator();
 				ImGui::Text("Debuff Counter: %d", Data.DebuffCounter);
 				ImGui::Separator();
@@ -204,9 +215,9 @@ void AIccBattleDebugger::DisplayStats()
 
 				if (Data.bIsDebuffed)
 				{
-					ImGui::Text("Current DeBuff: ");
+					ImGui::Text("Current Debuff: ");
 					ImGui::SameLine();
-					ImGui::TextColored(Blue, "%s", TCHAR_TO_UTF8(*Data.CurrentDebuff));
+					ImGui::TextColored(Blue, "Debuff: %s", TCHAR_TO_UTF8(*Data.CurrentDebuff));
 					ImGui::Separator();
 				}
 
