@@ -210,6 +210,7 @@ public:
 	int32 GetDebuffCounter() const;
 	int32 GetPlayerAtkDgbCounter() const;
 	int32 GetDefBuffCounter() const;
+	int32 GetEnvyBurnedCounter() const;
 	
 	
 	FString DbgGetCurrentBuffName() const;
@@ -217,6 +218,7 @@ public:
 	FString DbgGetCurrentMalusName() const;
 	FString DbgGetCurrentAtkBuffName() const;
 	FString DbgGetCurrentDefBuffName() const;
+	FString GetEnvyBurnedDebugLabel() const;
 
 	/**
 	 * Assign Status to afflict
@@ -226,6 +228,7 @@ public:
 	 */
 	void InflictStatus(const EAfflictedStatus& Status, AICC_Actor* Target);
 
+	void InflictEnvyBurned(AICC_Actor* Target);
 
 	/**
 	 * Assign Debuff Status for the chosen target
@@ -252,7 +255,7 @@ public:
  * activated the buff
  */
 	void UpdateStatus();
-
+	
 	void UpdateDebuffStatus();
 
 	/**
@@ -262,6 +265,7 @@ public:
 	void UpdateBuffStatus();
 	void UpdateAtkBuffStatus();
 	void UpdateDefBuffStatus();
+	void UpdateBurnStatus();
 
 	/*-------------------- PLAYER CHECKS --------------------**/
 	/*----------DO NOT WRITE ANYTHING IN THIS SPACE -------------*/
@@ -320,6 +324,9 @@ private:
 	
 	UPROPERTY()
 	int32 BuffAtkCounter = 0;
+	
+	UPROPERTY()
+	int32 BurnCounter = 0;
 	
 	UPROPERTY()
 	int32 BuffDefCounter = 0;
@@ -388,11 +395,17 @@ private:
 	UPROPERTY()
 	FString DebugDebuffName;
 	
+	// Player Only
 	UPROPERTY()
 	FString DebugBuffAtkName = "None";
 	
+	// Player Only
 	UPROPERTY()
 	FString DebugBuffDefName = "None";
+	
+	// Player Only
+	UPROPERTY()
+	FString DebugEnvyBurnedName = "None";
 	
 	UPROPERTY()
 	FString DebugMalusName;

@@ -20,6 +20,7 @@ void FIccBattleDebuggerData::RefreshInfo(AICC_Actor* Target)
 			"-" + "Def Counter: " + FString::FromInt(Target->GetStatusTracker()->GetDefBuffCounter()));
 		CurrentBuff = "Atk: " + Target->GetStatusTracker()->DbgGetCurrentAtkBuffName() + " / " 
 		+ " Def: " + Target->GetStatusTracker()->DbgGetCurrentDefBuffName();
+		BurnedCounter = P->GetStatusTracker()->GetEnvyBurnedCounter();
 		
 	} else if (AMob* E = Cast<AMob>(Target))
 	{
@@ -31,6 +32,7 @@ void FIccBattleDebuggerData::RefreshInfo(AICC_Actor* Target)
 		bIsBuffed = false;
 		bIsDefBuffed = false;
 		BuffCounterLabel = "For Veyl Only";
+		BurnedCounter = -1;
 	}
 	
 	bIsDebuffed = Target->GetStatusTracker()->IsDebuffed();

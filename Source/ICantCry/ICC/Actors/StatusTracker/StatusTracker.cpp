@@ -521,6 +521,11 @@ int32 UStatusTracker::GetDefBuffCounter() const
 	return BuffDefCounter;
 }
 
+int32 UStatusTracker::GetEnvyBurnedCounter() const
+{
+	return BurnCounter;
+}
+
 FString UStatusTracker::DbgGetCurrentBuffName() const
 {
 	return DebugBuffName;
@@ -544,6 +549,11 @@ FString UStatusTracker::DbgGetCurrentAtkBuffName() const
 FString UStatusTracker::DbgGetCurrentDefBuffName() const
 {
 	return DebugBuffDefName;
+}
+
+FString UStatusTracker::GetEnvyBurnedDebugLabel() const
+{
+	return DebugEnvyBurnedName;
 }
 
 
@@ -599,6 +609,23 @@ void UStatusTracker::InflictStatus(const EAfflictedStatus& Status, AICC_Actor* T
 	default:
 	case None:
 		break;
+	}
+}
+
+void UStatusTracker::InflictEnvyBurned(AICC_Actor* Target)
+{
+	if (!Target) return;
+	
+	if (AICC_Player* P = Cast<AICC_Player>(Target))
+	{
+		DebugEnvyBurnedName = "EnvyBurned";
+		bIsOwnerAfflicted = true;
+		P->Burn(true);
+		bCanBuff = false;
+		DebugHelper::LogWarning(P->GetCharacterName() + 
+			" in envy burned state\nCan buff " + FString::FromInt(bCanBuff));
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + P->GetCharacterName() + 
+			" in envy burned state\nCan buff " + FString::FromInt(bCanBuff));
 	}
 }
 
@@ -1036,6 +1063,27 @@ void UStatusTracker::UpdateDefBuffStatus()
 		DebugAtkBuffCounter = BuffAtkCounter;
 		DebugBuffDefName = "None";
 		ExpireBuff(EBuffStatus::DefBuff);
+	}
+}
+
+void UStatusTracker::UpdateBurnStatus()
+{
+	if (!bIsOwnerAfflicted)
+	{
+		DebugHelper::LogMessage(10, FColor::Purple, 
+			"Cant update envy burned status to player");
+		return;
+	}
+	
+	BurnCounter++;
+	
+	if (BurnCounter >= 3)
+	{
+		bIsOwnerAfflicted = false;
+		BurnCounter = 0;
+		DebugEnvyBurnedName = "None";
+		Cast<AICC_Player>(GetOwner())->Burn(false);
+		bCanBuff = true;
 	}
 }
 

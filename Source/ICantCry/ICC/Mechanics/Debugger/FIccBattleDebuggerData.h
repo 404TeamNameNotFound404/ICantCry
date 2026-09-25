@@ -26,6 +26,7 @@ struct FIccBattleDebuggerData
 	UPROPERTY() FString BuffCounterLabel;
 	UPROPERTY() int32 DebuffCounter = -1;
 	UPROPERTY() int32 StatusCounter = -1;
+	UPROPERTY() int32 BurnedCounter = -1;
 	UPROPERTY() FString CurrentBuff;
 	UPROPERTY() FString CurrentDebuff;
 	UPROPERTY() FString CurrentMalus;

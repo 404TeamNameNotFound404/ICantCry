@@ -46,6 +46,7 @@ void AIccBattleDebugger::FillInitialInfo()
 			Data.Health = P->GetRuntimeStats().CurrentHealth;
 			Data.bIsBuffed = A->GetStatusTracker()->IsPlayerAtkBuffed();
 			Data.bIsDefBuffed = A->GetStatusTracker()->IsPlayerDefBuffed();
+			Data.BurnedCounter = P->GetStatusTracker()->GetEnvyBurnedCounter();
 			Data.BuffCounterLabel = FString("Atk Counter: " + FString::FromInt(P->GetStatusTracker()->GetPlayerAtkDgbCounter()) +
 			"-" + "Def Counter: " + FString::FromInt(P->GetStatusTracker()->GetDefBuffCounter()));
 		}
@@ -53,6 +54,7 @@ void AIccBattleDebugger::FillInitialInfo()
 		{
 			Data.Health = E->GetStats().Health;
 			Data.BuffCounter = A->GetStatusTracker()->GetBuffCounter();
+			Data.BurnedCounter = 0;
 		}
 
 		if (!A->IsA(AICC_Player::StaticClass()))
@@ -191,6 +193,14 @@ void AIccBattleDebugger::DisplayStats()
 				ImGui::Text("IsDebuffed?");
 				ImGui::SameLine();
 				ImGui::TextColored(Data.bIsDebuffed ? Red : Grey, "%s", Data.bIsDebuffed ? "true" : "false");
+				ImGui::Separator();
+				ImGui::Text("Burned?: ");
+				ImGui::SameLine();
+				ImGui::TextColored(Green,"%s", Data.BurnedCounter <= 0 ? TCHAR_TO_UTF8(TEXT("No")) : TCHAR_TO_UTF8(TEXT("Yes")));
+				ImGui::Separator();
+				ImGui::Text("Envy Counter");
+				ImGui::SameLine();
+				ImGui::TextColored(Grey, "%d", Data.BurnedCounter);
 				ImGui::Separator();
 				ImGui::Text("IsAfflicted?");
 				ImGui::SameLine();

@@ -65,6 +65,22 @@ Vi spiego come funzionano i settaggi:
 - *SmashRate* questo è piu particolare , è impulso dello smash , questo è un valore che non deve superare **categoricamente 1.0**
 
 
+# 11/09/26
+- testing vari , nulla da reportare
+
+# 15/09/26
+- Correzione di alcuni bug minori del room handler (ancora pero non è stato fixato del tutto)
+- Inizio col refactoring del legacy code
+
+# 16/09/26 
+- Inizio del ispezione del perche buff e debuff non si sovrascrivono piu
+
+
+# 22/09/26
+creazione della *bs_rework* branch 
+- scissione del atk buff col def buff per il player
+- aggiornato il debugging tool  
+
 # Bugs Gravi
 1. ~~Il room toggler che fa falso contatto se si corre~~ -corretto da voi tunando la walk speed e max speed-
 2. Se il retry button sostanzialmente funziona solo a me è un problema e rischia di rompere tutto

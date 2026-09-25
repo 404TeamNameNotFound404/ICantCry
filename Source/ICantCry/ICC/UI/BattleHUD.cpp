@@ -1206,6 +1206,7 @@ void UBattleHUD::RefreshStatusBuffs()
 {
 	GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdateAtkBuffStatus();
 	GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdateDebuffStatus();
+	GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdateBurnStatus();
 	DebugHelper::LogMessage(20, FColor::Blue, "Updated Buffs/Debuffs");
 }
 
