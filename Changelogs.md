@@ -81,6 +81,10 @@ creazione della *bs_rework* branch
 - scissione del atk buff col def buff per il player
 - aggiornato il debugging tool  
 
+# 25/09/26
+- Envy burned rework
+- Aggiunta del relativo counter e property all'interno del debugger
+
 # Bugs Gravi
 1. ~~Il room toggler che fa falso contatto se si corre~~ -corretto da voi tunando la walk speed e max speed-
 2. Se il retry button sostanzialmente funziona solo a me è un problema e rischia di rompere tutto
