@@ -43,10 +43,11 @@ class ICANTCRY_API UQuestDefinition : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 
+
 public:
 
-	/** unique gameplay tag that identifies this quest, used by the quest manager for all lookups */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Info")
+    /** unique gameplay tag that identifies this quest, used by the quest manager for all lookups */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Info")
     FGameplayTag QuestID;
 
     /** short name of the quest shown in ui and logs */
@@ -63,7 +64,7 @@ public:
 
     /** full description shown in the quest log, can be longer than the title */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Info")
-    FText QuestDescription; 
+    FText QuestDescription;
 
     /** category tag for filtering quests in ui (main quest, side quest, faction quest, etc) */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Info")
@@ -77,5 +78,11 @@ public:
     /** optional: name of the npc to return to, shown in ui when quest is ready to turn in */
     UPROPERTY(EditDefaultsOnly, Category = "Quest", meta = (EditCondition = "bRequiresNPCTurnIn"))
     FText TargetNPCName;
+
+    /** message shown in the quest log when all objectives are done and the player must go back to the npc.
+        write {NPCName} to insert TargetNPCName automatically (e.g. "Bring the wood to {NPCName}").
+        leave it empty to use the DefaultTurnInMessage set in the Character UI blueprint */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Quest", meta = (EditCondition = "bRequiresNPCTurnIn", MultiLine = "true"))
+    FText TurnInMessage;
 	
 };

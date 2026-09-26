@@ -10,43 +10,42 @@
 #include "QuestEntryWidget.generated.h"
 
 
+class UCharacterUI;
+
 /**
- * Rappresenta una singola riga nella lista missioni dello ScrollBox
+ * Represents a single row in the ScrollBox's mission list.
  */
 UCLASS()
 class ICANTCRY_API UQuestEntryWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-
 public:
-    // Funzione chiamata dalla CharacterUI per inizializzare questa riga
-    void SetupQuestEntry(const FQuestProgress& InProgress, class UCharacterUI* InParentUI);
+	/** called by the Character UI right after creating the row, stores the quest and shows its title */
+	void SetupQuestEntry(const FQuestProgress& InProgress, class UCharacterUI* InParentUI);
 
-    void UpdateObjectiveDisplay(const FQuestProgress& Details);
+	/** placeholder, currently not implemented */
+	void UpdateObjectiveDisplay(const FQuestProgress& Details);
 
 protected:
-    virtual void NativeConstruct() override;
+	virtual void NativeConstruct() override;
 
-    // --- Componenti UI (Devono avere lo stesso nome nel Blueprint) ---
-    
-    UPROPERTY(meta = (BindWidget))
-    class UButton* BtnSelect;
+	/** button covering the whole row, click opens/closes the quest details */
+	UPROPERTY(meta = (BindWidget))
+	UButton* BtnSelect;
 
-    UPROPERTY(meta = (BindWidget))
-    class UTextBlock* TextQuestTitle;
+	/** text showing the quest title in the list */
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* TextQuestTitle;
 
-    // --- Dati salvati ---
-    
-    FQuestProgress StoredProgress;
-    
-    UPROPERTY()
-    class UCharacterUI* ParentUI;
+	/** snapshot of the quest at the moment the row was built, used only to know which quest this row is */
+	FQuestProgress StoredProgress;
 
-    // Funzione chiamata al click del bottone
-    UFUNCTION()
-    void OnRowClicked();
+	/** Character UI that owns this row, receives the click */
+	UPROPERTY()
+	TObjectPtr<class UCharacterUI> ParentUI;
 
-
-	
+	/** click handler of BtnSelect, forwards the quest id to the Character UI toggle */
+	UFUNCTION()
+	void OnRowClicked();
 };
