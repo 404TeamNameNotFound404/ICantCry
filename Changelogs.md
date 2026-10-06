@@ -76,6 +76,13 @@ Vi spiego come funzionano i settaggi:
 - Inizio del ispezione del perche buff e debuff non si sovrascrivono piu
 
 
+# 06/10/26
+- Fix [#296](https://github.com/404TeamNameNotFound404/ICantCry/issues/296), [#297](https://github.com/404TeamNameNotFound404/ICantCry/issues/297) 
+- Aggiunto ad anger un prototipo di vfx 
+- Fix del "back" button che non scompare quando si premono le altre azioni
+- Fix del target scroll che non aggiorna subito i dati dei target
+- Fix del enemy che da il culo quando attacca (non dovrebbe capitare mai piu)
+
 # 22/09/26
 creazione della *bs_rework* branch 
 - scissione del atk buff col def buff per il player
@@ -95,7 +102,9 @@ creazione della *bs_rework* branch
 # Bugs Minori
 1. Nel curling minigame manca ancora il posizionamento della palla in maniera speculare se si tocca con la barra la parte alta degli scaglioni
 
-2. Lo scroll alcune volte non si aggiorna bene e ha bisogno di un altro ciclo di scroll per aggiornarsi correttamente
+2. ~~Lo scroll alcune volte non si aggiorna bene e ha bisogno di un altro ciclo di scroll per aggiornarsi correttamente~~
 
 3. Joy impiega qualche microsecondo tra fine minigame e attacco per ritornare in posizione 
 
+06/10/26 Edit
+4. Alcune emozioni se partono dallo spawn piu lontano si fermano a meta strada (nota per me, rivedere il threshold)

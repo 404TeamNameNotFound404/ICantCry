@@ -36,6 +36,7 @@ public:
 	void UpdateAp(const int32& Value, const int32& ApCurrent);
 	void ClearAt(const int32& Value);
 	void ClearAll();
+	bool IsEmpty() const;
 	
 protected:
 	virtual void NativeConstruct() override;

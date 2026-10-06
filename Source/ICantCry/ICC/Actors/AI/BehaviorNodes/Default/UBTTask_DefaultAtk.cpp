@@ -176,15 +176,9 @@ void UUBTTask_DefaultAtk::StartAttackMinigame(AMob* Current, AICC_Player* Target
 	Request.SetUsePathfinding(true);
 	Request.SetAllowPartialPath(true); 
 	Request.SetNavigationFilter(nullptr);
-	// Controller->MoveToActor(Target);
-	//Controller->MoveTo(Request);
 	
-	// const float DistanceToTarget = FVector::DistSquared2D(Target->GetActorLocation(), Current->GetActorLocation());
-	//
-	// UCharacterMovementComponent* MovementComponent = Current->GetCharacterMovement();
-	// MovementComponent->MaxWalkSpeed = DistanceToTarget / Target->GetMinigameHandler()->
-	
-	EPathFollowingRequestResult::Type Result = Controller->MoveTo(Request);
+	const EPathFollowingRequestResult::Type Result = Controller->MoveTo(Request);
+	Controller->SetFocus(Target, EAIFocusPriority::Gameplay);
 
 	if (Result == EPathFollowingRequestResult::Failed)
 	{
@@ -193,6 +187,7 @@ void UUBTTask_DefaultAtk::StartAttackMinigame(AMob* Current, AICC_Player* Target
 	else if (Result == EPathFollowingRequestResult::AlreadyAtGoal)
 	{
 		DebugHelper::LogMessage(10, FColor::White,"AI thinks it is already at the target!");
+		Controller->ClearFocus(EAIFocusPriority::Gameplay);
 	}
 
 

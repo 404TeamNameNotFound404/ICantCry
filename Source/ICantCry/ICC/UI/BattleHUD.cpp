@@ -365,7 +365,7 @@ void UBattleHUD::OnShootPressed()
 		Quantity->SetVisibility(ESlateVisibility::Hidden);
 		OutOfBulletTxt->SetVisibility(ESlateVisibility::Visible);
 		OutOfBulletTxt->SetColorAndOpacity(FLinearColor::Red);
-		OutOfBulletTxt->SetText(FText::FromString("Magazine empty!"));
+		OutOfBulletTxt->SetText(FText::FromString("No ammo!"));
 		return;
 	}
 
@@ -410,6 +410,9 @@ void UBattleHUD::OnShootPressed()
 			{
 				ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 				ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+				TargetNameText->SetText(FText::FromString(Cast<AICC_Player>(GameInstance->GetCurrentPlayer())->GetCharacterName()));
+				TargetText->SetText(FText::FromString(FString(TEXT("Target: ")) 
+					+ Cast<AICC_Player>(GameInstance->GetCurrentPlayer())->GetCharacterName()));
 			}
 			else
 			{
@@ -422,18 +425,32 @@ void UBattleHUD::OnShootPressed()
 
 	bIsEvFirst = false;
 	BackBtn->SetVisibility(ESlateVisibility::Visible);
-	//FSlateApplication::Get().ClearAllUserFocus();
 	
-	GetWorld()->GetTimerManager().SetTimerForNextTick([&]
-	{
-		RefreshStatusBuffs();
-	});
+	//FSlateApplication::Get().ClearAllUserFocus();
 }
 
 void UBattleHUD::OnFocusPressed()
 {
 	if (!GetBattleHandler()->GetTurnBasedSystem()->GetIsPlayerTurn())
 	{
+		return;
+	}
+	
+	if (Bar->IsEmpty())
+	{
+		DebugHelper::LogWarning("0 AP");
+		BulletName->SetVisibility(ESlateVisibility::Hidden);
+		Quantity->SetVisibility(ESlateVisibility::Hidden);
+		OutOfBulletTxt->SetVisibility(ESlateVisibility::Visible);
+		OutOfBulletTxt->SetColorAndOpacity(FLinearColor::Red);
+		OutOfBulletTxt->SetText(FText::FromString("Denied, you have 0 AP!"));
+		
+		FTimerHandle Delay;
+		GetWorld()->GetTimerManager().SetTimer(Delay, [this]()
+		{
+			OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
+		}, 3.f, false);
+		
 		return;
 	}
 
@@ -478,10 +495,29 @@ void UBattleHUD::OnFocusPressed()
 	Quantity->SetVisibility(ESlateVisibility::Hidden);
 	bIsEvFirst = false;
 	FSlateApplication::Get().ClearAllUserFocus();
+	BackBtn->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UBattleHUD::OnReloadPressed()
 {
+	if (Bar->IsEmpty())
+	{
+		DebugHelper::LogWarning("0 AP");
+		BulletName->SetVisibility(ESlateVisibility::Hidden);
+		Quantity->SetVisibility(ESlateVisibility::Hidden);
+		OutOfBulletTxt->SetVisibility(ESlateVisibility::Visible);
+		OutOfBulletTxt->SetColorAndOpacity(FLinearColor::Red);
+		OutOfBulletTxt->SetText(FText::FromString("Denied, you have 0 AP!"));
+		
+		FTimerHandle Delay;
+		GetWorld()->GetTimerManager().SetTimer(Delay, [this]()
+		{
+			OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
+		}, 3.f, false);
+		
+		return;
+	}
+	
 	bBulletSetupFinished = false;
 	bShootFired = false;
 	bTargetSelection = false;
@@ -546,6 +582,8 @@ void UBattleHUD::OnReloadPressed()
 		RefreshStatusBuffs();
 	});
 	
+	BackBtn->SetVisibility(ESlateVisibility::Visible);
+	
 	//FSlateApplication::Get().ClearAllUserFocus();
 }
 
@@ -590,6 +628,7 @@ void UBattleHUD::OnPassPressed()
 	BulletName->SetVisibility(ESlateVisibility::Hidden);
 	Quantity->SetVisibility(ESlateVisibility::Hidden);
 	FSlateApplication::Get().ClearAllUserFocus();
+	BackBtn->SetVisibility(ESlateVisibility::Hidden);
 	bIsEvFirst = false;
 }
 
@@ -1072,6 +1111,11 @@ void UBattleHUD::PrepareToEngage()
 	Quantity->SetVisibility(ESlateVisibility::Hidden);
 	ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Visible);
 	ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Visible);
+	
+	GetWorld()->GetTimerManager().SetTimerForNextTick([&]
+	{
+		RefreshStatusBuffs();
+	});
 }
 
 AMob* UBattleHUD::RetrieveSelectedTarget()
@@ -1192,6 +1236,7 @@ void UBattleHUD::UpdateTargetDisplay(AICC_Actor* Target)
 
 		TargetNameText->SetText(FText::FromString(Name));
 		TargetText->SetText(FText::FromString(TEXT("Target: ") + Name));
+		DebugHelper::LogMessage(15, FColor::Blue, "Target updated");
 	}
 	else if (const AMob* MobTarget = Cast<AMob>(Target))
 	{

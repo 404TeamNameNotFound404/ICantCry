@@ -1021,7 +1021,7 @@ void UStatusTracker::UpdateBuffStatus()
 
 void UStatusTracker::UpdateAtkBuffStatus()
 {
-	if (/*!bIsOwnerAlreadyBuffed || !bCanBuff ||*/ !bIsBuffedAtk)
+	if (!bIsBuffedAtk)
 	{
 		DebugHelper::LogMessage(10, FColor::Blue, 
 			"Can't update buff  in update atk buff status");
@@ -1038,14 +1038,29 @@ void UStatusTracker::UpdateAtkBuffStatus()
 		BuffAtkCounter = 0;
 		DebugAtkBuffCounter = BuffAtkCounter;
 		DebugBuffAtkName = "None";
-		ExpireBuff(EBuffStatus::AtkBuff);
+		
+		bIsOwnerAlreadyBuffed = false;
+		bCanDebuff = true;
+		bIsBuffedAtk = false;
+		AICC_Player* Player = Instance->GetCurrentPlayer();
+		Instance->GetRuntimeStats().AttackPower = Instance->GetPersistentData()->InitialAttackPower;
+		
+		if (Player->ActiveAuras.Contains(EBuffStatus::AtkBuff) && Player->ActiveAuras[EBuffStatus::AtkBuff])
+		{
+			Player->ActiveAuras[EBuffStatus::AtkBuff]->Deactivate();
+		}
+			
+		if (Instance && Instance->GetCurrentPlayer() && Instance->GetCurrentPlayer()->GetBattleHUD() && Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler())
+		{
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura(Player, EBuffStatus::AtkBuff);
+		}
 	}
 	
 }
 
 void UStatusTracker::UpdateDefBuffStatus()
 {
-	if (/*!bIsOwnerAlreadyBuffed || !bCanBuff ||*/ !bIsDefBuffed)
+	if (!bIsDefBuffed)
 	{
 		DebugHelper::LogMessage(10, FColor::Blue, 
 			"Can't update buff  in update buff def status");
@@ -1062,7 +1077,18 @@ void UStatusTracker::UpdateDefBuffStatus()
 		BuffDefCounter = 0;
 		DebugAtkBuffCounter = BuffAtkCounter;
 		DebugBuffDefName = "None";
-		ExpireBuff(EBuffStatus::DefBuff);
+		AICC_Player* Player = Instance->GetCurrentPlayer();
+		Instance->GetRuntimeStats().DefencePower = Instance->GetPersistentData()->InitialDefencePower;
+		
+		if (Player->ActiveAuras.Contains(EBuffStatus::DefBuff) && Player->ActiveAuras[EBuffStatus::DefBuff])
+		{
+			Player->ActiveAuras[EBuffStatus::DefBuff]->Deactivate();
+		}
+			
+		if (Instance && Instance->GetCurrentPlayer() && Instance->GetCurrentPlayer()->GetBattleHUD() && Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler())
+		{
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura(Player, EBuffStatus::DefBuff);
+		}
 	}
 }
 
@@ -1699,6 +1725,7 @@ void UStatusTracker::ExpireBuff(const EBuffStatus& ExpiredTarget)
 	case AtkBuff:
 		if (Target->IsA(AICC_Player::StaticClass()))
 		{
+			DebugHelper::LogMessage(10, FColor::White, "Player atk buff expired");
 			AICC_Player* Player = Instance->GetCurrentPlayer();
 			DebugHelper::AddMessageToLog("[Status Tracker]: Player buff before returning back to normal " + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower));
 			Instance->GetRuntimeStats().AttackPower = Instance->GetPersistentData()->InitialAttackPower;

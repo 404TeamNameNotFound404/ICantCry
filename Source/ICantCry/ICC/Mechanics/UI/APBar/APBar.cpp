@@ -101,6 +101,11 @@ void UAPBar::ClearAll()
 	}
 }
 
+bool UAPBar::IsEmpty() const
+{
+	return CurrentAp <= 0;
+}
+
 void UAPBar::SetCurrentAP(const int32& Value)
 {
 	CurrentAp = FMath::Clamp(Value, 0, MaxAp);
