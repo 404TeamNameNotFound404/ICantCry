@@ -76,13 +76,6 @@ Vi spiego come funzionano i settaggi:
 - Inizio del ispezione del perche buff e debuff non si sovrascrivono piu
 
 
-# 06/10/26
-- Fix [#296](https://github.com/404TeamNameNotFound404/ICantCry/issues/296), [#297](https://github.com/404TeamNameNotFound404/ICantCry/issues/297) 
-- Aggiunto ad anger un prototipo di vfx 
-- Fix del "back" button che non scompare quando si premono le altre azioni
-- Fix del target scroll che non aggiorna subito i dati dei target
-- Fix del enemy che da il culo quando attacca (non dovrebbe capitare mai piu)
-
 # 22/09/26
 creazione della *bs_rework* branch 
 - scissione del atk buff col def buff per il player
@@ -91,6 +84,15 @@ creazione della *bs_rework* branch
 # 25/09/26
 - Envy burned rework
 - Aggiunta del relativo counter e property all'interno del debugger
+
+
+# 06/10/26
+- Fix [#296](https://github.com/404TeamNameNotFound404/ICantCry/issues/296), [#297](https://github.com/404TeamNameNotFound404/ICantCry/issues/297) 
+- Aggiunto ad anger un prototipo di vfx 
+- Fix del "back" button che non scompare quando si premono le altre azioni
+- Fix del target scroll che non aggiorna subito i dati dei target
+- Fix del enemy che da il culo quando attacca (non dovrebbe capitare mai piu)
+- Anger Animation blueprint e relative modifiche
 
 # Bugs Gravi
 1. ~~Il room toggler che fa falso contatto se si corre~~ -corretto da voi tunando la walk speed e max speed-
