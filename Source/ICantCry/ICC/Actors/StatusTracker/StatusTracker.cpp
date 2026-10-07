@@ -661,6 +661,12 @@ void UStatusTracker::InflictDebuffStatus(const EDebuffStatus& Status, AICC_Actor
 		return; 
 	}
 	
+	if (PlayerDebuffFlow(Status))
+	{
+		DebugHelper::AddMessageToLog("[Status Tracker]: Debuff neutralized by Buff; nothing applied.");
+		return;
+	}
+	
 	bAtkDebuffRevert = false;
 	bDefDebuffRevert = false;
 	
@@ -763,33 +769,152 @@ void UStatusTracker::BuffWith(const EBuffStatus& BuffStatus)
 
 void UStatusTracker::BuffPlayerAtk()
 {
-	if (AICC_Actor* Target = Cast<AICC_Actor>(GetOwner()); 
-		Target->IsA(AICC_Player::StaticClass()))
+	const AICC_Player* Player = Instance->GetCurrentPlayer();
+	
+	if (PlayerBuffFlow(EBuffStatus::AtkBuff))
 	{
-		bIsBuffedAtk = true;
-		DebugBuffAtkName = "Buff Atk";
-		const AICC_Player* Player = Cast<AICC_Player>(Target);
-		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->SimulateAura(Cast<AICC_Actor>(GetOwner()), 500.f, FColor::Red, EBuffStatus::AtkBuff);
-		Instance->GetRuntimeStats().AttackPower = Instance->GetPersistentData()->InitialAttackPower;
-		Instance->GetRuntimeStats().AttackPower += FMath::FloorToInt( Instance->GetRuntimeStats().AttackPower * Player->GetBattleData()->BuffAtkIncrement);
-		DebugHelper::LogWarning("[Status Tracker]: " + Player->GetCharacterName() + " buffed it's attack " + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower));
-		DebugHelper::AddMessageToLog("[Status Tracker]: " + Player->GetCharacterName() + " buffed it's attack " + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower));
+		return;
 	}
+	
+	bIsBuffedAtk = true;
+	bIsOwnerAlreadyBuffed = true;
+	DebugBuffAtkName = "Buff Atk";
+
+	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->SimulateAura(
+		Cast<AICC_Actor>(GetOwner()), 500.f, FColor::Red, EBuffStatus::AtkBuff);
+	Instance->GetRuntimeStats().AttackPower = Instance->GetPersistentData()->InitialAttackPower;
+	Instance->GetRuntimeStats().AttackPower += FMath::FloorToInt(
+		Instance->GetRuntimeStats().AttackPower * Player->GetBattleData()->BuffAtkIncrement);
+	DebugHelper::LogWarning(
+		"[Status Tracker]: " + Player->GetCharacterName() + " buffed it's attack " + FString::SanitizeFloat(
+			Instance->GetRuntimeStats().AttackPower));
+	DebugHelper::AddMessageToLog(
+		"[Status Tracker]: " + Player->GetCharacterName() + " buffed it's attack " + FString::SanitizeFloat(
+			Instance->GetRuntimeStats().AttackPower));
 }
 
 void UStatusTracker::BuffPlayerDef()
 {
-	if (AICC_Actor* Target = Cast<AICC_Actor>(GetOwner()); 
-		Target->IsA(AICC_Player::StaticClass()))
+	const AICC_Player* Player = Instance->GetCurrentPlayer();
+	
+	if (PlayerBuffFlow(EBuffStatus::DefBuff))
 	{
-		bIsDefBuffed = true;
-		DebugBuffDefName = "Buff Def";
-		const AICC_Player* Player = Cast<AICC_Player>(Target); // it was GetOwner() before
+		return;
+	}
+	
+	bIsDefBuffed = true;
+	bIsOwnerAlreadyBuffed = true;
+	DebugBuffDefName = "Buff Def";
+	Instance->GetRuntimeStats().DefencePower = Instance->GetPersistentData()->InitialDefencePower;
+	Instance->GetRuntimeStats().DefencePower += FMath::FloorToInt(
+		Instance->GetRuntimeStats().DefencePower * Player->GetBattleData()->BuffDefIncrement);
+	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->SimulateAura(
+		Cast<AICC_Actor>(GetOwner()), 500.f, FColor::Blue, EBuffStatus::DefBuff);
+	DebugHelper::LogWarning(
+		"[Status Tracker]: " + Player->GetCharacterName() + "buffed it's Defence - " + FString::SanitizeFloat(
+			Instance->GetRuntimeStats().DefencePower));
+	DebugHelper::AddMessageToLog(
+		"[Status Tracker]: " + Player->GetCharacterName() + "buffed it's Defence - " + FString::SanitizeFloat(
+			Instance->GetRuntimeStats().DefencePower));
+}
+
+bool UStatusTracker::PlayerBuffFlow(const EBuffStatus& Buff)
+{
+	if (!Cast<AICC_Player>(GetOwner()))
+	{
+		DebugHelper::LogMessage(10, FColor::Purple, "Not the player return cant check player buff flow");
+		return false;
+	}
+	
+	const AICC_Player* Player = Instance->GetCurrentPlayer();
+	if (!Player)
+	{
+		return false;
+	}
+	
+	if (!bIsOwnerDebuffed) return false;
+
+	switch (Buff)
+	{
+	case AtkBuff:
+		DebugHelper::LogMessage(10, FColor::Purple, "Debuff atk reverted");
+		DebugHelper::AddMessageToLog(
+			"[Status Tracker - DebuffFlow]: Collision! " + GetDebuffName(EDebuffStatus::DebuffAtk) + " cancels " +
+			GetBuffName(Buff) + " on " + Player->GetCharacterName());
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetName() + " got buffed so reverting");
+		Instance->GetRuntimeStats().AttackPower = Instance->GetPersistentData()->InitialAttackPower;
+		DebugHelper::AddMessageToLog(
+			"[Status Tracker]: " + GetOwner()->GetName() + " Atk now is  " + FString::SanitizeFloat(
+				Instance->GetRuntimeStats().AttackPower));
+		Player->GetBattleHUD()->GetBattleHandler()->DeactivateAura();
+		bAtkDebuffRevert = true;
+		bIsOwnerDebuffed = false;
+		return true;
+		break;
+	case DefBuff:
+		DebugHelper::AddMessageToLog(
+			"[Status Tracker - DebuffFlow]: Collision! " + GetDebuffName(EDebuffStatus::DebuffDef) + " cancels " +
+			GetBuffName(Buff) + " on " + Player->GetCharacterName());
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetName() + " got buffed so reverting");
 		Instance->GetRuntimeStats().DefencePower = Instance->GetPersistentData()->InitialDefencePower;
-		Instance->GetRuntimeStats().DefencePower += FMath::FloorToInt(Instance->GetRuntimeStats().DefencePower * Player->GetBattleData()->BuffDefIncrement);
-		Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->SimulateAura(Cast<AICC_Actor>(GetOwner()), 500.f, FColor::Blue, EBuffStatus::DefBuff);
-		DebugHelper::LogWarning("[Status Tracker]: " + Player->GetCharacterName() +  "buffed it's Defence - " + FString::SanitizeFloat(Instance->GetRuntimeStats().DefencePower));
-		DebugHelper::AddMessageToLog("[Status Tracker]: " + Player->GetCharacterName() +  "buffed it's Defence - " + FString::SanitizeFloat(Instance->GetRuntimeStats().DefencePower));
+		DebugHelper::AddMessageToLog(
+			"[Status Tracker]: " + GetOwner()->GetName() + " def now is  " + FString::SanitizeFloat(
+				Instance->GetRuntimeStats().DefencePower));
+		Player->GetBattleHUD()->GetBattleHandler()->DeactivateAura();
+		bDefDebuffRevert = true;
+		bIsOwnerDebuffed = false;
+		return true;
+
+	case LowHealth:
+	default:
+	case NoBuff:
+		return false;
+	}
+}
+
+bool UStatusTracker::PlayerDebuffFlow(const EDebuffStatus& Debuff)
+{
+	const AICC_Player* Player = Instance->GetCurrentPlayer();
+	if (!Player) return false;
+	if (!Cast<AICC_Player>(GetOwner()))
+	{
+		DebugHelper::LogMessage(10, FColor::Purple, "Not the player return cant check debuff flow");
+		return false;
+	}
+	
+	if (!bIsOwnerAlreadyBuffed) return false;
+	
+	switch (Debuff)
+	{
+	case DebuffAtk:
+		if (!bIsBuffedAtk) return false;
+		DebugHelper::LogMessage(10, FColor::Purple, "Debuff atk reverted");
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetName() + " got buffed so reverting");
+		Instance->GetRuntimeStats().AttackPower = Instance->GetPersistentData()->InitialAttackPower;
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetName() + " Atk now is  "  + FString::SanitizeFloat(Instance->GetRuntimeStats().AttackPower));
+		Player->GetBattleHUD()->GetBattleHandler()->DeactivateAura();
+		bAtkDebuffRevert = true;
+		bIsOwnerAlreadyBuffed = false;
+		bIsBuffedAtk = false;
+		return true;
+	case DebuffDef:
+		if (!bIsDefBuffed) return false;
+		DebugHelper::AddMessageToLog(
+			"[Status Tracker - DebuffFlow]: Collision! " + GetDebuffName(Debuff) + " cancels " +
+			GetBuffName(EBuffStatus::DefBuff) + " on " + Player->GetCharacterName());
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetName() + " got buffed so reverting");
+		Instance->GetRuntimeStats().DefencePower = Instance->GetPersistentData()->InitialDefencePower;
+		DebugHelper::AddMessageToLog(
+			"[Status Tracker]: " + GetOwner()->GetName() + " def now is  " + FString::SanitizeFloat(
+				Instance->GetRuntimeStats().DefencePower));
+		Player->GetBattleHUD()->GetBattleHandler()->DeactivateAura();
+		bDefDebuffRevert = true;
+		bIsOwnerAlreadyBuffed = false;
+		bIsDefBuffed = false;
+		return true;
+	default:
+	case NoDebuff:
+		return false;
 	}
 }
 

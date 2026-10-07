@@ -245,6 +245,8 @@ public:
 	
 	void BuffPlayerAtk();
 	void BuffPlayerDef();
+	bool PlayerBuffFlow(const EBuffStatus& Buff);
+	bool PlayerDebuffFlow(const EDebuffStatus& Debuff);
 
 	
 	/*----------DO NOT WRITE ANYTHING IN THIS SPACE -------------*/

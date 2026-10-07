@@ -91,8 +91,13 @@ creazione della *bs_rework* branch
 - Aggiunto ad anger un prototipo di vfx 
 - Fix del "back" button che non scompare quando si premono le altre azioni
 - Fix del target scroll che non aggiorna subito i dati dei target
-- Fix del enemy che da il culo quando attacca (non dovrebbe capitare mai piu)
 - Anger Animation blueprint e relative modifiche
+
+# 07/10/26
+- Fix [#299](https://github.com/404TeamNameNotFound404/ICantCry/issues/299) 
+> **_NOTA:_**: ** alcuni bug minori sono ancora irrisolti tipo aura vfx che non se ne va e nel debugger che il buff dice ancora che si è in buff atk o def ma quello che importa è il booleano isBuffed e quello della difesa che vanno a FALSE **
+- Fix della **feature** del Ai che da il culo quando attacca
+- Clean up del code generale
 
 # Bugs Gravi
 1. ~~Il room toggler che fa falso contatto se si corre~~ -corretto da voi tunando la walk speed e max speed-
