@@ -47,8 +47,11 @@ void AIccBattleDebugger::FillInitialInfo()
 			Data.bIsBuffed = A->GetStatusTracker()->IsPlayerAtkBuffed();
 			Data.bIsDefBuffed = A->GetStatusTracker()->IsPlayerDefBuffed();
 			Data.BurnedCounter = P->GetStatusTracker()->GetEnvyBurnedCounter();
+			
+			Data.DebuffCounterLabel = FString("AtkDbf: " + FString::FromInt(P->GetStatusTracker()->GetPlayerDebuffAtkCounter()) + 
+				"-" + "" + " DefDbf: " + FString::FromInt(P->GetStatusTracker()->GetPlayerDebuffDefCounter()));
 			Data.BuffCounterLabel = FString("Atk Counter: " + FString::FromInt(P->GetStatusTracker()->GetPlayerAtkDgbCounter()) +
-			"-" + "Def Counter: " + FString::FromInt(P->GetStatusTracker()->GetDefBuffCounter()));
+			"-" + "" + " Def Counter: " + FString::FromInt(P->GetStatusTracker()->GetDefBuffCounter()));
 		}
 		else if (AMob* E = Cast<AMob>(A))
 		{
@@ -209,6 +212,8 @@ void AIccBattleDebugger::DisplayStats()
 				ImGui::Text("Buff Counter: %d", Data.BuffCounter);
 				ImGui::Separator();
 				ImGui::Text("%s", TCHAR_TO_UTF8(*Data.BuffCounterLabel));
+				ImGui::Separator();
+				ImGui::Text("%s", TCHAR_TO_UTF8(*Data.DebuffCounterLabel));
 				ImGui::Separator();
 				ImGui::Text("Debuff Counter: %d", Data.DebuffCounter);
 				ImGui::Separator();

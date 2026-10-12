@@ -456,13 +456,13 @@ void UBattleHUD::OnFocusPressed()
 
 	if (GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->IsFreezed())
 	{
-		IncreaseAP(1);
+		DecreaseAP(1);
 		return;
 	}
 	
 	// GameInstance->GetCurrentPlayer()->GetStatusTracker()->BuffWith(EBuffStatus::DefBuff);
-	IncreaseAP(1);
-	Bar->IncreaseAP(1);
+	DecreaseAP(1);
+	Bar->DecreaseAP(1);
 	GameInstance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 	
 	/*
@@ -621,6 +621,7 @@ void UBattleHUD::OnPassPressed()
 	
 	GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdateStatus();
 	GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdateDefBuffStatus();
+	GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdatePlayerDebuffStatus();
 	//RefreshStatusBuffs();
 
 	Displayer->SetVisibility(ESlateVisibility::Hidden);
@@ -1146,6 +1147,12 @@ void UBattleHUD::PrepareToEngageEv(const EBuffStatus& BuffToReceive)
 	RefreshPistolMagazine();
 	UpdateAp();
 	EnableButtonsAfterShooting();
+	BackBtn->SetVisibility(ESlateVisibility::Hidden);
+
+	GetWorld()->GetTimerManager().SetTimerForNextTick([&]
+	{
+		RefreshStatusBuffs();
+	});
 }
 
 void UBattleHUD::PrepareToEngageEv(const EAfflictedStatus& StatusToInflict)
@@ -1178,7 +1185,12 @@ void UBattleHUD::PrepareToEngageEv(const EAfflictedStatus& StatusToInflict)
 	Displayer->Refresh();
 	RefreshPistolMagazine();
 	UpdateAp();
+	BackBtn->SetVisibility(ESlateVisibility::Hidden);
 	EnableButtonsAfterShooting();
+	GetWorld()->GetTimerManager().SetTimerForNextTick([&]
+	{
+		RefreshStatusBuffs();
+	});
 }
 
 void UBattleHUD::PrepareToEngageEv(const EDebuffStatus& StatusToDebuff)
@@ -1201,7 +1213,12 @@ void UBattleHUD::PrepareToEngageEv(const EDebuffStatus& StatusToDebuff)
 	Displayer->Refresh();
 	RefreshPistolMagazine();
 	UpdateAp();
+	BackBtn->SetVisibility(ESlateVisibility::Hidden);
 	EnableButtonsAfterShooting();
+	GetWorld()->GetTimerManager().SetTimerForNextTick([&]
+	{
+		RefreshStatusBuffs();
+	});
 }
 
 bool UBattleHUD::IsShootingEv() const
@@ -1250,7 +1267,7 @@ void UBattleHUD::UpdateTargetDisplay(AICC_Actor* Target)
 void UBattleHUD::RefreshStatusBuffs()
 {
 	GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdateAtkBuffStatus();
-	GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdateDebuffStatus();
+	GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdatePlayerDebuffStatus();
 	GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdateBurnStatus();
 	DebugHelper::LogMessage(20, FColor::Blue, "Updated Buffs/Debuffs");
 }
@@ -1534,6 +1551,11 @@ void UBattleHUD::Engage()
 			Displayer->Refresh();
 			UpdateAp();
 			EnableButtonsAfterShooting();
+			BackBtn->SetVisibility(ESlateVisibility::Hidden);
+			GetWorld()->GetTimerManager().SetTimerForNextTick([&]
+			{
+				RefreshStatusBuffs();
+			});
 			break;
 		}
 	case FearDv:
@@ -1553,6 +1575,11 @@ void UBattleHUD::Engage()
 			Displayer->Refresh();
 			UpdateAp();
 			EnableButtonsAfterShooting();
+			BackBtn->SetVisibility(ESlateVisibility::Hidden);
+			GetWorld()->GetTimerManager().SetTimerForNextTick([&]
+			{
+				RefreshStatusBuffs();
+			});
 			break;
 		}
 	case Disgust:

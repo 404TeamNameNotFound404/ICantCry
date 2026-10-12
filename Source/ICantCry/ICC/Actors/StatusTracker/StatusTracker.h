@@ -211,6 +211,11 @@ public:
 	int32 GetPlayerAtkDgbCounter() const;
 	int32 GetDefBuffCounter() const;
 	int32 GetEnvyBurnedCounter() const;
+	int32 GetPlayerDebuffAtkCounter() const;
+	int32 GetPlayerDebuffDefCounter() const;
+	
+	bool IsPlayerAtkDebuffed() const;
+	bool IsPlayerDefDebuffed() const;
 	
 	
 	FString DbgGetCurrentBuffName() const;
@@ -236,6 +241,8 @@ public:
 	 * @param Target Target
 	 */
 	void InflictDebuffStatus(const EDebuffStatus& Status, AICC_Actor* Target);
+	void DebuffPlayerAtk();
+	void DebuffPlayerDef();
 
 	/**
 	 * Assing the buff to give to target
@@ -267,6 +274,7 @@ public:
 	void UpdateBuffStatus();
 	void UpdateAtkBuffStatus();
 	void UpdateDefBuffStatus();
+	void UpdatePlayerDebuffStatus();
 	void UpdateBurnStatus();
 
 	/*-------------------- PLAYER CHECKS --------------------**/
@@ -334,6 +342,12 @@ private:
 	int32 BuffDefCounter = 0;
 	
 	UPROPERTY()
+	int32 PlayerDebuffAtkCounter = 0;
+	
+	UPROPERTY()
+	int32 PlayerDebuffDefCounter = 0;
+	
+	UPROPERTY()
 	int32 BuffStatusCounter = 0;
 
 	// LEGACY
@@ -348,6 +362,12 @@ private:
 	
 	UPROPERTY()
 	bool bCanDebuff = true;
+	
+	UPROPERTY()
+	bool bIsPlayerAtkDebuffed = false;
+	
+	UPROPERTY()
+	bool bIsPlayerDefDebuffed = false;
 
 	UPROPERTY()
 	FInternalPerkData PerkData;
@@ -421,6 +441,8 @@ private:
 	void BuffShield();
 	void ExpireBuff(const EBuffStatus& ExpiredTarget);
 	void ExpireBuff(const EBuffStatus& ExpiredBuff, AICC_Actor* Target);
+	void UpdatePlayerAtkDebuffCounter();
+	void UpdatePlayerDefDebuffCounter();
 	
 	/**
 	 * Used for joy ev / ai 

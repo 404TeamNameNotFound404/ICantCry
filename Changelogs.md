@@ -99,6 +99,12 @@ creazione della *bs_rework* branch
 - Fix della **feature** del Ai che da il culo quando attacca
 - Clean up del code generale
 
+
+# 12/10/26
+1. **NON ANCORA TESTATI** [#301](https://github.com/404TeamNameNotFound404/ICantCry/issues/301), [#300](https://github.com/404TeamNameNotFound404/ICantCry/issues/300) [#302](https://github.com/404TeamNameNotFound404/ICantCry/issues/302)
+2. **Parzialmente testato** [#303](https://github.com/404TeamNameNotFound404/ICantCry/issues/303) 
+3. Apertura della *issue* [#307](https://github.com/404TeamNameNotFound404/ICantCry/issues/307) 
+
 # Bugs Gravi
 1. ~~Il room toggler che fa falso contatto se si corre~~ -corretto da voi tunando la walk speed e max speed-
 2. Se il retry button sostanzialmente funziona solo a me è un problema e rischia di rompere tutto
