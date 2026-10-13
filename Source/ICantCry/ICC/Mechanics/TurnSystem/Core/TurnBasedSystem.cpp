@@ -266,6 +266,7 @@ void UTurnBasedSystem::StartNextTurn()
 			}
 			
 			CurrentPlayer = Player;
+			Player->GetBattleHUD()->RestoreFocusBuff();
 		}
 	}
 }

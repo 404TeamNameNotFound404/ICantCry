@@ -244,6 +244,8 @@ public:
 	void RetrieveNotUsedBullets();
 	void PushBackIndifferenceAsCasing(const int32& CasingQuantity, const ECasingType& CasingType);
 	
+	void RestoreFocusBuff();
+	
 	
 protected:
 	UFUNCTION(BlueprintPure) FText UpdateBulletName();
@@ -276,13 +278,9 @@ private:
 	TSubclassOf<UBulletDisplayer> BulletDisplayerClass;
 	
 	UPROPERTY() FInventory Inventory;
-
-	// UPROPERTY(meta = (BindWidget))
-	// UImage* Bullet_1;
-	// UPROPERTY(meta = (BindWidget))
-	// UImage* Bullet_2;
-	// UPROPERTY(meta = (BindWidget))
-	// UImage* Bullet_3;
+	
+	UPROPERTY() bool bIsUserReloading = false;
+	UPROPERTY() bool bIsUserFocusing = false;
 
 	UPROPERTY(meta = (BindWidget))
 	UCanvasPanel* BulletPanel;

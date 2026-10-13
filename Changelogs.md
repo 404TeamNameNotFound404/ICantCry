@@ -99,25 +99,26 @@ creazione della *bs_rework* branch
 - Fix della **feature** del Ai che da il culo quando attacca
 - Clean up del code generale
 
-
 # 12/10/26
 1. **NON ANCORA TESTATI** [#301](https://github.com/404TeamNameNotFound404/ICantCry/issues/301), [#300](https://github.com/404TeamNameNotFound404/ICantCry/issues/300) [#302](https://github.com/404TeamNameNotFound404/ICantCry/issues/302)
 2. **Parzialmente testato** [#303](https://github.com/404TeamNameNotFound404/ICantCry/issues/303) 
 3. Apertura della *issue* [#307](https://github.com/404TeamNameNotFound404/ICantCry/issues/307) 
 
+# 13/10/26
+1. Fix del reload che non scompare quando si fa back
+2. Implementazione del focus
+3. Sto ancora testando il [#303](https://github.com/404TeamNameNotFound404/ICantCry/issues/303) perche non mi quadra qualcosa e e le correlate issues
+
+
 # Bugs Gravi
 1. ~~Il room toggler che fa falso contatto se si corre~~ -corretto da voi tunando la walk speed e max speed-
-2. Se il retry button sostanzialmente funziona solo a me è un problema e rischia di rompere tutto
+2. ~~Se il retry button sostanzialmente funziona solo a me è un problema e rischia di rompere tutto~~
 
 # Bugs Intermedi
-1. durante la selezione di EV il target nel display rimane enemy corrente e questo mi da fastidio oltre a essere molto 'misleading' pero il target rimangono corretti.
+~~1. durante la selezione di EV il target nel display rimane enemy corrente e questo mi da fastidio oltre a essere molto 'misleading' pero il target rimangono corretti.~~
 
 # Bugs Minori
 1. Nel curling minigame manca ancora il posizionamento della palla in maniera speculare se si tocca con la barra la parte alta degli scaglioni
-
 2. ~~Lo scroll alcune volte non si aggiorna bene e ha bisogno di un altro ciclo di scroll per aggiornarsi correttamente~~
-
 3. Joy impiega qualche microsecondo tra fine minigame e attacco per ritornare in posizione 
-
-06/10/26 Edit
 4. Alcune emozioni se partono dallo spawn piu lontano si fermano a meta strada (nota per me, rivedere il threshold)

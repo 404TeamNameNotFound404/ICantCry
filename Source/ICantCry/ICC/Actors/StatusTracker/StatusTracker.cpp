@@ -889,6 +889,7 @@ bool UStatusTracker::PlayerBuffFlow(const EBuffStatus& Buff)
 		Player->GetBattleHUD()->GetBattleHandler()->DeactivateAura();
 		bAtkDebuffRevert = true;
 		bIsOwnerDebuffed = false;
+		BuffAtkCounter = 0;
 		return true;
 	case DefBuff:
 		DebugHelper::AddMessageToLog(
@@ -902,6 +903,7 @@ bool UStatusTracker::PlayerBuffFlow(const EBuffStatus& Buff)
 		Player->GetBattleHUD()->GetBattleHandler()->DeactivateAura();
 		bDefDebuffRevert = true;
 		bIsOwnerDebuffed = false;
+		BuffDefCounter = 0;
 		return true;
 
 	case LowHealth:
@@ -935,6 +937,7 @@ bool UStatusTracker::PlayerDebuffFlow(const EDebuffStatus& Debuff)
 		bAtkDebuffRevert = true;
 		bIsOwnerAlreadyBuffed = false;
 		bIsBuffedAtk = false;
+		PlayerDebuffAtkCounter = 0;
 		BuffAtkCounter = 0;
 		return true;
 	case DebuffDef:
@@ -951,6 +954,7 @@ bool UStatusTracker::PlayerDebuffFlow(const EDebuffStatus& Debuff)
 		bDefDebuffRevert = true;
 		bIsOwnerAlreadyBuffed = false;
 		bIsDefBuffed = false;
+		PlayerDebuffDefCounter = 0;
 		BuffDefCounter = 0;
 		return true;
 	default:

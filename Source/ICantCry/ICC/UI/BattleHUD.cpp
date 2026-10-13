@@ -307,6 +307,16 @@ void UBattleHUD::PushBackIndifferenceAsCasing(const int32& CasingQuantity, const
 	
 }
 
+void UBattleHUD::RestoreFocusBuff()
+{
+	if (!bIsUserFocusing) return;
+	
+	bIsUserFocusing = false;
+	GameInstance->GetRuntimeStats().DefencePower = GameInstance->GetPersistentData()->InitialDefencePower;
+	DebugHelper::AddMessageToLog("[BattleHUD]: 50% focus def buff restored");
+	DebugHelper::LogSuccess("[BattleHUD]: 50% focus def buff restored");
+}
+
 FText UBattleHUD::UpdateBulletName()
 {
 	if (!GetCurrentBulletData()) return FText::FromString("");
@@ -460,14 +470,12 @@ void UBattleHUD::OnFocusPressed()
 		return;
 	}
 	
-	// GameInstance->GetCurrentPlayer()->GetStatusTracker()->BuffWith(EBuffStatus::DefBuff);
-	DecreaseAP(1);
-	Bar->DecreaseAP(1);
 	GameInstance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
-	
-	/*
-	 * TODO Reorder bullets in magazine allowing player to change slot idx ( show confirm button and bullet magazine hud ) change only the bullets in magazine , NO ADD
-	 */
+	bIsUserFocusing = true;
+	GameInstance->GetRuntimeStats().DefencePower = GameInstance->GetRuntimeStats().DefencePower * 1.50f;
+	DebugHelper::AddMessageToLog("[BattleHUD]: " + GameInstance->GetCurrentPlayer()->GetCharacterName() 
+		+ " uses focus and it's def is 50% buffed until next turn " 
+		+ FString::SanitizeFloat(GameInstance->GetRuntimeStats().DefencePower));
 	
 	GetWorld()->GetTimerManager().SetTimerForNextTick([&]
 	{
@@ -583,6 +591,7 @@ void UBattleHUD::OnReloadPressed()
 	});
 	
 	BackBtn->SetVisibility(ESlateVisibility::Visible);
+	bIsUserReloading = true;
 	
 	//FSlateApplication::Get().ClearAllUserFocus();
 }
@@ -657,6 +666,24 @@ void UBattleHUD::OnRevertAction()
 	TargetText_3->SetVisibility(ESlateVisibility::Hidden);
 	EngageBtn->SetVisibility(ESlateVisibility::Hidden);
 	StatusText->SetVisibility(ESlateVisibility::Hidden);
+	
+	if (bIsUserReloading)
+	{
+		ConfirmReloadBullet->SetVisibility(ESlateVisibility::Hidden);
+		CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Hidden);
+		Displayer->SetVisibility(ESlateVisibility::Hidden);
+		CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
+		TargetText->SetVisibility(ESlateVisibility::Hidden);
+		TargetNameText->SetVisibility(ESlateVisibility::Hidden);
+		CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
+		BulletName->SetVisibility(ESlateVisibility::Hidden);
+		Quantity->SetVisibility(ESlateVisibility::Hidden);
+		CanvasStatus->SetVisibility(ESlateVisibility::Hidden);
+		Displayer->SetVisibility(ESlateVisibility::Hidden);
+		OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
+		Description->SetVisibility(ESlateVisibility::Hidden);
+		bIsUserReloading = false;
+	}
 }
 
 void UBattleHUD::ScrollTargetSelection(float ScrollValue)
