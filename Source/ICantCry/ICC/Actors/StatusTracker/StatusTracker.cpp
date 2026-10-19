@@ -638,11 +638,12 @@ void UStatusTracker::InflictEnvyBurned(AICC_Actor* Target)
 	
 	if (AICC_Player* P = Cast<AICC_Player>(Target))
 	{
+		bIsBurned = true;
 		DebugEnvyBurnedName = "EnvyBurned";
 		bIsOwnerAfflicted = true;
 		P->Burn(true);
 		bCanBuff = false;
-		DebugHelper::LogWarning(P->GetCharacterName() + 
+		DebugHelper::LogMessage(10 ,FColor::Black,P->GetCharacterName() + 
 			" in envy burned state\nCan buff " + FString::FromInt(bCanBuff));
 		DebugHelper::AddMessageToLog("[Status Tracker]: " + P->GetCharacterName() + 
 			" in envy burned state\nCan buff " + FString::FromInt(bCanBuff));
@@ -702,18 +703,32 @@ void UStatusTracker::InflictDebuffStatus(const EDebuffStatus& Status, AICC_Actor
 		}
 	}
 	
+	// if (DebuffCounters.Contains(Status))
+	// {
+	// 	DebuffCounters[Status] = 0;
+	// 	DebugHelper::AddMessageToLog("[Status Tracker]: Debuff " + GetDebuffName(Status) + " added to the counters");
+	// }
+	// else 
+	// {
+	// 	DebuffCounters.Add(Status, 0); 
+	// 	DebugDebuffName = GetDebuffName(Status);
+	// }
+	
 	if (DebuffCounters.Contains(Status))
 	{
-		DebuffCounters[Status] = 0;
-		DebugHelper::AddMessageToLog("[Status Tracker]: Debuff " + GetDebuffName(Status) + " added to the counters");
+		DebuffCounters[Status] = 0; 
+		DebugHelper::AddMessageToLog("[Status Tracker]: Debuff " + GetDebuffName(Status) + " refreshed in counters");
 	}
 	else 
 	{
 		DebuffCounters.Add(Status, 0); 
-		DebugDebuffName = GetDebuffName(Status);
 	}
 	
-	DebuffCounter = 0;
+	// DebuffCounter = 0;
+	// bIsOwnerDebuffed = true;
+	
+	CurrentDebuffStatus = Status;
+	DebugDebuffName = GetDebuffName(Status);
 	bIsOwnerDebuffed = true;
 	
 	DebugHelper::LogMessage(6, FColor::Black, "Inflicting  " + GetDebuffName(CurrentDebuffStatus) + " To " + Target->GetName());
@@ -758,7 +773,7 @@ void UStatusTracker::DebuffPlayerDef()
 
 void UStatusTracker::BuffWith(const EBuffStatus& BuffStatus)
 {
-	if (!bCanBuff)
+	if (!bCanBuff || bIsBurned)
 	{
 		return;
 	}
@@ -774,10 +789,22 @@ void UStatusTracker::BuffWith(const EBuffStatus& BuffStatus)
 		return; 
 	}
 	
-	if (BuffCounters.Contains(BuffStatus) && CurrentBuffedStatus == BuffStatus)
+	// if (BuffCounters.Contains(BuffStatus) && CurrentBuffedStatus == BuffStatus)
+	// {
+	// 	BuffCounters[BuffStatus] = 0;
+	// 	return;
+	// }
+	
+	if (BuffCounters.Contains(BuffStatus))
 	{
 		BuffCounters[BuffStatus] = 0;
-		return;
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetName() + " refreshed " + GetBuffName(BuffStatus));
+	}
+	else
+	{
+		BuffCounters.Add(BuffStatus, 0);
+		bIsOwnerAlreadyBuffed = true;
+		DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetName() + " added " + GetBuffName(BuffStatus) + " and it's counter " + FString::FromInt(BuffCounters[BuffStatus]));
 	}
 	
 	BuffCounters.Add(BuffStatus, 0);
@@ -811,6 +838,17 @@ void UStatusTracker::BuffPlayerAtk()
 {
 	const AICC_Player* Player = Instance->GetCurrentPlayer();
 	
+	if (bIsBurned)
+	{
+		DebugHelper::AddMessageToLog("[Status Tracker]: cant buff " + Player->GetCharacterName() + 
+			", it's burned cazzo");
+		
+		DebugHelper::LogMessage(10, FColor::White, "cant buff " + Player->GetCharacterName() + 
+			", it's burned cazzo");
+		
+		return;
+	}
+	
 	if (PlayerBuffFlow(EBuffStatus::AtkBuff))
 	{
 		return;
@@ -836,6 +874,17 @@ void UStatusTracker::BuffPlayerAtk()
 void UStatusTracker::BuffPlayerDef()
 {
 	const AICC_Player* Player = Instance->GetCurrentPlayer();
+	
+	if (bIsBurned)
+	{
+		DebugHelper::AddMessageToLog("[Status Tracker]: cant buff " + Player->GetCharacterName() + 
+			", it's burned cazzo");
+		
+		DebugHelper::LogMessage(10, FColor::White, "cant buff " + Player->GetCharacterName() + 
+			", it's burned cazzo");
+		
+		return;
+	}
 	
 	if (PlayerBuffFlow(EBuffStatus::DefBuff))
 	{
@@ -1019,6 +1068,7 @@ void UStatusTracker::UpdateStatus()
 	case Burn:
 		bIsOwnerAfflicted = false;
 		StatusCounter = 0;
+		bIsBurned = false;
 		Target->Burn(false);
 		bCanBuff = true;
 		if (Cast<AMob>(GetOwner()))
@@ -1148,17 +1198,17 @@ void UStatusTracker::UpdateBuffStatus()
 	
 	for (auto& B : BuffCounters)
 	{
-		EBuffStatus S = B.Key; // Actual Status
+		const EBuffStatus S = B.Key; // Actual Status
 		int32& C = B.Value; // Counter
-		
-		DebugBuffCounter = C;
-		DebugBuffName = GetBuffName(S);
 		
 		if (S == EBuffStatus::NoBuff)
 		{
 			DebugHelper::AddMessageToLog("[Status Tracker]: No buff founds for " + GetOwner()->GetName());
 			continue;
-		};
+		}
+		
+		DebugBuffCounter = C;
+		DebugBuffName = GetBuffName(S);
 		
 		const FString BuffName = StaticEnum<EBuffStatus>()->GetNameStringByValue(S);
 		
@@ -1215,15 +1265,6 @@ void UStatusTracker::UpdateAtkBuffStatus()
 		AICC_Player* Player = Instance->GetCurrentPlayer();
 		Instance->GetRuntimeStats().AttackPower = Instance->GetPersistentData()->InitialAttackPower;
 		Player->ActiveAuras[EBuffStatus::AtkBuff]->Deactivate();
-		// if (Player->ActiveAuras.Contains(EBuffStatus::AtkBuff) && Player->ActiveAuras[EBuffStatus::AtkBuff])
-		// {
-		// 	
-		// }
-		// 	
-		// if (Instance && Instance->GetCurrentPlayer() && Instance->GetCurrentPlayer()->GetBattleHUD() && Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler())
-		// {
-		// 	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura(Player, EBuffStatus::AtkBuff);
-		// }
 	}
 	
 }
@@ -1285,6 +1326,7 @@ void UStatusTracker::UpdateBurnStatus()
 	{
 		bIsOwnerAfflicted = false;
 		BurnCounter = 0;
+		bIsBurned = false;
 		DebugEnvyBurnedName = "None";
 		Cast<AICC_Player>(GetOwner())->Burn(false);
 		bCanBuff = true;
@@ -2466,6 +2508,7 @@ void UStatusTracker::InflictBurn(AICC_Actor* Target)
 	bIsOwnerAfflicted = true;
 	Target->Burn(true);
 	bCanBuff = false;
+	bIsBurned = true;
 	DebugHelper::LogWarning(Target->GetName() + " in envy burned state\nCan buff " + FString::FromInt(bCanBuff));
 	DebugHelper::AddMessageToLog("[Status Tracker]: " + Target->GetName() + " in envy burned state\nCan buff " + FString::FromInt(bCanBuff));
 

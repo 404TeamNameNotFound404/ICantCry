@@ -368,6 +368,9 @@ private:
 	
 	UPROPERTY()
 	bool bIsPlayerDefDebuffed = false;
+	
+	UPROPERTY()
+	bool bIsBurned = false;
 
 	UPROPERTY()
 	FInternalPerkData PerkData;

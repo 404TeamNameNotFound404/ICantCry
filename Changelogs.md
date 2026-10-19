@@ -109,6 +109,14 @@ creazione della *bs_rework* branch
 2. Implementazione del focus
 3. Sto ancora testando il [#303](https://github.com/404TeamNameNotFound404/ICantCry/issues/303) perche non mi quadra qualcosa e e le correlate issues
 
+# 17/10/26
+1. investigato il problema dei bullet fantasma e a me funziona tutto come si deve. Penso che sia lato ui che se lo schermo è grande va out of focus. 
+
+# 19/10/26
+1. Fix del back che non si nascondeva quando viene premuto "Confirm" durante il Reload e durante Back quando si annulla Engage
+2. Fix [#306](https://github.com/404TeamNameNotFound404/ICantCry/issues/306)
+3. Heal adesso cura anche sotto envy burned 
+
 
 # Bugs Gravi
 1. ~~Il room toggler che fa falso contatto se si corre~~ -corretto da voi tunando la walk speed e max speed-

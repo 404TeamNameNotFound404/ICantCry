@@ -985,6 +985,7 @@ void UBattleHUD::HideBulletMagazineOnReload()
 	BulletName->SetVisibility(ESlateVisibility::Hidden);
 	Quantity->SetVisibility(ESlateVisibility::Hidden);
 	Description->SetVisibility(ESlateVisibility::Hidden);
+	BackBtn->SetVisibility(ESlateVisibility::Hidden);
 	bBulletSetupFinished = true;
 	UBulletSelector::SetCanSelect(false);
 }
@@ -1429,6 +1430,7 @@ void UBattleHUD::UpdateBulletInfo(UBulletData* BulletData)
 
 void UBattleHUD::ConfirmBulletSelection() // this is for the confirm button  
 {
+	BackBtn->SetVisibility(ESlateVisibility::Hidden);
 	CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
 	ConfirmButton->SetVisibility(ESlateVisibility::Hidden);
 	ConfirmReloadBullet->SetVisibility(ESlateVisibility::Hidden);
@@ -1634,7 +1636,8 @@ void UBattleHUD::Engage()
 		}
 	case JoyEv:
 		{
-			PrepareToEngageEv(EBuffStatus::LowHealth);
+			//PrepareToEngageEv(EBuffStatus::LowHealth);
+			RestoreHealth();
 			break;
 		}
 	case Anxiety:
