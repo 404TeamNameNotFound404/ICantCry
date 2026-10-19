@@ -41,13 +41,6 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 	CurrentMob->SetIsAttacked(false);
 	BlackBoard->SetValueAsInt("Id", CurrentMob->GetTreeId());
 	BlackBoard->SetValueAsBool("Attacked?", CurrentMob->GetIsIsAttacked());
-
-	// if (CurrentMob->IsAshamed() && CurrentMob->GetMobType() != EMobType::MobShame) // for the moment I just ignore shame because it's the only mob that attack only to prevent crash
-	// {
-	// 	DebugHelper::AddMessageToLog("[BT Task - Default]: " + CurrentMob->GetActorLabel() + " is ashamed, rethinking it's action");
-	// 	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-	// 	return EBTNodeResult::Succeeded;
-	// }
 	
 	bWaitingForThinkCompletion = true;
 	bBusy = true;
@@ -55,6 +48,12 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 	DecisionMaker.Clear();
 	DecisionMaker.Setup(CurrentMob);
 	Decision = DecisionMaker.Thought();
+	
+	if ((CurrentMob->IsEAnxiety() && CurrentMob->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().LastMobStanding()) 
+		|| (CurrentMob->IsECalm() && CurrentMob->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().LastMobStanding()))
+	{
+		Decision = EDecision::Flee;
+	}
 
 	Target->GetBattleHUD()->DecisionDisplayer->Show();
 	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(

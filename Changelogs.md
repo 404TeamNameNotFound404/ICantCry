@@ -116,7 +116,7 @@ creazione della *bs_rework* branch
 1. Fix del back che non si nascondeva quando viene premuto "Confirm" durante il Reload e durante Back quando si annulla Engage
 2. Fix [#306](https://github.com/404TeamNameNotFound404/ICantCry/issues/306)
 3. Heal adesso cura anche sotto envy burned 
-
+4. Fix [#292](https://github.com/404TeamNameNotFound404/ICantCry/issues/292)
 
 # Bugs Gravi
 1. ~~Il room toggler che fa falso contatto se si corre~~ -corretto da voi tunando la walk speed e max speed-

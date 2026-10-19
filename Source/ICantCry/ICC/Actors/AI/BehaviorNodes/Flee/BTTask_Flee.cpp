@@ -15,87 +15,78 @@ UBTTask_Flee::UBTTask_Flee()
 
 EBTNodeResult::Type UBTTask_Flee::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	Blackboard = OwnerComp.GetBlackboardComponent();
-
-	AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner());
-	checkf(Controller, TEXT("Controller invalid at UBTTask_EnvyBurned::ExecuteTask"))
-	Current = Cast<AMob>(Controller->GetPawn());
-
-	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
-
 	OwnerRef = &OwnerComp;
-
-	UTurnBasedSystem* TBS = Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem();
 	
-	if (const bool bCanFlee = TBS->GetTurn().LastMobStanding() || TBS->GetTurn().AreAnxietyOrCalmAlone(); !bCanFlee)
-	{
-		if (Current->GetMobType() == EMobType::MobAnxiety)
-		{
-			Current->SetPlayerDebuffAttack(true);
-			Blackboard->SetValueAsBool("IsAttackDebuffed?", Current->GetPlayerDebuffAttack());
-			DebugHelper::AddMessageToLog("[BT - Flee]: Anxiety is not the last emotion standing so forcing debuff atk");
-			return EBTNodeResult::Succeeded;
-		}
+	FBTFleeTaskMemory* MyMemory = CastInstanceNodeMemory<FBTFleeTaskMemory>(NodeMemory);
+    if (!MyMemory) return EBTNodeResult::Failed;
 
-		else if (Current->GetMobType() == EMobType::MobCalm)
-		{
-			Current->SetBuffedDefence(true);
-			Blackboard->SetValueAsBool("IsDefenceBuffed?", Current->GetIsBuffedDefence());
-			DebugHelper::AddMessageToLog("[BT - Flee]: Calm is not the last emotion standing so forcing buff def");
-			return EBTNodeResult::Succeeded;
-		}
-	}
+	Blackboard = OwnerComp.GetBlackboardComponent();
+    const AICC_AIController* Controller = Cast<AICC_AIController>(OwnerComp.GetAIOwner());
+    Current = Cast<AMob>(Controller ? Controller->GetPawn() : nullptr);
+    const UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+
+    if (!Current || !Instance) return EBTNodeResult::Failed;
+
+    UTurnBasedSystem* TBS = Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem();
+    const bool bIsAlone = TBS->GetTurn().LastMobStanding() || TBS->GetTurn().AreAnxietyOrCalmAlone();
+
+    if (!bIsAlone)
+    {
+       if (Current->GetMobType() == EMobType::MobAnxiety)
+       {
+          Current->SetPlayerDebuffAttack(true);
+          Blackboard->SetValueAsBool("IsAttackDebuffed?", Current->GetPlayerDebuffAttack());
+          return EBTNodeResult::Succeeded;
+       }
+    	if (Current->GetMobType() == EMobType::MobCalm)
+       {
+          Current->SetBuffedDefence(true);
+          Blackboard->SetValueAsBool("IsDefenceBuffed?", Current->GetIsBuffedDefence());
+          return EBTNodeResult::Succeeded;
+       }
+       return EBTNodeResult::Failed;
+    }
 	
+    MyMemory->Attempts++;
 
-	Attempts++;
-	int32 SuccessRate = 0;
+    int32 SuccessRate = 0;
+    if (MyMemory->Attempts == 1)      SuccessRate = 33;
+    else if (MyMemory->Attempts == 2) SuccessRate = 66;
+    else                             SuccessRate = 100;
 
-	DebugHelper::AddMessageToLog("[BT - Flee]: Attemps N: " + FString::FromInt(Attempts));
-	DebugHelper::LogMessage(10, FColor::White, "Attemps: " + FString::FromInt(Attempts));
-
-
-	if (Attempts == 1) SuccessRate = 33;
-	else if (Attempts == 2) SuccessRate = 66;
-	else SuccessRate = 100;
-
+    DebugHelper::AddMessageToLog("[BT - Flee]: Attempt N: " + FString::FromInt(MyMemory->Attempts) + " | Rate: " + FString::FromInt(SuccessRate) + "%");
+	
 	if (const int32 DiceRoll = FMath::RandRange(1, 100);
 		DiceRoll <= SuccessRate)
 	{
-		DebugHelper::AddMessageToLog("[BT - Flee]: Dice Roll N: " + FString::FromInt(DiceRoll));
 		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(
-			FText::FromString(Current->GetData()->EnemyName.ToString() + " ran away"));
-		DebugHelper::AddMessageToLog(
-			"[Behavior Tree - Flee]: " + Current->GetData()->EnemyName.ToString() + " ran away");
+		   FText::FromString(Current->GetData()->EnemyName.ToString() + " ran away"));
+		
+		UBehaviorTreeComponent* OwnerCompPtr = &OwnerComp;
 
 		FTimerHandle Delay;
-		GetWorld()->GetTimerManager().SetTimer(
-			Delay,
-			this,
-			&UBTTask_Flee::Run,
-			1.5f,
-			false);
+		GetWorld()->GetTimerManager().SetTimer(Delay, [this, OwnerCompPtr]()
+		{
+		   Run();
+		}, 1.5f, false);
 	}
 	else
 	{
-		DebugHelper::AddMessageToLog(
-			"[Default BT]: " + Current->GetData()->EnemyName.ToString() + " tried to escape but it failed, chance was "
-			+ FString::FromInt(DiceRoll));
-
 		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(
-			FText::FromString(Current->GetData()->EnemyName.ToString() + " tried to escape but it failed"));
+		   FText::FromString(Current->GetData()->EnemyName.ToString() + " tried to escape but failed"));
+
+		UBehaviorTreeComponent* OwnerCompPtr = &OwnerComp;
 
 		FTimerHandle Delay;
-		GetWorld()->GetTimerManager().SetTimer(
-			Delay,
-			this,
-			&UBTTask_Flee::FailFlee,
-			1.85f,
-			false);
+		GetWorld()->GetTimerManager().SetTimer(Delay, [this, OwnerCompPtr]()
+		{
+		   FailFlee();
+		}, 1.85f, false);
 	}
-	
-	return EBTNodeResult::InProgress;
+    
+    return EBTNodeResult::InProgress;
 }
 
 void UBTTask_Flee::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult)
@@ -111,6 +102,11 @@ void UBTTask_Flee::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* Node
 		const UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
 	}, 1.25f, false);
+}
+
+uint16 UBTTask_Flee::GetInstanceMemorySize() const
+{
+	return sizeof(FBTFleeTaskMemory);
 }
 
 void UBTTask_Flee::Run()
@@ -133,24 +129,20 @@ void UBTTask_Flee::Run()
 
 void UBTTask_Flee::FailFlee()
 {
-	if (const UICantCryGameInstance* Instance =
-		Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance()))
+	if (const UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+		Instance->GetCurrentPlayer())
 	{
-		if (Instance->GetCurrentPlayer())
-		{
-			Instance->GetCurrentPlayer()
-			        ->GetBattleHUD()
-			        ->DecisionDisplayer
-			        ->Hide();
-		}
+		Instance->GetCurrentPlayer()
+				->GetBattleHUD()
+				->DecisionDisplayer
+				->Hide();
 	}
-
-	if (OwnerRef)
-	{
-		Current->SetFleeing(false);
-		Blackboard->SetValueAsBool("Flee?", Current->IsFleeing());
-		Current->SetTreeId(-1);
-		Blackboard->SetValueAsInt("Id", Current->GetTreeId());
-		FinishLatentTask(*OwnerRef, EBTNodeResult::Succeeded);
-	}
+	
+	Current->SetFleeing(false);
+	Blackboard->SetValueAsBool("Flee?", Current->IsFleeing());
+	Current->SetTreeId(-1);
+	Blackboard->SetValueAsInt("Id", Current->GetTreeId());
+	FinishLatentTask(*OwnerRef, EBTNodeResult::Succeeded);
+	
+	DebugHelper::LogMessage(10, FColor::Black, "Fail Fleeeeeee bruh dafaq");
 }

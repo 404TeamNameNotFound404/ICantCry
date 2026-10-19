@@ -188,11 +188,7 @@ bool FTurn::LastMobStanding()
 
 	for (const AICC_Actor* Actor : Queue)
 	{
-		if (Actor->IsA(AICC_Player::StaticClass()))
-		{
-			continue;
-		}
-		
+		if (Actor->IsA(AICC_Player::StaticClass())) continue;
 		MobCount++;
 	}
 	
@@ -201,35 +197,20 @@ bool FTurn::LastMobStanding()
 
 bool FTurn::AreAnxietyOrCalmAlone()
 {
-	if (Queue.IsEmpty())
-	{
-		return false;
-	}
-
-	int32 MobCount = 0;
+	if (Queue.IsEmpty()) return false;
+	if (!LastMobStanding()) return false; 
 
 	for (const AICC_Actor* Actor : Queue)
 	{
-		if (Actor->IsA(AICC_Player::StaticClass()))
-		{
-			continue;
-		}
-
+		if (Actor->IsA(AICC_Player::StaticClass())) continue;
 		const AMob* Mob = Cast<AMob>(Actor);
-
-		if (!Mob)
+		if (!Mob) continue;
+       
+		if (Mob->IsEAnxiety() || Mob->IsECalm())
 		{
-			continue;
-		}
-
-		MobCount++;
-
-		if (Mob->GetMobType() != EMobType::MobAnxiety &&
-			Mob->GetMobType() != EMobType::MobCalm)
-		{
-			return false;
+			return true;
 		}
 	}
 
-	return MobCount > 0;
+	return false;
 }

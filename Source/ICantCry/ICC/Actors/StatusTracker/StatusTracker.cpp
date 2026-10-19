@@ -1291,15 +1291,6 @@ void UStatusTracker::UpdateDefBuffStatus()
 		AICC_Player* Player = Instance->GetCurrentPlayer();
 		Instance->GetRuntimeStats().DefencePower = Instance->GetPersistentData()->InitialDefencePower;
 		Player->ActiveAuras[EBuffStatus::DefBuff]->Deactivate();
-		// if (Player->ActiveAuras.Contains(EBuffStatus::DefBuff) && Player->ActiveAuras[EBuffStatus::DefBuff])
-		// {
-		// 	
-		// }
-		// 	
-		// if (Instance && Instance->GetCurrentPlayer() && Instance->GetCurrentPlayer()->GetBattleHUD() && Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler())
-		// {
-		// 	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura(Player, EBuffStatus::DefBuff);
-		// }
 	}
 }
 
