@@ -460,16 +460,8 @@ UStatusTracker::UStatusTracker()
 void UStatusTracker::BeginPlay()
 {
 	Super::BeginPlay();
-
 	Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
-
-	BuffCounters.Add(EBuffStatus::AtkBuff, 0);
-	BuffCounters.Add(EBuffStatus::DefBuff, 0);
-	
-	DebuffCounters.Add(EDebuffStatus::DebuffAtk, 0);
-	DebuffCounters.Add(EDebuffStatus::DebuffDef, 0);
 }
-
 
 bool UStatusTracker::IsAfflicted() const
 {
@@ -674,6 +666,9 @@ void UStatusTracker::InflictDebuffStatus(const EDebuffStatus& Status, AICC_Actor
 		return;
 	}
 	
+	bAtkDebuffRevert = false;
+	bDefDebuffRevert = false;
+	
 	if (DebuffFlow(Status, Target))
 	{
 		DebugHelper::AddMessageToLog("[Status Tracker]: Debuff neutralized by Buff; nothing applied.");
@@ -686,8 +681,6 @@ void UStatusTracker::InflictDebuffStatus(const EDebuffStatus& Status, AICC_Actor
 		return;
 	}
 	
-	bAtkDebuffRevert = false;
-	bDefDebuffRevert = false;
 	
 	Priority.SetNextPriorityFromDebuff(Status);
 
@@ -698,40 +691,16 @@ void UStatusTracker::InflictDebuffStatus(const EDebuffStatus& Status, AICC_Actor
 		if (PerkData.HasHighDebuffPriority(Cast<AMob>(GetOwner())))
 		{
 			PerkData.AssignPriority(Emotion);
-			StatusCounter = 0;
-			bIsOwnerAfflicted = true;
 		}
 	}
 	
-	// if (DebuffCounters.Contains(Status))
-	// {
-	// 	DebuffCounters[Status] = 0;
-	// 	DebugHelper::AddMessageToLog("[Status Tracker]: Debuff " + GetDebuffName(Status) + " added to the counters");
-	// }
-	// else 
-	// {
-	// 	DebuffCounters.Add(Status, 0); 
-	// 	DebugDebuffName = GetDebuffName(Status);
-	// }
-	
-	if (DebuffCounters.Contains(Status))
-	{
-		DebuffCounters[Status] = 0; 
-		DebugHelper::AddMessageToLog("[Status Tracker]: Debuff " + GetDebuffName(Status) + " refreshed in counters");
-	}
-	else 
-	{
-		DebuffCounters.Add(Status, 0); 
-	}
-	
-	// DebuffCounter = 0;
-	// bIsOwnerDebuffed = true;
-	
+	int32& Counter = DebuffCounters.FindOrAdd(Status);
+	Counter = 0;
 	CurrentDebuffStatus = Status;
 	DebugDebuffName = GetDebuffName(Status);
-	bIsOwnerDebuffed = true;
+	bIsOwnerDebuffed = DebuffCounters.Num() > 0;
 	
-	DebugHelper::LogMessage(6, FColor::Black, "Inflicting  " + GetDebuffName(CurrentDebuffStatus) + " To " + Target->GetName());
+	DebugHelper::LogMessage(16, FColor::Yellow, "Inflicting  " + GetDebuffName(CurrentDebuffStatus) + " To " + Target->GetName());
 	DebugHelper::AddMessageToLog("[Status Tracker]: Inflicting  " + GetDebuffName(CurrentDebuffStatus) + " To " + Target->GetName());
 
 	switch (Status)
@@ -773,8 +742,14 @@ void UStatusTracker::DebuffPlayerDef()
 
 void UStatusTracker::BuffWith(const EBuffStatus& BuffStatus)
 {
-	if (!bCanBuff || bIsBurned)
+	if (!bCanBuff)
 	{
+		return;
+	}
+	
+	if (bIsBurned)
+	{
+		DebugHelper::LogMessage(10, FColor::Black, "Can't buff it's burned");
 		return;
 	}
 	
@@ -789,28 +764,34 @@ void UStatusTracker::BuffWith(const EBuffStatus& BuffStatus)
 		return; 
 	}
 	
-	// if (BuffCounters.Contains(BuffStatus) && CurrentBuffedStatus == BuffStatus)
+	// if (BuffCounters.Contains(BuffStatus))
 	// {
 	// 	BuffCounters[BuffStatus] = 0;
-	// 	return;
+	//
+	// 	DebugHelper::AddMessageToLog(
+	// 		"[Status Tracker]: Refreshed " + GetBuffName(BuffStatus)
+	// 	);
 	// }
-	
-	if (BuffCounters.Contains(BuffStatus))
-	{
-		BuffCounters[BuffStatus] = 0;
-		DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetName() + " refreshed " + GetBuffName(BuffStatus));
-	}
-	else
-	{
-		BuffCounters.Add(BuffStatus, 0);
-		bIsOwnerAlreadyBuffed = true;
-		DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetName() + " added " + GetBuffName(BuffStatus) + " and it's counter " + FString::FromInt(BuffCounters[BuffStatus]));
-	}
-	
-	BuffCounters.Add(BuffStatus, 0);
+	// else
+	// {
+	// 	BuffCounters.Add(BuffStatus, 0);
+	//
+	// 	DebugHelper::AddMessageToLog(
+	// 		"[Status Tracker]: Added " + GetBuffName(BuffStatus)
+	// 	);
+	// }
+
+	int32& Counter = BuffCounters.FindOrAdd(BuffStatus);
+	Counter = 0;
+
+	bIsOwnerAlreadyBuffed = (BuffCounters.Num() > 0);
 	CurrentBuffedStatus = BuffStatus;
 	DebugBuffName = GetBuffName(BuffStatus);
-	bIsOwnerAlreadyBuffed = true;
+	
+	//bIsOwnerAlreadyBuffed = true;
+	// BuffCounters.Add(BuffStatus, 0);
+	// CurrentBuffedStatus = BuffStatus;
+	// DebugBuffName = GetBuffName(BuffStatus);
 	DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetName() + " added " + GetBuffName(BuffStatus) + " and it's counter " + FString::FromInt(BuffCounters[BuffStatus]));
 	
 	switch (BuffStatus)
@@ -1534,36 +1515,50 @@ bool UStatusTracker::DebuffFlow(const EDebuffStatus& NewDebuffStatus, AICC_Actor
 	UStatusTracker* Tracker = Target->GetStatusTracker();
 	EBuffStatus Clash = EBuffStatus::NoBuff;
 	
-	const bool bIsAtk = (NewDebuffStatus == EDebuffStatus::DebuffAtk);
-	const bool bHasBuffClash = (Clash != EBuffStatus::NoBuff && Tracker->BuffCounters.Contains(Clash));
-	
-	if (const bool bHasExistingDebuff = Tracker->DebuffCounters.Contains(NewDebuffStatus); 
-		bHasExistingDebuff && !bHasBuffClash)
+	switch (NewDebuffStatus)
 	{
-		ResetStatsIfDebuffedTwice(Target, bIsAtk);
-		return false; 
+	case EDebuffStatus::DebuffAtk:
+		Clash = EBuffStatus::AtkBuff;
+		break;
+
+	case EDebuffStatus::DebuffDef:
+		Clash = EBuffStatus::DefBuff;
+		break;
+
+	default:
+		return false;
 	}
 	
-	if (!Tracker->IsBuffed())
+	const bool bHasBuffClash = Tracker->BuffCounters.Contains(Clash);
+	const bool bHasExistingDebuff = Tracker->DebuffCounters.Contains(NewDebuffStatus);
+	const bool bIsAtk = NewDebuffStatus == EDebuffStatus::DebuffAtk;
+	
+	DebugHelper::AddMessageToLog("[DebuffFlow] Target: " + Target->GetName());
+
+	DebugHelper::AddMessageToLog("[DebuffFlow] BuffCounters.Num: " +
+		FString::FromInt(Tracker->BuffCounters.Num())
+	);
+
+	for (const auto& Pair : Tracker->BuffCounters)
+	{
+		DebugHelper::AddMessageToLog(
+			"[DebuffFlow] Key: " + GetBuffName(Pair.Key) +
+			" Counter: " + FString::FromInt(Pair.Value)
+		);
+	}
+
+	if (bHasExistingDebuff && !bHasBuffClash)
+	{
+		ResetStatsIfDebuffedTwice(Target, bIsAtk);
+		return false;
+	}
+
+	if (!bHasBuffClash)
 	{
 		return false;
 	}
 	
-	if (NewDebuffStatus == EDebuffStatus::DebuffAtk)
-	{
-		Clash = EBuffStatus::AtkBuff;
-	}
-	else if (NewDebuffStatus == EDebuffStatus::DebuffDef)
-	{
-		Clash = EBuffStatus::DefBuff;
-	}
-	
-	if (Clash == EBuffStatus::NoBuff || !Tracker->BuffCounters.Contains(Clash))
-	{
-		return false; 
-	}
-	
-	if (AICC_Player* Player = Cast<AICC_Player>(Target))
+	if (const AICC_Player* Player = Cast<AICC_Player>(Target))
 	{
 		if (Clash == EBuffStatus::AtkBuff)
 		{
@@ -1595,7 +1590,7 @@ bool UStatusTracker::DebuffFlow(const EDebuffStatus& NewDebuffStatus, AICC_Actor
 			DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetName() + " got buffed so reverting");
 			Mob->GetStats().AtkPower = Mob->GetAIMemory().InitialAttackPower;
 			DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetName() + " atk now is  "  + FString::SanitizeFloat(Mob->GetStats().AtkPower ));
-			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura(EBuffStatus::AtkBuff);
+			Mob->GetBattleHandler()->DeactivateAura(EBuffStatus::AtkBuff);
 			bAtkDebuffRevert = true;
 			
 		}
@@ -1606,7 +1601,7 @@ bool UStatusTracker::DebuffFlow(const EDebuffStatus& NewDebuffStatus, AICC_Actor
 			DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetName() + " got buffed so reverting");
 			Mob->GetStats().DefPower = Mob->GetAIMemory().InitialDefencePower;
 			DebugHelper::AddMessageToLog("[Status Tracker]: " + GetOwner()->GetName() + " def now is  "  + FString::SanitizeFloat(Mob->GetStats().DefPower));
-			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->DeactivateAura(EBuffStatus::DefBuff);
+			Mob->GetBattleHandler()->DeactivateAura(EBuffStatus::DefBuff);
 			bDefDebuffRevert = true;
 		}
 	}

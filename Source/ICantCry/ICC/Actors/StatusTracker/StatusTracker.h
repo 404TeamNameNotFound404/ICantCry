@@ -168,10 +168,10 @@ protected:
 	bool bIsOwnerAlreadyBuffed;
 
 	UPROPERTY()
-	TEnumAsByte<EAfflictedStatus> CurrentActiveStatus;
+	TEnumAsByte<EAfflictedStatus> CurrentActiveStatus = EAfflictedStatus::None;
 
 	UPROPERTY()
-	TEnumAsByte<EDebuffStatus> CurrentDebuffStatus;
+	TEnumAsByte<EDebuffStatus> CurrentDebuffStatus = EDebuffStatus::NoDebuff;
 
 	UPROPERTY()
 	TEnumAsByte<EBuffStatus> CurrentBuffedStatus = EBuffStatus::NoBuff;

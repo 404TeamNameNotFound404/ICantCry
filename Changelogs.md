@@ -114,9 +114,20 @@ creazione della *bs_rework* branch
 
 # 19/10/26
 1. Fix del back che non si nascondeva quando viene premuto "Confirm" durante il Reload e durante Back quando si annulla Engage
-2. Fix [#306](https://github.com/404TeamNameNotFound404/ICantCry/issues/306)
+2. Fix [#306](https://github.com/404TeamNameNotFound404/ICantCry/issues/306)  
+   > **_NOTA:_**: **SOLO PER IL PLAYER AL MOMENTO,LATO AI ANCORA NON FUNZIONANTE**
 3. Heal adesso cura anche sotto envy burned 
 4. Fix [#292](https://github.com/404TeamNameNotFound404/ICantCry/issues/292)
+
+# 20/10/26
+1. Fix [#309](https://github.com/404TeamNameNotFound404/ICantCry/issues/309)
+2. Ho fixato il problema principale del clash debuff buff una volta per tutte, ora non mi resta che testare ogni singola
+   buff per vedere come si comporta , ci sono/sono stati alcuni problemi *minori* per quanto riguarda la gestione dello status
+   in generale per esempio dal log ho visto una cosa che prima non succedeva come update di freezed senza senso quando non era freezato e o il clash di alcuni buff debuff speculari. 
+3. Freeze che andava per i fatti suoi è stato risolto. 
+4. Ancora refactoring
+
+
 
 # Bugs Gravi
 1. ~~Il room toggler che fa falso contatto se si corre~~ -corretto da voi tunando la walk speed e max speed-

@@ -1236,7 +1236,7 @@ void UBattleHUD::PrepareToEngageEv(const EDebuffStatus& StatusToDebuff)
 		return;
 	}
 
-	GameInstance->GetCurrentPlayer()->GetStatusTracker()->InflictDebuffStatus(StatusToDebuff, SelectedActorTarget);
+	SelectedActorTarget->GetStatusTracker()->InflictDebuffStatus(StatusToDebuff, SelectedActorTarget);
 	GetBulletDisplayer()->RemoveBullet();
 	Displayer->Refresh();
 	RefreshPistolMagazine();
@@ -1247,6 +1247,11 @@ void UBattleHUD::PrepareToEngageEv(const EDebuffStatus& StatusToDebuff)
 	{
 		RefreshStatusBuffs();
 	});
+	
+	const FString Msg = "Inflicting to " + Cast<AMob>(SelectedActorTarget)->GetEmotionName()
+	                    + GameInstance->GetCurrentPlayer()->GetStatusTracker()->GetDebuffName(StatusToDebuff); 
+	
+	DebugHelper::LogMessage(10, FColor::Blue, Msg);
 }
 
 bool UBattleHUD::IsShootingEv() const
@@ -1636,8 +1641,17 @@ void UBattleHUD::Engage()
 		}
 	case JoyEv:
 		{
-			//PrepareToEngageEv(EBuffStatus::LowHealth);
 			RestoreHealth();
+			GetBulletDisplayer()->RemoveBullet();
+			Displayer->Refresh();
+			RefreshPistolMagazine();
+			UpdateAp();
+			BackBtn->SetVisibility(ESlateVisibility::Hidden);
+			EnableButtonsAfterShooting();
+			GetWorld()->GetTimerManager().SetTimerForNextTick([&]
+			{
+				RefreshStatusBuffs();
+			});
 			break;
 		}
 	case Anxiety:
