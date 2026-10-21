@@ -126,6 +126,23 @@ creazione della *bs_rework* branch
    in generale per esempio dal log ho visto una cosa che prima non succedeva come update di freezed senza senso quando non era freezato e o il clash di alcuni buff debuff speculari. 
 3. Freeze che andava per i fatti suoi è stato risolto. 
 4. Ancora refactoring
+5. possibile causa del [#258](https://github.com/404TeamNameNotFound404/ICantCry/issues/258): ordine antiorario **Funziona**, ordine orario **NON FUNZIONA**, rivedere indexing. 
+
+
+# 21/10/26
+1. Ho risolto il bug dei bullet ([#258](https://github.com/404TeamNameNotFound404/ICantCry/issues/258)) che perdono proiettili **MA** ci sono diversi *""problemi""* minori se vogliamo chiamarli cosi: 
+   - lo scarico dei proiettili ora è in senso anti orario, prima era in senso orario non proprio un problema grave 
+    ma magari non è realistico oppure è brutto visimamente , in caso provo a rifarlo in senso orario appena si risolvono le
+    altre cose.
+   - Quando si ricarica un tamburo semi vuoto i proiettili "shiftano" il che significa che scorrono di posizione occupando
+    il posto successivo lasciando il posto precedente a quello nuovo. **Nota**> questo comportamento lo faceva anche prima
+    anche se abbastanza raramente, dipendeva in quale punto rimuovevi il proiettile 
+
+2. [#303](https://github.com/404TeamNameNotFound404/ICantCry/issues/303): Ho letto edit, se ho capito bene è riguardo
+   il debuff che veniva aggiornato anche on pass , ho tolto la chiamata , adesso pass aggiorna solo status , buff all def. Lo metto in testing in caso rimettetelo in progress di nuovo
+
+3. [#292](https://github.com/404TeamNameNotFound404/ICantCry/issues/292): Adesso Calm scappano anche in coppia , non ho testato con gli anxiety ancora pero sicuramente nei prossimi push verrà rivisto perche ~~ho notato dei bug minori che possono essere pericolosi come il bug che ho risolto del out of index del array oppure il fatto stesso che in determinate situazioni calm (e di conseguenza anche anxiety) non scappano entro i 3 tentativi ma ci possono mettere anche 5 tentativi~~
+ > **_NOTA:_**: **La scena RandomBattle1 contiene solo calm e la lascierò cosi fino a quando il flee non è battletested quindi se volete cambiate voi ma scartate tutto**
 
 
 

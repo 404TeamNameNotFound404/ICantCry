@@ -49,8 +49,8 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 	DecisionMaker.Setup(CurrentMob);
 	Decision = DecisionMaker.Thought();
 	
-	if ((CurrentMob->IsEAnxiety() && CurrentMob->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().LastMobStanding()) 
-		|| (CurrentMob->IsECalm() && CurrentMob->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().LastMobStanding()))
+	if ((CurrentMob->IsEAnxiety() && CurrentMob->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().AreAnxietyOrCalmAlone()) 
+		|| (CurrentMob->IsECalm() && CurrentMob->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().AreAnxietyOrCalmAlone()))
 	{
 		Decision = EDecision::Flee;
 	}

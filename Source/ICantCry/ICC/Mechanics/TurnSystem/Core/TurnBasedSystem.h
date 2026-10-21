@@ -54,6 +54,8 @@ public:
  */
 	void Flow();
 	
+	void FleeAttempt(AMob* Target);
+	
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Turn", meta=(AllowPrivateAccess=true))
 	FTurn Turn;

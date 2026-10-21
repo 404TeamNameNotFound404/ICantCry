@@ -282,8 +282,10 @@ void UTurnBasedSystem::EndTurn()
 	}
 	
 	bHideDecision = false;
-	Turn.CurrentTurn = Turn.NextTurn;
-	Turn.NextTurn = (Turn.NextTurn + 1) % Turn.Queue.Num();
+	// Turn.CurrentTurn = Turn.NextTurn;
+	// Turn.NextTurn = (Turn.NextTurn + 1) % Turn.Queue.Num();
+	Turn.CurrentTurn = (Turn.CurrentTurn + 1) % Turn.Queue.Num();
+	Turn.NextTurn = (Turn.CurrentTurn + 1) % Turn.Queue.Num();
 }
 
 FTurn& UTurnBasedSystem::GetTurn()
@@ -329,7 +331,7 @@ void UTurnBasedSystem::Flow()
 	{
 		AICC_Actor* Actor = Turn.Queue[i];
 		AMob* Mob = Cast<AMob>(Actor);
-
+		
 		if (Mob && !Mob->IsAlive())
 		{
 			Mob->UnlockContentOnDeath();
@@ -344,6 +346,7 @@ void UTurnBasedSystem::Flow()
 		else if (Mob && Mob->IsFleeing())
 		{
 			Turn.Queue.RemoveAt(i);
+			DebugHelper::AddMessageToLog("[Turn System]: " + Mob->GetEmotionName() + " ran away");
 			Mob->Flee();
 		}
 	}
@@ -380,6 +383,53 @@ void UTurnBasedSystem::Flow()
 		
 		TryGetCurrentPlayer()->GetBattleHUD()->DisplayGameOverVisualizer();
 		SetBattlePhase(EBattlePhase::Finished);
+	}
+}
+
+void UTurnBasedSystem::FleeAttempt(AMob* Target)
+{
+	if (!Target) return;
+	
+	if (int32 FoundIndex = INDEX_NONE; Turn.Queue.Find(Target, FoundIndex))
+	{
+		Target->Flee();
+		DebugHelper::AddMessageToLog("[Turn System]: " + Target->GetEmotionName() + " ran away");
+		Turn.Queue.RemoveAt(FoundIndex);
+		
+		if (FoundIndex <= Turn.CurrentTurn && Turn.CurrentTurn > 0)
+		{
+			Turn.CurrentTurn--;
+		}
+		
+		if (!Turn.Queue.IsEmpty())
+		{
+			if (Turn.CurrentTurn >= Turn.Queue.Num())
+			{
+				Turn.CurrentTurn = Turn.Queue.Num() - 1; 
+			}
+		}
+		else
+		{
+			Turn.CurrentTurn = 0;
+		}
+		
+		if (Turn.Queue.Num() == 1 && Turn.Queue[0] == CurrentPlayer)
+		{
+			bFightStarted = false;
+			bIsPlayerTurn = false;
+			bIsAiTurn = false;
+
+			DebugHelper::AddMessageToLog("[Turn System]: Emotions ran away, Victory!");
+
+			if (!bVictory)
+			{
+				TryGetCurrentPlayer()->GetBattleHUD()->DisplayVictoryVisualizer();
+				TryGetCurrentPlayer()->GetBattleHUD()->GetVictoryVisualizer()->AfterBattle(Instance->CachedBattleMemory.LastStoredQueue);
+				bVictory = true;
+          
+				SetBattlePhase(EBattlePhase::Finished);
+			}
+		}
 	}
 }
 

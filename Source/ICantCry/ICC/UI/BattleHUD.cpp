@@ -630,8 +630,7 @@ void UBattleHUD::OnPassPressed()
 	
 	GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdateStatus();
 	GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdateDefBuffStatus();
-	GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdatePlayerDebuffStatus();
-	//RefreshStatusBuffs();
+	// GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdatePlayerDebuffStatus();
 
 	Displayer->SetVisibility(ESlateVisibility::Hidden);
 	OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
@@ -1932,39 +1931,81 @@ void UBattleHUD::RefreshBulletMagazine()
 	}
 }
 
+// void UBattleHUD::RefreshPistolMagazine()
+// {
+// 	const UCircularBulletBuffer* Buffer = GetCircularBulletBuffer();
+// 	if (!Buffer) return;
+//
+// 	const int32 Tail = Buffer->GetTailIndex();
+// 	const int32 Cap = Buffer->GetCapacity();
+// 	const int32 Count = Buffer->GetCount();
+//
+// 	// for (int32 i = 0; i < PistolMagazines.Num(); ++i)
+// 	// {
+// 	// 	if (i < Count)
+// 	// 	{
+// 	// 		const int32 BufferIndex = (Tail + i) % Cap;
+// 	// 		if (const UBulletData* Data = Buffer->PeekAt(BufferIndex); Data)
+// 	// 		{
+// 	// 			PistolMagazines[i]->SetBrushFromTexture(Data->Icon, true);
+// 	// 			PistolMagazines[i]->SetColorAndOpacity(FLinearColor::White);
+// 	// 		}
+// 	// 		else
+// 	// 		{
+// 	// 			PistolMagazines[i]->SetBrushFromTexture(nullptr);
+// 	// 			PistolMagazines[i]->SetColorAndOpacity(FLinearColor::Transparent);
+// 	// 		}
+// 	// 	}
+// 	//
+// 	// 	else
+// 	// 	{
+// 	// 		PistolMagazines[i]->SetBrushFromTexture(nullptr);
+// 	// 		PistolMagazines[i]->SetColorAndOpacity(FLinearColor::White);
+// 	// 	}
+// 	// }
+// 	
+// 	for (int32 i = 0; i < PistolMagazines.Num(); ++i)
+// 	{
+// 		if (const UBulletData* Data = Buffer->PeekAt(i); Data)
+// 		{
+// 			PistolMagazines[i]->SetBrushFromTexture(Data->Icon, true);
+// 			PistolMagazines[i]->SetColorAndOpacity(FLinearColor::White);
+// 			MagazineBullets[i]->SetBufferIndex(i);
+// 		}
+// 		else
+// 		{
+// 			PistolMagazines[i]->SetBrushFromTexture(nullptr);
+// 			PistolMagazines[i]->SetColorAndOpacity(FLinearColor::Transparent);
+// 			MagazineBullets[i]->SetEnableRemoval(false);
+// 		}
+// 	}
+// }
+
 void UBattleHUD::RefreshPistolMagazine()
 {
 	const UCircularBulletBuffer* Buffer = GetCircularBulletBuffer();
 	if (!Buffer) return;
 
-	const int32 Tail = Buffer->GetTailIndex();
-	const int32 Cap = Buffer->GetCapacity();
-	const int32 Count = Buffer->GetCount();
-
 	for (int32 i = 0; i < PistolMagazines.Num(); ++i)
 	{
-		if (i < Count)
-		{
-			const int32 BufferIndex = (Tail + i) % Cap;
-			if (const UBulletData* Data = Buffer->PeekAt(BufferIndex); Data)
-			{
-				PistolMagazines[i]->SetBrushFromTexture(Data->Icon, true);
-				PistolMagazines[i]->SetColorAndOpacity(FLinearColor::White);
-			}
-			else
-			{
-				PistolMagazines[i]->SetBrushFromTexture(nullptr);
-				PistolMagazines[i]->SetColorAndOpacity(FLinearColor::Transparent);
-			}
-		}
+		const UBulletData* Data = Buffer->PeekAt(i);
 
+		if (Data)
+		{
+			PistolMagazines[i]->SetBrushFromTexture(Data->Icon, true);
+			PistolMagazines[i]->SetColorAndOpacity(FLinearColor::White);
+			MagazineBullets[i]->SetBufferIndex(i);
+			MagazineBullets[i]->SetEnableRemoval(true);
+		}
 		else
 		{
 			PistolMagazines[i]->SetBrushFromTexture(nullptr);
-			PistolMagazines[i]->SetColorAndOpacity(FLinearColor::White);
+			PistolMagazines[i]->SetColorAndOpacity(FLinearColor::Transparent);
+			MagazineBullets[i]->SetEnableRemoval(false);
 		}
 	}
 }
+
 
 void UBattleHUD::ResetPistolMagazine()
 {

@@ -28,9 +28,8 @@ EBTNodeResult::Type UBTTask_Flee::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
     if (!Current || !Instance) return EBTNodeResult::Failed;
 
     UTurnBasedSystem* TBS = Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem();
-    const bool bIsAlone = TBS->GetTurn().LastMobStanding() || TBS->GetTurn().AreAnxietyOrCalmAlone();
-
-    if (!bIsAlone)
+	
+    if (const bool bIsAlone = TBS->GetTurn().LastMobStanding() || TBS->GetTurn().AreAnxietyOrCalmAlone(); !bIsAlone)
     {
        if (Current->GetMobType() == EMobType::MobAnxiety)
        {
@@ -48,13 +47,15 @@ EBTNodeResult::Type UBTTask_Flee::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
     }
 	
     MyMemory->Attempts++;
+	int32 BBAttempts = Blackboard->GetValueAsInt("FleeAttempts") + 1;
+	Blackboard->SetValueAsInt("FleeAttempts", BBAttempts);
 
     int32 SuccessRate = 0;
-    if (MyMemory->Attempts == 1)      SuccessRate = 33;
-    else if (MyMemory->Attempts == 2) SuccessRate = 66;
-    else                             SuccessRate = 100;
+    if (BBAttempts == 1)      SuccessRate = 33;
+    else if (BBAttempts == 2) SuccessRate = 66;
+    else SuccessRate = 100;
 
-    DebugHelper::AddMessageToLog("[BT - Flee]: Attempt N: " + FString::FromInt(MyMemory->Attempts) + " | Rate: " + FString::FromInt(SuccessRate) + "%");
+    DebugHelper::AddMessageToLog("[BT - Flee]: Attempt N: " + FString::FromInt(BBAttempts) + " | Rate: " + FString::FromInt(SuccessRate) + "%");
 	
 	if (const int32 DiceRoll = FMath::RandRange(1, 100);
 		DiceRoll <= SuccessRate)
@@ -119,11 +120,12 @@ void UBTTask_Flee::Run()
 	        ->DecisionDisplayer
 	        ->Hide();
 	
-	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetTurnBasedSystem()->Flow();
+	Current->GetBattleHandler()->GetTurnBasedSystem()->FleeAttempt(Current);
 	Current->GetBattleHandler()->GetTurnBasedSystem()->EndTurn();
 	Current->GetBattleHandler()->GetTurnBasedSystem()->StartNextTurn();
 	Current->SetFleeing(false);
 	Blackboard->SetValueAsBool("Flee?", Current->IsFleeing());
+	Blackboard->SetValueAsInt("FleeAttempts", 0);
 	FinishLatentTask(*OwnerRef, EBTNodeResult::Succeeded);
 }
 

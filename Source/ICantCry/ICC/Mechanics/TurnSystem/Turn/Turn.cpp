@@ -198,19 +198,35 @@ bool FTurn::LastMobStanding()
 bool FTurn::AreAnxietyOrCalmAlone()
 {
 	if (Queue.IsEmpty()) return false;
-	if (!LastMobStanding()) return false; 
+	bool bFoundType = false;
+	bool bTargetIsAnxiety = false;
 
 	for (const AICC_Actor* Actor : Queue)
 	{
 		if (Actor->IsA(AICC_Player::StaticClass())) continue;
 		const AMob* Mob = Cast<AMob>(Actor);
-		if (!Mob) continue;
-       
-		if (Mob->IsEAnxiety() || Mob->IsECalm())
+		if (!Mob) return false;
+		const bool bIsAnxiety = Mob->IsEAnxiety();
+		
+		if (const bool bIsCalm = Mob->IsECalm();
+			!bIsAnxiety && !bIsCalm)
 		{
-			return true;
+			return false;
+		}
+		
+		if (!bFoundType)
+		{
+			bFoundType = true;
+			bTargetIsAnxiety = bIsAnxiety;
+		}
+		else
+		{
+			if (bIsAnxiety != bTargetIsAnxiety)
+			{
+				return false;
+			}
 		}
 	}
-
-	return false;
+	
+	return bFoundType;
 }
