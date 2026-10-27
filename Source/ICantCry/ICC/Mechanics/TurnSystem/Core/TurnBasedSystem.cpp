@@ -157,6 +157,7 @@ void UTurnBasedSystem::Update(UWorld* World, FBattleMemory* Memory)
 				bIsAiTurn = true;
 				bIsPlayerTurn = false;
 				CurrentPlayer->GetBattleHUD()->SetCurrentPlayingEmotion(Mob);
+				DebugHelper::AddTurnOverlayMaterialToASkeletalMesh(Mob);
 				
 				if (Mob->IsAIReadyToPlay())
 				{
@@ -169,7 +170,7 @@ void UTurnBasedSystem::Update(UWorld* World, FBattleMemory* Memory)
 				bIsAiTurn = false;
 				bIsPlayerTurn = true;
 				AICC_Player* Player = Cast<AICC_Player>(Who);
-				DebugHelper::AddTurnMaterialOverlayToStaticMesh(Player->DebugMesh);
+				DebugHelper::AddTurnOverlayMaterialToASkeletalMesh(Player);
 				CurrentPlayer = Player;
 				Instance->GetCurrentPlayer()->GetBinder()->FocusOn(Instance->GetCurrentPlayer()->GetBattleHUD()->Shoot);
 				DebugHelper::AddMessageToLog("[Turn System]: Turn: " +  FString::FromInt(BattleTurnCounter) + " Your turn");
@@ -247,6 +248,7 @@ void UTurnBasedSystem::StartNextTurn()
 			CurrentMob = Mob;
 			bIsAiTurn = true;
 			bIsPlayerTurn = false;
+			DebugHelper::AddTurnOverlayMaterialToASkeletalMesh(Mob);
 			DebugHelper::AddMessageToLog("[Turn System]: Turn " + FString::FromInt(BattleTurnCounter) + " - " + Mob->GetEmotionName() + "'s turn");
 		}
 		//otherwise is player playing
@@ -258,7 +260,7 @@ void UTurnBasedSystem::StartNextTurn()
 			
 			Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
 			Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString("Your Turn"));
-			
+			DebugHelper::AddTurnOverlayMaterialToASkeletalMesh(Player);
 			if (!bTurnOverlayApplied)
 			{
 				DebugHelper::AddTurnMaterialOverlayToStaticMesh(Player->DebugMesh);

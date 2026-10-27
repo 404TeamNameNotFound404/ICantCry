@@ -41,10 +41,15 @@ public:
 	UPROPERTY() UNiagaraComponent* FreezedComponent;
 	UPROPERTY() UNiagaraComponent* DebuffDefComponent;
 	UPROPERTY() UNiagaraComponent* DebuffAtkComponent;
+	
+	FLinearColor GetTurnOverlayColor() const;
 
 protected:
 	UPROPERTY()
 	UStatusTracker* StatusTracker;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="BattleSystem", meta=(AllowPrivateAccess="true"))
+	FLinearColor TurnOutlinerColor;
 
 
 private:

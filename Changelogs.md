@@ -145,6 +145,15 @@ creazione della *bs_rework* branch
  > **_NOTA:_**: **La scena RandomBattle1 contiene solo calm e la lascierò cosi fino a quando il flee non è battletested quindi se volete cambiate voi ma scartate tutto**
 
 
+# 27/10/26
+1. Ho corretto il [#306](https://github.com/404TeamNameNotFound404/ICantCry/issues/306) e testato con Fear , non si buffava e terminava il turno, pero c'è una modifica che ancora non entra e che devo sistemare cioè che nel computerino non compare il messaggio che ha provato a buffarsi ma era sotto status
+
+2. Per quanto riguarda il [#304](https://github.com/404TeamNameNotFound404/ICantCry/issues/304) io ho controllato anche a livello log e mi sa che è solo un problema del debugger perche lato ai è metà rotto visto che è molto complessa ai e il debugger è molto semplice e quindi quando cattura le variabili lato ai si sballa a volte.
+
+3. Implementazione del [#307](https://github.com/404TeamNameNotFound404/ICantCry/issues/307), anche se mi pare non sia stata approvata del tutto l'ho implementata per farvela vedere, il materiale si instanza a runtime , il Material sta dentro *Content/ICC/BluePrints/Actors/Materials/OutLiner*, è quello che ha la preview come materiale nero. 
+**NON MODIFICATE IL VALORE 'ALBEDO' DENTRO IL MATERIAL!** ,per cambiare il colore dovete andare in ogni blueprint delle emozioni e del player e andare a cambiare il valore del *TurnOutlineColor* dentro la categoria *'BattleSystem'*,  se volete cambiare la thickness potete farlo dentro il material stesso ma il 2.0 come valore è ottimo.
+
+ > **_NOTA:_**: **Per il momento ho messo il colore solo a Veyl e a Anger , gli altri di default hanno il trasparente**
 
 # Bugs Gravi
 1. ~~Il room toggler che fa falso contatto se si corre~~ -corretto da voi tunando la walk speed e max speed-

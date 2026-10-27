@@ -317,6 +317,7 @@ public:
 	FString GetBuffName(const EBuffStatus& Buff) const;
 	
 	bool IsShieldActive() const;
+	bool IsBurned() const;
 
 private:
 

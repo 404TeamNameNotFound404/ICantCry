@@ -47,7 +47,7 @@ EBTNodeResult::Type UBTTask_Flee::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
     }
 	
     MyMemory->Attempts++;
-	int32 BBAttempts = Blackboard->GetValueAsInt("FleeAttempts") + 1;
+	const int32 BBAttempts = Blackboard->GetValueAsInt("FleeAttempts") + 1;
 	Blackboard->SetValueAsInt("FleeAttempts", BBAttempts);
 
     int32 SuccessRate = 0;

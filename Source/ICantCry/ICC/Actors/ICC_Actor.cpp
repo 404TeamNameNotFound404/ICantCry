@@ -65,4 +65,9 @@ int AICC_Actor::GetSpeed() const
 	return -1;
 }
 
+FLinearColor AICC_Actor::GetTurnOverlayColor() const
+{
+	return TurnOutlinerColor;
+}
+
 

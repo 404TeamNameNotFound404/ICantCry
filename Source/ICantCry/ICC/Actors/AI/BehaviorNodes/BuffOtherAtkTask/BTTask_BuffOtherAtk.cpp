@@ -66,16 +66,22 @@ EBTNodeResult::Type UBTTask_BuffOtherAtk::ExecuteTask(UBehaviorTreeComponent& Ow
 		return EBTNodeResult::Succeeded;
 	}
 
-
-	// check first if 'TargetToBuff' has active buff , if so it removes it to apply the new one
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+	
+	if (TargetToBuff->GetStatusTracker()->IsBurned())
+	{
+		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
+		Instance->GetCurrentPlayer()->GetBattleHUD()
+		->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetEmotionName() + " cant buff " 
+			+ TargetToBuff->GetEmotionName()));
+		
+		return EBTNodeResult::Succeeded;
+	}
+	
 	//TargetToBuff->GetStatusTracker()->BuffFlow(EBuffStatus::AtkBuff, TargetToBuff);
 	TargetToBuff->GetStatusTracker()->BuffWith(EBuffStatus::AtkBuff);
 	
-
 	DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Atk]: " + Current->GetEmotionName() + " buffed " + TargetToBuff->GetActorLabel() + " atk");
-
-	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
-
 	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
 	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetEmotionName() + " buffs " + TargetToBuff->GetActorLabel() + " atk"));
 	

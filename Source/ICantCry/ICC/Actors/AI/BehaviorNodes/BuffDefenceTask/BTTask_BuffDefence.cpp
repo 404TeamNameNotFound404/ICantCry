@@ -31,6 +31,17 @@ EBTNodeResult::Type UBTTask_BuffDefence::ExecuteTask(UBehaviorTreeComponent& Own
 	BlackBoard->SetValueAsBool("Attacked?", Current->GetIsIsAttacked());
 
 	Current->GetStatusTracker()->BuffFlow(EBuffStatus::AtkBuff, Current);
+	
+	
+	if (Current->GetStatusTracker()->IsBurned())
+	{
+		UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
+		Instance->GetCurrentPlayer()->GetBattleHUD()
+		->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetEmotionName() + " cant buff "));
+		return EBTNodeResult::Succeeded;
+	}
+	
 	Current->GetStatusTracker()->BuffWith(EBuffStatus::DefBuff);
 	
 

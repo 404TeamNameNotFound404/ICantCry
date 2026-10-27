@@ -75,14 +75,21 @@ EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& Ow
 		return EBTNodeResult::Succeeded;
 	}
 	
-
+	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
+	
+	if (TargetToBuff->GetStatusTracker()->IsBurned())
+	{
+		Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
+		Instance->GetCurrentPlayer()->GetBattleHUD()
+		->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetEmotionName() + " cant buff " 
+			+ TargetToBuff->GetEmotionName()));
+		
+		return EBTNodeResult::Succeeded;
+	}
 	TargetToBuff->GetStatusTracker()->BuffWith(EBuffStatus::DefBuff);
 	
 
 	DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: " + Current->GetEmotionName() + " buffed " + TargetToBuff->GetActorLabel() + " def");
-
-	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
-
 	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
 	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetEmotionName() + " buffs " + TargetToBuff->GetActorLabel() + " def"));
 	

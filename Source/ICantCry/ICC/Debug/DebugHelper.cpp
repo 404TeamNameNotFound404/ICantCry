@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "DebugHelper.h"
 #include "EngineUtils.h"
+#include "ICantCry/ICC/Actors/ICC_Actor.h"
 
 TArray<FString> DebugHelper::LogMessages;
 
@@ -105,7 +106,7 @@ void DebugHelper::AddOverlayMaterialToASkeletalMesh(USkeletalMeshComponent* Targ
 	Target->MarkRenderStateDirty();
 }
 
-void DebugHelper::AddTurnOverlayMaterialToASkeletalMesh(USkeletalMeshComponent* Target)
+void DebugHelper::AddTurnOverlayMaterialToASkeletalMesh(AICC_Actor* Target)
 {
 	if (!Target)
 	{
@@ -113,11 +114,12 @@ void DebugHelper::AddTurnOverlayMaterialToASkeletalMesh(USkeletalMeshComponent* 
 	}
 
 	UMaterialInterface* OverlayMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("Material'/Game/ICC/BluePrints/Actors/Materials/OutLiner/M_TurnOutliner.M_TurnOutliner'"));
-	checkf(OverlayMaterial, TEXT("Could not find Material 'M_TUrnOutliner'"));
-
+	if (!OverlayMaterial) return;
 	UMaterialInstanceDynamic* OverlayMaterialInstance = UMaterialInstanceDynamic::Create(OverlayMaterial, Target);
-	Target->OverlayMaterial = OverlayMaterialInstance;
-	Target->MarkRenderStateDirty();
+	if (!OverlayMaterialInstance) return;
+	OverlayMaterialInstance->SetVectorParameterValue(TEXT("Albedo"), Target->GetTurnOverlayColor());
+	Target->GetMesh()->OverlayMaterial = OverlayMaterialInstance;
+	Target->GetMesh()->MarkRenderStateDirty();
 }
 
 void DebugHelper::RemoveTurnOverlayMaterialToASkeletalMesh(USkeletalMeshComponent* Target)
@@ -132,7 +134,7 @@ void DebugHelper::RemoveTurnOverlayMaterialToASkeletalMesh(USkeletalMeshComponen
 	Target->MarkRenderStateDirty();
 }
 
-void DebugHelper::RemoveOverlayMaterialToASkeletalMesh(USkeletalMeshComponent* Target)
+void DebugHelper::RemoveOverlayMaterialToASkeletalMesh(AICC_Actor* Target)
 {
 	if (!Target)
 	{
@@ -140,8 +142,8 @@ void DebugHelper::RemoveOverlayMaterialToASkeletalMesh(USkeletalMeshComponent* T
 		return;
 	}
 
-	Target->OverlayMaterial = nullptr;
-	Target->MarkRenderStateDirty();
+	Target->GetMesh()->OverlayMaterial = nullptr;
+	Target->GetMesh()->MarkRenderStateDirty();
 }
 
 void DebugHelper::RemoveOverlayMaterialFromStaticMesh(UStaticMeshComponent* Target)

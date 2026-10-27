@@ -8,6 +8,8 @@
 #include "Components/SkeletalMeshComponent.h"
 
 
+class AICC_Actor;
+
 /**
  * Service class to debug on screen
  */
@@ -53,7 +55,7 @@ public:
 	 */
 	static void AddOverlayMaterialToASkeletalMesh(USkeletalMeshComponent* Target, const FString& MaterialName);
 
-	static void AddTurnOverlayMaterialToASkeletalMesh(USkeletalMeshComponent* Target);
+	static void AddTurnOverlayMaterialToASkeletalMesh(AICC_Actor* Target);
 
 	static void RemoveTurnOverlayMaterialToASkeletalMesh(USkeletalMeshComponent* Target);
 
@@ -61,7 +63,7 @@ public:
 	 * Remove the overlay material from a skeletal mesh component
 	 * @param Target skeletal mesh
 	 */
-	static void RemoveOverlayMaterialToASkeletalMesh(USkeletalMeshComponent* Target);
+	static void RemoveOverlayMaterialToASkeletalMesh(AICC_Actor* Target);
 
 	/**
 	 * Remove the overlay material from a static mesh component

@@ -638,6 +638,7 @@ void UBattleHUD::OnPassPressed()
 	Quantity->SetVisibility(ESlateVisibility::Hidden);
 	FSlateApplication::Get().ClearAllUserFocus();
 	BackBtn->SetVisibility(ESlateVisibility::Hidden);
+	DebugHelper::RemoveOverlayMaterialToASkeletalMesh(GameInstance->GetCurrentPlayer());
 	bIsEvFirst = false;
 }
 
@@ -1207,7 +1208,7 @@ void UBattleHUD::PrepareToEngageEv(const EAfflictedStatus& StatusToInflict)
 		return;
 	}
 
-	GameInstance->GetCurrentPlayer()->GetStatusTracker()->InflictStatus(StatusToInflict, SelectedActorTarget);
+	SelectedActorTarget->GetStatusTracker()->InflictStatus(StatusToInflict, SelectedActorTarget);
 	GetBulletDisplayer()->RemoveBullet();
 	Displayer->Refresh();
 	RefreshPistolMagazine();

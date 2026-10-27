@@ -1448,6 +1448,11 @@ bool UStatusTracker::IsShieldActive() const
 	return bShieldBuffed;
 }
 
+bool UStatusTracker::IsBurned() const
+{
+	return bIsBurned;
+}
+
 /*
 * Buff Atk riceve buff atk -> counter a 0 ma buff comunque attivo
 * Buff Atk con Debuff atk -> counter a 0, buff annullato
