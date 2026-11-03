@@ -43,7 +43,10 @@ EBTNodeResult::Type UBTTask_BuffDefence::ExecuteTask(UBehaviorTreeComponent& Own
 	}
 	
 	Current->GetStatusTracker()->BuffWith(EBuffStatus::DefBuff);
-	
+	if (Current->GetBattleHandler()->GetBuffSfx())
+	{
+		UGameplayStatics::PlaySound2D(this, Current->GetBattleHandler()->GetBuffSfx());
+	}
 
 	Target->GetBattleHUD()->DecisionDisplayer->Show();
 	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetEmotionName() + " buffs it's def"));

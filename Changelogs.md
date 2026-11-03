@@ -155,6 +155,18 @@ creazione della *bs_rework* branch
 
  > **_NOTA:_**: **Per il momento ho messo il colore solo a Veyl e a Anger , gli altri di default hanno il trasparente**
 
+
+# 03/11/26
+1. Trovate all'interno della blueprint del battle handler una nuova categoria chiamata "Battle Sfx" , troverete un paio
+di slot in cui mettere i .mp3/.waw/.ogg degli effetti dello sparo, debuff , buff e attacco del emozione, ora a parte lo sparo gli altri sono condivisi anche con veyl, il souno di buff andra anche quando veyl usa gli ev per buffarsi e il suono di debuff andra anche quando veyl sparera debuff vero il target. e il debuff shield usa lo stesso sfx del buff (se volete ne metto uno dedicato cosi come per freeze o burn).
+
+2. Ho aggiunto una classe interna chiamata 'SoundDealer' che gestisce tutti gli sfx di veyl che non fanno parte della battaglia, quindi footstep, interazioni , porte, npc ecc. Solo il footstep viene riprodotto in coordinate 3d mentre le interazioni sono tutte in 2d. Per mettere i sfx non dovete fare altro che aprire la blueprint del player e cliccare su *SoundDealer* e nel pannello a destra *Details* troverete gli sfx da settare facendo drag n drop o selezionando nel menu a tendina il file audio. Per il momento unica chiamata che ho fatto è quella del footstep il resto non è collegato perche le interazioni non le ho scritte io e Simone immagino ci stia ancora lavorando quindi post merge lo farà lui / faremo assieme.
+**PS: gli sfx metteli dentro 3dmodels creando una cartella dedicata nella root o dentro Placeholders e mi raccomando NON VERSIONATELI** 
+**PS 1: Ho messo le protezioni se un campo source è vuoto quindi se non sentite gli audio significa o che non li avete messi oppure unreal non riesce a leggerli** 
+
+3. Risolto il problema della max room che se colpita laterale ti spediva negli inferi. Spiegazione breve del problema:
+Si attuava una sorta di ping pong velocissimo in cui te entravi pero toccava subito in un 1 ms altro trigger quindi succedeva che te ritornavi nel corridoio pero il RoomHandler accendeva correttamente la max room spegnendo il resto. ORA premetto che non è un **Fix** ma un **Workaround** per *risolverlo* dovete spuntare **SOLO** al trigger in entrata *'Remember Counter'*. Prima che mi chiediate il perche , non lo so , so solo che è dipendente da quello e il codice io l'ho scritto 4-5 mesi fa e non mi ricordo bene tutto.
+
 # Bugs Gravi
 1. ~~Il room toggler che fa falso contatto se si corre~~ -corretto da voi tunando la walk speed e max speed-
 2. ~~Se il retry button sostanzialmente funziona solo a me è un problema e rischia di rompere tutto~~

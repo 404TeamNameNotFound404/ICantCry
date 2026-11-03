@@ -81,6 +81,11 @@ EBTNodeResult::Type UBTTask_BuffOtherAtk::ExecuteTask(UBehaviorTreeComponent& Ow
 	//TargetToBuff->GetStatusTracker()->BuffFlow(EBuffStatus::AtkBuff, TargetToBuff);
 	TargetToBuff->GetStatusTracker()->BuffWith(EBuffStatus::AtkBuff);
 	
+	if (Current->GetBattleHandler()->GetBuffSfx())
+	{
+		UGameplayStatics::PlaySound2D(this, Current->GetBattleHandler()->GetBuffSfx());
+	}
+	
 	DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Atk]: " + Current->GetEmotionName() + " buffed " + TargetToBuff->GetActorLabel() + " atk");
 	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();
 	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetEmotionName() + " buffs " + TargetToBuff->GetActorLabel() + " atk"));

@@ -126,6 +126,11 @@ void UBTTask_Flee::Run()
 	Current->SetFleeing(false);
 	Blackboard->SetValueAsBool("Flee?", Current->IsFleeing());
 	Blackboard->SetValueAsInt("FleeAttempts", 0);
+	if(Current->GetBattleHandler()->GetFleeSfx())
+	{
+		UGameplayStatics::PlaySound2D(this, Current->GetBattleHandler()->GetFleeSfx());
+	}
+	
 	FinishLatentTask(*OwnerRef, EBTNodeResult::Succeeded);
 }
 

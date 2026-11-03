@@ -1560,6 +1560,11 @@ void UBattleHUD::Engage()
 	CanvasStatus->SetVisibility(ESlateVisibility::Hidden);
 	BulletName->SetVisibility(ESlateVisibility::Hidden);
 	HideInfo();
+	
+	if (GetBattleHandler()->GetShootSfx() && !bIsEvFirst)
+	{
+		UGameplayStatics::PlaySound2D(this, GetBattleHandler()->GetShootSfx());
+	}
 
 	switch (CurrentBulletData->Type)
 	{
@@ -1590,6 +1595,12 @@ void UBattleHUD::Engage()
 			{
 				RefreshStatusBuffs();
 			});
+			
+			if (GetBattleHandler()->GetBuffSfx())
+			{
+				UGameplayStatics::PlaySound2D(this, GetBattleHandler()->GetBuffSfx());
+			}
+			
 			break;
 		}
 	case FearDv:
@@ -1614,6 +1625,10 @@ void UBattleHUD::Engage()
 			{
 				RefreshStatusBuffs();
 			});
+			if (GetBattleHandler()->GetBuffSfx())
+			{
+				UGameplayStatics::PlaySound2D(this, GetBattleHandler()->GetBuffSfx());
+			}
 			break;
 		}
 	case Disgust:
@@ -1624,6 +1639,10 @@ void UBattleHUD::Engage()
 	case DisgustEv:
 		{
 			PrepareToEngageEv(EDebuffStatus::DebuffAtk);
+			if (GetBattleHandler()->GetDebuffSfx())
+			{
+				UGameplayStatics::PlaySound2D(this, GetBattleHandler()->GetDebuffSfx());
+			}
 			break;
 		}
 	case SadnessDv:
@@ -1633,6 +1652,10 @@ void UBattleHUD::Engage()
 		}
 	case SadnessEv:
 		PrepareToEngageEv(EDebuffStatus::DebuffDef);
+		if (GetBattleHandler()->GetDebuffSfx())
+		{
+			UGameplayStatics::PlaySound2D(this, GetBattleHandler()->GetDebuffSfx());
+		}
 		break;
 	case JoyDv:
 		{
@@ -1652,6 +1675,10 @@ void UBattleHUD::Engage()
 			{
 				RefreshStatusBuffs();
 			});
+			if (GetBattleHandler()->GetHealSfx())
+			{
+				UGameplayStatics::PlaySound2D(this, GetBattleHandler()->GetHealSfx());
+			}
 			break;
 		}
 	case Anxiety:
@@ -1667,6 +1694,10 @@ void UBattleHUD::Engage()
 	case CalmEV:
 		{
 			PrepareToEngageEv(EAfflictedStatus::ShieldDebuff);
+			if (GetBattleHandler()->GetBuffSfx())
+			{
+				UGameplayStatics::PlaySound2D(this, GetBattleHandler()->GetBuffSfx());
+			}
 			break;
 		}
 	case JealousyDv:
@@ -1678,6 +1709,10 @@ void UBattleHUD::Engage()
 	case JealousyEv:
 		{
 			PrepareToEngageEv(EAfflictedStatus::Burn);
+			if (GetBattleHandler()->GetDebuffSfx())
+			{
+				UGameplayStatics::PlaySound2D(this, GetBattleHandler()->GetDebuffSfx());
+			}
 			break;
 		}
 	case Shame:

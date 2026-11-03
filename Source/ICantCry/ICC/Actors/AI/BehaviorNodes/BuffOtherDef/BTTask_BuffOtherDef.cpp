@@ -87,6 +87,10 @@ EBTNodeResult::Type UBTTask_BuffOtherDef::ExecuteTask(UBehaviorTreeComponent& Ow
 		return EBTNodeResult::Succeeded;
 	}
 	TargetToBuff->GetStatusTracker()->BuffWith(EBuffStatus::DefBuff);
+	if (Current->GetBattleHandler()->GetBuffSfx())
+	{
+		UGameplayStatics::PlaySound2D(this, Current->GetBattleHandler()->GetBuffSfx());
+	}
 	
 
 	DebugHelper::AddMessageToLog("[Behavior Tree - Buff Other Def]: " + Current->GetEmotionName() + " buffed " + TargetToBuff->GetActorLabel() + " def");

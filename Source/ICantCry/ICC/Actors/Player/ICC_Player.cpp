@@ -62,6 +62,7 @@ AICC_Player::AICC_Player()
 
 	PadBinder = CreateDefaultSubobject<UICC_GamepadBinder>(TEXT("GamepadBinder"));
 	AnimationDealer = CreateDefaultSubobject<UIccAnimationDealer>(TEXT("AnimationDealer"));
+	SoundDealer = CreateDefaultSubobject<USoundDealer>(TEXT("SoundDealer"));
 	
 	WidgetInteractionComp = CreateDefaultSubobject<UWidgetInteractionComponent>(TEXT("WidgetInteractionComp"));
 	if (WidgetInteractionComp)
@@ -417,6 +418,7 @@ void AICC_Player::Input_Move(const FInputActionValue& InputActionValue)
 		
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
+		SoundDealer->PlayFootStep();
 	}
 }
 
@@ -906,6 +908,11 @@ UICC_EnhancedInputCmp* AICC_Player::GetInputBinder()
 UIccAnimationDealer* AICC_Player::GetAnimationDealer()
 {
 	return AnimationDealer;
+}
+
+USoundDealer* AICC_Player::GetSoundDealer()
+{
+	return SoundDealer;
 }
 
 void AICC_Player::Input_ChallengeReleaseInteraction(const FInputActionValue& InputActionValue)

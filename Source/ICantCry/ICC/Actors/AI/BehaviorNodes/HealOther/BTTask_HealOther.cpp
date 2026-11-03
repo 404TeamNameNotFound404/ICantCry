@@ -64,6 +64,12 @@ EBTNodeResult::Type UBTTask_HealOther::ExecuteTask(UBehaviorTreeComponent& Owner
 	DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetEmotionName() + " this mf can heal other so here's the cure king!");
 	Blackboard->SetValueAsBool("IsHealingOther?", true);
 	TargetToBuff->Heal(TargetToBuff->GetStats().Health * 0.20f);
+	
+	if (Current->GetBattleHandler()->GetHealSfx())
+	{
+		UGameplayStatics::PlaySound2D(this, Current->GetBattleHandler()->GetHealSfx());
+	}
+	
 	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(Current->GetEmotionName() + " heals " + TargetToBuff->GetActorLabel()));
 	Target->GetBattleHUD()->DecisionDisplayer->Show();
 	DebugHelper::AddMessageToLog("[Behavior Tree - HealOther]: " + Current->GetEmotionName() + " heals " + TargetToBuff->GetActorLabel());

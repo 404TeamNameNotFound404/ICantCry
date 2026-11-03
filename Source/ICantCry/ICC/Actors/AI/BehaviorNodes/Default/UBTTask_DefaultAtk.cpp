@@ -357,5 +357,11 @@ void UUBTTask_DefaultAtk::OnMinigameEndedCallback()
 	BlackBoard->SetValueAsInt("Id", CurrentMob->GetTreeId());
 	BlackBoard->SetValueAsBool("IsBuffed?", CurrentMob->GetIsIsBuffedAtk());
 	
+	if (CurrentMob->GetBattleHandler()->GetEmotionAttackSfx())
+	{
+		UGameplayStatics::PlaySound2D(this, 
+			CurrentMob->GetBattleHandler()->GetEmotionAttackSfx());
+	}
+	
 	FinishLatentTask(*TreeComp, EBTNodeResult::Succeeded);
 }

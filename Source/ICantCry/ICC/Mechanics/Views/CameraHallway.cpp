@@ -31,6 +31,16 @@ void ACameraHallway::BeginPlay()
 
 void ACameraHallway::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	DebugHelper::LogMessage(
+		10,
+		FColor::Yellow,
+		FString::Printf(
+			TEXT("bPlayerOverlapped: %d | bTransitioning: %d"),
+			bPlayerOverlapped,
+			bTransitioning
+		)
+	);
+	
 	if (!OtherActor)
 		return;
 
@@ -48,15 +58,19 @@ void ACameraHallway::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AA
 	{
 		bTransitioning = true;
 		Snap();
-		ToggleRoom(RoomId);
-
+		
+		// GetWorld()->GetTimerManager().SetTimerForNextTick([this]
+		// {
+		// 	ToggleRoom(RoomId);
+		// });
+		
 		GetWorldTimerManager().SetTimer(
 			TransitionTimerHandle,
 			[this]()
 			{
 				bTransitioning = false;
 			},
-			0.18f,
+			0.1f,
 			false
 		);
 	}
@@ -94,13 +108,23 @@ void ACameraHallway::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AA
 
 void ACameraHallway::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (!Player || OtherActor != Player)
-	{
-		DebugHelper::LogWarning("Only player can end overlap with camera");
+	if (!OtherActor)
 		return;
+	
+	if (!Player)
+	{
+		Player = Cast<UICantCryGameInstance>(GetGameInstance())->GetCurrentPlayer();
 	}
 	
-	bPlayerOverlapped = false;
+	if (OtherActor == Player || OtherActor->ActorHasTag("Player"))
+	{
+		bPlayerOverlapped = false;
+		DebugHelper::LogSuccess("Player successfully exited overlap");
+	}
+	else
+	{
+		DebugHelper::LogWarning("Non-player ended overlap with camera");
+	}
 }
 
 void ACameraHallway::Snap()
@@ -137,6 +161,11 @@ void ACameraHallway::Snap()
 
 		if (bPlayerMustTeleport && InEntry.IsValid())
 		{
+			GetWorld()->GetTimerManager().SetTimerForNextTick([this]
+			{
+				ToggleRoom(RoomId);
+			});
+			
 			const FVector TargetLocation = InEntry->GetActorLocation();
 			const FRotator TargetRotation = InEntry->GetActorRotation();
 
@@ -147,6 +176,8 @@ void ACameraHallway::Snap()
 				nullptr,
 				ETeleportType::TeleportPhysics
 			);
+			
+			DebugHelper::LogMessage(10, FColor::White, "Teleporting...");
 			
 			//Player->SetActorLocationAndRotation(InEntry->GetActorLocation(), InEntry->GetActorRotation());
 		}
@@ -177,6 +208,11 @@ void ACameraHallway::Snap()
 
 		if (bPlayerMustTeleport && OutEntry.IsValid())
 		{
+			GetWorld()->GetTimerManager().SetTimerForNextTick([this]
+			{
+				ToggleRoom(RoomId);
+			});
+			DebugHelper::LogMessage(10, FColor::White, "Teleporting back...");
 			Player->SetActorLocationAndRotation(OutEntry->GetActorLocation(), OutEntry->GetActorRotation());
 		}
 		
@@ -195,6 +231,7 @@ void ACameraHallway::ToggleRoom(const FName& RoomTag)
 	if (!RoomHandler) return;
 
 	AActor* TargetRoom = nullptr;
+	DebugHelper::LogMessage(10, FColor::White, "Toggling: " + RoomTag.ToString());
 
 	for (AActor* Room : RoomHandler->GetRooms())
 	{

@@ -43,6 +43,10 @@ EBTNodeResult::Type UBTTask_SelfHeal::ExecuteTask(UBehaviorTreeComponent& OwnerC
 	}
 	
 	Current->Heal(Current->GetStats().Health*= 0.20f);
+	if (Current->GetBattleHandler()->GetHealSfx())
+	{
+		UGameplayStatics::PlaySound2D(this, Current->GetBattleHandler()->GetHealSfx());
+	}
 	
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(Current->GetWorld()->GetGameInstance());
 	Instance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Show();

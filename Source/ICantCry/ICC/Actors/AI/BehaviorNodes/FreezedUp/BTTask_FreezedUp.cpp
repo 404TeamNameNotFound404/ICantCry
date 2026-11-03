@@ -36,6 +36,10 @@ EBTNodeResult::Type UBTTask_FreezedUp::ExecuteTask(UBehaviorTreeComponent& Owner
 	
 	Target->GetStatusTracker()->MalusFlow(EAfflictedStatus::Freezed);
 	Target->GetStatusTracker()->InflictStatus(EAfflictedStatus::Freezed, Target);
+	if (Current->GetBattleHandler()->GetDebuffSfx())
+	{
+		UGameplayStatics::PlaySound2D(this, Current->GetBattleHandler()->GetDebuffSfx());
+	}
 
 	//TODO Implement Player->Freeze();
 	

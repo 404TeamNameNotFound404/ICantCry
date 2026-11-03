@@ -36,6 +36,11 @@ EBTNodeResult::Type UBTTask_EnvyBurned::ExecuteTask(UBehaviorTreeComponent& Owne
 	//Target->GetStatusTracker()->MalusFlow(EAfflictedStatus::Burn);
 	//Target->GetStatusTracker()->InflictStatus(EAfflictedStatus::Burn, Target);
 	Target->GetStatusTracker()->InflictEnvyBurned(Target);
+	
+	if (Current->GetBattleHandler()->GetDebuffSfx())
+	{
+		UGameplayStatics::PlaySound2D(this, Current->GetBattleHandler()->GetDebuffSfx());
+	}
 
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 

@@ -25,6 +25,7 @@
 #include "ICantCry/ICC/Input/ICC_EnhancedInputCmp.h"
 #include "ICantCry/ICC/Input/ICC_PlayerController.h"
 #include "ICantCry/ICC/Actors/AnimationInstances/Player/IccAnimationDealer.h"
+#include "ICantCry/ICC/Actors/SoundComponent/SoundDealer.h"
 #include "ICC_Player.generated.h"
 
 class UDialogueAsset;
@@ -47,6 +48,9 @@ protected:
 	
 	UPROPERTY()
 	UIccAnimationDealer* AnimationDealer;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true")) 
+	USoundDealer* SoundDealer;
 
 public:
 	// Called every frame
@@ -202,6 +206,7 @@ public:
 	UICC_InputDataAsset* GetInputDataAsset();
 	UICC_EnhancedInputCmp* GetInputBinder();
 	UIccAnimationDealer* GetAnimationDealer();
+	USoundDealer* GetSoundDealer();
 
 	/** Returns the interactable component currently in the player's view (null if none) */
 	UInteractionComponent* GetCurrentInteractableTarget() const { return CurrentInteractableTarget; }

@@ -48,6 +48,13 @@ public:
 	UBulletData* GetIndifferenceData();
 	
 	void InitDebugger();
+	
+	USoundBase* GetShootSfx();
+	USoundBase* GetDebuffSfx();
+	USoundBase* GetBuffSfx();
+	USoundBase* GetEmotionAttackSfx();
+	USoundBase* GetFleeSfx();
+	USoundBase* GetHealSfx();
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -84,6 +91,24 @@ private:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Battle VFX", meta=(AllowPrivateAccess="true"))
 	float AuraIncreaseValue = 500.f;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Battle SFX", meta=(AllowPrivateAccess="true"))
+	USoundBase* ShootSfx;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Battle SFX", meta=(AllowPrivateAccess="true"))
+	USoundBase* DebuffSfx;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Battle SFX", meta=(AllowPrivateAccess="true"))
+	USoundBase* BuffSfx;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Battle SFX", meta=(AllowPrivateAccess="true"))
+	USoundBase* EmotionAttackSfx;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Battle SFX", meta=(AllowPrivateAccess="true"))
+	USoundBase* FleeSfx;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Battle SFX", meta=(AllowPrivateAccess="true"))
+	USoundBase* HealSfx;
 	
 	// To convert wasted bullet into indifference if not found
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Turn", meta=(AllowPrivateAccess=true))

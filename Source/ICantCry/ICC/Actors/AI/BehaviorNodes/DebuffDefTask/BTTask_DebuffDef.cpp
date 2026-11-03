@@ -36,6 +36,10 @@ EBTNodeResult::Type UBTTask_DebuffDef::ExecuteTask(UBehaviorTreeComponent& Owner
 	
 	//Target->GetStatusTracker()->DebuffFlow(EDebuffStatus::DebuffDef, Target);
 	Target->GetStatusTracker()->InflictDebuffStatus(EDebuffStatus::DebuffDef, Target);
+	if (Current->GetBattleHandler()->GetDebuffSfx())
+	{
+		UGameplayStatics::PlaySound2D(this, Current->GetBattleHandler()->GetDebuffSfx());
+	}
 	
 	UICantCryGameInstance* Instance = Cast<UICantCryGameInstance>(GetWorld()->GetGameInstance());
 
