@@ -131,6 +131,12 @@ void UAttackMinigame::HandleScore()
 		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
 		Instance->GetPlayerStats()->RuntimeStats.ApModifier = 1;
+		if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetShootSfx() && 
+		!Instance->GetCurrentPlayer()->GetBattleHUD()->IsEvFirst())
+		{
+			UGameplayStatics::PlaySound2D(this, 
+				Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetShootSfx());
+		}
 		break;
 	case EMinigameThreshold::Good:
 		DebugHelper::LogWarning("Good minigame score!");
@@ -148,6 +154,12 @@ void UAttackMinigame::HandleScore()
 		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
 
 		Instance->GetPlayerStats()->RuntimeStats.ApModifier = 1;
+		if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetShootSfx() && 
+		!Instance->GetCurrentPlayer()->GetBattleHUD()->IsEvFirst())
+		{
+			UGameplayStatics::PlaySound2D(this, 
+				Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetShootSfx());
+		}
 		break;
 	case EMinigameThreshold::Perfect:
 		DebugHelper::LogSuccess("Perfect minigame score!");
@@ -164,6 +176,12 @@ void UAttackMinigame::HandleScore()
 		Instance->GetCurrentPlayer()->GetBattleHUD()->UpdateAp();
 		Instance->GetCurrentPlayer()->GetBattleHUD()->EnableButtonsAfterShooting();
 		Instance->GetPlayerStats()->RuntimeStats.ApModifier = 1;
+		if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetShootSfx() && 
+		!Instance->GetCurrentPlayer()->GetBattleHUD()->IsEvFirst())
+		{
+			UGameplayStatics::PlaySound2D(this, 
+				Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetShootSfx());
+		}
 		break;
 	}
 }

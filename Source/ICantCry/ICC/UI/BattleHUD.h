@@ -246,6 +246,8 @@ public:
 	
 	void RestoreFocusBuff();
 	
+	bool IsEvFirst() const;
+	
 	
 protected:
 	UFUNCTION(BlueprintPure) FText UpdateBulletName();

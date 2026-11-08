@@ -68,6 +68,12 @@ void UAngerAtkMinigame::HandleScore()
 			Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 			Instance->GetPlayerStats()->RuntimeStats.ApModifier = 1;
+			if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetShootSfx() && 
+			!Instance->GetCurrentPlayer()->GetBattleHUD()->IsEvFirst())
+			{
+				UGameplayStatics::PlaySound2D(this, 
+					Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetShootSfx());
+			}
 		}break;
 	case Good:
 		{
@@ -76,6 +82,12 @@ void UAngerAtkMinigame::HandleScore()
 			Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 			Instance->GetPlayerStats()->RuntimeStats.ApModifier = 1;
+			if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetShootSfx() && 
+			!Instance->GetCurrentPlayer()->GetBattleHUD()->IsEvFirst())
+			{
+				UGameplayStatics::PlaySound2D(this, 
+					Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetShootSfx());
+			}
 		}break;
 	case Perfect:
 		{
@@ -84,6 +96,12 @@ void UAngerAtkMinigame::HandleScore()
 			Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 			Instance->GetPlayerStats()->RuntimeStats.ApModifier = 1;
+			if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetShootSfx() && 
+			!Instance->GetCurrentPlayer()->GetBattleHUD()->IsEvFirst())
+			{
+				UGameplayStatics::PlaySound2D(this, 
+					Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetShootSfx());
+			}
 		
 			DebugHelper::LogMessage(9, FColor::Black, "Perfect anger minigame score");
 		}break;

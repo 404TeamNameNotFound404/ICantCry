@@ -167,6 +167,11 @@ di slot in cui mettere i .mp3/.waw/.ogg degli effetti dello sparo, debuff , buff
 3. Risolto il problema della max room che se colpita laterale ti spediva negli inferi. Spiegazione breve del problema:
 Si attuava una sorta di ping pong velocissimo in cui te entravi pero toccava subito in un 1 ms altro trigger quindi succedeva che te ritornavi nel corridoio pero il RoomHandler accendeva correttamente la max room spegnendo il resto. ORA premetto che non è un **Fix** ma un **Workaround** per *risolverlo* dovete spuntare **SOLO** al trigger in entrata *'Remember Counter'*. Prima che mi chiediate il perche , non lo so , so solo che è dipendente da quello e il codice io l'ho scritto 4-5 mesi fa e non mi ricordo bene tutto.
 
+# 08/11/26
+1. Aggiunto *FootStepsSfx* , una lista in cui potete inserire quanti sfx dei passi volete e verrà chiamata random a runtime.
+   La trovate sempre dentro la blueprint del player dentro il component *SoundDealer*
+2. Ho messo il suono di anger quando va verso il player e il shoot adesso spara dopo il minigame 
+
 # Bugs Gravi
 1. ~~Il room toggler che fa falso contatto se si corre~~ -corretto da voi tunando la walk speed e max speed-
 2. ~~Se il retry button sostanzialmente funziona solo a me è un problema e rischia di rompere tutto~~

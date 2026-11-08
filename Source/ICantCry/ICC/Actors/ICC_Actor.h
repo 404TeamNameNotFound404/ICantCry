@@ -35,6 +35,9 @@ public:
 
 	virtual int GetSpeed() const;
 	
+	void FreezeInput();
+	void UnfreezeInput();
+	
 	UPROPERTY() 
 	TMap<TEnumAsByte<EBuffStatus>, UNiagaraComponent*> ActiveAuras;
 	

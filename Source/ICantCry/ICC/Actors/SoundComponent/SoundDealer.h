@@ -17,6 +17,7 @@ public:
 	USoundDealer();
 	
 	void PlayFootStep();
+	void PlayRandomFootSteps();
 	void FireInteraction();
 	void FireDoorInteraction();
 	void FireEncounterInteraction();
@@ -36,5 +37,11 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Sfx", meta=(AllowPrivateAccess="true"))
 	USoundBase* EncounterInteractionSfx;
+	
+	UPROPERTY()
+	int32 LastFootstepIndex = INDEX_NONE;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Sfx", meta=(AllowPrivateAccess="true"))
+	TArray<USoundBase*> FootStepsSfx;
 
 };

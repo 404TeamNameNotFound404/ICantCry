@@ -163,6 +163,7 @@ void ACameraHallway::Snap()
 		{
 			GetWorld()->GetTimerManager().SetTimerForNextTick([this]
 			{
+				Cast<UICantCryGameInstance>(GetGameInstance())->GetCurrentPlayer()->FreezeInput();
 				ToggleRoom(RoomId);
 			});
 			
@@ -211,6 +212,7 @@ void ACameraHallway::Snap()
 			GetWorld()->GetTimerManager().SetTimerForNextTick([this]
 			{
 				ToggleRoom(RoomId);
+				Cast<UICantCryGameInstance>(GetGameInstance())->GetCurrentPlayer()->UnfreezeInput();
 			});
 			DebugHelper::LogMessage(10, FColor::White, "Teleporting back...");
 			Player->SetActorLocationAndRotation(OutEntry->GetActorLocation(), OutEntry->GetActorRotation());

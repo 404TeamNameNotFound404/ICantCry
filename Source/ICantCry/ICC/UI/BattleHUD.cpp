@@ -317,6 +317,11 @@ void UBattleHUD::RestoreFocusBuff()
 	DebugHelper::LogSuccess("[BattleHUD]: 50% focus def buff restored");
 }
 
+bool UBattleHUD::IsEvFirst() const
+{
+	return bIsEvFirst;
+}
+
 FText UBattleHUD::UpdateBulletName()
 {
 	if (!GetCurrentBulletData()) return FText::FromString("");
@@ -1560,11 +1565,6 @@ void UBattleHUD::Engage()
 	CanvasStatus->SetVisibility(ESlateVisibility::Hidden);
 	BulletName->SetVisibility(ESlateVisibility::Hidden);
 	HideInfo();
-	
-	if (GetBattleHandler()->GetShootSfx() && !bIsEvFirst)
-	{
-		UGameplayStatics::PlaySound2D(this, GetBattleHandler()->GetShootSfx());
-	}
 
 	switch (CurrentBulletData->Type)
 	{

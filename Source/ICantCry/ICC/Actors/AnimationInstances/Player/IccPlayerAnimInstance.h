@@ -6,6 +6,8 @@
 #include "Animation/AnimInstance.h"
 #include "IccPlayerAnimInstance.generated.h"
 
+class AICC_Player;
+
 /**
  * 
  */
@@ -13,6 +15,10 @@ UCLASS(Blueprintable)
 class ICANTCRY_API UIccPlayerAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
+	
+protected:
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	TObjectPtr<class AICC_Player> OwningPlayer;
 	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(DisplayName = "inFight?"))
@@ -24,5 +30,5 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float LocomotionBlending;
 	
-	
+	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 };

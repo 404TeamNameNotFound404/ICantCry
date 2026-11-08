@@ -418,7 +418,6 @@ void AICC_Player::Input_Move(const FInputActionValue& InputActionValue)
 		
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
-		SoundDealer->PlayFootStep();
 	}
 }
 

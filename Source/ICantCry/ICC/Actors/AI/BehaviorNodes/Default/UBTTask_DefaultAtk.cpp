@@ -176,6 +176,12 @@ void UUBTTask_DefaultAtk::StartAttackMinigame(AMob* Current, AICC_Player* Target
 	Request.SetAllowPartialPath(true); 
 	Request.SetNavigationFilter(nullptr);
 	
+	if (CurrentMob->GetBattleHandler()->GetEmotionAttackSfx())
+	{
+		UGameplayStatics::PlaySound2D(this, 
+			CurrentMob->GetBattleHandler()->GetEmotionAttackSfx());
+	}
+	
 	const EPathFollowingRequestResult::Type Result = Controller->MoveTo(Request);
 	Controller->SetFocus(Target, EAIFocusPriority::Gameplay);
 
@@ -356,12 +362,6 @@ void UUBTTask_DefaultAtk::OnMinigameEndedCallback()
 	CurrentMob->SetIsBuffedAtk(false);
 	BlackBoard->SetValueAsInt("Id", CurrentMob->GetTreeId());
 	BlackBoard->SetValueAsBool("IsBuffed?", CurrentMob->GetIsIsBuffedAtk());
-	
-	if (CurrentMob->GetBattleHandler()->GetEmotionAttackSfx())
-	{
-		UGameplayStatics::PlaySound2D(this, 
-			CurrentMob->GetBattleHandler()->GetEmotionAttackSfx());
-	}
 	
 	FinishLatentTask(*TreeComp, EBTNodeResult::Succeeded);
 }
