@@ -72,9 +72,9 @@ void AICC_Actor::FreezeInput()
 {
 	if (AICC_Player* Player = Cast<AICC_Player>(this))
 	{
-		AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
+		AICC_PlayerController* Controller2 = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
 		if (!Controller) return;
-		DisableInput(Controller);
+		DisableInput(Controller2);
 		Player->GetMovementComponent()->Velocity = FVector::Zero();
 		DebugHelper::LogMessage(4, FColor::White, "Controller disabled");
 	}
@@ -84,9 +84,9 @@ void AICC_Actor::UnfreezeInput()
 {
 	if (Cast<AICC_Player>(this))
 	{
-		AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
+		AICC_PlayerController* Controller2 = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
 		if (!Controller) return;
-		EnableInput(Controller);
+		EnableInput(Controller2);
 		DebugHelper::LogMessage(4, FColor::White, "Controller re-enabled");
 	}
 }
