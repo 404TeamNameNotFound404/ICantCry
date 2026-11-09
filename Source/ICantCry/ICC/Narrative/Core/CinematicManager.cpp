@@ -124,6 +124,13 @@ void UCinematicManager::PlayFadeSequence(TFunction<void()> ActionAtBlack, float 
         return;
     }
 
+    // fade and hold both at 0 mean "no transition": no black frame and no input lock
+    if (FadeDuration <= 0.0f && HoldTime <= 0.0f)
+    {
+        if (ActionAtBlack) ActionAtBlack();
+        return;
+    }
+
     // a second transition would overwrite the timers of the first one and its unlock would never run:
     // apply the change right away instead, the running fade already covers the screen
     if (bIsCinematicPlaying)
@@ -196,17 +203,30 @@ void UCinematicManager::FinishCinematic()
         return;
     }
 
-    // the dialogue may have closed during the fade: give the controls back to the map explicitly
-    PC->SetInputMode(FInputModeGameOnly());
-    PC->bShowMouseCursor = false;
+    // this manager has already released its own lock and no UI is open, so anything still ignored is stuck
+    const bool bMoveWasStuck = PC->IsMoveInputIgnored();
+    const bool bLookWasStuck = PC->IsLookInputIgnored();
 
+    // the dialogue may have closed during the fade: give the controls back to the map explicitly
     if (AICC_Player* Player = Cast<AICC_Player>(PC->GetPawn()))
     {
         Player->SetDialogueMovementLock(false);
     }
 
-    UE_LOG(LogTemp, Log, TEXT("CinematicManager - fine transizione, input di gioco ripristinato (MoveIgnored=%d, LookIgnored=%d)"),
-        PC->IsMoveInputIgnored(), PC->IsLookInputIgnored());
+    PC->ResetIgnoreMoveInput();
+    PC->ResetIgnoreLookInput();
+    PC->SetInputMode(FInputModeGameOnly());
+    PC->bShowMouseCursor = false;
+
+    if (bMoveWasStuck || bLookWasStuck)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("CinematicManager - input rimasto bloccato a fine transizione e sbloccato a forza (MoveIgnored=%d, LookIgnored=%d)"),
+            bMoveWasStuck, bLookWasStuck);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Log, TEXT("CinematicManager - fine transizione, input di gioco ripristinato"));
+    }
 }
 
 
