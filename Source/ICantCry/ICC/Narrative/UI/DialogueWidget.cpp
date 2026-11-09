@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "DialogueWidget.h"
 
@@ -18,13 +18,14 @@
 #include "ICantCry/ICC/Actors/Player/ICC_Player.h"
 
 
-void UDialogueWidget::NativeConstruct() 
+
+void UDialogueWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
     // bind the continue button to advance to the next line
     if (BtnNext)   BtnNext->OnClicked.AddDynamic(this, &UDialogueWidget::DisplayNextLine);
-    
+
     // bind accept and decline buttons but keep them hidden until needed for optional quests
     if (BtnAccept) BtnAccept->OnClicked.AddDynamic(this, &UDialogueWidget::OnAcceptClicked);
     if (BtnDecline) BtnDecline->OnClicked.AddDynamic(this, &UDialogueWidget::OnDeclineClicked);
@@ -35,15 +36,15 @@ void UDialogueWidget::NativeConstruct()
     if (BtnDeliver) BtnDeliver->OnClicked.AddDynamic(this, &UDialogueWidget::OnDeliverClicked);
     if (BtnDeliver) BtnDeliver->SetVisibility(ESlateVisibility::Collapsed);
     if (TextDeliveryProgress) TextDeliveryProgress->SetVisibility(ESlateVisibility::Collapsed);
-        
+
     // switch to UI input mode so the player can interact with buttons using mouse or gamepad
     APlayerController* PC = GetOwningPlayer();
-    if (PC) 
-    { 
-        PC->bShowMouseCursor = true; 
-        FInputModeUIOnly Mode; 
-        Mode.SetWidgetToFocus(TakeWidget()); 
-        PC->SetInputMode(Mode); 
+    if (PC)
+    {
+        PC->bShowMouseCursor = true;
+        FInputModeUIOnly Mode;
+        Mode.SetWidgetToFocus(TakeWidget());
+        PC->SetInputMode(Mode);
     }
 
     // stop player while dialogue is open
@@ -53,32 +54,33 @@ void UDialogueWidget::NativeConstruct()
     }
 }
 
-void UDialogueWidget::StartDialogue(UDialogueAsset* NewDialogue) 
+void UDialogueWidget::StartDialogue(UDialogueAsset* NewDialogue)
 {
     if (!NewDialogue) return;
 
     CurrentDialogue = NewDialogue;
     CurrentLineIndex = 0; // always start from the beginning of the dialogue
-    
+    ResetDeliveryState();
+
     // clear any leftover delivery ui from previous conversations
     if (BtnDeliver) BtnDeliver->SetVisibility(ESlateVisibility::Collapsed);
     if (TextDeliveryProgress) TextDeliveryProgress->SetVisibility(ESlateVisibility::Collapsed);
 
     // apply the font and color settings defined in the dialogue asset
-    ApplyDialogueStyle(); 
-    
+    ApplyDialogueStyle();
+
     // show the first line, displaynextline will also handle executing any events attached to line 0
     DisplayNextLine();
 }
 
-void UDialogueWidget::DisplayNextLine() 
+void UDialogueWidget::DisplayNextLine()
 {
-   
+
     if (GetWorld()->GetTimerManager().IsTimerActive(TypewriterTimerHandle))
     {
         // PROTEZIONE DOPPIO CLIC FANTASMA:
         // Completiamo la linea subito solo se ha iniziato effettivamente a digitare (Index > 0).
-        // Se è a 0, è una chiamata duplicata nello stesso frame dell'avvio della nuova linea e la ignoriamo.
+        // Se ï¿½ a 0, ï¿½ una chiamata duplicata nello stesso frame dell'avvio della nuova linea e la ignoriamo.
         if (CurrentCharacterIndex > 0)
         {
             FinishLineInstantly();
@@ -86,21 +88,21 @@ void UDialogueWidget::DisplayNextLine()
         return;
     }
 
-    
+
     if (!CurrentDialogue)
     {
         EndDialogue();
         return;
     }
 
-    
+
     if (CurrentDialogue->Lines.IsValidIndex(CurrentLineIndex))
     {
         const FDialogueLine& CurrentLine = CurrentDialogue->Lines[CurrentLineIndex];
 
-        
+
         GetWorld()->GetTimerManager().ClearTimer(TypewriterTimerHandle);
-        CurrentCharacterIndex = 0; 
+        CurrentCharacterIndex = 0;
         if (TextDialogueContent)
             TextDialogueContent->SetText(FText::GetEmpty());
 
@@ -111,18 +113,15 @@ void UDialogueWidget::DisplayNextLine()
             if (Event) Event->ExecuteEvent(Player, this);
         }
 
-        // Controlla se una consegna è attiva (nasconde il tasto Next)
-        UICantCryGameInstance* GI = Cast<UICantCryGameInstance>(GetGameInstance());
-        UQuestManagerSystem* QM = GI ? GI->GetSubsystem<UQuestManagerSystem>() : nullptr;
-        bool bIsDeliveryActive = false;
-        if (QM && CurrentQuestTag.IsValid())
+        // with a delivery open, UpdateDeliveryUI decides Next/Deliver/Decline (also if an event of this line closed the quest)
+        if (CurrentQuestTag.IsValid())
         {
-            int32 Progress = QM->GetObjectiveProgress(CurrentQuestTag, CurrentObjectiveTag);
-            if (Progress < CurrentAmountRequired)
-                bIsDeliveryActive = true;
+            UpdateDeliveryUI();
         }
-        if (BtnNext)
-            BtnNext->SetVisibility(bIsDeliveryActive ? ESlateVisibility::Collapsed : ESlateVisibility::Visible);
+        else if (BtnNext)
+        {
+            BtnNext->SetVisibility(ESlateVisibility::Visible);
+        }
 
         ApplyDialogueStyle();
 
@@ -213,21 +212,24 @@ void UDialogueWidget::DisplayNextLine()
     }
 }
 
-void UDialogueWidget::OnAcceptClicked() 
+void UDialogueWidget::OnAcceptClicked()
 {
-    EndDialogue(); 
+    EndDialogue();
 }
 
-void UDialogueWidget::OnDeclineClicked() 
+void UDialogueWidget::OnDeclineClicked()
 {
+    if (bIsEnding) return;
+    bIsEnding = true;
+
     // close the widget without triggering any ondialogueended events
     // this means the quest won't start or progress
     APlayerController* PC = GetOwningPlayer();
-    if (PC) 
-    { 
-        PC->bShowMouseCursor = false; 
-        FInputModeGameOnly Mode; 
-        PC->SetInputMode(Mode); 
+    if (PC)
+    {
+        PC->bShowMouseCursor = false;
+        FInputModeGameOnly Mode;
+        PC->SetInputMode(Mode);
     }
 
     if (AICC_Player* Player = Cast<AICC_Player>(GetOwningPlayerPawn()))
@@ -238,8 +240,15 @@ void UDialogueWidget::OnDeclineClicked()
     RemoveFromParent();
 }
 
-void UDialogueWidget::EndDialogue() 
+void UDialogueWidget::EndDialogue()
 {
+    // a second call in the same frame would run OnDialogueEnded again (double drop, double xp, two dialogues...)
+    if (bIsEnding)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("DialogueWidget::EndDialogue chiamato due volte, secondo richiamo ignorato"));
+        return;
+    }
+    bIsEnding = true;
 
     AICC_Player* Player = Cast<AICC_Player>(GetOwningPlayerPawn());
     if (!Player)
@@ -253,7 +262,7 @@ void UDialogueWidget::EndDialogue()
 
     UDialogueAsset* FinishedDialogue = CurrentDialogue;
 
-   
+
     if (Player) Player->SetDialogueMovementLock(false);
 
     if (APlayerController* PC = GetOwningPlayer())
@@ -264,7 +273,7 @@ void UDialogueWidget::EndDialogue()
     }
     RemoveFromParent();
 
-   
+
     if (FinishedDialogue)
     {
         const int32 EventCount = FinishedDialogue->OnDialogueEnded.Num();
@@ -339,7 +348,7 @@ void UDialogueWidget::ShowBranches()
     // clear any old choice buttons and make the container visible
     ChoiceContainer->SetVisibility(ESlateVisibility::Visible);
     ChoiceContainer->ClearChildren();
-    
+
     // hide the next button because the player must make a choice now
     if (BtnNext) BtnNext->SetVisibility(ESlateVisibility::Collapsed);
 
@@ -381,16 +390,48 @@ void UDialogueWidget::UpdateDeliveryUI()
 {
     UICantCryGameInstance* GI = Cast<UICantCryGameInstance>(GetGameInstance());
     UQuestManagerSystem* QM = GI ? GI->GetSubsystem<UQuestManagerSystem>() : nullptr;
-    
-    if (GI && QM && TextDeliveryProgress)
+
+    if (!GI || !QM)
+    {
+        UE_LOG(LogTemp, Error, TEXT("DialogueWidget::UpdateDeliveryUI - GameInstance o QuestManagerSystem non trovati"));
+        return;
+    }
+
+    // the quest was closed while the delivery was open: its progress now reads 0,
+    // so showing the counter would lock the player (Deliver eats items, Next never comes back)
+    if (!QM->IsQuestActive(CurrentQuestTag))
+    {
+        if (!bDeliveryFinished)
+        {
+            UE_LOG(LogTemp, Error, TEXT("DialogueWidget - la quest %s e' stata chiusa PRIMA della consegna. Event_CompleteQuest va messo in una linea successiva a quella con Event_PrepareDelivery."),
+                *CurrentQuestTag.ToString());
+        }
+        else
+        {
+            UE_LOG(LogTemp, Log, TEXT("DialogueWidget - consegna completata e quest %s chiusa, Next riattivato"), *CurrentQuestTag.ToString());
+        }
+
+        HideDeliveryUI();
+        ResetDeliveryState();
+        if (BtnNext)
+        {
+            BtnNext->SetVisibility(ESlateVisibility::Visible);
+
+            // the focused button (Deliver/Decline) was just collapsed: without this the gamepad has nothing to press
+            BtnNext->SetFocus();
+        }
+        return;
+    }
+
+    if (TextDeliveryProgress)
     {
         int32 AlreadyDelivered = QM->GetObjectiveProgress(CurrentQuestTag, CurrentObjectiveTag);
         int32 InInventory = GI->GetItemCount(CurrentRequiredItemTag);
         bool bFinished = AlreadyDelivered >= CurrentAmountRequired;
+        if (bFinished) bDeliveryFinished = true;
 
         // update the progress text with current numbers
-        TextDeliveryProgress->SetText(FText::FromString(FString::Printf(TEXT("%s given: %d/%d"), 
-            *CurrentRequiredItemTag.GetTagName().ToString(), AlreadyDelivered, CurrentAmountRequired)));
+        TextDeliveryProgress->SetText(BuildDeliveryProgressText(AlreadyDelivered, InInventory));
         TextDeliveryProgress->SetVisibility(ESlateVisibility::Visible);
 
         // turn the text green when the delivery is complete
@@ -407,6 +448,26 @@ void UDialogueWidget::UpdateDeliveryUI()
         if (BtnNext)
         {
             BtnNext->SetVisibility(bFinished ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
+
+            // Deliver had the focus and is now collapsed: move it to Next for gamepad/keyboard
+            if (bFinished) BtnNext->SetFocus();
+        }
+
+        // the player must always be able to leave a delivery he cannot finish (e.g. 0 items in the bag):
+        // decline closes the widget WITHOUT running OnDialogueEnded, so no reward is given,
+        // and the amount already delivered stays saved in the quest manager for the next talk
+        if (BtnDecline)
+        {
+            BtnDecline->SetVisibility(bFinished ? ESlateVisibility::Collapsed : ESlateVisibility::Visible);
+
+            // with BtnDeliver disabled the gamepad would have nothing to focus
+            if (InInventory <= 0 && !bFinished) BtnDecline->SetFocus();
+        }
+
+        if (InInventory <= 0 && !bFinished)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("DialogueWidget::UpdateDeliveryUI - nessun %s in inventario: consegna impossibile (controlla l'ItemTag dei pickup)"),
+                *CurrentRequiredItemTag.ToString());
         }
     }
 }
@@ -417,14 +478,72 @@ void UDialogueWidget::OnDeliverClicked()
     UICantCryGameInstance* GI = Cast<UICantCryGameInstance>(GetGameInstance());
     UQuestManagerSystem* QM = GI ? GI->GetSubsystem<UQuestManagerSystem>() : nullptr;
 
-    // try to remove one item from inventory and update progress if successful
-    if (GI && QM && GI->RemoveFromInventory(CurrentRequiredItemTag, 1))
+    if (!GI || !QM)
+    {
+        UE_LOG(LogTemp, Error, TEXT("DialogueWidget::OnDeliverClicked - GameInstance o QuestManagerSystem non trovati"));
+        return;
+    }
+
+    // never take items for a quest that can no longer count them
+    if (!QM->IsQuestActive(CurrentQuestTag))
+    {
+        UpdateDeliveryUI();
+        return;
+    }
+
+    if (GI->RemoveFromInventory(CurrentRequiredItemTag, 1))
     {
         QM->UpdateObjectiveProgress(CurrentQuestTag, CurrentObjectiveTag, 1);
-
-        // Once the delivery is complete UpdateDeliveryUI already shows BtnNext, so the player
-        // advances with a click. No timer here: a delayed DisplayNextLine would race with that
-        // click and skip a line.
-        UpdateDeliveryUI();
     }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("DialogueWidget::OnDeliverClicked - impossibile togliere %s dall'inventario"), *CurrentRequiredItemTag.ToString());
+    }
+
+    // once the delivery is complete UpdateDeliveryUI shows BtnNext; no timer here,
+    // a delayed DisplayNextLine would race with the player's click and skip a line
+    UpdateDeliveryUI();
+}
+
+
+void UDialogueWidget::HideDeliveryUI()
+{
+    if (BtnDeliver) BtnDeliver->SetVisibility(ESlateVisibility::Collapsed);
+    if (TextDeliveryProgress) TextDeliveryProgress->SetVisibility(ESlateVisibility::Collapsed);
+    if (BtnDecline) BtnDecline->SetVisibility(ESlateVisibility::Collapsed);
+}
+
+
+void UDialogueWidget::ResetDeliveryState()
+{
+    CurrentRequiredItemTag = FGameplayTag::EmptyTag;
+    CurrentQuestTag = FGameplayTag::EmptyTag;
+    CurrentObjectiveTag = FGameplayTag::EmptyTag;
+    CurrentAmountRequired = 0;
+    CurrentProgressTextFormat = FText::GetEmpty();
+    bDeliveryFinished = false;
+}
+
+
+FText UDialogueWidget::BuildDeliveryProgressText(const int32 Delivered, const int32 InInventory) const
+{
+    const FText& Format = CurrentProgressTextFormat.IsEmpty() ? DefaultDeliveryProgressText : CurrentProgressTextFormat;
+    if (Format.IsEmpty()) return FText::GetEmpty();
+
+    // "Item.Stone" -> "Stone": the full tag path is for code, not for the player
+    FString ItemName = CurrentRequiredItemTag.GetTagName().ToString();
+    int32 LastDot = INDEX_NONE;
+    if (ItemName.FindLastChar(TEXT('.'), LastDot))
+    {
+        ItemName.RightChopInline(LastDot + 1);
+    }
+
+    FFormatNamedArguments Args;
+    Args.Add(TEXT("Delivered"), Delivered);
+    Args.Add(TEXT("Required"), CurrentAmountRequired);
+    Args.Add(TEXT("InInventory"), InInventory);
+    Args.Add(TEXT("Item"), FText::FromString(ItemName));
+
+    // FText::Format keeps the designer's text localizable, Printf would not
+    return FText::Format(Format, Args);
 }
