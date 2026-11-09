@@ -28,16 +28,56 @@ void UEvent_ChangeLevel::ExecuteEvent_Implementation(AICC_Player* Player, UObjec
     }
     else
     {
+        //if (GI)
+        //{
+        //    
+        //    // sanitize map name and store transform to return here after battle/event
+        //    FString CleanMapName = GI->GetWorld()->GetMapName();
+        //    if (CleanMapName.IsEmpty()) return;
+        //    CleanMapName.RemoveFromStart(GetWorld()->StreamingLevelsPrefix);
+
+        //    GI->SetLastMainMapName(FName(*CleanMapName));
+        //    GI->SavePlayerTransformBegin(Player, true); 
+        //    GI->StoreLastPlayerTransform(Player, Player->GetActorLocation(), Player->GetActorRotation());
+        //}
+        //UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), TSoftObjectPtr<UWorld>(FSoftObjectPath(LevelTag.GetTagName().ToString())));
+
+        UWorld* World = Player->GetWorld();
+        if (!World)
+        {
+            UE_LOG(LogTemp, Error, TEXT("Event_ChangeLevel: Player %s has no World."), *Player->GetName());
+            return;
+        }
+
         if (GI)
         {
-            // sanitize map name and store transform to return here after battle/event
-            FString CleanMapName = GetWorld()->GetMapName();
-            CleanMapName.RemoveFromStart(GetWorld()->StreamingLevelsPrefix);
+            // in PIE the map name carries the "UEDPIE_0_" prefix, strip it or the return trip won't find the map
+            FString CleanMapName = World->GetMapName();
+            CleanMapName.RemoveFromStart(World->StreamingLevelsPrefix);
 
             GI->SetLastMainMapName(FName(*CleanMapName));
-            GI->SavePlayerTransformBegin(Player, true); 
+
+            // store first, then promote: the reverse order would save the previous position
             GI->StoreLastPlayerTransform(Player, Player->GetActorLocation(), Player->GetActorRotation());
+            GI->SavePlayerTransformBegin(Player, true);
         }
-        UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), TSoftObjectPtr<UWorld>(FSoftObjectPath(LevelTag.GetTagName().ToString())));
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Event_ChangeLevel: GameInstance is not UICantCryGameInstance, return point not saved."));
+        }
+
+        // temporary convention until the registry exists: last tag segment == .umap name (Maps.City -> City.umap)
+        FString MapName;
+        if (!LevelTag.GetTagName().ToString().Split(TEXT("."), nullptr, &MapName, ESearchCase::IgnoreCase, ESearchDir::FromEnd))
+        {
+            MapName = LevelTag.GetTagName().ToString();
+        }
+
+        UE_LOG(LogTemp, Log, TEXT("Event_ChangeLevel: opening map '%s' from tag %s."), *MapName, *LevelTag.ToString());
+        UGameplayStatics::OpenLevel(World, FName(*MapName));
+
+
+
+
     }
 }
