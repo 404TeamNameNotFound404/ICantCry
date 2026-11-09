@@ -8,32 +8,55 @@
 #include "ICantCry/ICC/Narrative/Core/QuestManagerSystem.h"
 #include "ICantCry/ICC/Mechanics/Core/Dontdestroyonload/ICantCryGameInstance.h"
 
+
 void ABasePickup::Collect(AICC_Player* Player)
 {
-	if (!Player) return;
-
-    // access the GameInstance to reach both inventory and quest systems
-    UICantCryGameInstance* GI = Cast<UICantCryGameInstance>(Player->GetGameInstance());
-    if (GI)
+    if (!Player)
     {
-        // Handle inventory storage if the item is persistent
-        if (bShouldBeStored && ItemTag.IsValid())
+        UE_LOG(LogTemp, Warning, TEXT("BasePickup::Collect - Player NULL su %s, raccolta ignorata"), *GetName());
+        return;
+    }
+
+    UICantCryGameInstance* GI = Cast<UICantCryGameInstance>(Player->GetGameInstance());
+    if (!GI)
+    {
+        // without the GameInstance neither inventory nor quests can be updated: keep the item in the world
+        UE_LOG(LogTemp, Error, TEXT("BasePickup::Collect - UICantCryGameInstance non trovato, %s non raccolto"), *GetName());
+        return;
+    }
+
+    // inventory and quest progress are independent on purpose:
+    // the designer decides per quest whether to use Pick Up, Deliver, or both
+    if (bShouldBeStored)
+    {
+        if (ItemTag.IsValid())
         {
             GI->AddToInventory(ItemTag, AmountToAdd);
         }
-
-       
-        UQuestManagerSystem* QuestManager = GI->GetSubsystem<UQuestManagerSystem>();
-        if (QuestManager)
+        else
         {
-            // upd the specific quest objective using the assigned tags
-            QuestManager->UpdateObjectiveProgress(TargetQuestTag, TargetObjectiveTag, AmountToAdd);
-            
-            // Log 
-            DebugHelper::LogSuccess(FString::Printf(TEXT("Item Collected! Objective: %s"), *TargetObjectiveTag.ToString()));
+            // silent failure here would make any later Deliver objective impossible to complete
+            UE_LOG(LogTemp, Warning, TEXT("BasePickup::Collect - %s ha bShouldBeStored=true ma ItemTag e' None: non va in inventario e non potra' essere consegnato"), *GetName());
         }
     }
 
-    
+    if (TargetObjectiveTag.IsValid())
+    {
+        if (!TargetQuestTag.IsValid())
+        {
+            UE_LOG(LogTemp, Warning, TEXT("BasePickup::Collect - %s ha TargetObjectiveTag ma TargetQuestTag e' None"), *GetName());
+        }
+        else if (UQuestManagerSystem* QuestManager = GI->GetSubsystem<UQuestManagerSystem>())
+        {
+            // if the quest is not active yet the manager ignores the update; the item stays in the inventory anyway
+            QuestManager->UpdateObjectiveProgress(TargetQuestTag, TargetObjectiveTag, AmountToAdd);
+            DebugHelper::LogSuccess(FString::Printf(TEXT("Item Collected! Objective: %s"), *TargetObjectiveTag.ToString()));
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("BasePickup::Collect - QuestManagerSystem non trovato"));
+        }
+    }
+
     Destroy();
 }

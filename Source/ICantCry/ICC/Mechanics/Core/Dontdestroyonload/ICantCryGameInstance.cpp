@@ -102,7 +102,16 @@ void UICantCryGameInstance::SavePlayerTransformBegin(AICC_Player* Player, const 
 		// PersistentData->PlayerOrientation = Player->PlayerMemory().LastOrientationBeforeBattle;
 		PlayerRuntimeData.CurrentLocation = PlayerRuntimeData.LastPositionBeforeBattle;
 		PlayerRuntimeData.CurrentOrientation = PlayerRuntimeData.LastOrientationBeforeBattle;
-		PlayerRuntimeData.bIsWorldCameraEnabled = GetCurrentPlayer()->GetWorldCamera()->IsDefaultCamera();
+
+		if(GetCurrentPlayer()->GetWorldCamera())
+		{ 
+			PlayerRuntimeData.bIsWorldCameraEnabled = GetCurrentPlayer()->GetWorldCamera()->IsDefaultCamera();
+		}
+		else
+		{
+			PlayerRuntimeData.bIsWorldCameraEnabled = true;
+		}
+		
 		
 		DebugHelper::LogMessage(10, FColor::Blue, "Position before joining the fun " + PlayerRuntimeData.LastPositionBeforeBattle.ToString());
 	}

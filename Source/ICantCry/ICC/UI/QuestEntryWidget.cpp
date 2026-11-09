@@ -2,7 +2,7 @@
 
 
 #include "QuestEntryWidget.h"
-#include "ICantCry/ICC/UI/CharacterUI.h" // Includi la tua UI principale
+#include "ICantCry/ICC/UI/CharacterUI.h" 
 #include "ICantCry/ICC/Narrative/Data/QuestDefinition.h"
 
 
@@ -11,30 +11,45 @@ void UQuestEntryWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
-    if (BtnSelect)
+    if (!BtnSelect)
     {
-        BtnSelect->OnClicked.AddDynamic(this, &UQuestEntryWidget::OnRowClicked);
+        UE_LOG(LogTemp, Error, TEXT("QuestEntryWidget - BtnSelect mancante nel Blueprint %s"), *GetClass()->GetName());
+        return;
+    }
+
+    // NativeConstruct runs again every time the widget is re-added to a parent:
+    // AddUnique avoids a double binding that would fire the toggle twice (open + close in the same click)
+    BtnSelect->OnClicked.AddUniqueDynamic(this, &UQuestEntryWidget::OnRowClicked);
+}
+
+void UQuestEntryWidget::SetupQuestEntry(const FQuestProgress& InProgress, UCharacterUI* InParentUI)
+{
+    StoredProgress = InProgress;
+    ParentUI = InParentUI;
+
+    if (!ParentUI)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("QuestEntryWidget::SetupQuestEntry - ParentUI NULL, il click non fara' nulla"));
+    }
+
+    if (TextQuestTitle && InProgress.QuestDef)
+    {
+        TextQuestTitle->SetText(InProgress.QuestDef->Title);
     }
 }
 
-void UQuestEntryWidget::SetupQuestEntry(const FQuestProgress& Details, UCharacterUI* InParentUI)
+void UQuestEntryWidget::UpdateObjectiveDisplay(const FQuestProgress& Details)
 {
-    StoredProgress = Details;
-    ParentUI = InParentUI;
-
-    if (TextQuestTitle && Details.QuestDef)
-    {
-        TextQuestTitle->SetText(Details.QuestDef->Title);
-    }
-
 }
 
 void UQuestEntryWidget::OnRowClicked()
 {
-    if (ParentUI && StoredProgress.QuestDef)
+    if (!ParentUI || !StoredProgress.QuestDef)
     {
-        // Notifichiamo alla CharacterUI che questa è la missione selezionata.
-        // Sarà la CharacterUI a riempire la sua VerticalBox degli obiettivi.
-        ParentUI->DisplayQuestDetails(StoredProgress);
+        UE_LOG(LogTemp, Warning, TEXT("QuestEntryWidget::OnRowClicked - ParentUI o QuestDef NULL, click ignorato"));
+        return;
     }
+
+    // only the id is passed: the Character UI decides open/close and reads fresh data from the manager
+    ParentUI->ToggleQuestDetails(StoredProgress.QuestDef->QuestID);
 }

@@ -42,7 +42,7 @@ public:
 
 	virtual void NativeDestruct() override;
 
-public: 
+public:
 
 	/**
 	 * upd the intire UI
@@ -52,8 +52,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Quest System") void ClearQuestDetails();
 
 
+	/**
+	 * fills the details panel (title, description, objectives) with the given quest
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Quest System") void DisplayQuestDetails(const FQuestProgress& Details);
-    
+
+	/**
+	 * opens the details of the clicked quest, or closes them if that quest is already open.
+	 * reads fresh data from the quest manager, so the row never shows outdated progress
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Quest System") void ToggleQuestDetails(FGameplayTag QuestID);
+
 protected:
 
 
@@ -63,7 +72,7 @@ protected:
 	UPROPERTY(meta = (BindWidget))	UTextBlock* TextQuestTitle;
 	UPROPERTY(meta = (BindWidget))	UTextBlock* TextQuestDescription;
 	UPROPERTY(meta = (BindWidget))	UVerticalBox* VerticalBoxObjectives;
-    
+
 	// CENTER
 	UPROPERTY(meta = (BindWidget))	UImage* CharacterImage;
 	//UPROPERTY(meta = (BindWidget))	UTextBlock* StatsDescription;
@@ -86,11 +95,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) UPlayerStats* Stats;
 
 	UPROPERTY() UICantCryGameInstance* Instance;
-	
+
 	// UI
 	/** widget class for stat buttons, used if we need to create them dynamically */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
-    TSubclassOf<class UStatsButtonWidget> StatsButton;
+	TSubclassOf<class UStatsButtonWidget> StatsButton;
 
 	/** widget class for quest entries in the scroll boxes */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Narrative", meta = (AllowPrivateAccess = "true"))
@@ -98,22 +107,27 @@ protected:
 
 	/** widget class for individual objective rows inside quest details */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Quest", meta = (AllowPrivateAccess = "true"))
-    TSubclassOf<UUserWidget> ObjectiveRowClass;
+	TSubclassOf<UUserWidget> ObjectiveRowClass;
 
 	/** called when the quest manager system updates, refreshes quest list and details */
 	UFUNCTION() void OnQuestSystemUpdated();
-    
+
 	/** tag used to identify main quests in the quest type filtering */
 	UPROPERTY(EditAnywhere, Category = "Quest System")
-    FGameplayTag MainTag;
+	FGameplayTag MainTag;
 
 	/** tag used to identify side quests in the quest type filtering */
-    UPROPERTY(EditAnywhere, Category = "Quest System")
-    FGameplayTag SideTag;
+	UPROPERTY(EditAnywhere, Category = "Quest System")
+	FGameplayTag SideTag;
 
 	/** tag of the currently selected quest, used to preserve selection during updates */
 	UPROPERTY(EditAnywhere, Category = "Quest System")
 	FGameplayTag CurrentSelectedQuestTag;
+
+	/** message shown when a quest is ready to be turned in and its TurnInMessage is empty.
+		write {NPCName} to insert the npc name. leave empty to show no message at all */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Quest System", meta = (MultiLine = "true"))
+	FText DefaultTurnInMessage = NSLOCTEXT("CharacterUI", "DefaultTurnInMessage", "*** OBIETTIVI COMPLETATI! Torna da {NPCName} per la ricompensa. ***");
 
 
 private:
@@ -133,19 +147,22 @@ private:
 	UFUNCTION() void OnQuestSelected();
 
 	/** helper function to handle stat button selection and description visibility */
-    UFUNCTION() void HandleStatButtonClick(UStatsButtonWidget* ButtonToSelect, UTextBlock* DescriptionToShow);
+	UFUNCTION() void HandleStatButtonClick(UStatsButtonWidget* ButtonToSelect, UTextBlock* DescriptionToShow);
 
 	/** handlers for individual stat button clicks */
 	UFUNCTION() void OnHealthStatsClicked();
-	UFUNCTION() void OnAttackStatsClicked(); 
-	UFUNCTION() void OnDefenceStatsClicked(); 
-	UFUNCTION() void OnSpeedStatsClicked(); 
+	UFUNCTION() void OnAttackStatsClicked();
+	UFUNCTION() void OnDefenceStatsClicked();
+	UFUNCTION() void OnSpeedStatsClicked();
+
+	/** builds the text of the description box: quest description + turn in message when the quest is ready to be delivered */
+	FText BuildQuestDescriptionText(const FQuestProgress& Details, bool bReadyToTurnIn) const;
 
 	/** hides all stat description text blocks */
-    UFUNCTION() void HideAllStatDescriptions();
-    
-    /** shows the selected stat description text block */
-    UFUNCTION() void ShowStatDescription(UTextBlock* DescriptionToShow);
+	UFUNCTION() void HideAllStatDescriptions();
+
+	/** shows the selected stat description text block */
+	UFUNCTION() void ShowStatDescription(UTextBlock* DescriptionToShow);
 
 
 
