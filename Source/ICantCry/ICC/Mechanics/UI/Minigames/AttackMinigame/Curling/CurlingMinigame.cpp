@@ -69,6 +69,12 @@ void UCurlingMinigame::HandleScore()
 			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 			DebugHelper::LogMessage(9, FColor::Black, "Miss curling minigame score");
 			Instance->GetPlayerStats()->RuntimeStats.ApModifier = 1;
+			if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetShootSfx() && 
+				!Instance->GetCurrentPlayer()->GetBattleHUD()->IsEvFirst())
+			{
+				UGameplayStatics::PlaySound2D(this, 
+					Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetShootSfx());
+			}
 		}
 		break;
 	case Bad:
@@ -80,6 +86,12 @@ void UCurlingMinigame::HandleScore()
 			
 			DebugHelper::LogMessage(9, FColor::Black, "Not Bad curling minigame score");
 			Instance->GetPlayerStats()->RuntimeStats.ApModifier = 1;
+			if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetShootSfx() && 
+			!Instance->GetCurrentPlayer()->GetBattleHUD()->IsEvFirst())
+			{
+				UGameplayStatics::PlaySound2D(this, 
+					Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetShootSfx());
+			}
 			break;
 		}
 	case Good:
@@ -91,6 +103,12 @@ void UCurlingMinigame::HandleScore()
 			
 			DebugHelper::LogMessage(9, FColor::Black, "Good curling minigame score");
 			Instance->GetPlayerStats()->RuntimeStats.ApModifier = 1;
+			if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetShootSfx() && 
+			!Instance->GetCurrentPlayer()->GetBattleHUD()->IsEvFirst())
+			{
+				UGameplayStatics::PlaySound2D(this, 
+					Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetShootSfx());
+			}
 			break;
 		}
 		
@@ -102,6 +120,12 @@ void UCurlingMinigame::HandleScore()
 			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 			DebugHelper::LogMessage(9, FColor::Black, "Perfect curling minigame score");
 			Instance->GetPlayerStats()->RuntimeStats.ApModifier = 1;
+			if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetShootSfx() && 
+			!Instance->GetCurrentPlayer()->GetBattleHUD()->IsEvFirst())
+			{
+				UGameplayStatics::PlaySound2D(this, 
+					Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetShootSfx());
+			}
 			break;
 		}
 	}

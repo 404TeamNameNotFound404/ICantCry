@@ -116,4 +116,5 @@ void UUUBTTask_Retreat::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8*
     Current->GetStatusTracker()->UpdateStatus();
     Current->GetStatusTracker()->UpdateBuffStatus();
     Current->GetStatusTracker()->UpdateDebuffStatus();
+    DebugHelper::RemoveOverlayMaterialToASkeletalMesh(Current);
 }

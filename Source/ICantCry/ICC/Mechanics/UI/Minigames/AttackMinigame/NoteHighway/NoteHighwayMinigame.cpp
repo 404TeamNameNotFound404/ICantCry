@@ -126,6 +126,12 @@ void UNoteHighwayMinigame::HandleScore()
 	Instance->GetCurrentPlayer()->GetBattleHUD()->ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 	Instance->GetCurrentPlayer()->GetBattleHUD()->GetBulletDisplayer()->RemoveBullet();
 	Instance->GetPlayerStats()->RuntimeStats.ApModifier = 1;
+	if (Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetShootSfx() && 
+	!Instance->GetCurrentPlayer()->GetBattleHUD()->IsEvFirst())
+	{
+		UGameplayStatics::PlaySound2D(this, 
+			Instance->GetCurrentPlayer()->GetBattleHUD()->GetBattleHandler()->GetShootSfx());
+	}
 }
 
 void UNoteHighwayMinigame::Flow()

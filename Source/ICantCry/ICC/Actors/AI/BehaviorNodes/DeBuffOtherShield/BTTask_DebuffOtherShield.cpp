@@ -67,6 +67,10 @@ EBTNodeResult::Type UBTTask_DebuffOtherShield::ExecuteTask(UBehaviorTreeComponen
 	// TargetToBuff->GetStatusTracker()->BuffFlow(EBuffStatus::DefBuff, TargetToBuff);
 	// TargetToBuff->GetStatusTracker()->BuffWith(EBuffStatus::Shield);
 	TargetToBuff->GetStatusTracker()->InflictStatus(EAfflictedStatus::ShieldDebuff, TargetToBuff);
+	if (Current->GetBattleHandler()->GetBuffSfx())
+	{
+		UGameplayStatics::PlaySound2D(this, Current->GetBattleHandler()->GetBuffSfx());
+	}
 
 
 	DebugHelper::AddMessageToLog("[Behavior Tree - DOS]: " + Current->GetEmotionName() + " de-buffed " + TargetToBuff->GetEmotionName() + " shield");

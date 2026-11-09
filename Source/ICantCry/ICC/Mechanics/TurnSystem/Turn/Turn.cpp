@@ -188,11 +188,7 @@ bool FTurn::LastMobStanding()
 
 	for (const AICC_Actor* Actor : Queue)
 	{
-		if (Actor->IsA(AICC_Player::StaticClass()))
-		{
-			continue;
-		}
-		
+		if (Actor->IsA(AICC_Player::StaticClass())) continue;
 		MobCount++;
 	}
 	
@@ -201,35 +197,36 @@ bool FTurn::LastMobStanding()
 
 bool FTurn::AreAnxietyOrCalmAlone()
 {
-	if (Queue.IsEmpty())
-	{
-		return false;
-	}
-
-	int32 MobCount = 0;
+	if (Queue.IsEmpty()) return false;
+	bool bFoundType = false;
+	bool bTargetIsAnxiety = false;
 
 	for (const AICC_Actor* Actor : Queue)
 	{
-		if (Actor->IsA(AICC_Player::StaticClass()))
-		{
-			continue;
-		}
-
+		if (Actor->IsA(AICC_Player::StaticClass())) continue;
 		const AMob* Mob = Cast<AMob>(Actor);
-
-		if (!Mob)
-		{
-			continue;
-		}
-
-		MobCount++;
-
-		if (Mob->GetMobType() != EMobType::MobAnxiety &&
-			Mob->GetMobType() != EMobType::MobCalm)
+		if (!Mob) return false;
+		const bool bIsAnxiety = Mob->IsEAnxiety();
+		
+		if (const bool bIsCalm = Mob->IsECalm();
+			!bIsAnxiety && !bIsCalm)
 		{
 			return false;
 		}
+		
+		if (!bFoundType)
+		{
+			bFoundType = true;
+			bTargetIsAnxiety = bIsAnxiety;
+		}
+		else
+		{
+			if (bIsAnxiety != bTargetIsAnxiety)
+			{
+				return false;
+			}
+		}
 	}
-
-	return MobCount > 0;
+	
+	return bFoundType;
 }

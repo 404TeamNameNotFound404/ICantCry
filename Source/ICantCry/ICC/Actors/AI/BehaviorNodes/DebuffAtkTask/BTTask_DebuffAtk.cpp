@@ -34,6 +34,10 @@ EBTNodeResult::Type UBTTask_DebuffAtk::ExecuteTask(UBehaviorTreeComponent& Owner
 
 	//Target->GetStatusTracker()->DebuffFlow(EDebuffStatus::DebuffAtk, Target);
 	Target->GetStatusTracker()->InflictDebuffStatus(EDebuffStatus::DebuffAtk, Target);
+	if (Current->GetBattleHandler()->GetDebuffSfx())
+	{
+		UGameplayStatics::PlaySound2D(this, Current->GetBattleHandler()->GetDebuffSfx());
+	}
 	
 
 	DebugHelper::AddMessageToLog("[Behavior Tree - Debuff Atk]: " + Current->GetEmotionName() + " De-buffed " + Target->GetActorLabel() + " atk");

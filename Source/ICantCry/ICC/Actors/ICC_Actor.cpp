@@ -3,6 +3,9 @@
 
 #include "ICC_Actor.h"
 
+#include "ICantCry/ICC/Input/ICC_PlayerController.h"
+#include "Player/ICC_Player.h"
+
 
 // Sets default values
 AICC_Actor::AICC_Actor()
@@ -63,6 +66,34 @@ bool AICC_Actor::IsAshamed() const
 int AICC_Actor::GetSpeed() const
 {
 	return -1;
+}
+
+void AICC_Actor::FreezeInput()
+{
+	if (AICC_Player* Player = Cast<AICC_Player>(this))
+	{
+		AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
+		if (!Controller) return;
+		DisableInput(Controller);
+		Player->GetMovementComponent()->Velocity = FVector::Zero();
+		DebugHelper::LogMessage(4, FColor::White, "Controller disabled");
+	}
+}
+
+void AICC_Actor::UnfreezeInput()
+{
+	if (Cast<AICC_Player>(this))
+	{
+		AICC_PlayerController* Controller = Cast<AICC_PlayerController>(GetWorld()->GetFirstPlayerController());
+		if (!Controller) return;
+		EnableInput(Controller);
+		DebugHelper::LogMessage(4, FColor::White, "Controller re-enabled");
+	}
+}
+
+FLinearColor AICC_Actor::GetTurnOverlayColor() const
+{
+	return TurnOutlinerColor;
 }
 
 

@@ -14,19 +14,36 @@ void FIccBattleDebuggerData::RefreshInfo(AICC_Actor* Target)
 	{
 		TargetName = P->GetCharacterName();
 		Health = P->GetRuntimeStats().CurrentHealth;
+		bIsBuffed = Target->GetStatusTracker()->IsPlayerAtkBuffed();
+		bIsDefBuffed = Target->GetStatusTracker()->IsPlayerDefBuffed();
+		BuffCounterLabel = FString("Atk Counter: " + FString::FromInt(Target->GetStatusTracker()->GetPlayerAtkDgbCounter()) +
+			"-" + "Def Counter: " + FString::FromInt(Target->GetStatusTracker()->GetDefBuffCounter()));
+		CurrentBuff = "Atk: " + Target->GetStatusTracker()->DbgGetCurrentAtkBuffName() + " / " 
+		+ " Def: " + Target->GetStatusTracker()->DbgGetCurrentDefBuffName();
+		BurnedCounter = P->GetStatusTracker()->GetEnvyBurnedCounter();
+		CurrentDebuff = FString("DebAtk: " + FString(P->GetStatusTracker()->IsPlayerAtkDebuffed() ? "Yes" : "No") 
+			+ " - " + "" + "DebDef: " + FString(P->GetStatusTracker()->IsPlayerDefDebuffed() ? "Yes" : "No"));
+		DebuffCounterLabel = FString("AtkDbf: " + FString::FromInt(P->GetStatusTracker()->GetPlayerDebuffAtkCounter()) + 
+				"-" + "" + " DefDbf: " + FString::FromInt(P->GetStatusTracker()->GetPlayerDebuffDefCounter()));
+		
 	} else if (AMob* E = Cast<AMob>(Target))
 	{
 		TargetName = E->GetEmotionName();
 		Health = E->GetStats().Health;
+		bIsBuffed = Target->GetStatusTracker()->IsBuffed();
+		BuffCounter = Target->GetStatusTracker()->GetBuffCounter();
+		CurrentBuff = Target->GetStatusTracker()->DbgGetCurrentBuffName();
+		bIsBuffed = false;
+		bIsDefBuffed = false;
+		BuffCounterLabel = "For Veyl Only";
+		BurnedCounter = -1;
+		CurrentDebuff = Target->GetStatusTracker()->DbgGetCurrentDebuffName();
 	}
-		
-	bIsBuffed = Target->GetStatusTracker()->IsBuffed();
+	
 	bIsDebuffed = Target->GetStatusTracker()->IsDebuffed();
 	bIsAfflicted = Target->GetStatusTracker()->IsAfflicted();
-	BuffCounter = Target->GetStatusTracker()->GetBuffCounter();
 	DebuffCounter = Target->GetStatusTracker()->GetDebuffCounter();
-	CurrentBuff = Target->GetStatusTracker()->DbgGetCurrentBuffName();
-	CurrentDebuff = Target->GetStatusTracker()->DbgGetCurrentDebuffName();
+	// CurrentDebuff = Target->GetStatusTracker()->DbgGetCurrentDebuffName();
 	CurrentMalus = Target->GetStatusTracker()->DbgGetCurrentMalusName();
 }
 
@@ -47,8 +64,18 @@ void FIccDebuggerTrackingData::RefreshInfo(AICC_Actor* Target)
 {
 	if (!Target) return;
 	
-	CurrentBuff = Target->GetStatusTracker()->DbgGetCurrentBuffName();
-	CurrentDebuff = Target->GetStatusTracker()->DbgGetCurrentDebuffName();
+	if (const AICC_Player* P = Cast<AICC_Player>(Target))
+	{
+		CurrentBuff = Target->GetStatusTracker()->DbgGetCurrentAtkBuffName();
+		CurrentDebuff = FString("DebAtk: " + FString(P->GetStatusTracker()->IsPlayerAtkDebuffed() ? "Yes" : "No") 
+			+ " - " + "" + "DebDef: " + FString(P->GetStatusTracker()->IsPlayerDefDebuffed() ? "Yes" : "No"));
+	}
+	else
+	{
+		CurrentBuff = Target->GetStatusTracker()->DbgGetCurrentBuffName();
+		CurrentDebuff = Target->GetStatusTracker()->DbgGetCurrentDebuffName();
+	}
+	
 	
 	if (AICC_Player* P = Cast<AICC_Player>(Target))
 	{

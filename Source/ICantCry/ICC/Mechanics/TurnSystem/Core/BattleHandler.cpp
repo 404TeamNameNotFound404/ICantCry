@@ -273,6 +273,36 @@ void ABattleHandler::InitDebugger()
 	Debugger->FillInitialInfo();
 }
 
+USoundBase* ABattleHandler::GetShootSfx()
+{
+	return ShootSfx;
+}
+
+USoundBase* ABattleHandler::GetDebuffSfx()
+{
+	return DebuffSfx;
+}
+
+USoundBase* ABattleHandler::GetBuffSfx()
+{
+	return BuffSfx;
+}
+
+USoundBase* ABattleHandler::GetEmotionAttackSfx()
+{
+	return EmotionAttackSfx;
+}
+
+USoundBase* ABattleHandler::GetFleeSfx()
+{
+	return FleeSfx;
+}
+
+USoundBase* ABattleHandler::GetHealSfx()
+{
+	return HealSfx;
+}
+
 
 void ABattleHandler::UpdateMuzzleFlashPosition(const FVector& Location)
 {

@@ -307,6 +307,21 @@ void UBattleHUD::PushBackIndifferenceAsCasing(const int32& CasingQuantity, const
 	
 }
 
+void UBattleHUD::RestoreFocusBuff()
+{
+	if (!bIsUserFocusing) return;
+	
+	bIsUserFocusing = false;
+	GameInstance->GetRuntimeStats().DefencePower = GameInstance->GetPersistentData()->InitialDefencePower;
+	DebugHelper::AddMessageToLog("[BattleHUD]: 50% focus def buff restored");
+	DebugHelper::LogSuccess("[BattleHUD]: 50% focus def buff restored");
+}
+
+bool UBattleHUD::IsEvFirst() const
+{
+	return bIsEvFirst;
+}
+
 FText UBattleHUD::UpdateBulletName()
 {
 	if (!GetCurrentBulletData()) return FText::FromString("");
@@ -365,7 +380,7 @@ void UBattleHUD::OnShootPressed()
 		Quantity->SetVisibility(ESlateVisibility::Hidden);
 		OutOfBulletTxt->SetVisibility(ESlateVisibility::Visible);
 		OutOfBulletTxt->SetColorAndOpacity(FLinearColor::Red);
-		OutOfBulletTxt->SetText(FText::FromString("Magazine empty!"));
+		OutOfBulletTxt->SetText(FText::FromString("No ammo!"));
 		return;
 	}
 
@@ -410,6 +425,9 @@ void UBattleHUD::OnShootPressed()
 			{
 				ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
 				ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Hidden);
+				TargetNameText->SetText(FText::FromString(Cast<AICC_Player>(GameInstance->GetCurrentPlayer())->GetCharacterName()));
+				TargetText->SetText(FText::FromString(FString(TEXT("Target: ")) 
+					+ Cast<AICC_Player>(GameInstance->GetCurrentPlayer())->GetCharacterName()));
 			}
 			else
 			{
@@ -422,6 +440,7 @@ void UBattleHUD::OnShootPressed()
 
 	bIsEvFirst = false;
 	BackBtn->SetVisibility(ESlateVisibility::Visible);
+	
 	//FSlateApplication::Get().ClearAllUserFocus();
 }
 
@@ -431,25 +450,45 @@ void UBattleHUD::OnFocusPressed()
 	{
 		return;
 	}
+	
+	if (Bar->IsEmpty())
+	{
+		DebugHelper::LogWarning("0 AP");
+		BulletName->SetVisibility(ESlateVisibility::Hidden);
+		Quantity->SetVisibility(ESlateVisibility::Hidden);
+		OutOfBulletTxt->SetVisibility(ESlateVisibility::Visible);
+		OutOfBulletTxt->SetColorAndOpacity(FLinearColor::Red);
+		OutOfBulletTxt->SetText(FText::FromString("Denied, you have 0 AP!"));
+		
+		FTimerHandle Delay;
+		GetWorld()->GetTimerManager().SetTimer(Delay, [this]()
+		{
+			OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
+		}, 3.f, false);
+		
+		return;
+	}
 
 	if (GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->IsFreezed())
 	{
-		IncreaseAP(1);
+		DecreaseAP(1);
 		return;
 	}
 	
-	// GameInstance->GetCurrentPlayer()->GetStatusTracker()->BuffWith(EBuffStatus::DefBuff);
-	IncreaseAP(1);
-	Bar->IncreaseAP(1);
 	GameInstance->GetCurrentPlayer()->GetBattleHUD()->DecisionDisplayer->Hide();
+	bIsUserFocusing = true;
+	GameInstance->GetRuntimeStats().DefencePower = GameInstance->GetRuntimeStats().DefencePower * 1.50f;
+	DebugHelper::AddMessageToLog("[BattleHUD]: " + GameInstance->GetCurrentPlayer()->GetCharacterName() 
+		+ " uses focus and it's def is 50% buffed until next turn " 
+		+ FString::SanitizeFloat(GameInstance->GetRuntimeStats().DefencePower));
 	
-	/*
-	 * TODO Reorder bullets in magazine allowing player to change slot idx ( show confirm button and bullet magazine hud ) change only the bullets in magazine , NO ADD
-	 */
+	GetWorld()->GetTimerManager().SetTimerForNextTick([&]
+	{
+		RefreshStatusBuffs();
+	});
 	
+	GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdateDefBuffStatus();
 	BattleHandler->GetTurnBasedSystem()->EndTurn();
-	GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateStatus();
-	GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateBuffStatus();
 	FTimerHandle StartNextHandle;
 
 	GetWorld()->GetTimerManager().SetTimer(StartNextHandle, [this]()
@@ -469,10 +508,29 @@ void UBattleHUD::OnFocusPressed()
 	Quantity->SetVisibility(ESlateVisibility::Hidden);
 	bIsEvFirst = false;
 	FSlateApplication::Get().ClearAllUserFocus();
+	BackBtn->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UBattleHUD::OnReloadPressed()
 {
+	if (Bar->IsEmpty())
+	{
+		DebugHelper::LogWarning("0 AP");
+		BulletName->SetVisibility(ESlateVisibility::Hidden);
+		Quantity->SetVisibility(ESlateVisibility::Hidden);
+		OutOfBulletTxt->SetVisibility(ESlateVisibility::Visible);
+		OutOfBulletTxt->SetColorAndOpacity(FLinearColor::Red);
+		OutOfBulletTxt->SetText(FText::FromString("Denied, you have 0 AP!"));
+		
+		FTimerHandle Delay;
+		GetWorld()->GetTimerManager().SetTimer(Delay, [this]()
+		{
+			OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
+		}, 3.f, false);
+		
+		return;
+	}
+	
 	bBulletSetupFinished = false;
 	bShootFired = false;
 	bTargetSelection = false;
@@ -532,6 +590,14 @@ void UBattleHUD::OnReloadPressed()
 	CanvasMiniGames->SetFocus();
 	CanvasAmmoSelection->SetFocus();
 	
+	GetWorld()->GetTimerManager().SetTimerForNextTick([&]
+	{
+		RefreshStatusBuffs();
+	});
+	
+	BackBtn->SetVisibility(ESlateVisibility::Visible);
+	bIsUserReloading = true;
+	
 	//FSlateApplication::Get().ClearAllUserFocus();
 }
 
@@ -542,11 +608,11 @@ void UBattleHUD::OnPassPressed()
 		DebugHelper::LogError("You can't pass it's not player turn");
 		return;
 	}
+	
 	CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Hidden);
 	Displayer->SetVisibility(ESlateVisibility::Hidden);
 	CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
-	// IncreaseAP(1);
-	// Bar->IncreaseAP(1);
+	
 	DebugHelper::LogSuccess("Player passed the turn");
 	DebugHelper::AddMessageToLog("[BattleHUD]: Player passed the turn");
 	BattleHandler->GetTurnBasedSystem()->EndTurn();
@@ -567,15 +633,17 @@ void UBattleHUD::OnPassPressed()
 		BattleHandler->GetTurnBasedSystem()->TryGetCurrentPlayer()->DebugMesh);
 	bTargetSelection = false;
 	
-	GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateStatus();
-	GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateBuffStatus();
-	GetBattleHandler()->GetTurnBasedSystem()->TryGetCurrentPlayer()->GetStatusTracker()->UpdateDebuffStatus();
+	GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdateStatus();
+	GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdateDefBuffStatus();
+	// GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdatePlayerDebuffStatus();
 
 	Displayer->SetVisibility(ESlateVisibility::Hidden);
 	OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
 	BulletName->SetVisibility(ESlateVisibility::Hidden);
 	Quantity->SetVisibility(ESlateVisibility::Hidden);
 	FSlateApplication::Get().ClearAllUserFocus();
+	BackBtn->SetVisibility(ESlateVisibility::Hidden);
+	DebugHelper::RemoveOverlayMaterialToASkeletalMesh(GameInstance->GetCurrentPlayer());
 	bIsEvFirst = false;
 }
 
@@ -603,6 +671,24 @@ void UBattleHUD::OnRevertAction()
 	TargetText_3->SetVisibility(ESlateVisibility::Hidden);
 	EngageBtn->SetVisibility(ESlateVisibility::Hidden);
 	StatusText->SetVisibility(ESlateVisibility::Hidden);
+	
+	if (bIsUserReloading)
+	{
+		ConfirmReloadBullet->SetVisibility(ESlateVisibility::Hidden);
+		CanvasFirstReloadMagazine->SetVisibility(ESlateVisibility::Hidden);
+		Displayer->SetVisibility(ESlateVisibility::Hidden);
+		CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
+		TargetText->SetVisibility(ESlateVisibility::Hidden);
+		TargetNameText->SetVisibility(ESlateVisibility::Hidden);
+		CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
+		BulletName->SetVisibility(ESlateVisibility::Hidden);
+		Quantity->SetVisibility(ESlateVisibility::Hidden);
+		CanvasStatus->SetVisibility(ESlateVisibility::Hidden);
+		Displayer->SetVisibility(ESlateVisibility::Hidden);
+		OutOfBulletTxt->SetVisibility(ESlateVisibility::Hidden);
+		Description->SetVisibility(ESlateVisibility::Hidden);
+		bIsUserReloading = false;
+	}
 }
 
 void UBattleHUD::ScrollTargetSelection(float ScrollValue)
@@ -904,6 +990,7 @@ void UBattleHUD::HideBulletMagazineOnReload()
 	BulletName->SetVisibility(ESlateVisibility::Hidden);
 	Quantity->SetVisibility(ESlateVisibility::Hidden);
 	Description->SetVisibility(ESlateVisibility::Hidden);
+	BackBtn->SetVisibility(ESlateVisibility::Hidden);
 	bBulletSetupFinished = true;
 	UBulletSelector::SetCanSelect(false);
 }
@@ -1058,6 +1145,11 @@ void UBattleHUD::PrepareToEngage()
 	Quantity->SetVisibility(ESlateVisibility::Hidden);
 	ApIncreaseOnShoot->SetVisibility(ESlateVisibility::Visible);
 	ApDecreaseOnShoot->SetVisibility(ESlateVisibility::Visible);
+	
+	GetWorld()->GetTimerManager().SetTimerForNextTick([&]
+	{
+		RefreshStatusBuffs();
+	});
 }
 
 AMob* UBattleHUD::RetrieveSelectedTarget()
@@ -1088,6 +1180,12 @@ void UBattleHUD::PrepareToEngageEv(const EBuffStatus& BuffToReceive)
 	RefreshPistolMagazine();
 	UpdateAp();
 	EnableButtonsAfterShooting();
+	BackBtn->SetVisibility(ESlateVisibility::Hidden);
+
+	GetWorld()->GetTimerManager().SetTimerForNextTick([&]
+	{
+		RefreshStatusBuffs();
+	});
 }
 
 void UBattleHUD::PrepareToEngageEv(const EAfflictedStatus& StatusToInflict)
@@ -1115,12 +1213,17 @@ void UBattleHUD::PrepareToEngageEv(const EAfflictedStatus& StatusToInflict)
 		return;
 	}
 
-	GameInstance->GetCurrentPlayer()->GetStatusTracker()->InflictStatus(StatusToInflict, SelectedActorTarget);
+	SelectedActorTarget->GetStatusTracker()->InflictStatus(StatusToInflict, SelectedActorTarget);
 	GetBulletDisplayer()->RemoveBullet();
 	Displayer->Refresh();
 	RefreshPistolMagazine();
 	UpdateAp();
+	BackBtn->SetVisibility(ESlateVisibility::Hidden);
 	EnableButtonsAfterShooting();
+	GetWorld()->GetTimerManager().SetTimerForNextTick([&]
+	{
+		RefreshStatusBuffs();
+	});
 }
 
 void UBattleHUD::PrepareToEngageEv(const EDebuffStatus& StatusToDebuff)
@@ -1138,12 +1241,22 @@ void UBattleHUD::PrepareToEngageEv(const EDebuffStatus& StatusToDebuff)
 		return;
 	}
 
-	GameInstance->GetCurrentPlayer()->GetStatusTracker()->InflictDebuffStatus(StatusToDebuff, SelectedActorTarget);
+	SelectedActorTarget->GetStatusTracker()->InflictDebuffStatus(StatusToDebuff, SelectedActorTarget);
 	GetBulletDisplayer()->RemoveBullet();
 	Displayer->Refresh();
 	RefreshPistolMagazine();
 	UpdateAp();
+	BackBtn->SetVisibility(ESlateVisibility::Hidden);
 	EnableButtonsAfterShooting();
+	GetWorld()->GetTimerManager().SetTimerForNextTick([&]
+	{
+		RefreshStatusBuffs();
+	});
+	
+	const FString Msg = "Inflicting to " + Cast<AMob>(SelectedActorTarget)->GetEmotionName()
+	                    + GameInstance->GetCurrentPlayer()->GetStatusTracker()->GetDebuffName(StatusToDebuff); 
+	
+	DebugHelper::LogMessage(10, FColor::Blue, Msg);
 }
 
 bool UBattleHUD::IsShootingEv() const
@@ -1178,6 +1291,7 @@ void UBattleHUD::UpdateTargetDisplay(AICC_Actor* Target)
 
 		TargetNameText->SetText(FText::FromString(Name));
 		TargetText->SetText(FText::FromString(TEXT("Target: ") + Name));
+		DebugHelper::LogMessage(15, FColor::Blue, "Target updated");
 	}
 	else if (const AMob* MobTarget = Cast<AMob>(Target))
 	{
@@ -1186,6 +1300,14 @@ void UBattleHUD::UpdateTargetDisplay(AICC_Actor* Target)
 		TargetNameText->SetText(FText::FromString(Name));
 		TargetText->SetText(FText::FromString(TEXT("Target: ") + Name));
 	}
+}
+
+void UBattleHUD::RefreshStatusBuffs()
+{
+	GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdateAtkBuffStatus();
+	GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdatePlayerDebuffStatus();
+	GameInstance->GetCurrentPlayer()->GetStatusTracker()->UpdateBurnStatus();
+	DebugHelper::LogMessage(20, FColor::Blue, "Updated Buffs/Debuffs");
 }
 
 void UBattleHUD::MoveFocusOn(const float& Value)
@@ -1318,6 +1440,7 @@ void UBattleHUD::UpdateBulletInfo(UBulletData* BulletData)
 
 void UBattleHUD::ConfirmBulletSelection() // this is for the confirm button  
 {
+	BackBtn->SetVisibility(ESlateVisibility::Hidden);
 	CanvasAmmoSelection->SetVisibility(ESlateVisibility::Hidden);
 	ConfirmButton->SetVisibility(ESlateVisibility::Hidden);
 	ConfirmReloadBullet->SetVisibility(ESlateVisibility::Hidden);
@@ -1458,7 +1581,8 @@ void UBattleHUD::Engage()
 	case AngerEv:
 		{
 			bIsEvFirst = true;
-			PersistentInstance->GetCurrentPlayer()->GetStatusTracker()->BuffWith(EBuffStatus::AtkBuff);
+			//PersistentInstance->GetCurrentPlayer()->GetStatusTracker()->BuffWith(EBuffStatus::AtkBuff);
+			PersistentInstance->GetCurrentPlayer()->GetStatusTracker()->BuffPlayerAtk();
 			EngageBtn->SetVisibility(ESlateVisibility::Hidden);
 			CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
 			GetBulletDisplayer()->RemoveBullet();
@@ -1466,6 +1590,17 @@ void UBattleHUD::Engage()
 			Displayer->Refresh();
 			UpdateAp();
 			EnableButtonsAfterShooting();
+			BackBtn->SetVisibility(ESlateVisibility::Hidden);
+			GetWorld()->GetTimerManager().SetTimerForNextTick([&]
+			{
+				RefreshStatusBuffs();
+			});
+			
+			if (GetBattleHandler()->GetBuffSfx())
+			{
+				UGameplayStatics::PlaySound2D(this, GetBattleHandler()->GetBuffSfx());
+			}
+			
 			break;
 		}
 	case FearDv:
@@ -1475,7 +1610,25 @@ void UBattleHUD::Engage()
 		}
 	case FearEV:
 		{
-			PrepareToEngageEv(EBuffStatus::DefBuff);
+			//PrepareToEngageEv(EBuffStatus::DefBuff);
+			bIsEvFirst = true;
+			PersistentInstance->GetCurrentPlayer()->GetStatusTracker()->BuffPlayerDef();
+			EngageBtn->SetVisibility(ESlateVisibility::Hidden);
+			CanvasBulletStats->SetVisibility(ESlateVisibility::Hidden);
+			GetBulletDisplayer()->RemoveBullet();
+			RefreshPistolMagazine();
+			Displayer->Refresh();
+			UpdateAp();
+			EnableButtonsAfterShooting();
+			BackBtn->SetVisibility(ESlateVisibility::Hidden);
+			GetWorld()->GetTimerManager().SetTimerForNextTick([&]
+			{
+				RefreshStatusBuffs();
+			});
+			if (GetBattleHandler()->GetBuffSfx())
+			{
+				UGameplayStatics::PlaySound2D(this, GetBattleHandler()->GetBuffSfx());
+			}
 			break;
 		}
 	case Disgust:
@@ -1486,6 +1639,10 @@ void UBattleHUD::Engage()
 	case DisgustEv:
 		{
 			PrepareToEngageEv(EDebuffStatus::DebuffAtk);
+			if (GetBattleHandler()->GetDebuffSfx())
+			{
+				UGameplayStatics::PlaySound2D(this, GetBattleHandler()->GetDebuffSfx());
+			}
 			break;
 		}
 	case SadnessDv:
@@ -1495,6 +1652,10 @@ void UBattleHUD::Engage()
 		}
 	case SadnessEv:
 		PrepareToEngageEv(EDebuffStatus::DebuffDef);
+		if (GetBattleHandler()->GetDebuffSfx())
+		{
+			UGameplayStatics::PlaySound2D(this, GetBattleHandler()->GetDebuffSfx());
+		}
 		break;
 	case JoyDv:
 		{
@@ -1503,7 +1664,21 @@ void UBattleHUD::Engage()
 		}
 	case JoyEv:
 		{
-			PrepareToEngageEv(EBuffStatus::LowHealth);
+			RestoreHealth();
+			GetBulletDisplayer()->RemoveBullet();
+			Displayer->Refresh();
+			RefreshPistolMagazine();
+			UpdateAp();
+			BackBtn->SetVisibility(ESlateVisibility::Hidden);
+			EnableButtonsAfterShooting();
+			GetWorld()->GetTimerManager().SetTimerForNextTick([&]
+			{
+				RefreshStatusBuffs();
+			});
+			if (GetBattleHandler()->GetHealSfx())
+			{
+				UGameplayStatics::PlaySound2D(this, GetBattleHandler()->GetHealSfx());
+			}
 			break;
 		}
 	case Anxiety:
@@ -1519,6 +1694,10 @@ void UBattleHUD::Engage()
 	case CalmEV:
 		{
 			PrepareToEngageEv(EAfflictedStatus::ShieldDebuff);
+			if (GetBattleHandler()->GetBuffSfx())
+			{
+				UGameplayStatics::PlaySound2D(this, GetBattleHandler()->GetBuffSfx());
+			}
 			break;
 		}
 	case JealousyDv:
@@ -1530,6 +1709,10 @@ void UBattleHUD::Engage()
 	case JealousyEv:
 		{
 			PrepareToEngageEv(EAfflictedStatus::Burn);
+			if (GetBattleHandler()->GetDebuffSfx())
+			{
+				UGameplayStatics::PlaySound2D(this, GetBattleHandler()->GetDebuffSfx());
+			}
 			break;
 		}
 	case Shame:
@@ -1784,39 +1967,81 @@ void UBattleHUD::RefreshBulletMagazine()
 	}
 }
 
+// void UBattleHUD::RefreshPistolMagazine()
+// {
+// 	const UCircularBulletBuffer* Buffer = GetCircularBulletBuffer();
+// 	if (!Buffer) return;
+//
+// 	const int32 Tail = Buffer->GetTailIndex();
+// 	const int32 Cap = Buffer->GetCapacity();
+// 	const int32 Count = Buffer->GetCount();
+//
+// 	// for (int32 i = 0; i < PistolMagazines.Num(); ++i)
+// 	// {
+// 	// 	if (i < Count)
+// 	// 	{
+// 	// 		const int32 BufferIndex = (Tail + i) % Cap;
+// 	// 		if (const UBulletData* Data = Buffer->PeekAt(BufferIndex); Data)
+// 	// 		{
+// 	// 			PistolMagazines[i]->SetBrushFromTexture(Data->Icon, true);
+// 	// 			PistolMagazines[i]->SetColorAndOpacity(FLinearColor::White);
+// 	// 		}
+// 	// 		else
+// 	// 		{
+// 	// 			PistolMagazines[i]->SetBrushFromTexture(nullptr);
+// 	// 			PistolMagazines[i]->SetColorAndOpacity(FLinearColor::Transparent);
+// 	// 		}
+// 	// 	}
+// 	//
+// 	// 	else
+// 	// 	{
+// 	// 		PistolMagazines[i]->SetBrushFromTexture(nullptr);
+// 	// 		PistolMagazines[i]->SetColorAndOpacity(FLinearColor::White);
+// 	// 	}
+// 	// }
+// 	
+// 	for (int32 i = 0; i < PistolMagazines.Num(); ++i)
+// 	{
+// 		if (const UBulletData* Data = Buffer->PeekAt(i); Data)
+// 		{
+// 			PistolMagazines[i]->SetBrushFromTexture(Data->Icon, true);
+// 			PistolMagazines[i]->SetColorAndOpacity(FLinearColor::White);
+// 			MagazineBullets[i]->SetBufferIndex(i);
+// 		}
+// 		else
+// 		{
+// 			PistolMagazines[i]->SetBrushFromTexture(nullptr);
+// 			PistolMagazines[i]->SetColorAndOpacity(FLinearColor::Transparent);
+// 			MagazineBullets[i]->SetEnableRemoval(false);
+// 		}
+// 	}
+// }
+
 void UBattleHUD::RefreshPistolMagazine()
 {
 	const UCircularBulletBuffer* Buffer = GetCircularBulletBuffer();
 	if (!Buffer) return;
 
-	const int32 Tail = Buffer->GetTailIndex();
-	const int32 Cap = Buffer->GetCapacity();
-	const int32 Count = Buffer->GetCount();
-
 	for (int32 i = 0; i < PistolMagazines.Num(); ++i)
 	{
-		if (i < Count)
-		{
-			const int32 BufferIndex = (Tail + i) % Cap;
-			if (const UBulletData* Data = Buffer->PeekAt(BufferIndex); Data)
-			{
-				PistolMagazines[i]->SetBrushFromTexture(Data->Icon, true);
-				PistolMagazines[i]->SetColorAndOpacity(FLinearColor::White);
-			}
-			else
-			{
-				PistolMagazines[i]->SetBrushFromTexture(nullptr);
-				PistolMagazines[i]->SetColorAndOpacity(FLinearColor::Transparent);
-			}
-		}
+		const UBulletData* Data = Buffer->PeekAt(i);
 
+		if (Data)
+		{
+			PistolMagazines[i]->SetBrushFromTexture(Data->Icon, true);
+			PistolMagazines[i]->SetColorAndOpacity(FLinearColor::White);
+			MagazineBullets[i]->SetBufferIndex(i);
+			MagazineBullets[i]->SetEnableRemoval(true);
+		}
 		else
 		{
 			PistolMagazines[i]->SetBrushFromTexture(nullptr);
-			PistolMagazines[i]->SetColorAndOpacity(FLinearColor::White);
+			PistolMagazines[i]->SetColorAndOpacity(FLinearColor::Transparent);
+			MagazineBullets[i]->SetEnableRemoval(false);
 		}
 	}
 }
+
 
 void UBattleHUD::ResetPistolMagazine()
 {

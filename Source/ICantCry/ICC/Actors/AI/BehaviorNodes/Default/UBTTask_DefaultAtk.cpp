@@ -41,13 +41,6 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 	CurrentMob->SetIsAttacked(false);
 	BlackBoard->SetValueAsInt("Id", CurrentMob->GetTreeId());
 	BlackBoard->SetValueAsBool("Attacked?", CurrentMob->GetIsIsAttacked());
-
-	// if (CurrentMob->IsAshamed() && CurrentMob->GetMobType() != EMobType::MobShame) // for the moment I just ignore shame because it's the only mob that attack only to prevent crash
-	// {
-	// 	DebugHelper::AddMessageToLog("[BT Task - Default]: " + CurrentMob->GetActorLabel() + " is ashamed, rethinking it's action");
-	// 	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-	// 	return EBTNodeResult::Succeeded;
-	// }
 	
 	bWaitingForThinkCompletion = true;
 	bBusy = true;
@@ -55,6 +48,12 @@ EBTNodeResult::Type UUBTTask_DefaultAtk::ExecuteTask(UBehaviorTreeComponent& Own
 	DecisionMaker.Clear();
 	DecisionMaker.Setup(CurrentMob);
 	Decision = DecisionMaker.Thought();
+	
+	if ((CurrentMob->IsEAnxiety() && CurrentMob->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().AreAnxietyOrCalmAlone()) 
+		|| (CurrentMob->IsECalm() && CurrentMob->GetBattleHandler()->GetTurnBasedSystem()->GetTurn().AreAnxietyOrCalmAlone()))
+	{
+		Decision = EDecision::Flee;
+	}
 
 	Target->GetBattleHUD()->DecisionDisplayer->Show();
 	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(
@@ -176,15 +175,15 @@ void UUBTTask_DefaultAtk::StartAttackMinigame(AMob* Current, AICC_Player* Target
 	Request.SetUsePathfinding(true);
 	Request.SetAllowPartialPath(true); 
 	Request.SetNavigationFilter(nullptr);
-	// Controller->MoveToActor(Target);
-	//Controller->MoveTo(Request);
 	
-	// const float DistanceToTarget = FVector::DistSquared2D(Target->GetActorLocation(), Current->GetActorLocation());
-	//
-	// UCharacterMovementComponent* MovementComponent = Current->GetCharacterMovement();
-	// MovementComponent->MaxWalkSpeed = DistanceToTarget / Target->GetMinigameHandler()->
+	if (CurrentMob->GetBattleHandler()->GetEmotionAttackSfx())
+	{
+		UGameplayStatics::PlaySound2D(this, 
+			CurrentMob->GetBattleHandler()->GetEmotionAttackSfx());
+	}
 	
-	EPathFollowingRequestResult::Type Result = Controller->MoveTo(Request);
+	const EPathFollowingRequestResult::Type Result = Controller->MoveTo(Request);
+	Controller->SetFocus(Target, EAIFocusPriority::Gameplay);
 
 	if (Result == EPathFollowingRequestResult::Failed)
 	{
@@ -193,6 +192,7 @@ void UUBTTask_DefaultAtk::StartAttackMinigame(AMob* Current, AICC_Player* Target
 	else if (Result == EPathFollowingRequestResult::AlreadyAtGoal)
 	{
 		DebugHelper::LogMessage(10, FColor::White,"AI thinks it is already at the target!");
+		Controller->ClearFocus(EAIFocusPriority::Gameplay);
 	}
 
 

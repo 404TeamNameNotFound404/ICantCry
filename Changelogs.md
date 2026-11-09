@@ -65,17 +65,122 @@ Vi spiego come funzionano i settaggi:
 - *SmashRate* questo è piu particolare , è impulso dello smash , questo è un valore che non deve superare **categoricamente 1.0**
 
 
+# 11/09/26
+- testing vari , nulla da reportare
+
+# 15/09/26
+- Correzione di alcuni bug minori del room handler (ancora pero non è stato fixato del tutto)
+- Inizio col refactoring del legacy code
+
+# 16/09/26 
+- Inizio del ispezione del perche buff e debuff non si sovrascrivono piu
+
+
+# 22/09/26
+creazione della *bs_rework* branch 
+- scissione del atk buff col def buff per il player
+- aggiornato il debugging tool  
+
+# 25/09/26
+- Envy burned rework
+- Aggiunta del relativo counter e property all'interno del debugger
+
+
+# 06/10/26
+- Fix [#296](https://github.com/404TeamNameNotFound404/ICantCry/issues/296), [#297](https://github.com/404TeamNameNotFound404/ICantCry/issues/297) 
+- Aggiunto ad anger un prototipo di vfx 
+- Fix del "back" button che non scompare quando si premono le altre azioni
+- Fix del target scroll che non aggiorna subito i dati dei target
+- Anger Animation blueprint e relative modifiche
+
+# 07/10/26
+- Fix [#299](https://github.com/404TeamNameNotFound404/ICantCry/issues/299) 
+> **_NOTA:_**: ** alcuni bug minori sono ancora irrisolti tipo aura vfx che non se ne va e nel debugger che il buff dice ancora che si è in buff atk o def ma quello che importa è il booleano isBuffed e quello della difesa che vanno a FALSE **
+- Fix della **feature** del Ai che da il culo quando attacca
+- Clean up del code generale
+
+# 12/10/26
+1. **NON ANCORA TESTATI** [#301](https://github.com/404TeamNameNotFound404/ICantCry/issues/301), [#300](https://github.com/404TeamNameNotFound404/ICantCry/issues/300) [#302](https://github.com/404TeamNameNotFound404/ICantCry/issues/302)
+2. **Parzialmente testato** [#303](https://github.com/404TeamNameNotFound404/ICantCry/issues/303) 
+3. Apertura della *issue* [#307](https://github.com/404TeamNameNotFound404/ICantCry/issues/307) 
+
+# 13/10/26
+1. Fix del reload che non scompare quando si fa back
+2. Implementazione del focus
+3. Sto ancora testando il [#303](https://github.com/404TeamNameNotFound404/ICantCry/issues/303) perche non mi quadra qualcosa e e le correlate issues
+
+# 17/10/26
+1. investigato il problema dei bullet fantasma e a me funziona tutto come si deve. Penso che sia lato ui che se lo schermo è grande va out of focus. 
+
+# 19/10/26
+1. Fix del back che non si nascondeva quando viene premuto "Confirm" durante il Reload e durante Back quando si annulla Engage
+2. Fix [#306](https://github.com/404TeamNameNotFound404/ICantCry/issues/306)  
+   > **_NOTA:_**: **SOLO PER IL PLAYER AL MOMENTO,LATO AI ANCORA NON FUNZIONANTE**
+3. Heal adesso cura anche sotto envy burned 
+4. Fix [#292](https://github.com/404TeamNameNotFound404/ICantCry/issues/292)
+
+# 20/10/26
+1. Fix [#309](https://github.com/404TeamNameNotFound404/ICantCry/issues/309)
+2. Ho fixato il problema principale del clash debuff buff una volta per tutte, ora non mi resta che testare ogni singola
+   buff per vedere come si comporta , ci sono/sono stati alcuni problemi *minori* per quanto riguarda la gestione dello status
+   in generale per esempio dal log ho visto una cosa che prima non succedeva come update di freezed senza senso quando non era freezato e o il clash di alcuni buff debuff speculari. 
+3. Freeze che andava per i fatti suoi è stato risolto. 
+4. Ancora refactoring
+5. possibile causa del [#258](https://github.com/404TeamNameNotFound404/ICantCry/issues/258): ordine antiorario **Funziona**, ordine orario **NON FUNZIONA**, rivedere indexing. 
+
+
+# 21/10/26
+1. Ho risolto il bug dei bullet ([#258](https://github.com/404TeamNameNotFound404/ICantCry/issues/258)) che perdono proiettili **MA** ci sono diversi *""problemi""* minori se vogliamo chiamarli cosi: 
+   - lo scarico dei proiettili ora è in senso anti orario, prima era in senso orario non proprio un problema grave 
+    ma magari non è realistico oppure è brutto visimamente , in caso provo a rifarlo in senso orario appena si risolvono le
+    altre cose.
+   - Quando si ricarica un tamburo semi vuoto i proiettili "shiftano" il che significa che scorrono di posizione occupando
+    il posto successivo lasciando il posto precedente a quello nuovo. **Nota**> questo comportamento lo faceva anche prima
+    anche se abbastanza raramente, dipendeva in quale punto rimuovevi il proiettile 
+
+2. [#303](https://github.com/404TeamNameNotFound404/ICantCry/issues/303): Ho letto edit, se ho capito bene è riguardo
+   il debuff che veniva aggiornato anche on pass , ho tolto la chiamata , adesso pass aggiorna solo status , buff all def. Lo metto in testing in caso rimettetelo in progress di nuovo
+
+3. [#292](https://github.com/404TeamNameNotFound404/ICantCry/issues/292): Adesso Calm scappano anche in coppia , non ho testato con gli anxiety ancora pero sicuramente nei prossimi push verrà rivisto perche ~~ho notato dei bug minori che possono essere pericolosi come il bug che ho risolto del out of index del array oppure il fatto stesso che in determinate situazioni calm (e di conseguenza anche anxiety) non scappano entro i 3 tentativi ma ci possono mettere anche 5 tentativi~~
+ > **_NOTA:_**: **La scena RandomBattle1 contiene solo calm e la lascierò cosi fino a quando il flee non è battletested quindi se volete cambiate voi ma scartate tutto**
+
+
+# 27/10/26
+1. Ho corretto il [#306](https://github.com/404TeamNameNotFound404/ICantCry/issues/306) e testato con Fear , non si buffava e terminava il turno, pero c'è una modifica che ancora non entra e che devo sistemare cioè che nel computerino non compare il messaggio che ha provato a buffarsi ma era sotto status
+
+2. Per quanto riguarda il [#304](https://github.com/404TeamNameNotFound404/ICantCry/issues/304) io ho controllato anche a livello log e mi sa che è solo un problema del debugger perche lato ai è metà rotto visto che è molto complessa ai e il debugger è molto semplice e quindi quando cattura le variabili lato ai si sballa a volte.
+
+3. Implementazione del [#307](https://github.com/404TeamNameNotFound404/ICantCry/issues/307), anche se mi pare non sia stata approvata del tutto l'ho implementata per farvela vedere, il materiale si instanza a runtime , il Material sta dentro *Content/ICC/BluePrints/Actors/Materials/OutLiner*, è quello che ha la preview come materiale nero. 
+**NON MODIFICATE IL VALORE 'ALBEDO' DENTRO IL MATERIAL!** ,per cambiare il colore dovete andare in ogni blueprint delle emozioni e del player e andare a cambiare il valore del *TurnOutlineColor* dentro la categoria *'BattleSystem'*,  se volete cambiare la thickness potete farlo dentro il material stesso ma il 2.0 come valore è ottimo.
+
+ > **_NOTA:_**: **Per il momento ho messo il colore solo a Veyl e a Anger , gli altri di default hanno il trasparente**
+
+
+# 03/11/26
+1. Trovate all'interno della blueprint del battle handler una nuova categoria chiamata "Battle Sfx" , troverete un paio
+di slot in cui mettere i .mp3/.waw/.ogg degli effetti dello sparo, debuff , buff e attacco del emozione, ora a parte lo sparo gli altri sono condivisi anche con veyl, il souno di buff andra anche quando veyl usa gli ev per buffarsi e il suono di debuff andra anche quando veyl sparera debuff vero il target. e il debuff shield usa lo stesso sfx del buff (se volete ne metto uno dedicato cosi come per freeze o burn).
+
+2. Ho aggiunto una classe interna chiamata 'SoundDealer' che gestisce tutti gli sfx di veyl che non fanno parte della battaglia, quindi footstep, interazioni , porte, npc ecc. Solo il footstep viene riprodotto in coordinate 3d mentre le interazioni sono tutte in 2d. Per mettere i sfx non dovete fare altro che aprire la blueprint del player e cliccare su *SoundDealer* e nel pannello a destra *Details* troverete gli sfx da settare facendo drag n drop o selezionando nel menu a tendina il file audio. Per il momento unica chiamata che ho fatto è quella del footstep il resto non è collegato perche le interazioni non le ho scritte io e Simone immagino ci stia ancora lavorando quindi post merge lo farà lui / faremo assieme.
+**PS: gli sfx metteli dentro 3dmodels creando una cartella dedicata nella root o dentro Placeholders e mi raccomando NON VERSIONATELI** 
+**PS 1: Ho messo le protezioni se un campo source è vuoto quindi se non sentite gli audio significa o che non li avete messi oppure unreal non riesce a leggerli** 
+
+3. Risolto il problema della max room che se colpita laterale ti spediva negli inferi. Spiegazione breve del problema:
+Si attuava una sorta di ping pong velocissimo in cui te entravi pero toccava subito in un 1 ms altro trigger quindi succedeva che te ritornavi nel corridoio pero il RoomHandler accendeva correttamente la max room spegnendo il resto. ORA premetto che non è un **Fix** ma un **Workaround** per *risolverlo* dovete spuntare **SOLO** al trigger in entrata *'Remember Counter'*. Prima che mi chiediate il perche , non lo so , so solo che è dipendente da quello e il codice io l'ho scritto 4-5 mesi fa e non mi ricordo bene tutto.
+
+# 08/11/26
+1. Aggiunto *FootStepsSfx* , una lista in cui potete inserire quanti sfx dei passi volete e verrà chiamata random a runtime.
+   La trovate sempre dentro la blueprint del player dentro il component *SoundDealer*
+2. Ho messo il suono di anger quando va verso il player e il shoot adesso spara dopo il minigame 
+
 # Bugs Gravi
 1. ~~Il room toggler che fa falso contatto se si corre~~ -corretto da voi tunando la walk speed e max speed-
-2. Se il retry button sostanzialmente funziona solo a me è un problema e rischia di rompere tutto
+2. ~~Se il retry button sostanzialmente funziona solo a me è un problema e rischia di rompere tutto~~
 
 # Bugs Intermedi
-1. durante la selezione di EV il target nel display rimane enemy corrente e questo mi da fastidio oltre a essere molto 'misleading' pero il target rimangono corretti.
+~~1. durante la selezione di EV il target nel display rimane enemy corrente e questo mi da fastidio oltre a essere molto 'misleading' pero il target rimangono corretti.~~
 
 # Bugs Minori
 1. Nel curling minigame manca ancora il posizionamento della palla in maniera speculare se si tocca con la barra la parte alta degli scaglioni
-
-2. Lo scroll alcune volte non si aggiorna bene e ha bisogno di un altro ciclo di scroll per aggiornarsi correttamente
-
+2. ~~Lo scroll alcune volte non si aggiorna bene e ha bisogno di un altro ciclo di scroll per aggiornarsi correttamente~~
 3. Joy impiega qualche microsecondo tra fine minigame e attacco per ritornare in posizione 
-
+4. Alcune emozioni se partono dallo spawn piu lontano si fermano a meta strada (nota per me, rivedere il threshold)

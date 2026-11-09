@@ -20,22 +20,47 @@ void UCircularBulletBuffer::Initialize(int32 Size)
     bIsFull = false;
 }
 
-void UCircularBulletBuffer::AddBullet(UBulletData *Bullet)
-{
-    if(IsFull())
-    {
-        // // Overwrites the oldest bullet if the buffer is full
-        // Buffer[Head] = Bullet;
-        // Head = (Head + 1) % Capacity;
-        // Tail = (Tail + 1) % Capacity;
+// void UCircularBulletBuffer::AddBullet(UBulletData *Bullet)
+// {
+//     if(IsFull())
+//     {
+//         return;
+//     }
+//     
+//     Buffer[Head] = Bullet;
+//     Head = (Head + 1) % Capacity;
+//     bIsFull = (Head == Tail);
+// }
 
+
+void UCircularBulletBuffer::AddBullet(UBulletData* Bullet)
+{
+    if (!Bullet || Capacity <= 0 || IsFull())
+    {
         return;
     }
-    
-    Buffer[Head] = Bullet;
-    Head = (Head + 1) % Capacity;
-    bIsFull = (Head == Tail);
+
+    for (int32 i = 0; i < Capacity; ++i)
+    {
+        if (const int32 Index = (Head + i) % Capacity;
+            Buffer[Index] == nullptr)
+        {
+            Buffer[Index] = Bullet;
+            Head = (Index + 1) % Capacity;
+            bIsFull = IsFull();
+
+            if (GetCount() == 1)
+            {
+                Tail = Index;
+                CurrentIndex = Index;
+            }
+
+            return;
+        }
+    }
 }
+
+
 
 UBulletData *UCircularBulletBuffer::RemoveBullet()
 {
@@ -59,25 +84,95 @@ UBulletData *UCircularBulletBuffer::RemoveBullet()
     return Bullet;
 }
 
+// void UCircularBulletBuffer::RemoveAt(const int32& Index)
+// {
+//     if (Index < 0 || Index >= Capacity || IsEmpty())
+//         return;
+//
+//     int32 Current = Index;
+//     int32 Next = (Current + 1) % Capacity;
+//     
+//     while (Next != Head)
+//     {
+//         Buffer[Current] = Buffer[Next];
+//         Current = Next;
+//         Next = (Next + 1) % Capacity;
+//     }
+//     Head = (Head - 1 + Capacity) % Capacity;
+//     
+//     Buffer[Head] = nullptr;
+//     bIsFull = false;
+// }
+
+
+
 void UCircularBulletBuffer::RemoveAt(const int32& Index)
 {
-    if (Index < 0 || Index >= Capacity || IsEmpty())
-        return;
-
-    int32 Current = Index;
-    int32 Next = (Current + 1) % Capacity;
-    
-    while (Next != Head)
+    if (Index < 0 || Index >= Capacity)
     {
-        Buffer[Current] = Buffer[Next];
-        Current = Next;
-        Next = (Next + 1) % Capacity;
+        return;
     }
-    Head = (Head - 1 + Capacity) % Capacity;
+
+    if (Buffer[Index] == nullptr)
+    {
+        return;
+    }
     
-    Buffer[Head] = nullptr;
-    bIsFull = false;
+    Buffer[Index] = nullptr;
+    
+    int32 Remaining = 0;
+
+    for (const UBulletData* Bullet : Buffer)
+    {
+        if (Bullet != nullptr)
+        {
+            ++Remaining;
+        }
+    }
+
+    bIsFull = Remaining == Capacity;
+
+    if (Remaining == 0)
+    {
+        Head = 0;
+        Tail = 0;
+        CurrentIndex = 0;
+        bIsFull = false;
+        return;
+    }
+    
+    for (int32 i = 0; i < Capacity; ++i)
+    {
+        if (const int32 Candidate = (Tail + i) % Capacity; 
+            Buffer[Candidate] != nullptr)
+        {
+            Tail = Candidate;
+            break;
+        }
+    }
+    
+    if (Buffer[Head] != nullptr)
+    {
+        for (int32 i = 0; i < Capacity; ++i)
+        {
+            if (const int32 Candidate = (Head + i) % Capacity; 
+                Buffer[Candidate] == nullptr)
+            {
+                Head = Candidate;
+                break;
+            }
+        }
+    }
+
+    if (CurrentIndex < 0 ||
+        CurrentIndex >= Capacity ||
+        Buffer[CurrentIndex] == nullptr)
+    {
+        CurrentIndex = Tail;
+    }
 }
+
+
 
 UBulletData *UCircularBulletBuffer::PeekCurrentBullet() const
 {
@@ -112,33 +207,60 @@ void UCircularBulletBuffer::MoveToPrevious()
     }
 }
 
+// bool UCircularBulletBuffer::IsFull() const
+// {
+//     return bIsFull;
+// }
+//
+// bool UCircularBulletBuffer::IsEmpty() const
+// {
+//     return (!bIsFull && (Head == Tail));
+// }
+
 bool UCircularBulletBuffer::IsFull() const
 {
-    return bIsFull;
+    return Capacity > 0 && GetCount() >= Capacity;
 }
 
 bool UCircularBulletBuffer::IsEmpty() const
 {
-    return (!bIsFull && (Head == Tail));
+    return GetCount() == 0;
 }
+
+// int32 UCircularBulletBuffer::GetCount() const
+// {
+//
+//     if (IsEmpty()) 
+//     {
+//         return 0;
+//     }
+//
+//     if (IsFull()) 
+//     {
+//         return Capacity;
+//     }
+//         
+//     //return (Head - Tail + Capacity) % Capacity;
+//
+//     return (Head >= Tail) ? (Head - Tail) : (Capacity - Tail + Head);
+// }
+
 
 int32 UCircularBulletBuffer::GetCount() const
 {
+    int32 Count = 0;
 
-    if (IsEmpty()) 
+    for (const UBulletData* Bullet : Buffer)
     {
-        return 0;
+        if (Bullet != nullptr)
+        {
+            ++Count;
+        }
     }
 
-    if (IsFull()) 
-    {
-        return Capacity;
-    }
-        
-    //return (Head - Tail + Capacity) % Capacity;
-
-    return (Head >= Tail) ? (Head - Tail) : (Capacity - Tail + Head);
+    return Count;
 }
+
 
 UBulletData* UCircularBulletBuffer::PeekAt(int32 Index) const
 {
@@ -199,6 +321,21 @@ TArray<UBulletData*> UCircularBulletBuffer::GetBulletsLeft()
     
     return Bullets;
 }
+
+// TArray<UBulletData*> UCircularBulletBuffer::GetBulletsLeft()
+// {
+//     TArray<UBulletData*> Bullets;
+//
+//     for (UBulletData* Bullet : Buffer)
+//     {
+//         if (Bullet)
+//         {
+//             Bullets.Add(Bullet);
+//         }
+//     }
+//
+//     return Bullets;
+// }
 
 void UCircularBulletBuffer::Clear()
 {

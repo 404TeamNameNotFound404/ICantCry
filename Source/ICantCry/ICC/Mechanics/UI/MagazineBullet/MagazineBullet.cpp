@@ -31,22 +31,6 @@ void UMagazineBullet::RemoveFromMagazine()
 	}
 	
 	Buffer->RemoveAt(BulletIndex);
-	
-	// Buffer->RemoveAt(BulletIndex);
-
-	// if (FBullet* Bullet = Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentSelectedBullet(); Bullet)
-	// {
-	// 	DebugHelper::LogMessage(20, FColor::White, "Placing back " + Bullet->GetBulletData()->BulletName);
-	// 	const int32 NewQuantity = Bullet->GetQuantity() + 1;
-	// 	Bullet->SetQuantity(NewQuantity);
-	// }
-	
-	
-	// else
-	// {
-	// 	DebugHelper::LogWarning("No selected bullet found to update.");
-	// }
-	
 	BulletBtn->SetBackgroundColor(FLinearColor::Transparent);
 	Setup(nullptr, nullptr, -1);
 	
