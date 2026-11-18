@@ -176,33 +176,58 @@ void UUBTTask_DefaultAtk::StartAttackMinigame(AMob* Current, AICC_Player* Target
 	Request.SetAllowPartialPath(true); 
 	Request.SetNavigationFilter(nullptr);
 	
-	if (CurrentMob->GetBattleHandler()->GetEmotionAttackSfx())
+	UGameplayStatics::PlaySound2D(this, Target->GetMinigameHandler()->GetCtvFx());
+	FTimerHandle Delay1;
+	Target->GetBattleHUD()->CTR->SetVisibility(ESlateVisibility::Visible);
+	Target->GetBattleHUD()->DecisionDisplayer->SetDecisionText(FText::FromString(""));
+
+	GetWorld()->GetTimerManager().SetTimer(Delay1, [this, Controller, Request, Target, Current]
 	{
-		UGameplayStatics::PlaySound2D(this, 
-			CurrentMob->GetBattleHandler()->GetEmotionAttackSfx());
-	}
+		const EPathFollowingRequestResult::Type Result = Controller->MoveTo(Request);
+		Controller->SetFocus(Target, EAIFocusPriority::Gameplay);
+
+		if (Result == EPathFollowingRequestResult::Failed)
+		{
+			DebugHelper::LogMessage(10, FColor::White,
+			                        "AI Move Failed Immediately! Check collision or NavMesh connection.");
+		}
+		else if (Result == EPathFollowingRequestResult::AlreadyAtGoal)
+		{
+			DebugHelper::LogMessage(10, FColor::White, "AI thinks it is already at the target!");
+			Controller->ClearFocus(EAIFocusPriority::Gameplay);
+		}
+
+		Current->GetAIMemory().AttackLocation = Current->GetActorLocation();
+		Target->GetBattleHUD()->DecisionDisplayer->Hide();
+		Target->GetBattleHUD()->CTR->SetVisibility(ESlateVisibility::Hidden);
+		DebugHelper::AddMessageToLog("[Behavior Tree]: " + Current->GetEmotionName() + " is attacking");
+		Target->GetMinigameHandler()->StartMinigame(nullptr, false);
+		Target->GetMinigameHandler()->OnMinigameEnded.AddDynamic(this, &UUBTTask_DefaultAtk::OnMinigameEndedCallback);
+		bBusy = true;
+	}, Target->GetBattleData()->MinigameCtvDelayAI, false);
 	
-	const EPathFollowingRequestResult::Type Result = Controller->MoveTo(Request);
-	Controller->SetFocus(Target, EAIFocusPriority::Gameplay);
-
-	if (Result == EPathFollowingRequestResult::Failed)
-	{
-		DebugHelper::LogMessage(10, FColor::White, "AI Move Failed Immediately! Check collision or NavMesh connection.");
-	}
-	else if (Result == EPathFollowingRequestResult::AlreadyAtGoal)
-	{
-		DebugHelper::LogMessage(10, FColor::White,"AI thinks it is already at the target!");
-		Controller->ClearFocus(EAIFocusPriority::Gameplay);
-	}
-
-
-	DebugHelper::AddMessageToLog("[Behavior Tree]: " + Current->GetEmotionName() + " is attacking");
-
-	Current->GetAIMemory().AttackLocation = Current->GetActorLocation();
-	Target->GetBattleHUD()->DecisionDisplayer->Hide();
-	Target->GetMinigameHandler()->StartMinigame(nullptr,false);
-	Target->GetMinigameHandler()->OnMinigameEnded.AddDynamic(this, &UUBTTask_DefaultAtk::OnMinigameEndedCallback);
-	bBusy = true;
+	// const EPathFollowingRequestResult::Type Result = Controller->MoveTo(Request);
+	// Controller->SetFocus(Target, EAIFocusPriority::Gameplay);
+	//
+	// if (Result == EPathFollowingRequestResult::Failed)
+	// {
+	// 	DebugHelper::LogMessage(10, FColor::White, "AI Move Failed Immediately! Check collision or NavMesh connection.");
+	// }
+	// else if (Result == EPathFollowingRequestResult::AlreadyAtGoal)
+	// {
+	// 	DebugHelper::LogMessage(10, FColor::White,"AI thinks it is already at the target!");
+	// 	Controller->ClearFocus(EAIFocusPriority::Gameplay);
+	// }
+	//
+	//
+	// DebugHelper::AddMessageToLog("[Behavior Tree]: " + Current->GetEmotionName() + " is attacking");
+	//
+	// Current->GetAIMemory().AttackLocation = Current->GetActorLocation();
+	// Target->GetBattleHUD()->DecisionDisplayer->Hide();
+	//
+	// Target->GetMinigameHandler()->StartMinigame(nullptr,false);
+	// Target->GetMinigameHandler()->OnMinigameEnded.AddDynamic(this, &UUBTTask_DefaultAtk::OnMinigameEndedCallback);
+	// bBusy = true;
 }
 
 

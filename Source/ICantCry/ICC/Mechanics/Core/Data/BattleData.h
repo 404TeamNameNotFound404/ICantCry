@@ -65,4 +65,10 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drop System")
 	int ShameDropQuantity = 1;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Misc")
+	float MinigameCtvDelayPlayer = 1.f;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Misc")
+	float MinigameCtvDelayAI = 1.f;
 };
