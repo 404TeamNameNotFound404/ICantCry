@@ -257,7 +257,7 @@ void AMinigameHandler::StartMinigame(UBulletData* BulletData, const bool& Enable
 			CurrentMinigameDisplayed->SetKeyboardFocus();
 			bPlayerMinigameEnded = false;
 			Player->GetBattleHUD()->CTR->SetVisibility(ESlateVisibility::Hidden);
-		}, 1.f , false);
+		}, Player->GetBattleData()->MinigameCtvDelayPlayer , false);
 	}
 
 	
@@ -274,6 +274,7 @@ void AMinigameHandler::StartMinigame(UBulletData* BulletData, const bool& Enable
 		}
 		
 		//CurrentMinigameDisplayed->AddToViewport();
+		
 		Player->GetBattleHUD()->MinigameSlot->AddChild(CurrentMinigameDisplayed);
 		Player->GetBattleHUD()->HideInfo();
 		Player->EnableMinigameInput(true);
@@ -343,6 +344,11 @@ AICC_Player* AMinigameHandler::GetBattlePlayer() const
 bool AMinigameHandler::IsPlayerMinigameEnded() const
 {
 	return bPlayerMinigameEnded;
+}
+
+USoundBase* AMinigameHandler::GetCtvFx()
+{
+	return CtvFx;
 }
 
 

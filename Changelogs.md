@@ -172,15 +172,18 @@ Si attuava una sorta di ping pong velocissimo in cui te entravi pero toccava sub
    La trovate sempre dentro la blueprint del player dentro il component *SoundDealer*
 2. Ho messo il suono di anger quando va verso il player e il shoot adesso spara dopo il minigame 
 
-# Bugs Gravi
-1. ~~Il room toggler che fa falso contatto se si corre~~ -corretto da voi tunando la walk speed e max speed-
-2. ~~Se il retry button sostanzialmente funziona solo a me è un problema e rischia di rompere tutto~~
+# 18/11/26
+1. Ho messo il sound sfx del attacco del emozione dopo il minigame della difesa mantenendo la simmetria col sfx del attacco del player
+2. Messo il vfx del ctv anche per attacco del ai
 
-# Bugs Intermedi
-~~1. durante la selezione di EV il target nel display rimane enemy corrente e questo mi da fastidio oltre a essere molto 'misleading' pero il target rimangono corretti.~~
+3. Aggiunti due parametri *MinigameCtvDelayPlayer* e *MinigameCtvDelayAI* dentro il data asset **BattleData** che trovate dentro */ICC/BluePrints/Core/Battle* cosi da poter modificare il tempo di durata del ctv , sia chiaro che da design il *MinigameCtvDelayAI* vale per tutti i minigame quindi non è possibile avere dei delay differenti in base al tipo di minigame lanciato. 
+
+
+# Bugs Gravi
+1. ~~Se il retry button sostanzialmente funziona solo a me è un problema e rischia di rompere tutto~~
+
 
 # Bugs Minori
 1. Nel curling minigame manca ancora il posizionamento della palla in maniera speculare se si tocca con la barra la parte alta degli scaglioni
-2. ~~Lo scroll alcune volte non si aggiorna bene e ha bisogno di un altro ciclo di scroll per aggiornarsi correttamente~~
-3. Joy impiega qualche microsecondo tra fine minigame e attacco per ritornare in posizione 
-4. Alcune emozioni se partono dallo spawn piu lontano si fermano a meta strada (nota per me, rivedere il threshold)
+2. Joy impiega qualche microsecondo tra fine minigame e attacco per ritornare in posizione 
+3. Alcune emozioni se partono dallo spawn piu lontano si fermano a meta strada (nota per me, rivedere il threshold)

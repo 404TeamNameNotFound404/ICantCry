@@ -61,6 +61,7 @@ EMinigameThreshold UDefenceMinigame::CheckBar()
 void UDefenceMinigame::HandleScore()
 {
 	const EMinigameThreshold Result = CheckBar();
+	const AMob* Current = Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion();
 	
 	switch (Result)
 	{
@@ -69,24 +70,40 @@ void UDefenceMinigame::HandleScore()
 		DebugHelper::AddMessageToLog("[Defence Minigame]: 33% damage reduction");
 		Instance->GetRuntimeStats().MinigameModifier = 0.66f; // previously 0.70
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion()->InflictDamage();
+		if (Current->GetBattleHandler()->GetEmotionAttackSfx())
+		{
+			UGameplayStatics::PlaySound2D(this, Current->GetBattleHandler()->GetEmotionAttackSfx());
+		}
 		break;
 	case EMinigameThreshold::Good:
 		DebugHelper::LogMessage(3, FColor::FromHex("D91656"), "66% reduction");
 		DebugHelper::AddMessageToLog("[Defence Minigame]: 66% damage reduction");
 		Instance->GetRuntimeStats().MinigameModifier = 0.33f;
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion()->InflictDamage();
+		if (Current->GetBattleHandler()->GetEmotionAttackSfx())
+		{
+			UGameplayStatics::PlaySound2D(this, Current->GetBattleHandler()->GetEmotionAttackSfx());
+		}
 		break;
 	case EMinigameThreshold::Perfect:
 		DebugHelper::LogMessage(3, FColor::FromHex("EB5B00"), "Perfect parry");
 		DebugHelper::AddMessageToLog("[Defence Minigame]: Perfect parry");
 		Instance->GetRuntimeStats().MinigameModifier = 0.0f;
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion()->InflictDamage();
+		if (Current->GetBattleHandler()->GetEmotionAttackSfx())
+		{
+			UGameplayStatics::PlaySound2D(this, Current->GetBattleHandler()->GetEmotionAttackSfx());
+		}
 		break;
 	default:
 		DebugHelper::LogError("You suck! miss");
 		DebugHelper::AddMessageToLog("[Defence Minigame]: You suck! miss");
 		Instance->GetRuntimeStats().MinigameModifier = 1.0f;
 		Instance->GetCurrentPlayer()->GetBattleHUD()->GetCurrentPlayingEmotion()->InflictDamage();
+		if (Current->GetBattleHandler()->GetEmotionAttackSfx())
+		{
+			UGameplayStatics::PlaySound2D(this, Current->GetBattleHandler()->GetEmotionAttackSfx());
+		}
 		break;
 	}
 }

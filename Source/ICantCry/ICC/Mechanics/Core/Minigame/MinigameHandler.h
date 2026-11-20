@@ -60,6 +60,8 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnMinigameEnded OnMinigameEnded;
+	
+	USoundBase* GetCtvFx();
 
 
 private:
